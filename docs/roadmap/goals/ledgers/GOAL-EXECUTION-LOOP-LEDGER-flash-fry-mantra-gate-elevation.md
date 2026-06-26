@@ -232,3 +232,88 @@ SPEC-004 evidence:
 - Sample BLOCKED/NEEDS_REVIEW output: JSON status detail, no marker-only output, exit 1 for BLOCKED and exit 2 for NEEDS_REVIEW.
 - Negative semantic grep: no `/flash-fry`, no always-verbose success, no src/docs/tmp/package edits in this commit.
 - Sync status: LOCAL_COMMITTED; REMOTE_SYNC_NOT_REQUESTED.
+
+---
+
+spec_id: SPEC-005
+spec_version: 1
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-006
+failed_attempt_recovery_decision: not_applicable
+commit: 3fb1b6714e2efc2e36d02f6945e7063436f0cc59
+oracle_status: PASS (validate_tds, validate_reference_package, materialize_adapter all --check, command_trigger_oracle, private_vocabulary_oracle, git diff --check, pre-commit gate)
+structural_method_id: tes-adapter-hook-runtime
+topology_decision: product docs updated only for delivered hook behavior already proven
+topology_decision_artifact: docs/adapters/PLATFORM-DIFFERENCES.md and docs/mesh/MANTRA-GATE.md
+structural_debt: none
+next_structural_constraint: release identity must advance because delivered behavior changed
+topology_probe_result: PASS (materialize_adapter all --check)
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: inherited from SPEC-003 and SPEC-004
+adversary_objection: repaired
+shared_contract_extended: yes
+extension_point_proven: yes (docs now match host-aware hook runtime)
+contract_handoff_artifact: docs/mesh/MANTRA-GATE.md
+api_lint_status: not_applicable
+auditor_distinct_from_operator: yes
+auditor_rewrote_no_oracle: no
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: SPEC-005_COMPLETE
+next_allowed_action: open SPEC-006 after Pre-Edit Gate
+
+SPEC-005 evidence:
+- Changed files: docs/adapters/PLATFORM-DIFFERENCES.md; docs/mesh/MANTRA-GATE.md.
+- Boundary classification: adopter-facing product docs only; no unimplemented behavior documented.
+- Material diff: `git show --stat --oneline 3fb1b6714e2efc2e36d02f6945e7063436f0cc59` reports 2 files changed, 4 insertions, 2 deletions.
+- Negative semantic grep: no mem0/OpenClaw branding, no private target paths, no `/flash-fry` command, no human-checklist framing.
+- Sync status: LOCAL_COMMITTED; REMOTE_SYNC_NOT_REQUESTED.
+
+---
+
+spec_id: SPEC-006
+spec_version: 1
+attempt: 1
+repair_count: 1
+audit_repair_cycle: 1
+first_unexecuted_unit: none
+failed_attempt_recovery_decision: repaired dirty-source bundle by committing source version first, then regenerating the public bundle from clean HEAD
+commit: d27e8ac224b0c135c1ebef293d4716e6d21ada87; 8ae8231473033d93f814c5a21772ba34d60b9dc1
+oracle_status: PASS (tes_bump governance/dry-run/apply, public_bundle_oracle, build_public_docs, validate_tds, Mantra Gate full oracle set, materialize_adapter, validate_reference_package, npm run commit:check, git diff --check)
+structural_method_id: tes-adapter-hook-runtime
+topology_decision: local release identity advanced to 0.3.197; no tag, push, publish, marketplace or cloud action
+topology_decision_artifact: package/version surfaces plus docs/dist/0.3.197 public bundle
+structural_debt: remote tag/ref certification deferred by owner boundary
+next_structural_constraint: run release:check only after an authorized remote tag exists
+topology_probe_result: PASS (public bundle oracle and adapter materialization)
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: PASS (full Mantra Gate hook and feedback oracle set)
+adversary_objection: repaired
+shared_contract_extended: yes
+extension_point_proven: yes (release identity synchronized with delivered behavior)
+contract_handoff_artifact: docs/dist/0.3.197/index.json and this ledger
+api_lint_status: not_applicable
+auditor_distinct_from_operator: yes
+auditor_rewrote_no_oracle: no
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: EXECUTION_LOOP_COMPLETE_LOCAL
+next_allowed_action: owner decision for remote sync/tag/release, otherwise stop
+
+SPEC-006 evidence:
+- Release identity decision: bump patch 0.3.196 -> 0.3.197 because delivered behavior changed.
+- Changed files: package/version constants, plugin metadata, public docs, docs/dist/0.3.197 bundle artifacts, and correlated validators.
+- Bundle: docs/dist/0.3.197/tilly-engineer-skills-0.3.197.zip.
+- Bundle SHA256: 7e11f56ae8f936937e2d8d01ede5060dc9be49356d9820c3fc7b3a5c99df0b29.
+- Bundle metadata: source_commit d27e8ac224b0c135c1ebef293d4716e6d21ada87; source_tree_state clean.
+- Material diff: `git show --stat --oneline d27e8ac224b0c135c1ebef293d4716e6d21ada87` reports 65 files changed; `git show --stat --oneline 8ae8231473033d93f814c5a21772ba34d60b9dc1` reports 6 files changed.
+- Release boundary: no push, tag, remote release, package publish, marketplace action, cloud action, secrets, or destructive Git.
+- Sync status: LOCAL_COMMITTED; REMOTE_SYNC_NOT_REQUESTED.
