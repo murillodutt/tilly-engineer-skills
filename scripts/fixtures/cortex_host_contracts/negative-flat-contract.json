@@ -1,0 +1,95 @@
+{
+  "fixture_schema": "tes.cortex.host-contract.v1",
+  "negative": true,
+  "host": "codex",
+  "source_refs": [
+    "https://code.claude.com/docs/en/hooks.md",
+    "https://developers.openai.com/codex/hooks.md",
+    "https://cursor.com/docs/hooks.md"
+  ],
+  "contract": {
+    "config_surfaces": [
+      ".hooks.json"
+    ],
+    "event_case": "camelCase",
+    "lifecycle_events": {
+      "advisory_recall": "sessionStart",
+      "capture_proposal": "stop",
+      "needs_align": "preToolUse"
+    },
+    "output_style": "flat-json-exit-code",
+    "blocks_with_exit_code_2": true
+  },
+  "samples": [
+    {
+      "name": "flat_session_start",
+      "intent": "advisory_recall",
+      "event": "sessionStart",
+      "input": {
+        "session_id": "session-flat-001",
+        "cwd": "/tmp/target-project",
+        "hook_event_name": "sessionStart"
+      },
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "continue": true,
+          "permission": "allow",
+          "agent_message": "Flat advisory context."
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "flat_stop_capture",
+      "intent": "capture_proposal",
+      "event": "stop",
+      "input": {
+        "session_id": "session-flat-001",
+        "cwd": "/tmp/target-project",
+        "hook_event_name": "stop"
+      },
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "continue": true,
+          "permission": "allow"
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "flat_needs_align",
+      "intent": "needs_align",
+      "event": "preToolUse",
+      "input": {
+        "session_id": "session-flat-001",
+        "cwd": "/tmp/target-project",
+        "hook_event_name": "preToolUse",
+        "tool_name": "Write",
+        "tool_input": {
+          "file_path": "/tmp/target-project/docs/agents/PROJECT-STATE.md"
+        }
+      },
+      "output": {
+        "exit_code": 2,
+        "stdout": {},
+        "stderr": "Flat block."
+      }
+    }
+  ],
+  "negative_cases": [
+    {
+      "name": "flat_output_should_not_be_needed",
+      "event": "preToolUse",
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "continue": true,
+          "permission": "deny"
+        },
+        "stderr": ""
+      }
+    }
+  ]
+}

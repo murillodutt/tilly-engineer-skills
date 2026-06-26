@@ -1,0 +1,122 @@
+{
+  "fixture_schema": "tes.cortex.host-contract.v1",
+  "host": "claude-code",
+  "source_refs": [
+    "https://code.claude.com/docs/en/hooks.md",
+    "https://code.claude.com/docs/en/settings.md"
+  ],
+  "contract": {
+    "config_surfaces": [
+      ".claude/settings.json"
+    ],
+    "event_case": "PascalCase",
+    "lifecycle_events": {
+      "advisory_recall": "SessionStart",
+      "capture_proposal": "Stop",
+      "needs_align": "PreToolUse"
+    },
+    "output_style": "claude-json-or-exit-code",
+    "blocks_with_exit_code_2": true
+  },
+  "samples": [
+    {
+      "name": "session_start_advisory_recall",
+      "intent": "advisory_recall",
+      "event": "SessionStart",
+      "input": {
+        "session_id": "session-claude-001",
+        "transcript_path": "/tmp/target-project/.claude/transcript.jsonl",
+        "cwd": "/tmp/target-project",
+        "hook_event_name": "SessionStart",
+        "source": "startup"
+      },
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": "Cortex recall is advisory: review retained project context before editing."
+          }
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "stop_capture_proposal",
+      "intent": "capture_proposal",
+      "event": "Stop",
+      "input": {
+        "session_id": "session-claude-001",
+        "transcript_path": "/tmp/target-project/.claude/transcript.jsonl",
+        "cwd": "/tmp/target-project",
+        "hook_event_name": "Stop",
+        "permission_mode": "default",
+        "stop_hook_active": false,
+        "last_assistant_message": "Implemented a focused local fixture."
+      },
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "hookSpecificOutput": {
+            "hookEventName": "Stop",
+            "additionalContext": "Capture proposal: retain this as candidate evidence only after explicit authorization."
+          }
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "pre_tool_use_needs_align",
+      "intent": "needs_align",
+      "event": "PreToolUse",
+      "input": {
+        "session_id": "session-claude-001",
+        "transcript_path": "/tmp/target-project/.claude/transcript.jsonl",
+        "cwd": "/tmp/target-project",
+        "hook_event_name": "PreToolUse",
+        "permission_mode": "default",
+        "tool_name": "Edit",
+        "tool_input": {
+          "file_path": "/tmp/target-project/docs/agents/PROJECT-STATE.md",
+          "old_string": "previous",
+          "new_string": "next"
+        },
+        "tool_use_id": "tool-claude-001"
+      },
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "additionalContext": "status=NEEDS_ALIGN evidence_refs=docs/agents/PROJECT-STATE.md next_action=run /tes-align before claiming alignment."
+          }
+        },
+        "stderr": ""
+      }
+    }
+  ],
+  "negative_cases": [
+    {
+      "name": "reject_cursor_permission_output",
+      "event": "PreToolUse",
+      "output": {
+        "exit_code": 0,
+        "stdout": {
+          "continue": true,
+          "permission": "deny",
+          "user_message": "Wrong host output."
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "reject_empty_exit_code_block",
+      "event": "PreToolUse",
+      "output": {
+        "exit_code": 2,
+        "stdout": {},
+        "stderr": ""
+      }
+    }
+  ]
+}
