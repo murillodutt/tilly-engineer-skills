@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.1
+tver: 0.2.2
 ---
 
 # TES Field Reports
@@ -50,13 +50,13 @@ The deterministic CLI is `scripts/field_reports.py`.
 
 Supported internal operations are `capture`, `drain`, `status`, `disable`, `enable`, `install-hook`, and `--self-test`.
 
-`install-hook` installs a local `pre-push` wrapper at the active Git hook path. It honors `core.hooksPath`; for Husky's `.husky/_` wrapper directory it writes the user-composable `.husky/pre-push` hook instead of overwriting Husky internals. The wrapper calls:
+`install-hook` installs a local `pre-push` wrapper at the active Git hook path. It honors `core.hooksPath`; native `.git/hooks`, project-owned hook paths such as `.githooks` or another configured directory, Lefthook-style project routing, Husky's `.husky/_` wrapper, and disabled hook routing are separate contracts. For Husky's `.husky/_` wrapper directory it writes the user-composable `.husky/pre-push` hook instead of overwriting Husky internals. The wrapper calls:
 
 ```text
 python3 .tes/bin/field_reports.py drain --target . --trigger pre-push
 ```
 
-If an existing active `pre-push` hook exists, it is backed up and chained before the Field Reports drain. Low-signal heartbeat drains, such as a successful update check with no version drift and no operational change, are suppressed locally with a receipt instead of opening a GitHub issue. If Git, `gh`, network, or authentication is unavailable, Field Reports records `BLOCKED` where possible, keeps the outbox pending, and must not block the push. Drain results distinguish `disabled`, `empty`, `suppressed`, `blocked`, `invalid`, and `sent` transport states. Blocked and invalid drains write receipts without payload bodies and do not clear pending events.
+If an existing active `pre-push` hook exists, it is backed up once and chained before the Field Reports drain. A hook path that is inactive because Git routes through `core.hooksPath` is not a valid installation target. When hook routing is disabled with `core.hooksPath=/dev/null`, install reports `BLOCKED` without writing a hook. Low-signal heartbeat drains, such as a successful update check with no version drift and no operational change, are suppressed locally with a receipt instead of opening a GitHub issue. If Git, `gh`, network, or authentication is unavailable, Field Reports records `BLOCKED` where possible, keeps the outbox pending, and must not block the push. Drain results distinguish `disabled`, `empty`, `suppressed`, `blocked`, `invalid`, and `sent` transport states. Blocked and invalid drains write receipts without payload bodies and do not clear pending events.
 
 ## Opt-Out
 
@@ -76,6 +76,7 @@ The official deterministic gate is:
 python3 scripts/field_reports.py --self-test
 python3 scripts/field_reports_quality_oracle.py --self-test
 python3 scripts/field_reports_github_oracle.py --self-test
+python3 scripts/hook_manager_awareness_oracle.py --self-test
 ```
 
 Package closure must include this gate through `npm run commit:check`.

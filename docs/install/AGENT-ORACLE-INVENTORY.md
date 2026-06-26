@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.2
+tver: 0.1.3
 ---
 
 # TES Agent Oracle Inventory
@@ -47,6 +47,7 @@ python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
 python3 scripts/field_reports.py enable --target /path/to/project
 python3 scripts/field_reports.py --self-test
+python3 scripts/hook_manager_awareness_oracle.py --self-test
 ```
 
 ## Scope Contract
@@ -99,6 +100,11 @@ python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs
 python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test
+python3 scripts/cortex_runtime.py --self-test
+python3 scripts/cortex_host_contract_oracle.py --self-test
+python3 scripts/host_runtime_contract_oracle.py --self-test
+python3 scripts/runtime_topology_oracle.py --self-test
+python3 scripts/agent_host_projection_oracle.py --self-test
 ```
 
 ## Cortex Memory Benchmarks
