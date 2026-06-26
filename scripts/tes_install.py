@@ -35,6 +35,7 @@ DEFAULT_POSTINSTALL_COMMANDS = (
     ("project_context_oracle.py", ("--target", "{target}")),
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
+HOOK_RUNTIME_HELPERS = ("cortex_runtime.py",)
 
 
 def python_executable() -> str:
@@ -605,8 +606,38 @@ def install_cursor_pretooluse_hook(target: Path, dry_run: bool) -> dict[str, str
     return write_text_if_changed(path, text, target, dry_run)
 
 
-def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[str, str]]:
+def source_helper_path(script_name: str) -> Path | None:
+    package = source_root() / "scripts" / script_name
+    if package.exists():
+        return package
+    sibling = Path(__file__).resolve().with_name(script_name)
+    if sibling.exists():
+        return sibling
+    return None
+
+
+def install_hook_runtime_helpers(target: Path, dry_run: bool) -> list[dict[str, str]]:
     actions: list[dict[str, str]] = []
+    for script_name in HOOK_RUNTIME_HELPERS:
+        destination = target / ".tes/bin" / script_name
+        source = source_helper_path(script_name)
+        if source is None:
+            actions.append({"path": rel(destination, target), "action": "missing-source", "helper": script_name})
+            continue
+        if destination.exists() and destination.read_bytes() == source.read_bytes():
+            actions.append({"path": rel(destination, target), "action": "skip-identical", "helper": script_name})
+            continue
+        if dry_run:
+            actions.append({"path": rel(destination, target), "action": "would-copy-helper", "helper": script_name})
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        actions.append({"path": rel(destination, target), "action": "copy-helper", "helper": script_name})
+    return actions
+
+
+def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[str, str]]:
+    actions: list[dict[str, str]] = install_hook_runtime_helpers(target, dry_run)
     for agent in agents:
         if agent == "codex":
             actions.append({**install_codex_hook(target, dry_run), "agent": agent})
@@ -1812,6 +1843,10 @@ def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any
         lines.append("Postinstall did not run again because no pending work was required.")
     else:
         lines.append("TES postinstall needs review. Use `/tes-init` to inspect and recover before claiming GO.")
+    cortex = result.get("cortex") if isinstance(result.get("cortex"), dict) else {}
+    cortex_context = cortex.get("additional_context")
+    if isinstance(cortex_context, str) and cortex_context:
+        lines.append(cortex_context)
     return "\n".join(lines)
 
 
@@ -1992,6 +2027,64 @@ def _mantra_gate_marker() -> str:
     return str(marker or "`🍳 Flash-Fry`")
 
 
+def _join_context(*parts: str) -> str:
+    return "\n".join(part for part in parts if part)
+
+
+def _evaluate_cortex_runtime(target: Path, agent: str, hook_input: dict[str, Any]) -> dict[str, Any]:
+    try:
+        import cortex_runtime  # noqa: PLC0415 - delivered sibling under .tes/bin/
+    except Exception:
+        return {}
+    try:
+        result = cortex_runtime.evaluate_runtime_event(target, {"host": agent, "input": hook_input})
+    except Exception:
+        return {}
+    return result if isinstance(result, dict) else {}
+
+
+def _cortex_runtime_context(result: dict[str, Any], *, include_capture: bool = True) -> str:
+    lines: list[str] = []
+    signal = result.get("alignment_signal") if isinstance(result.get("alignment_signal"), dict) else {}
+    if signal.get("status") == "NEEDS_ALIGN":
+        refs = signal.get("evidence_refs") if isinstance(signal.get("evidence_refs"), list) else []
+        refs_text = ",".join(str(item) for item in refs if item)
+        reason = str(signal.get("reason") or "Operating mesh drift detected.")
+        next_action = str(signal.get("next_action") or "Run /tes-align before claiming operating-mesh alignment.")
+        lines.append(
+            f"Cortex runtime: status=NEEDS_ALIGN evidence_refs={refs_text} "
+            f"reason={reason} next_action={next_action}"
+        )
+    capture = result.get("capture_proposal") if isinstance(result.get("capture_proposal"), dict) else {}
+    if include_capture and capture.get("status") == "PROPOSED":
+        refs = capture.get("evidence_refs") if isinstance(capture.get("evidence_refs"), list) else []
+        refs_text = ",".join(str(item) for item in refs if item)
+        lines.append(
+            "Cortex runtime: capture_proposal=PROPOSED "
+            f"evidence_refs={refs_text} next_action=request explicit authorization before any durable Cortex write."
+        )
+    return "\n".join(lines)
+
+
+def _append_cortex_result(result: dict[str, Any], context: str) -> dict[str, Any]:
+    if not context:
+        return result
+    return {**result, "cortex": {"additional_context": context}}
+
+
+def _append_claude_additional_context(output: dict[str, Any], event_name: str, context: str) -> dict[str, Any]:
+    if not context:
+        return output
+    updated = dict(output)
+    hook_specific = updated.get("hookSpecificOutput")
+    if not isinstance(hook_specific, dict):
+        hook_specific = {"hookEventName": event_name}
+        updated["hookSpecificOutput"] = hook_specific
+    hook_specific["hookEventName"] = str(hook_specific.get("hookEventName") or event_name)
+    hook_specific["additionalContext"] = _join_context(str(hook_specific.get("additionalContext") or ""), context)
+    return updated
+
+
 def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
     """Decide supervise-vs-block for a PreToolUse tool call, faithful to the bootloader.
 
@@ -2081,9 +2174,21 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         return 2
 
     context = decision.get("context") or ""
-    if context and not _pretooluse_seen_this_session(target, hook_input, context):
+    if context and _pretooluse_seen_this_session(target, hook_input, context):
+        context = ""
+    cortex_context = _cortex_runtime_context(
+        _evaluate_cortex_runtime(target, args.agent, hook_input),
+        include_capture=False,
+    )
+    combined_context = _join_context(context, cortex_context)
+    if combined_context:
         if args.agent == "cursor":
-            print(json.dumps({"continue": True, "user_message": context}, ensure_ascii=False, sort_keys=True))
+            payload: dict[str, Any] = {"continue": True, "permission": "allow"}
+            if context:
+                payload["user_message"] = context
+            if cortex_context:
+                payload["agent_message"] = cortex_context
+            print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
             return 0
         if args.agent == "claude":
             print(
@@ -2092,7 +2197,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
                         "hookSpecificOutput": {
                             "hookEventName": "PreToolUse",
                             "permissionDecision": "allow",
-                            "additionalContext": context,
+                            "additionalContext": combined_context,
                         }
                     },
                     ensure_ascii=False,
@@ -2100,7 +2205,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
                 )
             )
             return 0
-        print(context, file=sys.stderr)
+        print(combined_context, file=sys.stderr)
         return 0
 
     # Supervision-only, nothing to surface -> allow silently (no cry-wolf).
@@ -2115,7 +2220,7 @@ def hook(args: argparse.Namespace) -> int:
         inferred = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR")
         if inferred:
             args.target = Path(str(inferred))
-    if hook_event_name(hook_input, "") == "PreToolUse":
+    if hook_event_name(hook_input, "") in {"PreToolUse", "preToolUse"}:
         return hook_pretooluse(args, hook_input)
     target = target_root(args.target)
     blocked = package_source_block(target, "hook")
@@ -2133,21 +2238,28 @@ def hook(args: argparse.Namespace) -> int:
         return 2
     # SPEC-005: the hook fired for real — record the execution sentinel.
     record_hook_execution(target, args.agent, hook_input)
+    cortex_context = _cortex_runtime_context(_evaluate_cortex_runtime(target, args.agent, hook_input))
     if args.agent == "claude" and args.announce_start:
-        print(json.dumps(claude_start_notice_output(target, hook_input), sort_keys=True))
+        event_name = hook_event_name(hook_input)
+        output = _append_claude_additional_context(claude_start_notice_output(target, hook_input), event_name, cortex_context)
+        print(json.dumps(output, sort_keys=True))
         return 0
     code, result = postinstall(args, hook_input=hook_input)
+    result = _append_cortex_result(result, cortex_context)
     if args.agent == "claude":
         if args.rewake_on_complete:
             message = claude_rewake_message(result)
             if message:
-                print(message, file=sys.stderr)
+                print(_join_context(message, cortex_context), file=sys.stderr)
                 return 2
             return 0
         print(json.dumps(claude_hook_output(result, hook_input), sort_keys=True))
         return 0
     if args.agent == "cursor":
-        print("{}")
+        if cortex_context:
+            print(json.dumps({"continue": True, "agent_message": cortex_context}, ensure_ascii=False, sort_keys=True))
+        else:
+            print("{}")
     elif result.get("status") not in {"SKIP"}:
         print(json.dumps(result, indent=2, sort_keys=True))
     return code
@@ -2350,6 +2462,7 @@ def self_test() -> int:
             failures.append("thin install --agent all must map MCP adapters to codex, claude, cursor only")
         for relpath in (
             ".tes/bin/tes_install.py",
+            ".tes/bin/cortex_runtime.py",
             ".tes/tes-install-lock.json",
             ".tes/postinstall.json",
             ".codex/config.toml",
@@ -2528,6 +2641,151 @@ def self_test() -> int:
         ):
             if not (target / relpath).exists():
                 failures.append(f"postinstall missing path: {relpath}")
+        mesh_path = target / "docs/agents/PROJECT-STATE.md"
+        mesh_relpaths = (
+            "docs/agents/PROJECT-STATE.md",
+            "docs/agents/PROJECT-ROADMAP.md",
+            "docs/agents/EXECUTION-LINE.md",
+            "docs/agents/QUALITY-GATES.md",
+        )
+        mesh_before = {
+            relpath: ((target / relpath).read_text(encoding="utf-8") if (target / relpath).exists() else None)
+            for relpath in mesh_relpaths
+        }
+        claude_mesh = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "claude",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "PreToolUse",
+                    "session_id": "cortex-claude-mesh",
+                    "tool_name": "Edit",
+                    "tool_input": {
+                        "file_path": str(mesh_path),
+                        "old_string": "Fixture baseline.",
+                        "new_string": "Fixture updated.",
+                    },
+                }
+            ),
+        )
+        if claude_mesh.returncode != 0:
+            failures.append(f"Claude Cortex PreToolUse mesh advisory must allow, got {claude_mesh.returncode}")
+        try:
+            claude_mesh_payload = json.loads(claude_mesh.stdout)
+        except json.JSONDecodeError:
+            claude_mesh_payload = {}
+            failures.append("Claude Cortex PreToolUse mesh advisory must emit JSON")
+        claude_specific = claude_mesh_payload.get("hookSpecificOutput") if isinstance(claude_mesh_payload, dict) else {}
+        claude_context = claude_specific.get("additionalContext") if isinstance(claude_specific, dict) else None
+        if not isinstance(claude_context, str) or "NEEDS_ALIGN" not in claude_context:
+            failures.append("Claude Cortex PreToolUse mesh advisory must surface NEEDS_ALIGN additionalContext")
+        if isinstance(claude_specific, dict) and claude_specific.get("permissionDecision") != "allow":
+            failures.append("Claude Cortex PreToolUse mesh advisory must keep permissionDecision allow")
+
+        codex_mesh = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hookEventName": "PreToolUse",
+                    "sessionId": "cortex-codex-mesh",
+                    "toolName": "apply_patch",
+                    "toolInput": {
+                        "command": (
+                            "*** Begin Patch\n"
+                            "*** Update File: docs/agents/PROJECT-STATE.md\n"
+                            "@@\n"
+                            "-Fixture baseline.\n"
+                            "+Fixture updated.\n"
+                            "*** End Patch\n"
+                        )
+                    },
+                }
+            ),
+        )
+        if codex_mesh.returncode != 0:
+            failures.append(f"Codex Cortex PreToolUse mesh advisory must allow, got {codex_mesh.returncode}")
+        if "NEEDS_ALIGN" not in codex_mesh.stderr or codex_mesh.stdout.strip():
+            failures.append("Codex Cortex PreToolUse mesh advisory must surface NEEDS_ALIGN on stderr only")
+
+        cursor_mesh = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "cursor",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "preToolUse",
+                    "session_id": "cortex-cursor-mesh",
+                    "tool_name": "Write",
+                    "tool_input": {"file_path": str(mesh_path), "content": "Fixture updated."},
+                }
+            ),
+        )
+        if cursor_mesh.returncode != 0:
+            failures.append(f"Cursor Cortex PreToolUse mesh advisory must allow with exit 0, got {cursor_mesh.returncode}")
+        try:
+            cursor_mesh_payload = json.loads(cursor_mesh.stdout)
+        except json.JSONDecodeError:
+            cursor_mesh_payload = {}
+            failures.append("Cursor Cortex PreToolUse mesh advisory must emit native JSON")
+        if cursor_mesh_payload.get("permission") != "allow" or cursor_mesh_payload.get("continue") is not True:
+            failures.append("Cursor Cortex PreToolUse mesh advisory must use native allow/continue output")
+        if "hookSpecificOutput" in cursor_mesh_payload:
+            failures.append("Cursor Cortex PreToolUse mesh advisory must not use Claude/Codex JSON fields")
+        if "NEEDS_ALIGN" not in str(cursor_mesh_payload.get("agent_message") or ""):
+            failures.append("Cursor Cortex PreToolUse mesh advisory must surface NEEDS_ALIGN in native context")
+
+        benign_mesh = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "PreToolUse",
+                    "session_id": "cortex-codex-benign",
+                    "tool_name": "Edit",
+                    "tool_input": {"file_path": str(target / "src/app.py"), "new_string": "print('thin')"},
+                }
+            ),
+        )
+        if benign_mesh.returncode != 0 or benign_mesh.stdout.strip() or benign_mesh.stderr.strip():
+            failures.append("benign non-mesh Cortex PreToolUse path must remain quiet/allow for Codex")
+        mesh_after = {
+            relpath: ((target / relpath).read_text(encoding="utf-8") if (target / relpath).exists() else None)
+            for relpath in mesh_relpaths
+        }
+        if mesh_after != mesh_before:
+            failures.append("Cortex PreToolUse advisory must not write operating mesh files")
         second_hook = run(
             [
                 sys.executable,
