@@ -1,3 +1,13 @@
+---
+tds_id: roadmap.goal_ledger_mantra_senior_manager_birth
+tds_class: roadmap
+status: active
+consumer: maintainers and execution agents reviewing the goal-execution loop record
+source_of_truth: false
+evidence_level: L1
+tver: 0.1.0
+---
+
 # GOAL-EXECUTION-LOOP-LEDGER — Mantra Gate Senior Manager (Birth)
 
 Anchor: docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md (ADR, git hash-object 58a53a48323213922b0e0ccd459d60c5fdcfce8d)

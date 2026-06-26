@@ -1,7 +1,16 @@
+---
+tds_id: roadmap.goal_ledger_routable_oracle_gate
+tds_class: roadmap
+status: active
+consumer: maintainers and execution agents reviewing the goal-execution loop record
+source_of_truth: false
+evidence_level: L1
+tver: 0.1.0
+---
+
 # GOAL-EXECUTION-LOOP-LEDGER — routable-oracle-gate
 
-Anchor: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-routable-oracle-gate.md
-Anchor hash: b70acfa7ea95a74f54a14e19bfac54b945efed99
+Anchor: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-routable-oracle-gate.md (Super-SPEC, git hash-object b70acfa7ea95a74f54a14e19bfac54b945efed99)
 
 ## Execution Cost Draft (from material sources)
 

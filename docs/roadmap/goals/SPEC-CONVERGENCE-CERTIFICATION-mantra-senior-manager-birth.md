@@ -1,3 +1,13 @@
+---
+tds_id: roadmap.spec_convergence_mantra_senior_manager_birth
+tds_class: roadmap
+status: active
+consumer: maintainers and release reviewers certifying the convergence slice
+source_of_truth: false
+evidence_level: L1
+tver: 0.1.0
+---
+
 # SPEC de Convergência e Certificação — Mantra Gate Senior Manager (Birth)
 
 > Contrato falsificável de certificação. NÃO é um relatório de saúde. Define o que precisa ser **verdade verificável (file:line + comando verde)** para a fatia Birth ser declarada CONVERGIDA e CERTIFICÁVEL — pré-requisito único e indivisível de sync. Toda âncora abaixo foi re-executada contra os arquivos reais; correções de contagem/terminologia já estão absorvidas no texto (não herdamos citações derivadas).

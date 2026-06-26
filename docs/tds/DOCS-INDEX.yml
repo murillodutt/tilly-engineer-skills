@@ -722,6 +722,41 @@ documents:
     consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-ceiling-self-falsifying.md
+    id: roadmap.goal_ledger_ceiling_self_falsifying
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents reviewing the goal-execution loop record
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-mantra-four-pillars.md
+    id: roadmap.goal_ledger_mantra_four_pillars
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents reviewing the goal-execution loop record
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-mantra-senior-manager-birth.md
+    id: roadmap.goal_ledger_mantra_senior_manager_birth
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents reviewing the goal-execution loop record
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-routable-oracle-gate.md
+    id: roadmap.goal_ledger_routable_oracle_gate
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents reviewing the goal-execution loop record
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/SPEC-CONVERGENCE-CERTIFICATION-mantra-senior-manager-birth.md
+    id: roadmap.spec_convergence_mantra_senior_manager_birth
+    class: roadmap
+    status: active
+    consumer: maintainers and release reviewers certifying the convergence slice
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/inherited-context/DASHBOARD.md
     id: roadmap.inherited_context.dashboard
     class: roadmap
