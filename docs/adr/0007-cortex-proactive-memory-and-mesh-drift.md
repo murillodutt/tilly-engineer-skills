@@ -5,12 +5,12 @@ status: active
 consumer: maintainers, Cortex authors, TES Align authors, host integration authors, and release operators
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # ADR 0007: Cortex Runtime-First Memory And Mesh Drift
 
-Accepted on 2026-06-26. This ADR corrects the initial ADR 0007 framing: Cortex runtime-first behavior is the accepted TES target architecture, not an optional aspiration. This ADR records architecture only. It does not deliver hooks, scripts, MCP behavior, installer changes, skill changes, release identity, or public bundle changes.
+Accepted on 2026-06-26. This ADR corrects the initial ADR 0007 framing: Cortex runtime-first behavior is the accepted TES target architecture, not an optional aspiration. This ADR records architecture only. It does not deliver hooks, scripts, MCP behavior, installer changes, skill changes, release identity, or public bundle changes. References to `src/adapters/**/skills/**` in this ADR are evidence references and read-only consistency targets for this phase, not authorization to edit delivered skill behavior.
 
 ## Core Rule
 
@@ -44,7 +44,7 @@ TES can exceed the reference model by combining runtime memory with local Markdo
 6. **Host-aware hooks.** Future runtime Cortex behavior must be modeled as a host matrix. Claude Code, Codex, and Cursor may share semantic intent, but their hook names, lifecycle layers, install paths, output contracts, feature flags, platform assumptions, and trust/reload behavior must be verified per host before implementation.
 7. **Tolerant hot path.** Runtime memory hooks must be advisory by default. They may inject context or report drift, but they must fail open for ordinary work unless a separate governed write, destructive action, secret, release, remote action, or owner-approved hard gate is involved.
 8. **Evidence before capture.** Automatic or semi-automatic capture must preserve the existing Cortex write gate: no durable memory from loose chat, no derived cache as truth, no secrets, and no write without evidence and authorization.
-9. **Implementation deferred.** Runtime work requires a later PRD/SPEC with host-contract fixtures, false-positive checks, idempotent installer tests, no-copy verification against the reference, and focused oracles for `NEEDS_ALIGN`.
+9. **Implementation deferred.** Runtime work requires a later PRD/SPEC with host-contract fixtures, false-positive checks, idempotent installer tests, no-copy verification against the reference, and focused oracles for `NEEDS_ALIGN`. Any change to `src/adapters/**/skills/**`, `scripts/**`, MCP surfaces, hook templates, installer behavior, package metadata, public docs, public bundles, or release identity is delivered behavior and is out of scope for this ADR phase.
 
 ## Boundary Matrix
 
@@ -82,6 +82,7 @@ The signal must be specific enough for `/tes-align` to act, but it must not cont
 
 - No hook runtime in this ADR phase.
 - No changes to `tes-cortex` or `tes-align` skill behavior in this ADR phase.
+- No edits to `src/adapters/**/skills/**`; skill source review is read-only unless a later delivered-behavior PRD/SPEC authorizes it.
 - No automatic `/tes-align` at session end.
 - No copied mem0-plugin code or TES behavior claim based on the reference alone.
 - No release, public bundle, push, tag, publish, marketplace, cloud, secret, or destructive action.
@@ -113,4 +114,4 @@ A later PRD/SPEC must prove:
 
 ## Done
 
-ADR 0007 is satisfied when the architecture is indexed, discoverable from Cortex and Align references, and locally validated without claiming runtime delivery. Runtime implementation remains deferred until a later authorized PRD/SPEC.
+ADR 0007 is satisfied when the architecture is indexed, discoverable from Cortex and Align references, and locally validated without claiming runtime delivery or delivered skill changes. Runtime implementation remains deferred until a later authorized PRD/SPEC.
