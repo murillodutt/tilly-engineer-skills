@@ -6,10 +6,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
 import tempfile
+import time
 from typing import Any
 
 import cortex
@@ -22,6 +24,8 @@ MESH_FILES = {
     "docs/agents/QUALITY-GATES.md",
 }
 MESH_DECISIONS_PREFIX = "docs/agents/DECISIONS/"
+ALIGN_SENTINEL = Path(".tes/runtime/tes-align.active")
+ALIGN_SENTINEL_MAX_AGE_SECONDS = 4 * 60 * 60
 PATCH_FILE_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$|^\*\*\* Move to: (.+)$", re.MULTILINE)
 MESH_REF_RE = re.compile(
     r"docs/agents/(?:PROJECT-STATE\.md|PROJECT-ROADMAP\.md|EXECUTION-LINE\.md|"
@@ -161,6 +165,24 @@ def _explicit_align_context(payload: dict[str, Any]) -> bool:
     return any("/tes-align" in text or "tes-align" in text for text in _walk_strings(payload))
 
 
+def _active_align_sentinel(target: Path) -> bool:
+    sentinel = target / ALIGN_SENTINEL
+    try:
+        stat = sentinel.stat()
+    except OSError:
+        return False
+    if not sentinel.is_file():
+        return False
+    age_seconds = time.time() - stat.st_mtime
+    if age_seconds < 0 or age_seconds > ALIGN_SENTINEL_MAX_AGE_SECONDS:
+        return False
+    try:
+        text = sentinel.read_text(encoding="utf-8", errors="replace").lower()
+    except OSError:
+        return False
+    return "tes-align" in text and "active" in text
+
+
 def _write_like_event(payload: dict[str, Any]) -> bool:
     hook_event = str(payload.get("hook_event_name") or payload.get("event") or "")
     tool_name = str(payload.get("tool_name") or payload.get("toolName") or "").lower()
@@ -264,7 +286,8 @@ def evaluate_runtime_event(
     recall_result = cortex.recall(target, query, limit)
     effective_backend = "lexical" if backend != "lexical" else backend
     review_result = cortex.review(target, query, limit=limit, line_budget=line_budget, backend=effective_backend)
-    signal = _alignment_signal(mesh_refs, _write_like_event(payload), _explicit_align_context(payload))
+    explicit_align = _explicit_align_context(payload) or _active_align_sentinel(target)
+    signal = _alignment_signal(mesh_refs, _write_like_event(payload), explicit_align)
 
     return {
         "target": str(target),
@@ -402,6 +425,36 @@ def self_test() -> int:
                 "tool_input": {"file_path": str(target / "docs" / "agents" / "PROJECT-ROADMAP.md")},
             },
         )
+        align_sentinel = target / ALIGN_SENTINEL
+        align_sentinel.parent.mkdir(parents=True, exist_ok=True)
+        align_sentinel.write_text("tes-align active\nstarted_at=fixture\n", encoding="utf-8")
+        active_sentinel = evaluate_runtime_event(
+            target,
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Edit",
+                "tool_input": {
+                    "file_path": str(target / "docs" / "agents" / "EXECUTION-LINE.md"),
+                    "old_string": "previous",
+                    "new_string": "next",
+                },
+            },
+        )
+        stale_time = time.time() - ALIGN_SENTINEL_MAX_AGE_SECONDS - 60
+        os.utime(align_sentinel, (stale_time, stale_time))
+        stale_sentinel = evaluate_runtime_event(
+            target,
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Edit",
+                "tool_input": {
+                    "file_path": str(target / "docs" / "agents" / "EXECUTION-LINE.md"),
+                    "old_string": "previous",
+                    "new_string": "next",
+                },
+            },
+        )
+        align_sentinel.unlink()
         capture = evaluate_runtime_event(
             target,
             {
@@ -418,6 +471,8 @@ def self_test() -> int:
             "non_mesh": non_mesh,
             "mesh": mesh,
             "explicit_align": explicit_align,
+            "active_sentinel": active_sentinel,
+            "stale_sentinel": stale_sentinel,
             "capture": capture,
             "host_results": [
                 {"host": host, "intent": intent, "result": result}
@@ -432,6 +487,10 @@ def self_test() -> int:
             failures.append("mesh edit did not raise NEEDS_ALIGN")
         if explicit_align["alignment_signal"]["status"] == "NEEDS_ALIGN":
             failures.append("explicit alignment context raised NEEDS_ALIGN")
+        if active_sentinel["alignment_signal"]["status"] == "NEEDS_ALIGN":
+            failures.append("active alignment sentinel raised NEEDS_ALIGN")
+        if stale_sentinel["alignment_signal"]["status"] != "NEEDS_ALIGN":
+            failures.append("stale alignment sentinel did not raise NEEDS_ALIGN")
         if capture["capture_proposal"]["writes"] or capture["capture_proposal"]["derived_writes"]:
             failures.append("capture proposal reported durable writes")
         for host, intent, result in host_results:
@@ -453,6 +512,8 @@ def self_test() -> int:
                 "false_positive_non_mesh": non_mesh["alignment_signal"]["status"],
                 "false_negative_mesh": mesh["alignment_signal"]["status"],
                 "explicit_align_context": explicit_align["alignment_signal"]["status"],
+                "active_align_sentinel": active_sentinel["alignment_signal"]["status"],
+                "stale_align_sentinel": stale_sentinel["alignment_signal"]["status"],
                 "capture_proposal": capture["capture_proposal"]["status"],
                 "host_samples": len(host_results),
             },

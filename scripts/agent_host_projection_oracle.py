@@ -26,6 +26,7 @@ MESH_FILES = (
     "docs/agents/EXECUTION-LINE.md",
     "docs/agents/QUALITY-GATES.md",
 )
+ALIGN_SENTINEL = Path(".tes/runtime/tes-align.active")
 
 
 def write_mesh(target: Path) -> None:
@@ -45,6 +46,13 @@ def snapshot_mesh(target: Path) -> dict[str, str]:
         path.relative_to(target).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
         for path in paths
     }
+
+
+def write_align_sentinel(target: Path) -> Path:
+    sentinel = target / ALIGN_SENTINEL
+    sentinel.parent.mkdir(parents=True, exist_ok=True)
+    sentinel.write_text("tes-align active\nstarted_at=fixture\n", encoding="utf-8")
+    return sentinel
 
 
 def run_hook(agent: str, target: Path, payload: dict[str, Any]) -> tuple[int, str, str]:
@@ -140,6 +148,47 @@ def evaluate() -> dict[str, Any]:
             failures.append("cursor mesh advisory must not use Claude/Codex hookSpecificOutput")
         if "NEEDS_ALIGN" not in str(cursor_payload.get("agent_message") or ""):
             failures.append("cursor mesh advisory must surface NEEDS_ALIGN in agent_message")
+
+        align_sentinel = write_align_sentinel(target)
+
+        aligned_claude_code, aligned_claude_out, aligned_claude_err = run_hook(
+            "claude",
+            target,
+            mesh_payload(target),
+        )
+        if aligned_claude_code != 0 or aligned_claude_err.strip():
+            failures.append("claude aligned mesh write must allow without stderr")
+        if "NEEDS_ALIGN" in aligned_claude_out or "NEEDS_ALIGN" in aligned_claude_err:
+            failures.append("claude aligned mesh write must not surface NEEDS_ALIGN")
+
+        aligned_codex_code, aligned_codex_out, aligned_codex_err = run_hook(
+            "codex",
+            target,
+            mesh_payload(target, camel=True),
+        )
+        if aligned_codex_code != 0 or aligned_codex_out.strip():
+            failures.append("codex aligned mesh write must allow without stdout")
+        if "NEEDS_ALIGN" in aligned_codex_out or "NEEDS_ALIGN" in aligned_codex_err:
+            failures.append("codex aligned mesh write must not surface NEEDS_ALIGN")
+
+        aligned_cursor_code, aligned_cursor_out, aligned_cursor_err = run_hook(
+            "cursor",
+            target,
+            mesh_payload(target),
+        )
+        if aligned_cursor_code != 0 or aligned_cursor_err.strip():
+            failures.append("cursor aligned mesh write must allow with stdout JSON only")
+        try:
+            aligned_cursor_payload = json.loads(aligned_cursor_out)
+        except json.JSONDecodeError:
+            aligned_cursor_payload = {}
+            failures.append("cursor aligned mesh write must emit native JSON")
+        if aligned_cursor_payload.get("permission") != "allow":
+            failures.append("cursor aligned mesh write must use permission=allow")
+        if "NEEDS_ALIGN" in str(aligned_cursor_payload):
+            failures.append("cursor aligned mesh write must not surface NEEDS_ALIGN")
+
+        align_sentinel.unlink()
 
         benign_code, benign_out, benign_err = run_hook("codex", target, benign_payload(target, camel=True))
         if benign_code != 0 or benign_out.strip() or benign_err.strip():

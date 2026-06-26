@@ -6,7 +6,7 @@ consumer: maintainers and `/tes-align` skill authors
 source_of_truth: true
 evidence_level: L1
 tver: 0.3.0
-sources_verified_on: 2026-05-25
+sources_verified_on: 2026-06-26
 source_refresh_interval_days: 15
 source_refresh_policy: >-
   If this document is accessed after a cycle of 15 days or more since
@@ -83,6 +83,12 @@ These are canonical names for TES-generated target-project meshes, not a blind c
 The `docs/agents/evidence/**` packet is target-project alignment evidence. TES source-package benchmark evidence uses `docs/evidence/current/**`, `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`. `/tes-align` must not copy those source-package retention layers into target projects or treat historical benchmark reports as current target truth.
 
 ADR 0007 preserves this role boundary for future Cortex evolution: Cortex may surface memory-backed drift evidence and `NEEDS_ALIGN`, but `/tes-align` remains the explicit reconciler that writes and certifies the operational mesh. Cortex evidence does not make alignment automatic or session-end daemon behavior.
+
+## Runtime Alignment Sentinel
+
+Before `/tes-align` writes the operating mesh, it must create or refresh `.tes/runtime/tes-align.active` with content containing `tes-align active`. The skill must remove the sentinel before closeout, including `NEEDS_REVIEW`, `BLOCKED`, and `DEFERRED` outcomes.
+
+Cortex runtime hooks may read this sentinel to suppress ordinary `NEEDS_ALIGN` drift advice while the explicit `/tes-align` reconciler is running. Cortex must not create, refresh, or delete the sentinel; it stays no-write and advisory.
 
 ## Existing-Doc Classification
 

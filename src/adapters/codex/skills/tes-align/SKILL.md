@@ -40,14 +40,15 @@ The goal is operational legibility, not prettier documentation. When `docs/agent
 2. Inspect existing project docs and classify each expected surface as `present`, `linked_existing`, `created`, `needs_update`, `contradictory`, `deferred`, or `not_applicable`.
 3. Read strong anchors before claiming depth: identity, structure, build and gates, architecture, governance, history, and risk.
 4. Before claiming alignment, read the latest accepted ADRs under `docs/agents/DECISIONS/**` (or the linked decision system) and the most recent retained alignment evidence packet under `docs/agents/evidence/**`. Treat contradictions between newer decisions and the active mesh as first-class evidence and record them in the retained packet. Do not erase older claims without a successor decision.
-5. Create or update the project operating mesh under `docs/agents/**`: `DOCUMENTATION-AUTHORITY.md` (tier ladder when missing), `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**` or a link to an existing decision system, `evidence/<timestamp>-project-alignment.md`, then mirror Tier 1+2 into `contracts/**` and demote `PROJECT-CONTEXT.md` to Tier 3 inventory.
-6. In `PROJECT-ROADMAP.md`, make the first human scan path Eraser-first with local `.tes/gps/*.eraserdiagram` Atlas sidecars and Mermaid fallback graphs:
+5. Before the first `docs/agents/**` mesh write, create or refresh `.tes/runtime/tes-align.active` with text containing `tes-align active`, keep it fresh during long alignment passes, and remove it before closeout. This tells Cortex runtime hooks that mesh edits are inside the explicit `/tes-align` reconciler instead of ordinary drift.
+6. Create or update the project operating mesh under `docs/agents/**`: `DOCUMENTATION-AUTHORITY.md` (tier ladder when missing), `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**` or a link to an existing decision system, `evidence/<timestamp>-project-alignment.md`, then mirror Tier 1+2 into `contracts/**` and demote `PROJECT-CONTEXT.md` to Tier 3 inventory.
+7. In `PROJECT-ROADMAP.md`, make the first human scan path Eraser-first with local `.tes/gps/*.eraserdiagram` Atlas sidecars and Mermaid fallback graphs:
    - System X-Ray: Git state, delivered behavior, validation mesh, and release boundary.
    - Convergence Line: done/current/next/later/deferred/blocked/unknown/final states. Easy-first is the Atlas birth surface, not the evolution ceiling: the initial output must be useful and certified, and deeper project-specific relationships should evolve through profilers, `--deep`, fixtures, and oracles. Keep Done, Active, Next, Later, Deferred, Blocked, and Unknown as compact audit lanes.
-7. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML frontmatter, and useful wikilinks; never write `.obsidian/**`; do not make `.base` or `.canvas` the only source of truth.
-8. Keep target-project alignment evidence under `docs/agents/evidence/**`. Package benchmark evidence uses `docs/evidence/current/**`, `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`; do not mix those source-package retention layers into target projects.
-9. Run the Semantic Residue Gate before PASS. If the project declares `docs/agents/contracts/SEMANTIC-RESIDUE.yml`, the oracle scans active documentation for retired terms and stale claim patterns. Report exact stale terms and paths when the gate fails. Refuse to call scaffold output deep alignment, and do not report PASS when retired vocabulary remains in active docs. TES owns the mechanism; the target project owns the vocabulary.
-10. Certify with:
+8. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML frontmatter, and useful wikilinks; never write `.obsidian/**`; do not make `.base` or `.canvas` the only source of truth.
+9. Keep target-project alignment evidence under `docs/agents/evidence/**`. Package benchmark evidence uses `docs/evidence/current/**`, `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`; do not mix those source-package retention layers into target projects.
+10. Run the Semantic Residue Gate before PASS. If the project declares `docs/agents/contracts/SEMANTIC-RESIDUE.yml`, the oracle scans active documentation for retired terms and stale claim patterns. Report exact stale terms and paths when the gate fails. Refuse to call scaffold output deep alignment, and do not report PASS when retired vocabulary remains in active docs. TES owns the mechanism; the target project owns the vocabulary.
+11. Certify with:
 
 ```bash
 python3 .tes/bin/project_alignment_oracle.py --target .
@@ -58,6 +59,8 @@ Use `python3 scripts/project_alignment_oracle.py --target <target>` when running
 ## Done
 
 Close only when the oracle passes or the report honestly says `NEEDS_REVIEW`, `BLOCKED`, or `DEFERRED` with evidence.
+
+Remove `.tes/runtime/tes-align.active` before closeout, even when alignment ends as `NEEDS_REVIEW`, `BLOCKED`, or `DEFERRED`.
 
 The certification sentence is:
 
@@ -75,5 +78,6 @@ Project alignment: PASS, with explicit limits.
 - Do not call scaffold output deep alignment.
 - Do not write `.obsidian/**`.
 - Do not claim PASS without retained evidence and a passing oracle.
+- Do not leave `.tes/runtime/tes-align.active` behind after the alignment attempt.
 - Do not hard-code project-specific vocabulary into TES skill body. The Semantic Residue Gate carries the mechanism; the project carries the terms via `docs/agents/contracts/SEMANTIC-RESIDUE.yml`.
 - Do not report PASS when newer accepted ADRs introduce successor terms absent from the active mesh. Re-read the ADR and reconcile first.

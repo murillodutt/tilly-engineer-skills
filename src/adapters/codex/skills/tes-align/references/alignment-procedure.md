@@ -24,6 +24,16 @@ alignment_evidence:
 
 This packet is target-project alignment evidence and stays under `docs/agents/evidence/**`. Do not redirect it to the TES source-package benchmark evidence layers under `docs/evidence/**`.
 
+## Runtime Alignment Sentinel
+
+Before the first mesh write in an active alignment pass, create or refresh:
+
+```text
+.tes/runtime/tes-align.active
+```
+
+The file content must contain `tes-align active`. Remove the file before closeout, including `NEEDS_REVIEW`, `BLOCKED`, and `DEFERRED` outcomes. Cortex runtime hooks read this sentinel to distinguish intentional `/tes-align` reconciliation from ordinary operating-mesh drift; they must not write or manage the sentinel themselves.
+
 ## Document Classification
 
 Before writing, classify each expected surface:

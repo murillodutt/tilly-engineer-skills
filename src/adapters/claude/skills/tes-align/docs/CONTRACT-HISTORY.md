@@ -46,6 +46,7 @@ Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too sha
 - Letting `PROJECT-CONTEXT.md` compete with Tier 2 mesh after `/tes-align`.
 - Updating `SKILL.md` without mirroring the change in this contract history.
 - Reporting PASS when Tier 3 `contracts/**` contradict Tier 1 or Tier 2.
+- Triggering Cortex `NEEDS_ALIGN` drift advice during the explicit `/tes-align` mesh reconciliation flow.
 
 ## Relationship To Other Skills
 
@@ -62,6 +63,7 @@ Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too sha
 | 2026-05-25 | Added Semantic Residue Gate and freshness reconciliation; vocabulary stays target-owned via `docs/agents/contracts/SEMANTIC-RESIDUE.yml`. | TES Align source-of-truth contract; project alignment oracle self-test fixtures for retired terms, allowlisted history, word-boundary, and malformed contracts. | high |
 | 2026-06-08 | Added Documentation Authority Tiers workflow: reconcile Tier 1+2 before Tier 3 mirror; demote `PROJECT-CONTEXT` to init inventory; create `DOCUMENTATION-AUTHORITY.md` when missing. | Consumer pilot ADR for documentation authority tiers; alignment oracle PASS. | high |
 | 2026-06-08 | Added Tier 3 inventory hygiene gate via `INVENTORY-HYGIENE.yml` and `scripts/verify_documentation_inventory.py` (oracle + align scrub). | Prospect follow-up; mechanical enforcement of deep-read and HEAD hygiene. | high |
+| 2026-06-26 | Added runtime alignment sentinel discipline so Cortex hooks stay no-write and stop emitting `NEEDS_ALIGN` during active `/tes-align` mesh writes. | Hook-agent benchmark report; Cortex runtime self-test; agent host projection oracle. | high |
 
 ## Skill Docs Boundary
 
