@@ -41,17 +41,18 @@ The TES Mantra Gate is a continuous senior manager, not a pointwise checkpoint:
 it supervises the whole task, deriving obligations from the active contracts
 (ADR/PRD/SPEC) and the protected baseline, and on doubt surfaces a lens /
 maturity / reuse / package-fix before you act — never deciding for you. Two
-registers, by risk: proactive supervision on ordinary work (advise, do not
-block) and the hard gate on risk (wake and block).
+bands, by risk: proactive supervision on ordinary work (advise, do not block)
+and the hard gate on risk (wake and block).
 
 Use the TES Mantra Gate for destructive, remote, release, sync, secret-bearing,
 or high-impact state changes, and for closure claims that depend on those
 actions. For ordinary local edits, focused oracles, staging, and local commits,
 keep the check inline and do not block on gate artifacts, markers, or rule
 loading — supervise and advise, surfacing a contract obligation or lens only
-when doubt or drift is real, and stay silent otherwise. Report gate detail only
-on `BLOCKED` or `NEEDS_REVIEW`, when approval is required, or when the user asks
-for audit detail.
+when doubt or drift is real, and stay silent otherwise. Cursor hook denial uses
+the host JSON permission contract; do not add `/flash-fry` or duplicate the gate
+protocol here. Report gate detail only on `BLOCKED` or `NEEDS_REVIEW`, when
+approval is required, or when the user asks for audit detail.
 
 ## Runtime-First
 

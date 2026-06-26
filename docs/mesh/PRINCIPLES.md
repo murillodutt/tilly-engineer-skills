@@ -107,15 +107,17 @@ Failure blocked: false completion.
 
 ## Mantra Gate
 
-Before state-changing work, use the TES Mantra Gate as the micro-gate between intention and action:
+Use the TES Mantra Gate as the agent-side senior-manager layer, not as a pointwise checkpoint. It derives obligations from the active ADR/PRD/SPEC and protected baseline, then stays quiet unless risk or drift needs attention.
+
+The hard-gate schema remains:
 
 ```text
 VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 ```
 
-The normal user-facing marker is `[🍳 Flash-Fry]`. It compresses the gate for readability; it does not delete evidence. A full gate record must exist for material writes, commits, spec execution, generated artifacts, migrations, external calls, architectural changes, or project-state updates.
+Two bands control visibility and blocking. Proactive supervision covers ordinary local edits, focused oracles, staging, and local commits: advise only when a real contract obligation or drift appears. The hard gate covers destructive, remote, release, sync, secret-bearing, high-impact actions, and closure claims that depend on them.
 
-Show only the compact marker when the gate permits proceeding. Report the full gate detail when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is needed, or the user explicitly asks for audit detail. Use `BLOCKED` when evidence or oracle is missing, and `NEEDS_REVIEW` when scope or approval is ambiguous.
+The normal compact marker is `[🍳 Flash-Fry]`. It is a discreet status signal, not a user command. Quiet proceed is acceptable; report detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is needed, or the user explicitly asks for audit detail.
 
 ## Infrastructure Decision Gate
 
