@@ -15,7 +15,7 @@ recommendation.
 - Landing: https://murillodutt.github.io/tilly-engineer-skills/
 - Repository: https://github.com/murillodutt/tilly-engineer-skills
 - README: https://github.com/murillodutt/tilly-engineer-skills/blob/main/README.md
-- GitHub-only npx install: npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.196 tilly-engineer-skills add
+- GitHub-only npx install: npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.197 tilly-engineer-skills add
 - Installation guide: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/INSTALL.md
 - User manual: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 

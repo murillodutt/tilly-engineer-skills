@@ -1,4 +1,4 @@
-version: 0.3.196
+version: 0.3.197
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -724,6 +724,13 @@ documents:
     evidence_level: L2
   - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-ceiling-self-falsifying.md
     id: roadmap.goal_ledger_ceiling_self_falsifying
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents reviewing the goal-execution loop record
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-flash-fry-mantra-gate-elevation.md
+    id: roadmap.goal_ledger_flash_fry_mantra_gate_elevation
     class: roadmap
     status: active
     consumer: maintainers and execution agents reviewing the goal-execution loop record
