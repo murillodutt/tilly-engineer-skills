@@ -34,6 +34,23 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TES_INSTALL = ROOT / "scripts" / "tes_install.py"
+sys.path.insert(0, str(ROOT / "scripts"))
+import mantra_gate  # noqa: E402
+
+EXPECTED_MARKER = mantra_gate.MARKER
+OLD_BRACKET_MARKER = "[" + EXPECTED_MARKER.strip("`") + "]"
+
+
+def _assert_marker(label: str, text: str, failures: list[str]) -> None:
+    if EXPECTED_MARKER not in text:
+        failures.append(f"{label}: must render {EXPECTED_MARKER} in host context output")
+    if OLD_BRACKET_MARKER in text:
+        failures.append(f"{label}: must not render the old square-bracket marker")
+
+
+def _assert_no_visible_marker(label: str, text: str, failures: list[str]) -> None:
+    if EXPECTED_MARKER in text or OLD_BRACKET_MARKER in text:
+        failures.append(f"{label}: benign path must stay quiet and marker-free")
 
 
 def _run(agent: str, hook_input: dict, target: Path) -> tuple[int, str, str]:
@@ -103,6 +120,7 @@ def evaluate() -> dict[str, object]:
                 failures.append(f"{agent}: forbidden action must BLOCK with exit 2, got {code}")
             if "Mantra Gate" not in err:
                 failures.append(f"{agent}: forbidden block must write a readable reason to stderr")
+            _assert_marker(f"{agent}: forbidden stderr", err, failures)
 
         # --- Cursor: forbidden -> JSON permission:deny, NOT exit 2 (contract divergence) ---
         code, out, _err = _run("cursor", forbidden, target)
@@ -115,6 +133,8 @@ def evaluate() -> dict[str, object]:
             failures.append("cursor: forbidden output must be valid JSON-permission")
         if payload.get("permission") != "deny":
             failures.append('cursor: forbidden must emit {"permission":"deny"}')
+        _assert_marker("cursor: forbidden agent_message", str(payload.get("agent_message") or ""), failures)
+        _assert_marker("cursor: forbidden raw stdout", out, failures)
 
         # --- governed + mutating -> supervise (allow + host-shaped context), not block ---
         matrix = {
@@ -126,18 +146,33 @@ def evaluate() -> dict[str, object]:
             code, out, err = _run(agent, payload_in, target)
             if code != 0:
                 failures.append(f"{agent}: governed-artifact edit must SUPERVISE (allow), got exit {code}")
-            if agent == "claude" and "additionalContext" not in out:
-                failures.append("claude: governed-artifact edit must surface additionalContext")
+            if agent == "claude":
+                try:
+                    claude_payload = json.loads(out)
+                except json.JSONDecodeError:
+                    claude_payload = {}
+                    failures.append("claude: governed-artifact edit must emit JSON")
+                hook_specific = claude_payload.get("hookSpecificOutput") if isinstance(claude_payload, dict) else {}
+                context = hook_specific.get("additionalContext") if isinstance(hook_specific, dict) else None
+                if not isinstance(context, str) or "Mantra Gate supervising" not in context:
+                    failures.append("claude: governed-artifact edit must surface additionalContext")
+                _assert_marker("claude: governed additionalContext", str(context or ""), failures)
+                _assert_marker("claude: governed raw stdout", out, failures)
             if agent == "codex" and ("Mantra Gate supervising" not in err or out.strip()):
                 failures.append("codex: governed-artifact edit must surface stderr context only")
+            if agent == "codex":
+                _assert_marker("codex: governed stderr", err, failures)
             if agent == "cursor":
                 try:
                     cursor_payload = json.loads(out)
                 except json.JSONDecodeError:
                     cursor_payload = {}
                     failures.append("cursor: governed-artifact edit must emit JSON")
-                if cursor_payload.get("user_message", "").find("Mantra Gate supervising") < 0:
+                user_message = str(cursor_payload.get("user_message") or "")
+                if user_message.find("Mantra Gate supervising") < 0:
                     failures.append("cursor: governed-artifact edit must surface user_message")
+                _assert_marker("cursor: governed user_message", user_message, failures)
+                _assert_marker("cursor: governed raw stdout", out, failures)
             if shape == "stdout-json" and agent != "codex" and not out.strip():
                 failures.append(f"{agent}: supervised output must not be empty")
 
@@ -156,6 +191,7 @@ def evaluate() -> dict[str, object]:
                     failures.append('cursor: benign Read must emit {"permission":"allow"}')
             elif out.strip() or err.strip():
                 failures.append(f"{agent}: benign Read must be silent")
+            _assert_no_visible_marker(f"{agent}: benign Read", out + err, failures)
 
         # --- benign code edit (mutating but not governed) -> allow, silent ---
         for agent in ("claude", "codex", "cursor"):
@@ -173,6 +209,7 @@ def evaluate() -> dict[str, object]:
                     failures.append('cursor: ordinary code edit must emit {"permission":"allow"}')
             elif out.strip() or err.strip():
                 failures.append(f"{agent}: ordinary code edit must be silent")
+            _assert_no_visible_marker(f"{agent}: ordinary code edit", out + err, failures)
 
         sentinel_records = _read_sentinel(target)
         if not any(

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.199"
+VERSION = "0.3.200"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -1982,6 +1982,16 @@ def _classify_pretooluse_risk(action: str, paths: list[str]) -> str:
         return "routine"
 
 
+def _mantra_gate_marker() -> str:
+    """Return the delivered Mantra Gate marker without making the hook brittle."""
+    try:
+        import mantra_gate  # noqa: PLC0415 - delivered sibling under .tes/bin/
+    except Exception:
+        return "`🍳 Flash-Fry`"
+    marker = getattr(mantra_gate, "MARKER", "`🍳 Flash-Fry`")
+    return str(marker or "`🍳 Flash-Fry`")
+
+
 def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
     """Decide supervise-vs-block for a PreToolUse tool call, faithful to the bootloader.
 
@@ -2013,7 +2023,7 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
             "block": True,
             "risk": risk,
             "reason": (
-                "Mantra Gate (senior manager): forbidden-class action "
+                f"{_mantra_gate_marker()} Mantra Gate (senior manager): forbidden-class action "
                 f"({action or tool_name}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
                 "DOCUMENT/ORACLE/RESOLVE/STATUS) and get explicit authorization before proceeding."
             ),
@@ -2023,7 +2033,7 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
             "block": False,
             "risk": risk,
             "context": (
-                f"Mantra Gate supervising: {risk} change to governed artifact {file_path}. "
+                f"{_mantra_gate_marker()} Mantra Gate supervising: {risk} change to governed artifact {file_path}. "
                 "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
             ),
         }
@@ -2065,7 +2075,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     if decision["block"]:
         reason = decision["reason"]
         if args.agent == "cursor":
-            print(json.dumps({"permission": "deny", "agent_message": reason}, sort_keys=True))
+            print(json.dumps({"permission": "deny", "agent_message": reason}, ensure_ascii=False, sort_keys=True))
             return 0
         print(reason, file=sys.stderr)
         return 2
@@ -2073,7 +2083,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     context = decision.get("context") or ""
     if context and not _pretooluse_seen_this_session(target, hook_input, context):
         if args.agent == "cursor":
-            print(json.dumps({"continue": True, "user_message": context}, sort_keys=True))
+            print(json.dumps({"continue": True, "user_message": context}, ensure_ascii=False, sort_keys=True))
             return 0
         if args.agent == "claude":
             print(
@@ -2085,6 +2095,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
                             "additionalContext": context,
                         }
                     },
+                    ensure_ascii=False,
                     sort_keys=True,
                 )
             )
