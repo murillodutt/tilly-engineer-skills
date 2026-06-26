@@ -124,6 +124,10 @@ The conveyor has three gates:
 
 `learn` and `reflect` reject or no-op generic prompts that lack source evidence or a specific durable lesson. Weak inputs return an explicit evidence gap or no-capture reason instead of producing a plausible-looking memory proposal.
 
+## Proactive Memory Boundary
+
+ADR 0007 records Cortex's future extension as a proactive memory and sensing layer. That extension may observe host lifecycle events, propose capture, inject relevant recall context, and emit `NEEDS_ALIGN` when durable memory evidence diverges from the operational mesh. It must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file; `/tes-align` remains the reconciler.
+
 ## Scope Boundary
 
 Cortex command output carries the runtime scope defined in `docs/mesh/SCOPE-CONTRACT.md`. The scope identifies the local run through an opaque project fingerprint, adapter, agent, run id, source, bounded evidence reference, timestamp, and status or trust level.

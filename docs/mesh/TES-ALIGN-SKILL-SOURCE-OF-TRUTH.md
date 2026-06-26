@@ -82,6 +82,8 @@ These are canonical names for TES-generated target-project meshes, not a blind c
 
 The `docs/agents/evidence/**` packet is target-project alignment evidence. TES source-package benchmark evidence uses `docs/evidence/current/**`, `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`. `/tes-align` must not copy those source-package retention layers into target projects or treat historical benchmark reports as current target truth.
 
+ADR 0007 preserves this role boundary for future Cortex evolution: Cortex may surface memory-backed drift evidence and `NEEDS_ALIGN`, but `/tes-align` remains the explicit reconciler that writes and certifies the operational mesh. Cortex evidence does not make alignment automatic or session-end daemon behavior.
+
 ## Existing-Doc Classification
 
 Before writing any project operating mesh file, `/tes-align` must classify existing documentation and governance.
