@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.18
+tver: 0.4.19
 ---
 
 # Tilly Engineer Skills Docs
@@ -26,6 +26,7 @@ This documentation layer explains the method behind the source package without t
 | Active asset transfer to existing TES surfaces ADR | `adr/0005-asset-transfer-to-existing-surfaces.md` |
 | Active Goal Maestro decision-lens evolution and self-falsifying ceiling ADR | `adr/0006-decision-lens-evolution-and-routable-gate-closure.md` |
 | Active Cortex runtime-first memory and mesh drift ADR | `adr/0007-cortex-proactive-memory-and-mesh-drift.md` |
+| Active host-aware runtime contracts ADR | `adr/0008-host-aware-runtime-contracts.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -75,6 +76,7 @@ This documentation layer explains the method behind the source package without t
 | Current roadmap index | `roadmap/README.md` |
 | Cortex MCP Capability Expansion Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
 | Cortex MCP Host Segmentation Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
+| Host-Aware Runtime Contracts Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-host-aware-runtime-contracts.md` |
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |

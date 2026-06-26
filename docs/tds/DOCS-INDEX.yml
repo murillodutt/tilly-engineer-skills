@@ -85,6 +85,13 @@ documents:
     consumer: maintainers, Cortex authors, TES Align authors, host integration authors, and release operators
     source_of_truth: true
     evidence_level: L1
+  - path: docs/adr/0008-host-aware-runtime-contracts.md
+    id: architecture.adr_0008_host_aware_runtime_contracts
+    class: architecture
+    status: active
+    consumer: maintainers, runtime authors, hook authors, installer authors, adapter authors, oracle authors, and release operators
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter
@@ -538,6 +545,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Cortex runtime authors, TES Align authors, host integration authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-host-aware-runtime-contracts.md
+    id: roadmap.goal_super_spec_host_aware_runtime_contracts
+    class: roadmap
+    status: active
+    consumer: maintainers, runtime authors, hook authors, installer authors, adapter authors, oracle authors, release reviewers, execution agents, and audit agents
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
