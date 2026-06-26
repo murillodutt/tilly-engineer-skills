@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.202"
+VERSION = "0.3.203"
 PLUGIN_SOURCE_ROOT = ROOT / "src/adapters/codex/plugin"
 TARGET_PLUGIN_PATHS = (
     ".agents/plugins",

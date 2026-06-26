@@ -1,4 +1,4 @@
-version: 0.3.202
+version: 0.3.203
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -1408,3 +1408,10 @@ documents:
     consumer: benchmark reviewers
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/2026/06/26/sync/tes-sync-0.3.203/REPORT.md
+    id: evidence.report.tes_sync_0_3_203
+    class: evidence
+    status: active
+    consumer: maintainers, release reviewers, and sync operators
+    source_of_truth: false
+    evidence_level: L1
