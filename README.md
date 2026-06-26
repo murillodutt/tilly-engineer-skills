@@ -2,7 +2,7 @@
 
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.203-1f6feb)](package.json) [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE) [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
+[![Version](https://img.shields.io/badge/version-0.3.204-1f6feb)](package.json) [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE) [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
 <p align="center"> <img src="https://github.com/user-attachments/assets/f5ca3e73-eec9-453a-bb97-a09bdd304c31" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%"> </p>
 
