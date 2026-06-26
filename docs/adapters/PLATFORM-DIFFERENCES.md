@@ -58,7 +58,7 @@ The hyphen form is the preferred cross-platform trigger. The colon form is a com
 | Plugin metadata | Source-only under `src/adapters/codex/plugin/**` | Source-only under `src/adapters/claude/plugin/**` | `.cursor-plugin/plugin.json` exists officially; TES v1 does not publish or certify a Cursor plugin |
 | Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter; TES separates governance from runtime command capability routing |
 | MCP config | `.codex/config.toml` | `.mcp.json` | `.cursor/mcp.json` for project config; plugin MCP is a future packaging decision |
-| Hooks | Tool-native hooks are sensitive and not claimed by TES default package | Tool-native hooks are sensitive and not claimed by TES default package | Plugin hooks exist officially; TES default package still uses repository Git hooks only |
+| Hooks | Project `SessionStart` and `PreToolUse` hooks are installed through `.codex/config.toml` when the hooks surface is attached; `codex_hooks = true` is set and TES preserves foreign config. | Project `SessionStart` and `PreToolUse` hooks are installed through `.claude/settings.json` when the hooks surface is attached; TES preserves foreign hook groups. | Project `sessionStart`, `beforeSubmitPrompt`, and `preToolUse` hooks are installed through `.cursor/hooks.json` when the hooks surface is attached; Cursor permission decisions use JSON output, not exit-code blocking. |
 | Subagent or agent boundary | Native subagents exist, but TES memory writes stay parent-owned | Native subagents exist, but default package blocks direct durable writes | Native agents exist, but default package claims only rules and MCP install |
 
 ## Memory Lifecycle Boundary
