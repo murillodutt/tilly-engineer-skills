@@ -1815,8 +1815,44 @@ def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any
     return "\n".join(lines)
 
 
+def hook_event_name(hook_input: dict[str, Any], default: str = "SessionStart") -> str:
+    value = hook_input.get("hook_event_name") or hook_input.get("hookEventName") or hook_input.get("event")
+    return str(value or default)
+
+
+def hook_tool_name(hook_input: dict[str, Any]) -> str:
+    value = hook_input.get("tool_name") or hook_input.get("toolName")
+    if isinstance(value, str):
+        return value
+    tool = hook_input.get("tool")
+    return tool if isinstance(tool, str) else ""
+
+
+def hook_tool_input(hook_input: dict[str, Any]) -> dict[str, Any]:
+    value = hook_input.get("tool_input")
+    if value is None:
+        value = hook_input.get("toolInput")
+    return value if isinstance(value, dict) else {}
+
+
+def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
+    value = (
+        tool_input.get("file_path")
+        or tool_input.get("path")
+        or tool_input.get("filePath")
+        or hook_input.get("file_path")
+        or hook_input.get("path")
+        or hook_input.get("filePath")
+    )
+    return str(value or "")
+
+
+def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
+    return str(tool_input.get("command") or hook_input.get("command") or "")
+
+
 def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
-    event_name = str(hook_input.get("hook_event_name") or "SessionStart")
+    event_name = hook_event_name(hook_input)
     output: dict[str, Any] = {
         "hookSpecificOutput": {
             "hookEventName": event_name,
@@ -1833,7 +1869,7 @@ def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> di
 
 
 def claude_start_notice_output(target: Path, hook_input: dict[str, Any]) -> dict[str, Any]:
-    event_name = str(hook_input.get("hook_event_name") or "SessionStart")
+    event_name = hook_event_name(hook_input)
     sentinel = read_json(target / POSTINSTALL_PATH)
     state = str(sentinel.get("state") or "")
     if state in {"pending", "running"}:
@@ -1889,11 +1925,25 @@ def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any]) 
     effort: a sentinel write must never break the hook itself.
     """
     try:
-        event = str(hook_input.get("hookEventName") or hook_input.get("event") or "SessionStart")
+        event = hook_event_name(hook_input)
         session = str(hook_input.get("session_id") or hook_input.get("sessionId") or os.getpid())
         sentinel = target / HOOK_SENTINEL_PATH
         sentinel.parent.mkdir(parents=True, exist_ok=True)
         record = {"agent": agent, "event": event, "session": session, "ts": utc_stamp()}
+        if event == "PreToolUse":
+            tool_input = hook_tool_input(hook_input)
+            tool = hook_tool_name(hook_input)
+            path = hook_tool_path(hook_input, tool_input)
+            command = hook_tool_command(hook_input, tool_input)
+            invocation = hook_input.get("tool_use_id") or hook_input.get("toolUseId")
+            if tool:
+                record["tool"] = tool
+            if path:
+                record["path"] = path
+            if command:
+                record["command"] = command
+            if invocation:
+                record["invocation"] = str(invocation)
         with sentinel.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
     except OSError:
@@ -1945,17 +1995,18 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
     decide the agent's intent (the inject-not-decide form). Ordinary local work is
     never blocked; only the unambiguous forbidden class wakes the hard gate.
     """
-    tool_name = str(hook_input.get("tool_name") or "")
-    tool_input = hook_input.get("tool_input")
-    tool_input = tool_input if isinstance(tool_input, dict) else {}
-    file_path = str(tool_input.get("file_path") or tool_input.get("path") or "")
-    command = str(tool_input.get("command") or "")
-    action = " ".join(part for part in (tool_name, command) if part).strip()
+    tool_name = hook_tool_name(hook_input)
+    tool_input = hook_tool_input(hook_input)
+    file_path = hook_tool_path(hook_input, tool_input)
+    command = hook_tool_command(hook_input, tool_input)
+    action = " ".join(part for part in (tool_name, command, file_path) if part).strip()
     paths = [file_path] if file_path else []
 
     risk = _classify_pretooluse_risk(action, paths)
     governed = any(hint in file_path for hint in GOVERNED_ARTIFACT_HINTS)
     mutating = tool_name in MUTATING_TOOLS
+    if risk == "routine" and governed and mutating:
+        risk = "material"
 
     if risk == "forbidden":
         return {
@@ -1981,7 +2032,7 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
 
 def _pretooluse_seen_this_session(target: Path, hook_input: dict[str, Any], key: str) -> bool:
     """Anti-cry-wolf: surface a given supervision context at most once per session."""
-    session = str(hook_input.get("session_id") or hook_input.get("session") or "default")
+    session = str(hook_input.get("session_id") or hook_input.get("sessionId") or hook_input.get("session") or "default")
     sentinel = target / ".tes" / "mantra-gates" / f"pretooluse-{session}.seen"
     try:
         seen = set()
@@ -2008,6 +2059,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     A materializer that assumed exit-2 everywhere would break silently on Cursor.
     """
     target = target_root(args.target)
+    record_hook_execution(target, args.agent, hook_input)
     decision = _pretooluse_decision(hook_input)
 
     if decision["block"]:
@@ -2048,12 +2100,12 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
 
 def hook(args: argparse.Namespace) -> int:
     hook_input = parse_hook_input()
-    if str(hook_input.get("hook_event_name") or "") == "PreToolUse":
-        return hook_pretooluse(args, hook_input)
     if args.target == Path("."):
         inferred = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR")
         if inferred:
             args.target = Path(str(inferred))
+    if hook_event_name(hook_input, "") == "PreToolUse":
+        return hook_pretooluse(args, hook_input)
     target = target_root(args.target)
     blocked = package_source_block(target, "hook")
     if blocked:

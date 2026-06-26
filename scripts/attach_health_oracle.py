@@ -158,11 +158,16 @@ def hook_health(target: Path) -> dict[str, Any]:
     records = read_hook_sentinel(target)
     if not records:
         return {"status": "PENDING_TRUST", "reason": "hook configured but never fired (no sentinel)", "configured": configured}
-    # Duplicate-handler detection: more than one record for the same (agent, event)
-    # in a single session id indicates a duplicate handler.
+    # Duplicate-handler detection: SessionStart is one fire per session. PreToolUse
+    # can fire many times in the same session; only host-supplied invocation ids
+    # are precise enough to diagnose duplicate PreToolUse handlers.
     seen: dict[tuple[str, str, str], int] = {}
     for rec in records:
-        key = (str(rec.get("agent", "")), str(rec.get("event", "")), str(rec.get("session", "")))
+        event = str(rec.get("event", ""))
+        if event == "PreToolUse" and not rec.get("invocation"):
+            continue
+        session = str(rec.get("invocation") if event == "PreToolUse" else rec.get("session", ""))
+        key = (str(rec.get("agent", "")), event, session)
         seen[key] = seen.get(key, 0) + 1
     duplicates = [k for k, count in seen.items() if count > 1]
     if duplicates:
@@ -263,6 +268,31 @@ def self_test() -> int:
         h = evaluate(hooked, "hooks")
         if h["status"] != "DEGRADED":
             failures.append(f"duplicate hook handler must be DEGRADED: {h['status']}")
+
+        # Hooks: repeated PreToolUse without host invocation id is a normal hot
+        # path fallback, not evidence of duplicate handlers.
+        pretool = root / "pretool"
+        (pretool / ".claude").mkdir(parents=True)
+        (pretool / ".claude/settings.json").write_text(
+            json.dumps({"hooks": {"PreToolUse": [{"command": "python3 .tes/bin/tes_install.py hook"}]}}),
+            encoding="utf-8",
+        )
+        (pretool / ".tes/hooks").mkdir(parents=True)
+        (pretool / HOOK_SENTINEL).write_text(
+            json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "tool": "Edit"}) + "\n"
+            + json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "tool": "Read"}) + "\n",
+            encoding="utf-8",
+        )
+        h = evaluate(pretool, "hooks")
+        if h["status"] != "PASS":
+            failures.append(f"repeated PreToolUse fallback records must be PASS: {h['status']}")
+
+        with (pretool / HOOK_SENTINEL).open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "invocation": "tool-1"}) + "\n")
+            fh.write(json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "invocation": "tool-1"}) + "\n")
+        h = evaluate(pretool, "hooks")
+        if h["status"] != "DEGRADED":
+            failures.append(f"duplicate PreToolUse invocation records must be DEGRADED: {h['status']}")
 
         # Unknown surface -> FAIL.
         if evaluate(root / "empty", "bogus")["status"] != "FAIL":

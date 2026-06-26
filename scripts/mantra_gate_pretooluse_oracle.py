@@ -56,6 +56,30 @@ def _pre(event_tool: str, **tool_input) -> dict:
     }
 
 
+def _pre_camel(event_tool: str, session: str, **tool_input) -> dict:
+    return {
+        "hookEventName": "PreToolUse",
+        "toolName": event_tool,
+        "toolInput": tool_input,
+        "sessionId": session,
+    }
+
+
+def _read_sentinel(target: Path) -> list[dict]:
+    sentinel = target / ".tes/hooks/executed.jsonl"
+    if not sentinel.is_file():
+        return []
+    records: list[dict] = []
+    for line in sentinel.read_text(encoding="utf-8").splitlines():
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            records.append(payload)
+    return records
+
+
 def evaluate() -> dict[str, object]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory(prefix="tes-pretooluse-oracle-") as tmp:
@@ -64,12 +88,17 @@ def evaluate() -> dict[str, object]:
 
         forbidden = _pre("Bash", command="git push --force origin main")
         governed = _pre("Edit", file_path="docs/adr/0005-decision.md")
+        governed_multi_codex = _pre_camel("MultiEdit", "oracle-multiedit-camel", filePath="docs/adr/0005-decision.md")
+        governed_multi_cursor = _pre_camel("MultiEdit", "oracle-multiedit-cursor", filePath="docs/adr/0005-decision.md")
         benign_read = _pre("Read", file_path="scripts/foo.py")
         benign_code = _pre("Edit", file_path="scripts/foo.py")
+        forbidden_camel = _pre_camel("Bash", "oracle-forbidden-camel", command="git push --force origin main")
+        benign_camel = _pre_camel("Edit", "oracle-benign-camel", path="scripts/foo.py")
 
         # --- Claude/Codex: forbidden -> exit 2 + stderr ---
         for agent in ("claude", "codex"):
-            code, _out, err = _run(agent, forbidden, target)
+            payload = forbidden_camel if agent == "codex" else forbidden
+            code, _out, err = _run(agent, payload, target)
             if code != 2:
                 failures.append(f"{agent}: forbidden action must BLOCK with exit 2, got {code}")
             if "Mantra Gate" not in err:
@@ -87,26 +116,72 @@ def evaluate() -> dict[str, object]:
         if payload.get("permission") != "deny":
             failures.append('cursor: forbidden must emit {"permission":"deny"}')
 
-        # --- governed + mutating -> supervise (allow + surfaced context), not block ---
-        code, out, _err = _run("claude", governed, target)
-        if code != 0:
-            failures.append(f"claude: governed-artifact edit must SUPERVISE (allow), got exit {code}")
-        if "additionalContext" not in out:
-            failures.append("claude: governed-artifact edit must surface additionalContext")
+        # --- governed + mutating -> supervise (allow + host-shaped context), not block ---
+        matrix = {
+            "claude": ("stdout-json", governed),
+            "codex": ("stderr-text", governed_multi_codex),
+            "cursor": ("stdout-json", governed_multi_cursor),
+        }
+        for agent, (shape, payload_in) in matrix.items():
+            code, out, err = _run(agent, payload_in, target)
+            if code != 0:
+                failures.append(f"{agent}: governed-artifact edit must SUPERVISE (allow), got exit {code}")
+            if agent == "claude" and "additionalContext" not in out:
+                failures.append("claude: governed-artifact edit must surface additionalContext")
+            if agent == "codex" and ("Mantra Gate supervising" not in err or out.strip()):
+                failures.append("codex: governed-artifact edit must surface stderr context only")
+            if agent == "cursor":
+                try:
+                    cursor_payload = json.loads(out)
+                except json.JSONDecodeError:
+                    cursor_payload = {}
+                    failures.append("cursor: governed-artifact edit must emit JSON")
+                if cursor_payload.get("user_message", "").find("Mantra Gate supervising") < 0:
+                    failures.append("cursor: governed-artifact edit must surface user_message")
+            if shape == "stdout-json" and agent != "codex" and not out.strip():
+                failures.append(f"{agent}: supervised output must not be empty")
 
         # --- benign Read -> allow, silent ---
-        code, out, err = _run("claude", benign_read, target)
-        if code != 0:
-            failures.append(f"claude: benign Read must allow (exit 0), got {code}")
-        if "Mantra Gate" in out or "Mantra Gate" in err:
-            failures.append("claude: benign Read must be SILENT (no cry-wolf)")
+        for agent in ("claude", "codex", "cursor"):
+            code, out, err = _run(agent, benign_read, target)
+            if code != 0:
+                failures.append(f"{agent}: benign Read must allow (exit 0), got {code}")
+            if agent == "cursor":
+                try:
+                    allow_payload = json.loads(out)
+                except json.JSONDecodeError:
+                    allow_payload = {}
+                    failures.append("cursor: benign Read must emit JSON permission output")
+                if allow_payload.get("permission") != "allow":
+                    failures.append('cursor: benign Read must emit {"permission":"allow"}')
+            elif out.strip() or err.strip():
+                failures.append(f"{agent}: benign Read must be silent")
 
         # --- benign code edit (mutating but not governed) -> allow, silent ---
-        code, out, err = _run("claude", benign_code, target)
-        if code != 0:
-            failures.append(f"claude: ordinary code edit must allow (exit 0), got {code}")
-        if "Mantra Gate" in out or "Mantra Gate" in err:
-            failures.append("claude: ordinary code edit must be SILENT (no cry-wolf on non-governed)")
+        for agent in ("claude", "codex", "cursor"):
+            payload = benign_camel if agent == "codex" else benign_code
+            code, out, err = _run(agent, payload, target)
+            if code != 0:
+                failures.append(f"{agent}: ordinary code edit must allow (exit 0), got {code}")
+            if agent == "cursor":
+                try:
+                    allow_payload = json.loads(out)
+                except json.JSONDecodeError:
+                    allow_payload = {}
+                    failures.append("cursor: ordinary code edit must emit JSON permission output")
+                if allow_payload.get("permission") != "allow":
+                    failures.append('cursor: ordinary code edit must emit {"permission":"allow"}')
+            elif out.strip() or err.strip():
+                failures.append(f"{agent}: ordinary code edit must be silent")
+
+        sentinel_records = _read_sentinel(target)
+        if not any(
+            rec.get("agent") == "codex"
+            and rec.get("event") == "PreToolUse"
+            and rec.get("session") == "oracle-multiedit-camel"
+            for rec in sentinel_records
+        ):
+            failures.append("PreToolUse sentinel must record camelCase Codex MultiEdit execution")
 
     return {
         "oracle": "mantra-gate-pretooluse",

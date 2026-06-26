@@ -102,16 +102,24 @@ def _evaluate_codex() -> list[str]:
         tes_install.install_hooks(t, ["codex"], dry_run=False)
         tes_install.install_hooks(t, ["codex"], dry_run=False)
         toml = (t / ".codex/config.toml").read_text()
+        if toml.count("codex_hooks = true") != 1:
+            failures.append(f"codex: codex_hooks feature flag count = {toml.count('codex_hooks = true')} (want 1)")
         if toml.count("[[hooks.SessionStart]]") != 1:
             failures.append(f"codex: SessionStart blocks after double install = {toml.count('[[hooks.SessionStart]]')} (want 1)")
         if toml.count("[[hooks.PreToolUse]]") != 1:
             failures.append(f"codex: PreToolUse blocks after double install = {toml.count('[[hooks.PreToolUse]]')} (want 1)")
+        if 'matcher = "Write|Edit|MultiEdit"' not in toml:
+            failures.append("codex: PreToolUse matcher must include mutating tools Write|Edit|MultiEdit")
         if "mcp_servers.other" not in toml:
             failures.append("codex: foreign config not preserved across install")
         tes_install.remove_tes_hooks(t, "codex", dry_run=False)
         after = (t / ".codex/config.toml").read_text() if (t / ".codex/config.toml").exists() else ""
         if "hook --agent" in after:
             failures.append("codex: TES hook orphaned after uninstall")
+        if "codex_hooks = true" in after:
+            failures.append("codex: uninstall must remove TES codex_hooks feature flag")
+        if "[[hooks.SessionStart]]" in after or "[[hooks.PreToolUse]]" in after:
+            failures.append("codex: uninstall must remove TES hook tables")
         if "mcp_servers.other" not in after:
             failures.append("codex: foreign config not preserved across uninstall")
     return failures
