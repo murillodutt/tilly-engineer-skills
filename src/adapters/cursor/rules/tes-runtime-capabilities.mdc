@@ -200,6 +200,14 @@ actual version writes, and apply only with write authorization.
 
 ## Cortex Reflection
 
+Runtime Cortex advisories from installed hooks may inject bounded recall,
+propose capture, or emit `NEEDS_ALIGN` when memory evidence and the operating
+mesh diverge. Treat `NEEDS_ALIGN` as a signal to inspect the evidence and route
+the user to explicit `/tes-align` when reconciliation is needed. Do not edit
+`docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
+`EXECUTION-LINE.md`, `QUALITY-GATES.md`, or `DECISIONS/**` from the Cortex
+runtime path, and do not run `/tes-align` automatically.
+
 If `docs/agents/cortex/CONTRACT.md` exists, use Cortex as durable memory. Before
 the final response for material work, call read-only `cortex_reflect` when
 available, or run:

@@ -1,6 +1,6 @@
 ---
 name: tes-cortex
-description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, consolidate, or apply TES Cortex memory.
+description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, consolidate, or apply TES Cortex memory, or inspect runtime Cortex advisory recall, capture proposals, or NEEDS_ALIGN drift signals.
 ---
 
 # TES Cortex
@@ -28,6 +28,9 @@ description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:
 | operator health | run read-only `cortex_health` MCP or `cortex.py health` |
 | operator peek | run read-only `cortex_peek` MCP or `cortex.py peek` |
 | operator review | run read-only `cortex_review` MCP or `cortex.py review --backend lexical` |
+| runtime advisory context | use runtime Cortex output to recall or inject relevant context; advisory only |
+| runtime capture proposal | treat proposal as a capture candidate; durable writes still require existing approval gates |
+| runtime mesh drift signal | report `NEEDS_ALIGN` with bounded evidence; do not write the operating mesh or run `/tes-align` automatically |
 | event inspection | use read-only `cortex_list_events` or `cortex_get_event_status` MCP |
 | checkpoint progress | run `cortex.py checkpoint --yes`; writes only `.tes/checkpoints/**` |
 | remember durable memory | run `cortex.py remember --yes` only with explicit approval and evidence |
@@ -43,11 +46,15 @@ description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:
 - Prefer MCP for read-only recall/read/curate/reflect when available.
 - Prefer MCP for read-only `health`, `peek`, and `review` when available.
 - Prefer MCP event tools only for read-only lifecycle evidence inspection.
+- Treat runtime Cortex as advisory: it may recall or inject relevant context, propose capture, and emit `NEEDS_ALIGN`.
+- Never let runtime Cortex write the operating mesh under `docs/agents/**`; `/tes-align` owns operating-mesh reconciliation and certification.
+- Never run `/tes-align` automatically from `NEEDS_ALIGN`; report the signal and next action for explicit routing.
 - Never write `sources/**` after import.
 - Never promote loose summaries; cells need `## Claim` and `## Evidence`.
 - When `reflect.curation_due=true`, run `curate-plan` before proposing memory compaction, split, merge, or rejection.
 - Never run `apply --yes` without explicit user authorization.
 - Never run `remember --yes` without explicit user authorization and evidence.
+- Never treat runtime capture proposals as approval for `apply`, `remember`, `cortex_remember`, or consolidation.
 - Never call `cortex_remember` unless the user approved the exact plan phrase; read-only MCP mode intentionally hides the tool.
 - Never call consolidation `CERTIFIED` without a valid lock, approved review, rollback reference, allowed evidence, and observed Cortex cell write result.
 - Do not treat `forget` as available destructive deletion; it is blocked until the consolidation gate owns observed-write and rollback evidence.

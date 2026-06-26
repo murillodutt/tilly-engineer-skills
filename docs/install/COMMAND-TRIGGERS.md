@@ -52,7 +52,7 @@ Some triggers are primary visible skills. Some are supported command intents rou
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
 | `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
 | `/tes-open-obsidian` or `/tes:open-obsidian` | open `docs/agents` as the Obsidian vault after context and alignment pass | `tes_open_obsidian.py`, `project_context_oracle.py`, `project_alignment_oracle.py` | no TES writes; Obsidian app may manage project-owned `.obsidian/**` after explicit launch |
-| `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, consolidate, or apply Cortex memory | `cortex.py`, `consolidation_gate.py`, Cortex MCP | Cortex files only when authorized; consolidation lock writes only `.tes/cortex/consolidation/**`; MCP remember requires ADR 0002 exact approval |
+| `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, consolidate, or apply Cortex memory; runtime hooks may inject bounded recall, propose capture, or signal `NEEDS_ALIGN` | `cortex.py`, `cortex_runtime.py`, `consolidation_gate.py`, Cortex MCP | Cortex files only when authorized; runtime hook advisories write no mesh files and do not run `/tes-align`; consolidation lock writes only `.tes/cortex/consolidation/**`; MCP remember requires ADR 0002 exact approval |
 | `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
 | `/tes-mcp` or `/tes:mcp` | explicitly activate, repair, or verify Cortex MCP after install, including VS Code MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke, host listing when observable | `.tes/bin/**` and project-scoped MCP config, including `.vscode/mcp.json`; governed remember is default; use `--read-only` for inspection-only activation |
 | `/tes-field-reports` or `/tes:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tes/field-reports/**`, `.git/info/exclude`, active Git `pre-push` hook (`core.hooksPath` aware) |
@@ -102,7 +102,7 @@ tes bump     -> /tes-bump
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
 | version governance guard | auto-read-only bump decision guard with dry-run-first target discovery and no Git or publishing side effects |
 | rules | always-on intent routers where skills are not native |
-| hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
+| hooks | Host lifecycle gates for validation, no-write Cortex runtime recall/proposal/`NEEDS_ALIGN`, and Field Reports drain |
 | command-trigger oracle | package gate that checks docs, Codex, Claude, and Cursor share the same trigger vocabulary |
 | project-context oracle | target gate that checks `/tes-init` left a useful, evidenced project map |
 | project-alignment oracle | target gate that checks `/tes-align` left an evidenced operating mesh |

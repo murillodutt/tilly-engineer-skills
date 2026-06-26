@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`/tes-cortex` governs Cortex memory: recall, read, verify, audit, rebuild, curate, learn, reflect, apply, remember, forget, and consolidation.
+`/tes-cortex` governs Cortex memory: recall, read, verify, audit, rebuild, curate, learn, reflect, apply, remember, forget, consolidation, and runtime advisory signals.
 
 ## Why This Skill Exists
 
@@ -15,6 +15,7 @@ Memory boundaries are easy to violate (SQLite as truth, writing sources after im
 - Governed remember: plan then explicit approval.
 - Apply/remember/forget require evidence and approval lanes.
 - Read-only MCP preferred for recall/curate when available.
+- Runtime Cortex may recall or inject context, propose capture, and emit `NEEDS_ALIGN`; it never writes the operating mesh or runs `/tes-align` automatically.
 
 ## Known Failure Modes Prevented
 
@@ -22,10 +23,11 @@ Memory boundaries are easy to violate (SQLite as truth, writing sources after im
 - Writing `sources/**` after import.
 - Ungoverned durable memory promotion.
 - Skipping consolidation gate for forget.
+- Treating `NEEDS_ALIGN` as alignment certification or a mesh write permission.
 
 ## Relationship To Other Skills
 
-`tes-init` scaffolds cortex tree. `tes-mcp` exposes Cortex tools. `tes-align` may suggest Cortex promotion after Tier 1/2 review.
+`tes-init` scaffolds cortex tree. `tes-mcp` exposes Cortex tools. `tes-align` may suggest Cortex promotion after Tier 1/2 review and remains the only operating-mesh reconciler.
 
 ## Changelog
 
@@ -33,7 +35,8 @@ Memory boundaries are easy to violate (SQLite as truth, writing sources after im
 |------|--------|----------|------------|
 | 2026-05-09 | Created cortex intent map skill. | Cortex MCP and `cortex.py` contract. | high |
 | 2026-06-08 | Added contract history per Tilly skill standard. | Documentation authority tiers program. | high |
+| 2026-06-26 | Added runtime-first advisory lane: recall/inject context, propose capture, and report `NEEDS_ALIGN` without mesh writes or automatic `/tes-align`. | SPEC-004 of Cortex runtime-first delivery and ADR 0007. | high |
 
 ## Do Not Lose
 
-Markdown artifacts are truth; SQLite is derived recall.
+Markdown artifacts are truth; SQLite is derived recall. `NEEDS_ALIGN` is a signal, not a write permission.
