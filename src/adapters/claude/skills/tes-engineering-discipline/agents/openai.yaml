@@ -1,5 +1,5 @@
-display_name: Tilly Engineering Discipline
-short_description: Keep coding-agent work explicit, maturity-aware, surgical, and verified.
+name: tes-engineering-discipline
+description: Keep coding-agent work explicit, maturity-aware, surgical, and verified.
 default_prompt: |
   Apply TES discipline: surface assumptions, confront ambiguity instead of
   guessing, select the maturity layer, constrain scope, edit surgically, and
