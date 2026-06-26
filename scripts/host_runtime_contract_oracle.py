@@ -33,6 +33,7 @@ REQUIRED_GIT_HOSTS = {
     "git-core-hooks-path",
     "git-husky",
     "git-lefthook",
+    "git-project-owned",
     "git-hooks-disabled",
 }
 

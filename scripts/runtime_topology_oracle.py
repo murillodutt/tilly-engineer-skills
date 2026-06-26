@@ -136,7 +136,7 @@ def git_fixture_failures() -> tuple[dict[str, Any], list[str]]:
             "status": expected.get("status"),
         }
 
-    required = {"git-native", "git-core-hooks-path", "git-husky", "git-lefthook", "git-hooks-disabled"}
+    required = {"git-native", "git-core-hooks-path", "git-husky", "git-lefthook", "git-project-owned", "git-hooks-disabled"}
     if set(hosts) != required:
         failures.append("Git hook-manager topology must cover native, core.hooksPath, Husky, Lefthook, and disabled hooks")
     if len(active_entrypoints) < 3:
