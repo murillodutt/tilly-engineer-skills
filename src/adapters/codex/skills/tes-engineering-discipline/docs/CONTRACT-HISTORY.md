@@ -28,6 +28,7 @@ Bootloaders stay thin; behavioral depth loads on demand. This skill prevents amb
 - Treating user-facing craft as a scope question with no effort axis.
 - "Build small then rebuild" temporal trap of maturity.
 - Adjective-as-criteria and graded effort decisions.
+- Treating "direct", "sem nova spec", or short reporting as permission to downgrade Platform host/runtime work into a shallow local patch.
 
 ## Relationship To Other Skills
 
@@ -41,6 +42,7 @@ All TES work operates under this discipline. `tes-prospect`, `tes-mine`, and `te
 | 2026-06-08 | Added contract history per Tilly skill standard. | Documentation authority tiers program. | high |
 | 2026-06-15 | Added Gate Zero, the Effort Gate, and classificatory maturity language. | Discipline oracle fixtures and canary findings. | high |
 | 2026-06-24 | Re-scoped Mantra Gate to risk-scoped safety behavior. | Maintainer audit and local/source discipline alignment. | high |
+| 2026-06-26 | Added Platform Ceiling Classification: hooks, installers, adapter materialization, MCP, Cortex runtime, Field Reports, host contracts, generated target surfaces, and installed-target evidence are Platform from the first line; direct/no-SPEC language removes document ceremony only, never host/runtime proof. | Cursor hook-agent report and maintainer closeout correction. | high |
 
 ## Do Not Lose
 

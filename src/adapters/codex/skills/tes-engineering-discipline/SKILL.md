@@ -84,6 +84,16 @@ The stop is conditional, not a ban on abstraction. When a second real consumer, 
 
 `Platform` hard stop: existing installs, installer, fallback, compatibility, rollback, release, migration, CLI, MCP, adapter, or public-doc surfaces are `Platform`, not `Birth`. Do not remove those paths only because the new path passes locally. Local green proves the new path; it does not prove the old baseline is retired. First name the protected baseline, the consumers or install surfaces that could still depend on it, the allowed replacement complexity, the forbidden breakage, and a compatibility or release oracle. Cut the old path only when explicit retirement evidence proves it no longer needs protection.
 
+### Platform Ceiling Classification
+
+The goal is ceiling-grade product behavior, not floor-grade patching. Any work that touches or evaluates hooks, installers, update/uninstall paths, adapter materialization, MCP, Cortex runtime, Field Reports, public bundle identity, host contracts, generated target surfaces, or real installed-target evidence is `Platform` from the first line.
+
+Do not reclassify this work as a small local fix because the user says "direct", "sem nova spec", "ajuste fino", "rápido", or "no governance". Those phrases remove document ceremony only; they never remove runtime rigor.
+
+For `Platform` work, the minimum acceptable execution is: name the protected installed baseline, preserve host-specific contracts instead of flattening them, reproduce or fixture the reported behavior when practical, patch package source instead of installed mirrors, add or update the red-capable oracle, run the focused host/runtime gate, and make a release-identity decision.
+
+If host behavior is uncertain, consult official docs or installed/source fixtures before coding. If evidence cannot distinguish bug from host contract, stop as `NEEDS_DISCOVERABILITY` or `NEEDS_OWNER_DECISION`; do not guess and do not collapse to a generic hook contract.
+
 Worked example. Request: "Add one archive format today; to prepare for future formats, create `ArchiveStrategy`, an abstract factory, a plugin registry, and `TODO` hooks." Layer is `Birth`: only one real format exists, no second consumer or contract. Implement that one format directly; do not create `ArchiveStrategy`, the factory, the registry, or the `TODO` hooks; name them as deferred future scaffolding. If a second real format later lands, that is promotion evidence and the shared seam becomes correct.
 
 Platform example. Request: "Patch the installer fast by removing the legacy fallback path. It only exists for compatibility and the new path passes locally." Layer is `Platform`: protect existing installs, release behavior, and rollback. Keep the fallback until baseline retirement is evidenced by accepted migration/compatibility proof and a release or installer oracle; a local green new-path check is not enough.

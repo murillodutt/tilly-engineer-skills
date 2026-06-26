@@ -30,6 +30,7 @@ Bootloaders stay thin; behavioral depth loads on demand. This skill prevents amb
 - "Build small then rebuild" temporal trap of maturity.
 - Adjective-as-criteria and graded ("partially premium") effort decisions.
 - Premium minted by rejecting weasel prose alone, with the named declared trigger inert and a substring token standing in for the binary-hard arbiter.
+- Treating "direct", "sem nova spec", or short reporting as permission to downgrade Platform host/runtime work into a shallow local patch.
 
 ## Relationship To Other Skills
 
@@ -45,6 +46,7 @@ Loaded by all TES work. `tes-engineering-discipline` is the Codex mirror. Produc
 | 2026-06-15 | SPEC-070: gave the Effort Gate Premium a positive named-trigger floor. Senior audit found Premium passed on rejecting weasel prose alone — `declared_contract` was inert and a substring token could mint Premium. Split the conflated `CONSEQUENCE_SIGNALS` deny-list into two first-class declared enums (`declared_contract` + `named_consequence_surface`), both binary-hard; Premium now fails `NEEDS_REVIEW` with no named trigger. | Reproduced gap against the installed oracle; the gate caught its own implementation doing the "fix-by-literal-list" and "adjective-as-criteria" it exists to block. | high |
 | 2026-06-15 | Canary fixes on a real checkout target: (1) `ambiguity: none` is an honest answer, no longer rejected as generic (exempted like Birth `promotion_evidence`); (2) added `pii-export-surface` to the named-consequence-surface enum by evidence of a universal class, with the tri-state safeguard tested (an unlisted surface still fails `NEEDS_REVIEW`). | Field-exercised the delivered 0.3.182 oracle with real scenario plans; two portable findings fixed in source with regression fixtures. | high |
 | 2026-06-24 | Re-scoped Mantra Gate from universal state-change marker behavior to risk-scoped safety behavior, matching Codex `tes-engineering-discipline`; ordinary local edits no longer block on gate artifacts, markers, or skill loading. | Maintainer audit found automatic skill/gate loading blocked high-agency execution and created source/local split-brain risk. | high |
+| 2026-06-26 | Added Platform Ceiling Classification: hooks, installers, adapter materialization, MCP, Cortex runtime, Field Reports, host contracts, generated target surfaces, and installed-target evidence are Platform from the first line; direct/no-SPEC language removes document ceremony only, never host/runtime proof. | Cursor hook-agent report and maintainer closeout correction. | high |
 
 ## Do Not Lose
 

@@ -57,8 +57,10 @@ approval is required, or when the user asks for audit detail.
 ## Runtime-First
 
 Build the smallest durable runtime slice on the intended execution path before
-adding governance. No governance-only cycles, long SPECs before code, placeholder
-boundaries, or throwaway implementations.
+adding governance. Smallest means narrow scope, not shallow proof. No
+governance-only cycles, long SPECs before code, placeholder boundaries,
+throwaway implementations, or minimum-viable closure on adopter-runtime
+surfaces.
 
 `Birth` hard stop: do not add a strategy interface, abstract factory, plugin
 registry, plugin system, compatibility layer, `TODO` hooks, or future-format
@@ -68,6 +70,14 @@ the deferred scaffolding. The stop is conditional, not a ban on abstraction: whe
 that evidence exists the same seam is the correct `Consolidation`/`Evolution`
 move, and Fit First in `Evolution` means preserving accepted architecture rather
 than flattening it. The four-layer table is in `tes-runtime-capabilities.mdc`.
+
+Hooks, installers, update/uninstall paths, adapter materialization, MCP, Cortex
+runtime, Field Reports, public bundle identity, host contracts, generated target
+surfaces, and real installed-target evidence are always `Platform` from the
+first line. "Direct", "sem nova spec", "ajuste fino", "rápido", or "no
+governance" removes document ceremony only; it never removes host/runtime proof.
+Load `tes-runtime-capabilities.mdc` for the full Platform Ceiling
+Classification.
 
 ## Success Formula
 
@@ -80,8 +90,10 @@ success is zero.
 
 ## Feedback Voice
 
-Short, frank prose. Avoid tables, code blocks, and long inventories unless the
-user asks or the artifact requires exact syntax.
+Short, frank prose. Short output is not an engineering downgrade: do not lower
+maturity classification, skip Platform proof, or turn runtime evidence into
+recommendation-only closeout. Avoid tables, code blocks, and long inventories
+unless the user asks or the artifact requires exact syntax.
 
 ## Confidentiality
 

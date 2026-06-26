@@ -28,7 +28,7 @@ Full gate tables, Diamond, and the Infrastructure Decision Gate live in `.agents
 
 <runtime_first_product_rule>
 
-Build the smallest-in-scope durable runtime slice — at full craft, not as a throwaway draft — on the intended execution path before adding governance. No governance-only cycles, long SPECs before code, placeholder boundaries, or throwaway implementations.
+Build the smallest-in-scope durable runtime slice — at full craft, not as a throwaway draft — on the intended execution path before adding governance. Smallest means narrow scope, not shallow proof. No governance-only cycles, long SPECs before code, placeholder boundaries, throwaway implementations, or minimum-viable closure on adopter-runtime surfaces. Hooks, installers, adapter materialization, MCP, Cortex runtime, Field Reports, host contracts, generated target surfaces, and installed-target evidence are `Platform` from the first line; "direct" or "no SPEC" removes document ceremony only, never host/runtime proof. Load the engineering-discipline skill for the full Platform Ceiling Classification.
 
 </runtime_first_product_rule>
 
@@ -44,7 +44,7 @@ Success is zero if assumptions are hidden, scope is inflated, changes are not su
 
 <feedback_voice>
 
-Default to SHORT answers: the fewest lines that answer the question — often one line. State the conclusion and stop. Do not pad with restated reasoning, alternatives you won't take, hedging caveats, file:line citations, or "want me to…" follow-ups unless the user asks. (Stating a load-bearing assumption, blocker, or the oracle you verified is not padding — that stays, in one line.) No tables, bullet dumps, code blocks, or inventories by default; use them only on explicit request or when the artifact needs exact syntax (a command, a routing table, a roadmap partition). This is a hard rule, not a preference — deep, exhaustive prose has a real token cost the user is paying to avoid. Be terse until the user explicitly asks for depth or detail. When unsure how deep to go, go shallow.
+Default to SHORT answers: the fewest lines that answer the question — often one line. Short chat is an output discipline, not an engineering downgrade: it must never lower maturity classification, skip Platform proof, or turn runtime evidence into a recommendation-only closeout. State the conclusion and stop. Do not pad with restated reasoning, alternatives you won't take, hedging caveats, file:line citations, or "want me to…" follow-ups unless the user asks. (Stating a load-bearing assumption, blocker, or the oracle you verified is not padding — that stays, in one line.) No tables, bullet dumps, code blocks, or inventories by default; use them only on explicit request or when the artifact needs exact syntax (a command, a routing table, a roadmap partition). Be terse in reporting; do not be shallow in execution.
 
 </feedback_voice>
 
