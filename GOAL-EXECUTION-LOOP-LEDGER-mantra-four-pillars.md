@@ -49,3 +49,18 @@ flash_fry_decision: NÃO criado /flash-fry invocável (AUTO-ATIVO-only, gap decl
 zero_regression: 5 substrings-piso intactas em todas as 4 superfícies; 2 dev mirrors byte-idênticos preservados
 release_identity: DISPARA (SKILL.md é delivered — está no bundle 0.3.195 publicado). Drift delivered source↔bundle igual ao C8. Por decisão do owner: PARO antes do bump; red-esperado honesto; release = autorização posterior.
 sync: LOCAL_COMMITTED (remote não autorizado)
+
+---
+
+spec_id: SPEC-P-002b (reparo — bootloaders de adapter, furo apontado pelo owner)
+spec_version: 1
+attempt: 1
+pillar: 0/1 fronteira — BOOTLOADERS DE ADAPTER (camada produto/source DELIVERED)
+commit: no-commit (sha no corpo do commit que inclui este ledger)
+files: src/adapters/codex/AGENTS.md, src/adapters/claude/CLAUDE.md, src/adapters/cursor/rules/tes-engineering-discipline.mdc
+gap_caught: o owner apontou que os bootloaders de src/adapters/** não foram tocados. Confirmado por git: nenhum commit anterior os tocou. Eu havia raciocinado errado ("roteiam para a skill, regra proíbe duplicar") e pulei a LINHA DE ROTEAMENTO, que ainda descrevia o gate em framing-piso — drift bootloader↔skill na própria camada delivered (inversão de gravidade em miniatura).
+fix: linha de roteamento dos 3 bootloaders de adapter projeta o registro gerente-sênior ADITIVAMENTE, sem introduzir o protocolo dos 7 campos (regra BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS respeitada). CURSOR.md não toca o gate (roteia para .mdc) — correto, não editado.
+oracle_status: PASS — materialize --check (duplicação+paridade) exit 0; substrings-piso intactas; fragmento proibido ausente; adoption/package exit 0
+surfaces_promoted_total: 9 (2 maintainer raiz + 3 adapter bootloader + 4 skill source/dev) — nenhuma superfície de bootloader/skill ficou no piso
+release_identity: DISPARA (bootloaders de adapter são delivered — no bundle 0.3.195). Drift delivered. PARO antes do bump (decisão do owner).
+sync: LOCAL_COMMITTED (remote não autorizado)
