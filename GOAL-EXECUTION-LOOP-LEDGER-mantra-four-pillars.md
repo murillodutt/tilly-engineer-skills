@@ -95,3 +95,21 @@ zero_regression: tes_install --self-test exit 0 (SessionStart intacto); foreign 
 pillar_2_complete: lógica (c31fddac) + wiring (este) + 2 oráculos falsificáveis (handler + install)
 release_identity: DISPARA (tes_install.py HELPER_FILE delivered). Drift delivered. PARO antes do bump (decisão do owner).
 sync: LOCAL_COMMITTED (remote não autorizado)
+
+---
+
+spec_id: SPEC-P-004 (Pilar Agent — preset multi-host idempotente + bug-fix uninstall)
+spec_version: 1
+attempt: 1
+failed_attempt_recovery_decision: bug_vs_architecture=bug. Descobri por execução (não memória) que meu Pilar Hook introduziu REGRESSÃO: remove_tes_hooks só removia SessionStart → PreToolUse ficava órfão no uninstall nos 3 hosts. Corrigido: remove_tes_claude_event_hooks(data,"PreToolUse") no claude; remove_tes_codex_hook_text estendido para 2 blocos (helper _remove_codex_marked_block que para em outro marker TES para não comer o comentário do bloco seguinte — 2º bug, pego por execução). Cursor já genérico (itera todos eventos).
+pillar: 3 AGENT (camada produto/source DELIVERED — tes_install.py HELPER_FILE)
+commit: no-commit (sha no corpo do commit que inclui este ledger)
+files: scripts/tes_install.py (remove_tes_hooks cobre PreToolUse nos 3 hosts; _remove_codex_marked_block helper), scripts/mantra_gate_agent_idempotency_oracle.py (novo, maintainer-gate), src/adapters/codex/skills/tes-engineering-discipline/agents/openai.yaml (gate como dever), package.json (wire)
+two_faces: Face 1 = openai.yaml registra o gate como dever do agente (materialize --check confirma paridade não exige claude openai.yaml). Face 2 = strip-then-merge multi-host idempotente para TODOS os eventos (PLANTAO Slice 5).
+oracle_status: PASS — agent-idempotency-oracle prova 3 invariantes em 3 hosts (install idempotente / uninstall completo sem órfão / foreign preservado); FALSIFICÁVEL: re-introduzir o bug de órfão → oráculo RED exit 1, restore → verde.
+zero_regression: tes_install --self-test exit 0; uninstall remove TODO o TES nos 3 hosts (provado); foreign config/hooks preservados; SessionStart intacto
+pillar_3_complete: Face 1 (openai.yaml dever) + Face 2 (idempotência abrangente + bug-fix) + oráculo falsificável
+release_identity: DISPARA (tes_install.py + openai.yaml delivered). Drift delivered. PARO antes do bump (decisão do owner).
+sync: LOCAL_COMMITTED (remote não autorizado)
+
+QUATRO PILARES COMPLETOS: Bootloader(0,217a7aed+43d146de) + Skill(1,e2d071ae) + Hook(2,c31fddac+f640f326) + Agent(3,este). Gravidade restaurada: mãe declara, 3 projetam. 4 oráculos falsificáveis (band/pretooluse/agent-idempotency + adoption R4 protegido).

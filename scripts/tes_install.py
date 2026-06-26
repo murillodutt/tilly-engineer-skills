@@ -409,52 +409,61 @@ def remove_tes_cursor_hooks(data: dict[str, Any]) -> None:
         ]
 
 
-def remove_tes_codex_hook_text(text: str) -> str:
-    """Inverse of install_codex_hook: drop the TES SessionStart hook block and the
-    codex_hooks feature flag, preserving any other Codex config (L3 SPEC-002).
+def _remove_codex_marked_block(lines: list[str], marker: str, section_prefix: str) -> list[str]:
+    """Remove one marked TES TOML block (marker comment -> next block boundary).
+
+    The block ends at the first header that does not belong to this block's
+    section, OR at the next TES marker comment (so removing one block never eats
+    the following TES block's marker comment), OR EOF.
     """
-    lines = text.splitlines()
-    # Remove the marked TES hook block: from the marker comment to the next
-    # top-level section header (or EOF).
-    marker = "# TES first-session post-install hook."
     try:
         start = next(i for i, line in enumerate(lines) if line.strip() == marker)
     except StopIteration:
-        start = None
-    if start is not None:
+        return lines
+    end = len(lines)
+    for idx in range(start + 1, len(lines)):
+        stripped = lines[idx].strip()
+        if stripped.startswith("# TES ") and stripped != marker:
+            end = idx
+            break
+        if (stripped.startswith("[") and stripped.endswith("]")
+                and not stripped.lstrip("[").startswith(section_prefix)
+                and not stripped.lstrip("[").startswith(f"{section_prefix}.hooks")):
+            end = idx
+            break
+    return [*lines[:start], *lines[end:]]
+
+
+def remove_tes_codex_hook_text(text: str) -> str:
+    """Inverse of install_codex_hook: drop the TES SessionStart AND PreToolUse hook
+    blocks and the codex_hooks feature flag, preserving any other Codex config.
+    """
+    lines = text.splitlines()
+    lines = _remove_codex_marked_block(
+        lines, "# TES first-session post-install hook.", "hooks.SessionStart"
+    )
+    lines = _remove_codex_marked_block(
+        lines, "# TES PreToolUse senior-manager gate.", "hooks.PreToolUse"
+    )
+    # Legacy fallback: a SessionStart block whose marker comment was lost.
+    for index, line in enumerate(lines):
+        if line.strip() != "[[hooks.SessionStart]]":
+            continue
         end = len(lines)
-        for idx in range(start + 1, len(lines)):
-            stripped = lines[idx].strip()
-            # Next top-level [section] or [[array.table]] that is not part of the
-            # TES hook block ends the block. The TES block's own sub-tables start
-            # with [[hooks.SessionStart...]]; stop at the first header that does
-            # not belong to hooks.SessionStart.
-            if (stripped.startswith("[") and stripped.endswith("]")
-                    and not stripped.lstrip("[").startswith("hooks.SessionStart")
-                    and not stripped.lstrip("[").startswith("hooks.SessionStart.hooks")):
+        for idx in range(index + 1, len(lines)):
+            next_stripped = lines[idx].strip()
+            if (
+                next_stripped.startswith("[")
+                and next_stripped.endswith("]")
+                and not next_stripped.lstrip("[").startswith("hooks.SessionStart")
+                and not next_stripped.lstrip("[").startswith("hooks.SessionStart.hooks")
+            ):
                 end = idx
                 break
-        lines = [*lines[:start], *lines[end:]]
-    else:
-        for index, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped != "[[hooks.SessionStart]]":
-                continue
-            end = len(lines)
-            for idx in range(index + 1, len(lines)):
-                next_stripped = lines[idx].strip()
-                if (
-                    next_stripped.startswith("[")
-                    and next_stripped.endswith("]")
-                    and not next_stripped.lstrip("[").startswith("hooks.SessionStart")
-                    and not next_stripped.lstrip("[").startswith("hooks.SessionStart.hooks")
-                ):
-                    end = idx
-                    break
-            block = "\n".join(lines[index:end])
-            if ".tes/bin/tes_install.py" in block and " hook" in block:
-                lines = [*lines[:index], *lines[end:]]
-                break
+        block = "\n".join(lines[index:end])
+        if ".tes/bin/tes_install.py" in block and " hook" in block:
+            lines = [*lines[:index], *lines[end:]]
+            break
     # Remove the codex_hooks feature flag line.
     lines = [line for line in lines if line.strip() != "codex_hooks = true"]
     body = "\n".join(lines).strip()
@@ -470,6 +479,7 @@ def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False, backup: bo
             return {"agent": agent, "action": "already-absent"}
         data = read_json(path)
         remove_tes_claude_sessionstart_hooks(data)
+        remove_tes_claude_event_hooks(data, "PreToolUse")
         text = json.dumps(data, indent=2, sort_keys=True) + "\n"
         return {**write_text_if_changed(path, text, target, dry_run, backup=backup), "agent": agent}
     if agent == "cursor":
