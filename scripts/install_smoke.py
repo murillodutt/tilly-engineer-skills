@@ -230,6 +230,7 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/install_mcp_hosts/cursor.py",
         ".tes/bin/install_mcp_hosts/vscode.py",
         ".tes/bin/cortex.py",
+        ".tes/bin/cortex_runtime.py",
         ".tes/bin/cortex_mcp.py",
         ".tes/bin/cortex_embed.mjs",
         ".tes/bin/scope_contract.py",
@@ -299,7 +300,7 @@ def probe_route(route: str) -> dict[str, Any]:
         if route == "audit":
             failures.extend(install_adapter(target, "all", dry_run=True))
             failures.extend(install_mcp(target, "all", dry_run=True))
-            for unexpected in ("AGENTS.md", "CLAUDE.md", ".tes/bin/cortex_mcp.py"):
+            for unexpected in ("AGENTS.md", "CLAUDE.md", ".tes/bin/cortex_mcp.py", ".tes/bin/cortex_runtime.py"):
                 if (target / unexpected).exists():
                     failures.append(f"audit route wrote unexpected path: {unexpected}")
             return finish()

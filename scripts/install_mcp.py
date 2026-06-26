@@ -37,6 +37,7 @@ SERVER_FILES = (
     "install_mcp_hosts/cursor.py",
     "install_mcp_hosts/vscode.py",
     "cortex.py",
+    "cortex_runtime.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
     "scope_contract.py",
@@ -670,6 +671,7 @@ def self_test() -> int:
         required_paths = [
             ".tes/bin/install_mcp.py",
             ".tes/bin/cortex.py",
+            ".tes/bin/cortex_runtime.py",
             ".tes/bin/cortex_mcp.py",
             ".tes/bin/cortex_embed.mjs",
             ".tes/bin/field_reports.py",

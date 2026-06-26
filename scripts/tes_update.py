@@ -48,6 +48,7 @@ HELPER_FILES = (
     "install_mcp_hosts/cursor.py",
     "install_mcp_hosts/vscode.py",
     "cortex.py",
+    "cortex_runtime.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
     "scope_contract.py",

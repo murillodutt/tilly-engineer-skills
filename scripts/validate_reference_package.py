@@ -200,6 +200,7 @@ REQUIRED_PATHS = (
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
     "scripts/cortex.py",
+    "scripts/cortex_runtime.py",
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
     "scripts/cortex_operator_oracle.py",
