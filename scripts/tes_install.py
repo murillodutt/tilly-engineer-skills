@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.197"
+VERSION = "0.3.198"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
