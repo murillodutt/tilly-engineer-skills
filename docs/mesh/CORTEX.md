@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.2
+tver: 0.5.3
 ---
 
 # TES Cortex
@@ -126,7 +126,7 @@ The conveyor has three gates:
 
 ## Proactive Memory Boundary
 
-ADR 0007 records Cortex's future extension as a proactive memory and sensing layer. That extension may observe host lifecycle events, propose capture, inject relevant recall context, and emit `NEEDS_ALIGN` when durable memory evidence diverges from the operational mesh. It must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file; `/tes-align` remains the reconciler.
+ADR 0007 makes Cortex runtime-first the accepted target architecture for proactive memory and mesh-drift sensing. Future runtime implementation may observe host lifecycle events, propose capture, inject relevant recall context, and emit `NEEDS_ALIGN` when durable memory evidence diverges from the operational mesh, but that implementation remains deferred until a PRD/SPEC proves host-specific fixtures for Claude Code, Codex, and Cursor. Cortex must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file; `/tes-align` remains the explicit reconciler that writes and certifies the mesh.
 
 ## Scope Boundary
 
