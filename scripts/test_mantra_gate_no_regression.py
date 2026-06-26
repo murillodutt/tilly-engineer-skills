@@ -6,7 +6,7 @@ must keep the owner's law "gain tools without losing what it is". Every assert i
 a SUBSET (`<=`) check, never equality where promotion ADDS, so a later SPEC can
 extend STATUS_WEIGHT / event keys without this oracle going red.
 
-  --self-test / --assert : run the 10 asserts (exit 0 = intact, 1 = regressed).
+  --self-test / --assert : run the regression asserts (exit 0 = intact, 1 = regressed).
   --write-plan           : emit tmp/regression-remutation-plan.json for
                            audit-remutation.mjs, which reversibly mutates COPIES
                            of the source and proves each assert actually FIRES.
@@ -26,6 +26,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
@@ -63,6 +64,44 @@ def run_asserts() -> list[str]:
 
     # A — marker identity unchanged.
     check("A marker", mg.MARKER == EXPECTED_MARKER)
+    # A2 — marker-only CLI feedback stays discreet on clean proceed.
+    marker_cli = _run_cli(mg, ["emit-marker"])
+    check("A2 marker_cli_exit", marker_cli.returncode == 0)
+    check("A2 marker_cli_stdout", marker_cli.stdout == EXPECTED_MARKER + "\n")
+    check("A2 marker_cli_stderr", marker_cli.stderr == "")
+    proceed_cli = _run_validate_cli(
+        mg,
+        mg.sample_gate(),
+        "--emit-marker",
+        "--state-changing",
+        "--closure-claim",
+    )
+    check("A2 proceed_cli_exit", proceed_cli.returncode == 0)
+    check("A2 proceed_cli_stdout", proceed_cli.stdout == EXPECTED_MARKER + "\n")
+    check("A2 proceed_cli_stderr", proceed_cli.stderr == "")
+    check("A2 proceed_cli_not_verbose", '"status"' not in proceed_cli.stdout)
+    # A3 — non-proceed bands keep diagnostics instead of collapsing to marker-only.
+    blocked_cli = _run_validate_cli(
+        mg,
+        mg.sample_gate(VERIFY=""),
+        "--emit-marker",
+        "--state-changing",
+    )
+    check("A3 blocked_cli_exit", blocked_cli.returncode == 1)
+    check("A3 blocked_cli_not_marker_only", blocked_cli.stdout != EXPECTED_MARKER + "\n")
+    check("A3 blocked_cli_status", '"status": "BLOCKED"' in blocked_cli.stdout)
+    check("A3 blocked_cli_failure", "missing VERIFY" in blocked_cli.stdout)
+    check("A3 blocked_cli_stderr", blocked_cli.stderr == "")
+    review_cli = _run_validate_cli(
+        mg,
+        mg.sample_gate(SCOPE=""),
+        "--emit-marker",
+        "--state-changing",
+    )
+    check("A3 review_cli_exit", review_cli.returncode == 2)
+    check("A3 review_cli_not_marker_only", review_cli.stdout != EXPECTED_MARKER + "\n")
+    check("A3 review_cli_status", '"status": "NEEDS_REVIEW"' in review_cli.stdout)
+    check("A3 review_cli_stderr", review_cli.stderr == "")
     # B — gate field order frozen for this slice (equality OK: GATE_FIELDS is closed here).
     check("B gate_fields", oracle.GATE_FIELDS == EXPECTED_GATE_FIELDS)
     # C — gate weights + statuses are a SUBSET of the live ones (promotion may add).
@@ -113,6 +152,21 @@ def _self_test_exit(module) -> int:
         [sys.executable, str(Path(module.__file__).resolve()), "--self-test"],
         capture_output=True, text=True,
     ).returncode
+
+
+def _run_cli(module, args: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(Path(module.__file__).resolve()), *args],
+        capture_output=True,
+        text=True,
+    )
+
+
+def _run_validate_cli(module, gate: dict, *args: str) -> subprocess.CompletedProcess[str]:
+    with tempfile.TemporaryDirectory(prefix="tes-mantra-gate-cli-") as tmp:
+        gate_path = Path(tmp) / "gate.json"
+        gate_path.write_text(json.dumps(gate, ensure_ascii=False) + "\n", encoding="utf-8")
+        return _run_cli(module, ["validate", "--gate", str(gate_path), "--target", tmp, *args])
 
 
 def _stage_clean_copy() -> Path:
@@ -178,7 +232,7 @@ def write_plan() -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Mantra Gate non-regression oracle.")
-    parser.add_argument("--self-test", action="store_true", help="run the 10 asserts")
+    parser.add_argument("--self-test", action="store_true", help="run the regression asserts")
     parser.add_argument("--assert", dest="assert_mode", action="store_true", help="alias for --self-test (plan command)")
     parser.add_argument("--write-plan", action="store_true", help="emit the audit-remutation plan")
     parser.add_argument("--restage", action="store_true", help="re-copy clean source into the fixture dir")
