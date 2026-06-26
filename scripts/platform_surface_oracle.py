@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.201"
+VERSION = "0.3.202"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -213,6 +213,10 @@ def analyze() -> dict[str, Any]:
     warnings: list[str] = []
     surfaces: list[dict[str, str]] = []
     failures.extend(check_memory_lifecycle_matrix())
+    if not exists("scripts/cortex_host_contract_oracle.py"):
+        failures.append("missing Cortex host contract oracle: scripts/cortex_host_contract_oracle.py")
+    if not exists("scripts/tes_install.py"):
+        failures.append("missing TES installer hook writer: scripts/tes_install.py")
 
     def surface(platform: str, name: str, status: str, evidence: str) -> None:
         surfaces.append(
@@ -270,7 +274,12 @@ def analyze() -> dict[str, Any]:
         "source-only" if codex_plugin_result["status"] == "PASS" else "fail",
         "src/adapters/codex/plugin/plugin.json is retained in Git but omitted from target installs",
     )
-    surface("codex", "hook", "git-governed", "lefthook.yml; .githooks/pre-commit; .githooks/pre-push")
+    surface(
+        "codex",
+        "hook",
+        "certified",
+        "scripts/tes_install.py writes .codex/config.toml project hooks; scripts/cortex_host_contract_oracle.py proves Codex hook contracts",
+    )
     surface("codex", "memory-lifecycle", "certified", codex_agent)
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -304,7 +313,12 @@ def analyze() -> dict[str, Any]:
     surface("claude", "agent", "certified", claude_agent)
     surface("claude", "skill", "certified", ".claude/skills/** project skills sourced from src/adapters/claude/skills/**")
     surface("claude", "plugin", "source-only", "src/adapters/claude/plugin/plugin.json is retained in Git but omitted from target installs")
-    surface("claude", "hook", "deferred", "Claude plugin hooks are native, but not claimed by this package.")
+    surface(
+        "claude",
+        "hook",
+        "certified",
+        "scripts/tes_install.py writes .claude/settings.json project hooks; scripts/cortex_host_contract_oracle.py proves Claude hook contracts",
+    )
     surface("claude", "memory-lifecycle", "certified", claude_agent)
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")
     surface("claude", "mcp", "certified", "scripts/install_mcp.py writes .mcp.json")
@@ -332,7 +346,12 @@ def analyze() -> dict[str, Any]:
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
     surface("cursor", "skill", "certified", "src/adapters/cursor/rules/tes-runtime-capabilities.mdc provides command capability routing after clean runtime install and semantic recovery.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
-    surface("cursor", "hook", "git-governed", "lefthook.yml; .githooks/pre-commit; .githooks/pre-push")
+    surface(
+        "cursor",
+        "hook",
+        "certified",
+        "scripts/tes_install.py writes .cursor/hooks.json project hooks; scripts/cortex_host_contract_oracle.py proves Cursor hook contracts",
+    )
     surface("cursor", "memory-lifecycle", "certified", cursor_rule)
     surface("cursor", "rules", "certified", cursor_rule)
     surface("cursor", "mcp", "certified", "scripts/install_mcp.py writes .cursor/mcp.json")

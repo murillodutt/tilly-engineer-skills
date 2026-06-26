@@ -13,7 +13,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.201"
+VERSION = "0.3.202"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -30,9 +30,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.201/index.json",
-    "docs/dist/0.3.201/tilly-engineer-skills-0.3.201.zip",
-    "docs/dist/0.3.201/tilly-engineer-skills-0.3.201.zip.sha256",
+    "docs/dist/0.3.202/index.json",
+    "docs/dist/0.3.202/tilly-engineer-skills-0.3.202.zip",
+    "docs/dist/0.3.202/tilly-engineer-skills-0.3.202.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -201,6 +201,11 @@ REQUIRED_PATHS = (
     "scripts/context_mesh_run.py",
     "scripts/cortex.py",
     "scripts/cortex_runtime.py",
+    "scripts/cortex_host_contract_oracle.py",
+    "scripts/fixtures/cortex_host_contracts/claude-code.json",
+    "scripts/fixtures/cortex_host_contracts/codex.json",
+    "scripts/fixtures/cortex_host_contracts/cursor.json",
+    "scripts/fixtures/cortex_host_contracts/negative-flat-contract.json",
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
     "scripts/cortex_operator_oracle.py",
@@ -1225,6 +1230,34 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("cortex.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    cortex_runtime = ROOT / "scripts/cortex_runtime.py"
+    if cortex_runtime.exists():
+        result = subprocess.run(
+            [sys.executable, str(cortex_runtime), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("cortex_runtime.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    cortex_host_contract = ROOT / "scripts/cortex_host_contract_oracle.py"
+    if cortex_host_contract.exists():
+        result = subprocess.run(
+            [sys.executable, str(cortex_host_contract), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("cortex_host_contract_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 
