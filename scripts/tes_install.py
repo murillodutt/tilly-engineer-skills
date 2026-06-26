@@ -1783,8 +1783,156 @@ def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any]) 
         pass
 
 
+GOVERNED_ARTIFACT_HINTS = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/adr/",
+    "docs/governance/",
+    "/SKILL.md",
+    ".cursor/rules/",
+)
+# Tools that change state. A non-mutating tool (Read/Grep/Glob) is never gated.
+MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "Bash")
+
+
+def _classify_pretooluse_risk(action: str, paths: list[str]) -> str:
+    """Project the bootloader criterion onto a tool call via mantra_gate.classify_risk.
+
+    classify_risk is the executable form of the <mantra_gate> rule (Pillar 0), but
+    it keys on intent vocabulary, not raw shell — so the hook combines it with the
+    reliable structural signal (a mutating tool touching a governed artifact) rather
+    than trusting the regex on a raw command alone. Import defensively: in an adopter
+    both tes_install.py and mantra_gate.py live under .tes/bin/, but if the module is
+    absent the gate degrades to routine (never block on an import error).
+    """
+    try:
+        import mantra_gate  # noqa: PLC0415 - delivered sibling under .tes/bin/
+    except Exception:
+        return "routine"
+    try:
+        return str(mantra_gate.classify_risk(action=action, paths=paths).get("risk", "routine"))
+    except Exception:
+        return "routine"
+
+
+def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
+    """Decide supervise-vs-block for a PreToolUse tool call, faithful to the bootloader.
+
+    Two registers (mirrors the <mantra_gate> two-register rule), anchored on the
+    reliable tool+path signal and reinforced by classify_risk:
+      - forbidden by intent (e.g. `push --force`, secret disclosure) -> BLOCK.
+      - a MUTATING tool touching a GOVERNED artifact at material+ risk -> SUPERVISE
+        (allow, surface the contract obligation as context once per session).
+      - everything else (non-mutating tool, ordinary code, routine) -> ALLOW silently.
+    The agent still reasons over the surfaced context — the hook injects, it does not
+    decide the agent's intent (the inject-not-decide form). Ordinary local work is
+    never blocked; only the unambiguous forbidden class wakes the hard gate.
+    """
+    tool_name = str(hook_input.get("tool_name") or "")
+    tool_input = hook_input.get("tool_input")
+    tool_input = tool_input if isinstance(tool_input, dict) else {}
+    file_path = str(tool_input.get("file_path") or tool_input.get("path") or "")
+    command = str(tool_input.get("command") or "")
+    action = " ".join(part for part in (tool_name, command) if part).strip()
+    paths = [file_path] if file_path else []
+
+    risk = _classify_pretooluse_risk(action, paths)
+    governed = any(hint in file_path for hint in GOVERNED_ARTIFACT_HINTS)
+    mutating = tool_name in MUTATING_TOOLS
+
+    if risk == "forbidden":
+        return {
+            "block": True,
+            "risk": risk,
+            "reason": (
+                "Mantra Gate (senior manager): forbidden-class action "
+                f"({action or tool_name}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
+                "DOCUMENT/ORACLE/RESOLVE/STATUS) and get explicit authorization before proceeding."
+            ),
+        }
+    if governed and mutating and risk in ("material", "high-risk"):
+        return {
+            "block": False,
+            "risk": risk,
+            "context": (
+                f"Mantra Gate supervising: {risk} change to governed artifact {file_path}. "
+                "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
+            ),
+        }
+    return {"block": False, "risk": risk, "context": ""}
+
+
+def _pretooluse_seen_this_session(target: Path, hook_input: dict[str, Any], key: str) -> bool:
+    """Anti-cry-wolf: surface a given supervision context at most once per session."""
+    session = str(hook_input.get("session_id") or hook_input.get("session") or "default")
+    sentinel = target / ".tes" / "mantra-gates" / f"pretooluse-{session}.seen"
+    try:
+        seen = set()
+        if sentinel.exists():
+            seen = set(sentinel.read_text(encoding="utf-8").splitlines())
+        if key in seen:
+            return True
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
+        with sentinel.open("a", encoding="utf-8") as handle:
+            handle.write(key + "\n")
+    except OSError:
+        return False
+    return False
+
+
+def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int:
+    """PreToolUse handler — the per-host pre-action projection of the senior manager.
+
+    Output contract is NOT uniform (verified against the reference study):
+      - Claude/Codex: exit 2 + stderr blocks; exit 0 allows. additionalContext
+        injects the supervision obligation without blocking.
+      - Cursor: JSON-permission — {"permission":"deny","agent_message":...} blocks,
+        {"continue":true,"user_message":...} / {"permission":"allow"} allows.
+    A materializer that assumed exit-2 everywhere would break silently on Cursor.
+    """
+    target = target_root(args.target)
+    decision = _pretooluse_decision(hook_input)
+
+    if decision["block"]:
+        reason = decision["reason"]
+        if args.agent == "cursor":
+            print(json.dumps({"permission": "deny", "agent_message": reason}, sort_keys=True))
+            return 0
+        print(reason, file=sys.stderr)
+        return 2
+
+    context = decision.get("context") or ""
+    if context and not _pretooluse_seen_this_session(target, hook_input, context):
+        if args.agent == "cursor":
+            print(json.dumps({"continue": True, "user_message": context}, sort_keys=True))
+            return 0
+        if args.agent == "claude":
+            print(
+                json.dumps(
+                    {
+                        "hookSpecificOutput": {
+                            "hookEventName": "PreToolUse",
+                            "permissionDecision": "allow",
+                            "additionalContext": context,
+                        }
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
+        print(context, file=sys.stderr)
+        return 0
+
+    # Supervision-only, nothing to surface -> allow silently (no cry-wolf).
+    if args.agent == "cursor":
+        print(json.dumps({"permission": "allow"}, sort_keys=True))
+    return 0
+
+
 def hook(args: argparse.Namespace) -> int:
     hook_input = parse_hook_input()
+    if str(hook_input.get("hook_event_name") or "") == "PreToolUse":
+        return hook_pretooluse(args, hook_input)
     if args.target == Path("."):
         inferred = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR")
         if inferred:

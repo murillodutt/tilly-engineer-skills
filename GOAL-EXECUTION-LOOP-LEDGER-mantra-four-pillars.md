@@ -64,3 +64,19 @@ oracle_status: PASS — materialize --check (duplicação+paridade) exit 0; subs
 surfaces_promoted_total: 9 (2 maintainer raiz + 3 adapter bootloader + 4 skill source/dev) — nenhuma superfície de bootloader/skill ficou no piso
 release_identity: DISPARA (bootloaders de adapter são delivered — no bundle 0.3.195). Drift delivered. PARO antes do bump (decisão do owner).
 sync: LOCAL_COMMITTED (remote não autorizado)
+
+---
+
+spec_id: SPEC-P-003a (Pilar Hook — LÓGICA de decisão, wiring de instalação a seguir)
+spec_version: 1
+attempt: 1
+failed_attempt_recovery_decision: bug_vs_architecture=architecture. Design inicial passava o comando shell cru a classify_risk (que keya em vocabulário de intenção, não shell) → 'rm -rf docs/adr' classificava routine (provado por execução). Reescrito para ancorar no sinal estrutural confiável: tool mutante + artefato governado, com classify_risk reforçando forbidden. Validado por execução antes do commit.
+pillar: 2 HOOK (camada produto/source DELIVERED — handler em tes_install.py HELPER_FILE)
+commit: no-commit (sha no corpo do commit que inclui este ledger)
+files: scripts/tes_install.py (hook_pretooluse + _pretooluse_decision + dispatch PreToolUse, aditivo), scripts/mantra_gate_pretooluse_oracle.py (novo, maintainer-gate), package.json (wire)
+oracle_status: PASS — handler discrimina por execução real nos 3 hosts: forbidden→Claude/Codex exit2+stderr / Cursor JSON permission:deny; governado+mutante→supervisiona (additionalContext, allow); benigno→silencioso (anti-cry-wolf por session dedup). Oráculo FALSIFICÁVEL provado: mutar Cursor-block→exit2 deixa oráculo RED (exit 1); restore→verde.
+contract_divergence: HONRADA — Cursor JSON-permission ≠ exit-2 (Claude/Codex). Oráculo trava o colapso (Cursor não pode usar exit 2).
+zero_regression: tes_install --self-test exit 0 (SessionStart intacto); dispatch PreToolUse aditivo antes do fluxo existente; validate_reference_package exit 0
+remaining_in_pillar: wiring de instalação (install_*_pretooluse + remove_* ownership-strip + --self-test idempotência) — próximo passo separado (decisão do owner: commitar lógica primeiro, menor blast radius)
+release_identity: DISPARA (tes_install.py é HELPER_FILE delivered). Drift delivered. PARO antes do bump (decisão do owner).
+sync: LOCAL_COMMITTED (remote não autorizado)
