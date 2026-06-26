@@ -47,8 +47,17 @@ INSTALLED_MCP_ENTRYPOINT = ".tes/bin/cortex_mcp.py"
 MCP_PROTOCOL_VERSION = "2025-06-18"
 HANDSHAKE_TIMEOUT_S = 20.0
 
-# Hook execution sentinel written by the hook on run (SPEC-005).
-HOOK_SENTINEL = ".tes/hooks/executed.jsonl"
+# Hook execution sentinel written by the hook on run (SPEC-005). The current
+# path is local-runtime state; the legacy path is read-only compatibility for
+# installed targets that have not updated yet.
+HOOK_SENTINEL = ".tes/runtime/hooks/executed.jsonl"
+LEGACY_HOOK_SENTINEL = ".tes/hooks/executed.jsonl"
+HOOK_AGENTS = ("codex", "claude", "cursor")
+HOOK_AGENT_CONFIGS = {
+    "codex": (".codex/config.toml", ".codex/hooks.json"),
+    "claude": (".claude/settings.json",),
+    "cursor": (".cursor/hooks.json",),
+}
 
 
 def python_executable() -> str:
@@ -128,19 +137,44 @@ def mcp_handshake(target: Path, *, timeout: float = HANDSHAKE_TIMEOUT_S) -> dict
     }
 
 
+def canonical_hook_event(event: str) -> str:
+    return "PreToolUse" if event in {"PreToolUse", "preToolUse"} else event
+
+
+def configured_hook_agents(target: Path) -> dict[str, str]:
+    agents: dict[str, str] = {}
+    for agent, relpaths in HOOK_AGENT_CONFIGS.items():
+        configured = False
+        for relpath in relpaths:
+            path = target / relpath
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if ".tes/bin/tes_install.py" in text and " hook" in text and f"--agent {agent}" in text:
+                configured = True
+                break
+        if configured:
+            agents[agent] = "CONFIGURED"
+    return agents
+
+
 def read_hook_sentinel(target: Path) -> list[dict[str, Any]]:
-    sentinel = target / HOOK_SENTINEL
-    if not sentinel.is_file():
-        return []
     records: list[dict[str, Any]] = []
-    for line in sentinel.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
+    for relpath in (HOOK_SENTINEL, LEGACY_HOOK_SENTINEL):
+        sentinel = target / relpath
+        if not sentinel.is_file():
             continue
-        try:
-            records.append(json.loads(line))
-        except json.JSONDecodeError:
-            continue
+        for line in sentinel.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(record, dict):
+                record.setdefault("sentinel_path", relpath)
+                records.append(record)
     return records
 
 
@@ -156,23 +190,45 @@ def hook_health(target: Path) -> dict[str, Any]:
     if not configured:
         return {"status": "NOT_APPLIED", "reason": "no TES hook configured"}
     records = read_hook_sentinel(target)
+    agents = configured_hook_agents(target)
     if not records:
-        return {"status": "PENDING_TRUST", "reason": "hook configured but never fired (no sentinel)", "configured": configured}
+        return {
+            "status": "PENDING_TRUST",
+            "reason": "hook configured but never fired (no sentinel)",
+            "configured": configured,
+            "agents": agents,
+        }
+    observed_agents = {str(rec.get("agent")) for rec in records if rec.get("agent")}
+    for agent in observed_agents:
+        agents[agent] = "OBSERVED" if agent in agents else "STALE/UNEXPECTED"
     # Duplicate-handler detection: SessionStart is one fire per session. PreToolUse
     # can fire many times in the same session; only host-supplied invocation ids
     # are precise enough to diagnose duplicate PreToolUse handlers.
-    seen: dict[tuple[str, str, str], int] = {}
+    seen: dict[tuple[str, str, str, str], int] = {}
     for rec in records:
-        event = str(rec.get("event", ""))
+        event = canonical_hook_event(str(rec.get("event_canonical") or rec.get("event") or ""))
         if event == "PreToolUse" and not rec.get("invocation"):
             continue
+        mode = str(rec.get("mode") or event)
         session = str(rec.get("invocation") if event == "PreToolUse" else rec.get("session", ""))
-        key = (str(rec.get("agent", "")), event, session)
+        key = (str(rec.get("agent", "")), event, mode, session)
         seen[key] = seen.get(key, 0) + 1
     duplicates = [k for k, count in seen.items() if count > 1]
     if duplicates:
-        return {"status": "DEGRADED", "reason": "duplicate hook handler fired", "duplicates": [list(k) for k in duplicates]}
-    return {"status": "PASS", "reason": "hook fired with a single handler", "fires": len(records)}
+        return {
+            "status": "DEGRADED",
+            "reason": "duplicate hook handler fired",
+            "duplicates": [list(k) for k in duplicates],
+            "agents": agents,
+        }
+    legacy_records = sum(1 for record in records if record.get("sentinel_path") == LEGACY_HOOK_SENTINEL)
+    return {
+        "status": "PASS",
+        "reason": "hook fired with a single handler",
+        "fires": len(records),
+        "agents": agents,
+        "legacy_records": legacy_records,
+    }
 
 
 def evaluate(target: Path, surface: str, *, mcp_timeout: float = HANDSHAKE_TIMEOUT_S) -> dict[str, Any]:
@@ -247,7 +303,7 @@ def self_test() -> int:
         hooked = root / "hooked"
         (hooked / ".claude").mkdir(parents=True)
         (hooked / ".claude/settings.json").write_text(
-            json.dumps({"hooks": {"SessionStart": [{"command": "python3 .tes/bin/tes_install.py hook"}]}}),
+            json.dumps({"hooks": {"SessionStart": [{"command": "python3 .tes/bin/tes_install.py hook --agent claude"}]}}),
             encoding="utf-8",
         )
         h = evaluate(hooked, "hooks")
@@ -256,15 +312,21 @@ def self_test() -> int:
 
         # Hooks: sentinel present, single handler -> PASS.
         (hooked / ".tes/hooks").mkdir(parents=True)
+        (hooked / ".tes/runtime/hooks").mkdir(parents=True)
         (hooked / HOOK_SENTINEL).write_text(
-            json.dumps({"agent": "claude", "event": "SessionStart", "session": "s1"}) + "\n", encoding="utf-8")
+            json.dumps({"agent": "claude", "event": "SessionStart", "mode": "announce_start", "session": "s1"}) + "\n"
+            + json.dumps({"agent": "claude", "event": "SessionStart", "mode": "rewake_on_complete", "session": "s1"}) + "\n",
+            encoding="utf-8",
+        )
         h = evaluate(hooked, "hooks")
         if h["status"] != "PASS":
             failures.append(f"fired hook with single handler must be PASS: {h['status']}")
+        if h.get("agents", {}).get("claude") != "OBSERVED":
+            failures.append("observed Claude hook must report agent state OBSERVED")
 
         # Hooks: duplicate handler -> DEGRADED.
         with (hooked / HOOK_SENTINEL).open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"agent": "claude", "event": "SessionStart", "session": "s1"}) + "\n")
+            fh.write(json.dumps({"agent": "claude", "event": "SessionStart", "mode": "announce_start", "session": "s1"}) + "\n")
         h = evaluate(hooked, "hooks")
         if h["status"] != "DEGRADED":
             failures.append(f"duplicate hook handler must be DEGRADED: {h['status']}")
@@ -272,15 +334,15 @@ def self_test() -> int:
         # Hooks: repeated PreToolUse without host invocation id is a normal hot
         # path fallback, not evidence of duplicate handlers.
         pretool = root / "pretool"
-        (pretool / ".claude").mkdir(parents=True)
-        (pretool / ".claude/settings.json").write_text(
-            json.dumps({"hooks": {"PreToolUse": [{"command": "python3 .tes/bin/tes_install.py hook"}]}}),
+        (pretool / ".cursor").mkdir(parents=True)
+        (pretool / ".cursor/hooks.json").write_text(
+            json.dumps({"hooks": {"preToolUse": [{"command": "python3 .tes/bin/tes_install.py hook --agent cursor"}]}}),
             encoding="utf-8",
         )
-        (pretool / ".tes/hooks").mkdir(parents=True)
+        (pretool / ".tes/runtime/hooks").mkdir(parents=True)
         (pretool / HOOK_SENTINEL).write_text(
-            json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "tool": "Edit"}) + "\n"
-            + json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "tool": "Read"}) + "\n",
+            json.dumps({"agent": "cursor", "event": "preToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "s1", "tool": "Edit"}) + "\n"
+            + json.dumps({"agent": "cursor", "event": "preToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "s1", "tool": "Read"}) + "\n",
             encoding="utf-8",
         )
         h = evaluate(pretool, "hooks")
@@ -288,11 +350,26 @@ def self_test() -> int:
             failures.append(f"repeated PreToolUse fallback records must be PASS: {h['status']}")
 
         with (pretool / HOOK_SENTINEL).open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "invocation": "tool-1"}) + "\n")
-            fh.write(json.dumps({"agent": "claude", "event": "PreToolUse", "session": "s1", "invocation": "tool-1"}) + "\n")
+            fh.write(json.dumps({"agent": "cursor", "event": "preToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "s1", "invocation": "tool-1"}) + "\n")
+            fh.write(json.dumps({"agent": "cursor", "event": "preToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "s1", "invocation": "tool-1"}) + "\n")
         h = evaluate(pretool, "hooks")
         if h["status"] != "DEGRADED":
             failures.append(f"duplicate PreToolUse invocation records must be DEGRADED: {h['status']}")
+
+        legacy = root / "legacy"
+        (legacy / ".claude").mkdir(parents=True)
+        (legacy / ".claude/settings.json").write_text(
+            json.dumps({"hooks": {"SessionStart": [{"command": "python3 .tes/bin/tes_install.py hook --agent claude"}]}}),
+            encoding="utf-8",
+        )
+        (legacy / ".tes/hooks").mkdir(parents=True)
+        (legacy / LEGACY_HOOK_SENTINEL).write_text(
+            json.dumps({"agent": "claude", "event": "SessionStart", "session": "s1"}) + "\n",
+            encoding="utf-8",
+        )
+        h = evaluate(legacy, "hooks")
+        if h["status"] != "PASS" or h.get("legacy_records") != 1:
+            failures.append(f"legacy hook sentinel must remain readable: {h}")
 
         # Unknown surface -> FAIL.
         if evaluate(root / "empty", "bogus")["status"] != "FAIL":

@@ -10,6 +10,7 @@ import tempfile
 from typing import Any
 
 import command_trigger_oracle
+import capsule_residue_oracle
 import mantra_gate_adoption_oracle
 
 
@@ -28,6 +29,7 @@ REPAIR_ROUTES = {
     "command_trigger_parity": "Regenerate installed trigger surfaces through the TES adapter/update path, then rerun command_trigger_oracle.py.",
     "quality_gates_path": "Run tes_legacy_retirement.py or tes_update.py to replace retired discipline paths, then recertify.",
     "artifact_hygiene": "Remove OS residue from package source/materialized setup surfaces, rebuild materialization if authorized, then recertify.",
+    "hook_config_hygiene": "Remove or regenerate stale hook config through tes_install.py attach/detach/update, then recertify.",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -142,6 +144,18 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
     }
 
 
+def hook_config_hygiene(target: Path) -> dict[str, Any]:
+    residue_result = capsule_residue_oracle.evaluate(target)
+    active = residue_result.get("active_residue") if isinstance(residue_result.get("active_residue"), list) else []
+    codex_hook_residue = sorted(str(item) for item in active if ".codex/hooks.json" in str(item))
+    failures = [f"stale Codex hook config residue present: {item}" for item in codex_hook_residue]
+    return {
+        "status": "NEEDS_REVIEW" if failures else "PASS",
+        "failures": failures,
+        "checked": [".codex/hooks.json"],
+    }
+
+
 def adoption_status(target: Path) -> dict[str, Any]:
     if not any((target / relpath).exists() for relpath in ("AGENTS.md", "CLAUDE.md", "CURSOR.md")):
         return {"status": "NOT_APPLIED", "reason": "root-context not attached"}
@@ -178,12 +192,14 @@ def evaluate(target: Path) -> dict[str, Any]:
     target = target.expanduser().resolve()
     quality = quality_gates_path_status(target)
     hygiene = artifact_hygiene(target)
+    hook_hygiene = hook_config_hygiene(target)
     components = {
         "mcp_registration": mcp_registration(target),
         "mantra_gate_adoption": adoption_status(target),
         "command_trigger_parity": trigger_status(target),
         "quality_gates_path": quality,
         "artifact_hygiene": hygiene,
+        "hook_config_hygiene": hook_hygiene,
     }
     findings: list[dict[str, Any]] = []
     for name, payload in components.items():
@@ -210,6 +226,7 @@ def evaluate(target: Path) -> dict[str, Any]:
             "vscode_not_part_of_agent_all": not (target / ".vscode/mcp.json").exists(),
             "stale_discipline_path_absent": not quality.get("failures"),
             "os_residue_absent": not hygiene.get("residue"),
+            "stale_codex_hooks_json_absent": not hook_hygiene.get("failures"),
         },
     }
 
@@ -349,6 +366,8 @@ def self_test() -> dict[str, Any]:
             failures.append("degraded fixture must expose stale quality-gate path")
         if degraded_components["artifact_hygiene"]["status"] != "FAIL":
             failures.append("degraded fixture must expose artifact hygiene failure")
+        if degraded_components["hook_config_hygiene"]["status"] != "PASS":
+            failures.append("degraded fixture must not invent hook config hygiene failure")
         if any(not item.get("repair") for item in degraded_result.get("findings", [])):
             failures.append("degraded fixture findings must include repair routes")
         if healthy_result["status"] != "PASS":
@@ -381,6 +400,34 @@ def self_test() -> dict[str, Any]:
             failures.append("certification finding detail must name the invalid record, not fall back to surface_health:OK")
         if invalid_result["status"] == "BLOCKED":
             failures.append("invalid historical record must not drive installed certification to BLOCKED (D-fix invariant)")
+
+        stale_codex_hook_target = root / "healthy-with-stale-codex-hook"
+        write_base_fixture(stale_codex_hook_target, healthy=True)
+        stale_hook = stale_codex_hook_target / ".codex/hooks.json"
+        stale_hook.write_text(
+            json.dumps(
+                {
+                    "hooks": {
+                        "PreToolUse": [
+                            {
+                                "command": (
+                                    "python3 ${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py "
+                                    "hook --agent claude --target ${CLAUDE_PROJECT_DIR}"
+                                )
+                            }
+                        ]
+                    }
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        stale_result = evaluate(stale_codex_hook_target)
+        stale_hook_hygiene = stale_result["components"]["hook_config_hygiene"]
+        if stale_hook_hygiene["status"] != "NEEDS_REVIEW":
+            failures.append("stale .codex/hooks.json TES command must produce hook_config_hygiene NEEDS_REVIEW")
+        if not any(f.get("component") == "hook_config_hygiene" for f in stale_result.get("findings", [])):
+            failures.append("stale .codex/hooks.json must be reported as a certification finding")
     return {
         "schema": SCHEMA,
         "version": VERSION,

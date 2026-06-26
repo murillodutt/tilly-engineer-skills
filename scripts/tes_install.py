@@ -2024,10 +2024,55 @@ def claude_rewake_message(result: dict[str, Any]) -> str:
     return ""
 
 
-HOOK_SENTINEL_PATH = Path(".tes/hooks/executed.jsonl")
+HOOK_SENTINEL_PATH = Path(".tes/runtime/hooks/executed.jsonl")
+LEGACY_HOOK_SENTINEL_PATH = Path(".tes/hooks/executed.jsonl")
+HOOK_RUNTIME_EXCLUDE_COMMENT = "# TES runtime hook ledgers"
+HOOK_RUNTIME_EXCLUDE_PATTERNS = (".tes/runtime/", ".tes/hooks/executed.jsonl")
 
 
-def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any]) -> None:
+def canonical_hook_event(event: str) -> str:
+    return "PreToolUse" if event in {"PreToolUse", "preToolUse"} else event
+
+
+def _git_info_exclude_path(target: Path) -> Path | None:
+    git = target / ".git"
+    if git.is_dir():
+        return git / "info" / "exclude"
+    if git.is_file():
+        try:
+            text = git.read_text(encoding="utf-8", errors="ignore").strip()
+        except OSError:
+            return None
+        if not text.startswith("gitdir:"):
+            return None
+        raw = text.split(":", 1)[1].strip()
+        git_dir = Path(raw)
+        if not git_dir.is_absolute():
+            git_dir = (target / git_dir).resolve()
+        return git_dir / "info" / "exclude"
+    return None
+
+
+def ensure_hook_runtime_excluded(target: Path) -> None:
+    exclude = _git_info_exclude_path(target)
+    if exclude is None:
+        return
+    try:
+        existing = exclude.read_text(encoding="utf-8") if exclude.exists() else ""
+        lines = {line.strip() for line in existing.splitlines()}
+        missing = [pattern for pattern in HOOK_RUNTIME_EXCLUDE_PATTERNS if pattern not in lines]
+        if not missing:
+            return
+        exclude.parent.mkdir(parents=True, exist_ok=True)
+        prefix = "" if not existing or existing.endswith("\n") else "\n"
+        comment = "" if HOOK_RUNTIME_EXCLUDE_COMMENT in existing else HOOK_RUNTIME_EXCLUDE_COMMENT + "\n"
+        with exclude.open("a", encoding="utf-8") as handle:
+            handle.write(prefix + comment + "\n".join(missing) + "\n")
+    except OSError:
+        return
+
+
+def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any], *, mode: str) -> None:
     """ADR 0004 SPEC-005: prove the hook actually fired.
 
     Append a capsule-scoped sentinel record on every real hook invocation. The
@@ -2037,11 +2082,20 @@ def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any]) 
     """
     try:
         event = hook_event_name(hook_input)
+        event_canonical = canonical_hook_event(event)
         session = str(hook_input.get("session_id") or hook_input.get("sessionId") or os.getpid())
+        ensure_hook_runtime_excluded(target)
         sentinel = target / HOOK_SENTINEL_PATH
         sentinel.parent.mkdir(parents=True, exist_ok=True)
-        record = {"agent": agent, "event": event, "session": session, "ts": utc_stamp()}
-        if event == "PreToolUse":
+        record = {
+            "agent": agent,
+            "event": event,
+            "event_canonical": event_canonical,
+            "mode": mode,
+            "session": session,
+            "ts": utc_stamp(),
+        }
+        if event_canonical == "PreToolUse":
             tool_input = hook_tool_input(hook_input)
             tool = hook_tool_name(hook_input)
             path = hook_tool_path(hook_input, tool_input)
@@ -2249,7 +2303,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     A materializer that assumed exit-2 everywhere would break silently on Cursor.
     """
     target = target_root(args.target)
-    record_hook_execution(target, args.agent, hook_input)
+    record_hook_execution(target, args.agent, hook_input, mode="pretooluse")
     decision = _pretooluse_decision(hook_input)
 
     if decision["block"]:
@@ -2326,7 +2380,12 @@ def hook(args: argparse.Namespace) -> int:
         print(json.dumps(blocked, indent=2, sort_keys=True))
         return 2
     # SPEC-005: the hook fired for real — record the execution sentinel.
-    record_hook_execution(target, args.agent, hook_input)
+    mode = "session_start"
+    if args.announce_start:
+        mode = "announce_start"
+    elif args.rewake_on_complete:
+        mode = "rewake_on_complete"
+    record_hook_execution(target, args.agent, hook_input, mode=mode)
     cortex_context = _cortex_runtime_context(_evaluate_cortex_runtime(target, args.agent, hook_input))
     if args.agent == "claude" and args.announce_start:
         event_name = hook_event_name(hook_input)
@@ -2850,6 +2909,35 @@ def self_test() -> int:
             failures.append("Cursor Cortex PreToolUse mesh advisory must not use Claude/Codex JSON fields")
         if "NEEDS_ALIGN" not in str(cursor_mesh_payload.get("agent_message") or ""):
             failures.append("Cursor Cortex PreToolUse mesh advisory must surface NEEDS_ALIGN in native context")
+        hook_records: list[dict[str, Any]] = []
+        hook_sentinel = target / HOOK_SENTINEL_PATH
+        if hook_sentinel.exists():
+            for line in hook_sentinel.read_text(encoding="utf-8").splitlines():
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(record, dict):
+                    hook_records.append(record)
+        cursor_records = [
+            record for record in hook_records
+            if record.get("agent") == "cursor" and record.get("session") == "cortex-cursor-mesh"
+        ]
+        if not cursor_records:
+            failures.append("Cursor PreToolUse must record runtime hook execution in the ignored sentinel")
+        else:
+            cursor_record = cursor_records[-1]
+            if cursor_record.get("event") != "preToolUse" or cursor_record.get("event_canonical") != "PreToolUse":
+                failures.append("Cursor PreToolUse sentinel must preserve host event and canonical event")
+            if cursor_record.get("mode") != "pretooluse":
+                failures.append("Cursor PreToolUse sentinel must record mode=pretooluse")
+            if cursor_record.get("tool") != "Write" or str(cursor_record.get("path") or "") != str(mesh_path):
+                failures.append("Cursor PreToolUse sentinel must record tool and path details")
+        if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
+            failures.append("new hook runtime must not write the legacy tracked hook sentinel")
+        ignore_probe = run(["git", "check-ignore", HOOK_SENTINEL_PATH.as_posix()], cwd=target)
+        if ignore_probe.returncode != 0:
+            failures.append("hook runtime sentinel must be excluded from target git status")
 
         benign_mesh = run(
             [
