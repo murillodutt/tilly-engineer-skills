@@ -554,6 +554,13 @@ documents:
     consumer: maintainers, runtime authors, hook authors, installer authors, adapter authors, oracle authors, release reviewers, execution agents, and audit agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-loop-sentinel.md
+    id: roadmap.goal_super_spec_tes_loop_sentinel
+    class: roadmap
+    status: proposed
+    consumer: maintainers, Goal Maestro authors, hook authors, runtime authors, oracle authors, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
     id: roadmap.goal_super_spec_cortex_memory_benchmark_harness
     class: roadmap
