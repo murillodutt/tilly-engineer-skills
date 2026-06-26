@@ -49,7 +49,7 @@ Capability and workflow detail belongs in the lazy `tes-runtime-capabilities.mdc
 - Keep `.mdc` frontmatter with a `description` on both rules: `tes-engineering-discipline.mdc` at `alwaysApply: true` (always-on anchor) and `tes-runtime-capabilities.mdc` at `alwaysApply: false` (lazy capability rule).
 - Do not materialize `AGENTS.md` for Cursor without an explicit decision, because it can duplicate `.cursor/rules/**`.
 - Back up project-owned Cursor governance rules, apply clean TES rules, and recover durable local semantics into `docs/agents/**`. Refresh manifest-known TES-owned runtime capability rules such as `tes-runtime-capabilities.mdc`.
-- Do not add hook config or environment files to the default package.
+- Keep hook config and environment files out of Cursor plugin packaging. The project installer may attach `.cursor/hooks.json` for `sessionStart`, `beforeSubmitPrompt`, and `preToolUse` when the hooks surface is selected.
 - Cortex MCP may be activated by the assisted installer through project-scoped `.cursor/mcp.json`. ADR 0002 governed remember is available by default and still requires exact approval.
 
 ## Sensitive Surface Register
@@ -63,18 +63,18 @@ Capability and workflow detail belongs in the lazy `tes-runtime-capabilities.mdc
 
 ## Memory Lifecycle Boundary
 
-Cursor receives the TES memory lifecycle as rule text, not as a default plugin agent or hook package.
+Cursor receives the TES memory lifecycle as rule text plus project-scoped advisory hooks, not as a write-capable plugin agent or hook package.
 
 | Moment | Package stance |
 |--------|----------------|
-| recall | `/tes-cortex` and Cortex reflection stay no-write unless an explicit memory operation is authorized |
+| recall | `/tes-cortex`, Cortex reflection, and runtime recall injection stay no-write unless an explicit memory operation is authorized |
 | scope normalization | Deferred to the shared normalizer wave |
 | write gate | Durable Cortex writes require explicit parent authorization |
 | checkpoint | Deferred to the checkpoint lane wave |
-| closeout | Governed by TES oracles and repository Git hooks |
+| closeout | Governed by TES oracles, repository Git hooks, and host hook advisories |
 | subagent return | Agents may return evidence only; parent owns memory |
 
-Cursor plugin hooks and SDK agents remain outside the default TES package. Parent-owned memory means no durable Cortex writes from an agent without the parent write gate.
+Cursor plugin hooks and SDK agents remain outside TES plugin packaging. Project-scoped TES hooks may emit `NEEDS_ALIGN`, but they must not write the operating mesh or run `/tes-align` automatically. Parent-owned memory means no durable Cortex writes from an agent without the parent write gate.
 
 ## Validation
 

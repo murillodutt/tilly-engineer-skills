@@ -5,8 +5,8 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L3
-tver: 0.4.0
-sources_verified_on: 2026-05-26
+tver: 0.4.1
+sources_verified_on: 2026-06-26
 source_refresh_interval_days: 15
 source_refresh_policy: >-
   If this document is accessed after a cycle of 15 days or more since
@@ -67,7 +67,7 @@ For project semantic alignment, adapter behavior must also remain compatible wit
 | Always-on rules | `AGENTS.md` project guidance | `CLAUDE.md` project guidance | `.cursor/rules/*.mdc` |
 | Skill | `.agents/skills/**` | `.claude/skills/**` project skills | Cursor plugin `skills/**` exists officially; TES v1 uses rules only |
 | Plugin | source-only `src/adapters/codex/plugin/**` retained by oracle | source-only `src/adapters/claude/plugin/**` retained by oracle | `.cursor-plugin/**` exists officially; TES v1 does not claim it |
-| Hooks | native platform support; TES default package uses Git hook only | native platform support; TES plugin hook deferred | native plugin hooks exist; TES default package uses Git hook only |
+| Hooks | project `SessionStart` and `PreToolUse` hooks through `.codex/config.toml`; repository Git hooks still govern commits | project `SessionStart` and `PreToolUse` hooks through `.claude/settings.json`; plugin hook packaging remains source-only | project `sessionStart`, `beforeSubmitPrompt`, and `preToolUse` hooks through `.cursor/hooks.json`; plugin hooks remain out of package |
 | Subagent or agent | native subagent config exists; TES boundary is parent-owned memory | native project/user subagents exist; TES default package blocks direct memory writes | native agents exist through SDK/plugin surfaces; TES default package keeps them out of scope |
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |
 | Behavior backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
@@ -115,12 +115,12 @@ npm run platform:surface:check
 
 This certifies local package shape against the platform-surface contract:
 
-- Codex agent, skill, source-only plugin metadata, MCP install config, and Git-governed hook surface.
-- Claude bootloader, skill, source-only plugin manifests, MCP install config, and plugin non-claims.
-- Cursor bootloader, `.cursor/rules/*.mdc`, MCP install config, and legacy `.cursorrules` exclusion through materialization. Cursor plugin skills are a known native surface, but not a TES v1 packaging claim.
-- Shared pre-commit hook for document size and Cortex reflection.
+- Codex agent, skill, source-only plugin metadata, MCP install config, project hook config, and Git-governed commit hook surface.
+- Claude bootloader, skill, source-only plugin manifests, MCP install config, project hook config, and plugin non-claims.
+- Cursor bootloader, `.cursor/rules/*.mdc`, MCP install config, project hook config, and legacy `.cursorrules` exclusion through materialization. Cursor plugin skills are a known native surface, but not a TES v1 packaging claim.
+- Shared pre-commit hook for document size, Cortex reflection, and package gates.
 
-The oracle does not claim live marketplace publication, live IDE UI behavior, or platform hooks that are intentionally not packaged.
+The oracle does not claim live marketplace publication or live IDE UI recognition. Project hook packaging is certified by host fixtures and installer smoke, not by assuming a running host accepted the files.
 
 ## Certification Implication
 
@@ -139,4 +139,4 @@ The oracle does not claim live marketplace publication, live IDE UI behavior, or
 - Do not block Claude behavior certification waiting for symmetric adapter capability.
 - Do not claim Codex marketplace publication or live UI activation from the local `.codex-plugin/plugin.json` package oracle.
 - Do not claim Cursor plugin skills until a `.cursor-plugin/plugin.json` package exists and has its own oracle.
-- Do not claim platform lifecycle hooks just because the repository Git hook is active.
+- Do not claim platform lifecycle hooks just because the repository Git hook is active; require host-contract fixtures and installer smoke.

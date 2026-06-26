@@ -44,22 +44,22 @@ TES keeps Codex plugin metadata under `src/adapters/codex/plugin/**` as a source
 
 If a target already contains those paths from an older TES install, the bundle apply step removes them only when they are TES-owned/generated or empty. Ambiguous or modified content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
-The retained metadata does not claim marketplace publication, live Codex UI installation, native hooks, plugin skills, or plugin-bundled MCP servers. Those surfaces require a separate explicit packaging decision, official-source proof, safety contract, smoke, and negative tests.
+The retained metadata does not claim marketplace publication, live Codex UI plugin installation, plugin skills, or plugin-bundled MCP servers. Project-scoped hooks are delivered by the installer through `.codex/config.toml`, backed by host fixtures and install smoke, and remain separate from plugin packaging.
 
 ## Memory Lifecycle Boundary
 
-Codex receives the TES memory lifecycle as adapter contract text, not as a write-capable memory runtime.
+Codex receives the TES memory lifecycle as adapter contract text plus project-scoped advisory hooks, not as a write-capable memory runtime.
 
 | Moment | Package stance |
 |--------|----------------|
-| recall | `/tes-cortex` and Cortex reflection stay no-write unless an explicit memory operation is authorized |
+| recall | `/tes-cortex`, Cortex reflection, and runtime recall injection stay no-write unless an explicit memory operation is authorized |
 | scope normalization | Deferred to the shared normalizer wave |
 | write gate | Durable Cortex writes require explicit parent authorization |
 | checkpoint | Deferred to the checkpoint lane wave |
-| closeout | Governed by TES oracles and repository Git hooks |
+| closeout | Governed by TES oracles, repository Git hooks, and host hook advisories |
 | subagent return | Subagents may return evidence only; parent owns memory |
 
-Do not enable Codex hooks, memories, or subagent configuration to bypass this boundary. Parent-owned memory means no durable Cortex writes from a spawned specialist without the parent write gate.
+Do not use Codex hooks, memories, or subagent configuration to bypass this boundary. Runtime Cortex may emit `NEEDS_ALIGN`, but it must not write the operating mesh or run `/tes-align` automatically. Parent-owned memory means no durable Cortex writes from a spawned specialist without the parent write gate.
 
 ## Why This Shape
 

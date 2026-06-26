@@ -54,7 +54,7 @@ Official references: [Memory](https://code.claude.com/docs/en/memory), [Settings
 - `/tes-bump` is the version governance guard. Its `/tes:bump` alias is compatible intent text, direct requests to bump or sync a project version may route to it, and commit/release/delivered-behavior conditions auto-activate its read-only governance check. It dry-runs target discovery before writes and never commits, tags, pushes, publishes, or edits remotes.
 - When installing into an existing project, back up a divergent `CLAUDE.md` under `.tes/bk/**`, apply the clean bootloader, recover useful semantics into `docs/agents/**`, and still install TES-owned assets under `.claude/skills/**`.
 - Hooks, ungoverned write-capable MCP, and subagents must not be added to the default plugin.
-- The installer may add a project `SessionStart` hook that runs the local TES post-install routine and returns concise `additionalContext`; this hook is separate from plugin packaging and must stay idempotent.
+- The installer adds project-scoped `SessionStart` and `PreToolUse` hooks when the hooks surface is attached. These hooks run the local TES post-install and advisory Cortex paths, return concise `additionalContext`, remain separate from plugin packaging, and must stay idempotent.
 - Cortex MCP is activated by the assisted installer through project-scoped `.mcp.json`, not plugin metadata. ADR 0002 governed remember is available by default and still requires exact approval.
 - Source-only plugin retention and target-install omission are certified by `python3 scripts/claude_plugin_oracle.py --self-test`.
 - A publishable Claude marketplace package still requires a separate distribution oracle before certification.
@@ -71,18 +71,18 @@ Official references: [Memory](https://code.claude.com/docs/en/memory), [Settings
 
 ## Memory Lifecycle Boundary
 
-Claude receives the TES memory lifecycle as adapter contract text, not as a default plugin hook or subagent package.
+Claude receives the TES memory lifecycle as adapter contract text plus project-scoped advisory hooks, not as a write-capable plugin hook or subagent package.
 
 | Moment | Package stance |
 |--------|----------------|
-| recall | `/tes-cortex` and Cortex reflection stay no-write unless an explicit memory operation is authorized |
+| recall | `/tes-cortex`, Cortex reflection, and runtime recall injection stay no-write unless an explicit memory operation is authorized |
 | scope normalization | Deferred to the shared normalizer wave |
 | write gate | Durable Cortex writes require explicit parent authorization |
 | checkpoint | Deferred to the checkpoint lane wave |
-| closeout | Governed by TES oracles and repository Git hooks |
+| closeout | Governed by TES oracles, repository Git hooks, and host hook advisories |
 | subagent return | Subagents may return evidence only; parent owns memory |
 
-Claude Code supports hooks and subagents, but TES default packaging does not grant subagents direct memory authority. Parent-owned memory means no durable Cortex writes from a subagent without the parent write gate.
+Claude Code supports hooks and subagents, but TES default packaging does not grant subagents direct memory authority. Runtime Cortex may emit `NEEDS_ALIGN`, but it must not write the operating mesh or run `/tes-align` automatically. Parent-owned memory means no durable Cortex writes from a subagent without the parent write gate.
 
 ## Validation
 

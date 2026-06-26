@@ -272,7 +272,7 @@ Give that file to an LLM or reviewer. Merge Tilly discipline while preserving pr
 
 - No remote script execution.
 - No package manager install.
-- No hooks, background agent, cloud, secret changes, global MCP config, or ungoverned write-capable MCP tools.
+- No unrequested hooks, background agent, cloud, secret changes, global MCP config, or ungoverned write-capable MCP tools. TES project-scoped hooks are allowed only through the selected installer surface and must remain idempotent and advisory unless a separate hard gate blocks a risky action.
 - Project-scoped Cortex MCP config is allowed only through the selected route and explicit installer report; governed remember is default and `--read-only` is the inspection-only opt-out.
 - No runtime overwrite before `.tes/bk/<timestamp>/manifest.json` exists; `.tes/bk/**` is local rollback history and stays out of Git. No non-interactive writes without `--yes`. Backup/restore and uninstall detail: [`REVERSIBILITY.md`](REVERSIBILITY.md).
 

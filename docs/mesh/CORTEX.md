@@ -126,7 +126,7 @@ The conveyor has three gates:
 
 ## Proactive Memory Boundary
 
-ADR 0007 makes Cortex runtime-first the accepted target architecture for proactive memory and mesh-drift sensing. Future runtime implementation may observe host lifecycle events, propose capture, inject relevant recall context, and emit `NEEDS_ALIGN` when durable memory evidence diverges from the operational mesh, but that implementation remains deferred until a PRD/SPEC proves host-specific fixtures for Claude Code, Codex, and Cursor. Cortex must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file; `/tes-align` remains the explicit reconciler that writes and certifies the mesh.
+ADR 0007 makes Cortex runtime-first the accepted architecture for proactive memory and mesh-drift sensing. TES now delivers a project-scoped runtime helper, `cortex_runtime.py`, that host hooks may call to observe lifecycle context, inject bounded recall, propose capture, and emit `NEEDS_ALIGN` when durable memory evidence diverges from the operational mesh. Host fixtures and installer smokes prove this separately for Claude Code, Codex, and Cursor; no cross-host hook output shape is claimed. Cortex runtime remains advisory: it must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file, and it must not run `/tes-align` automatically. `/tes-align` remains the explicit reconciler that writes and certifies the mesh.
 
 ## Scope Boundary
 

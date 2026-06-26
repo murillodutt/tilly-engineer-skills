@@ -126,11 +126,13 @@ The activation path installs local MCP helpers into the target project:
 .tes/bin/install_mcp_hosts/cursor.py
 .tes/bin/install_mcp_hosts/vscode.py
 .tes/bin/cortex.py
+.tes/bin/cortex_runtime.py
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
 .tes/bin/scope_contract.py
 .tes/bin/event_ledger.py
 .tes/bin/checkpoint.py
+.tes/bin/consolidation_gate.py
 .tes/bin/field_reports.py
 .tes/bin/mantra_gate.py
 .tes/bin/mantra_gate_adoption_oracle.py
@@ -138,9 +140,13 @@ The activation path installs local MCP helpers into the target project:
 .tes/bin/tes_update.py
 .tes/bin/tes_legacy_retirement.py
 .tes/bin/root_context.py
+.tes/bin/root_context_sanctioned_oracle.py
+.tes/bin/context_distill_coverage_oracle.py
 .tes/bin/tes_init.py
+.tes/bin/verify_documentation_inventory.py
 .tes/bin/project_context_oracle.py
 .tes/bin/project_alignment_oracle.py
+.tes/bin/tes_project_atlas.py
 .tes/bin/tes_map.py
 .tes/bin/tes_map_oracle.py
 .tes/bin/tes_open_obsidian.py
@@ -213,11 +219,13 @@ cortex_cut:
   camada: mcp
   escreve_em:
     - .tes/bin/cortex.py
+    - .tes/bin/cortex_runtime.py
     - .tes/bin/cortex_mcp.py
     - .tes/bin/cortex_embed.mjs
     - .tes/bin/scope_contract.py
     - .tes/bin/event_ledger.py
     - .tes/bin/checkpoint.py
+    - .tes/bin/consolidation_gate.py
     - .tes/bin/install_mcp.py
     - .tes/bin/install_mcp_hosts/__init__.py
     - .tes/bin/install_mcp_hosts/base.py
@@ -232,9 +240,13 @@ cortex_cut:
     - .tes/bin/tes_update.py
     - .tes/bin/tes_legacy_retirement.py
     - .tes/bin/root_context.py
+    - .tes/bin/root_context_sanctioned_oracle.py
+    - .tes/bin/context_distill_coverage_oracle.py
     - .tes/bin/tes_init.py
+    - .tes/bin/verify_documentation_inventory.py
     - .tes/bin/project_context_oracle.py
     - .tes/bin/project_alignment_oracle.py
+    - .tes/bin/tes_project_atlas.py
     - .tes/bin/tes_map.py
     - .tes/bin/tes_map_oracle.py
     - .tes/bin/tes_open_obsidian.py
