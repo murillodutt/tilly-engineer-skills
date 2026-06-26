@@ -17,9 +17,10 @@ Codex, and Cursor hook behavior without relying on package-source-only oracles.
 Analyze the TES agent hooks present in this project and generate an objective
 report for the TES team.
 
-Do not edit files. Do not push, tag, release, publish, use secrets, or perform
-destructive actions. You may run read-only local diagnostics. If a hook runtime
-ledger records this analysis, treat that as runtime evidence, not product work.
+Do not push, tag, release, publish, use secrets, or perform destructive
+actions. You may run read-only local diagnostics and exactly one safe native
+write/edit smoke for the current host. If a hook runtime ledger records this
+analysis, treat that as runtime evidence, not product work.
 
 Use installed-target evidence only. Inspect these paths when present:
 - .tes/tes-install-lock.json
@@ -44,6 +45,16 @@ Do not run package-source-only checks such as attach_health_oracle.py or
 cortex_runtime.py --self-test unless those files and their fixtures are present
 inside the installed target.
 
+Exercise the current host's PreToolUse with a safe native file mutation before
+the final hook-health run:
+- Claude Code: create or update .tes/runtime/hook-smoke/claude.md.
+- Codex: create or update .tes/runtime/hook-smoke/codex.md.
+- Cursor: create or update .tes/runtime/hook-smoke/cursor.md.
+
+Use the host's normal Write/Edit capability, not shell redirection. Remove only
+the smoke file you created if the test policy asks for a clean worktree. Do not
+reuse another host's report as evidence for the current host.
+
 Compare hosts as separate contracts, not one universal hook:
 - Claude Code: .claude/settings.json, SessionStart, PreToolUse, JSON additionalContext,
   and exit 2 plus stderr when blocking.
@@ -57,6 +68,8 @@ Classify evidence using:
 - CONFIGURED: config exists, but no runtime execution was observed.
 - OBSERVED: hook fired and the current runtime ledger proves it.
 - STALE/RESIDUE: legacy or orphaned file not used as current proof.
+- PASS_WITH_FINDINGS: expected hooks are functionally healthy, with non-blocking
+  observations such as legacy residue or duplicate ledger records.
 - NEEDS_EVIDENCE: claim cannot be proven from installed target evidence.
 - FAIL: installed contract is contradicted by evidence.
 
@@ -65,7 +78,7 @@ Report with this template:
 # TES Agent Hooks Report
 
 ## Verdict
-Status: PASS | PASS with findings | NEEDS_REVIEW | FAIL
+Status: PASS | PASS_WITH_FINDINGS | NEEDS_EVIDENCE | NEEDS_REVIEW | FAIL
 Summary in 3-5 lines.
 
 ## Evidence

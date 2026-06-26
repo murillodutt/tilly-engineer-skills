@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.206"
+VERSION = "0.3.207"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -2297,7 +2297,7 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
                 state = "STALE/UNEXPECTED"
                 findings.append(
                     {
-                        "severity": "warning",
+                        "severity": "error",
                         "type": "runtime_observed_without_config",
                         "agent": agent,
                         "event": event,
@@ -2345,11 +2345,18 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
         for agent in agents.values()
         for event in agent["events"]
     )
+    finding_counts = {
+        "error": sum(1 for finding in findings if finding.get("severity") == "error"),
+        "warning": sum(1 for finding in findings if finding.get("severity") == "warning"),
+        "info": sum(1 for finding in findings if finding.get("severity") == "info"),
+    }
     status_value = "PASS"
-    if unexpected or duplicate_records:
+    if unexpected or finding_counts["error"]:
         status_value = "DEGRADED"
     elif configured_only:
         status_value = "NEEDS_EVIDENCE"
+    elif findings:
+        status_value = "PASS_WITH_FINDINGS"
 
     return {
         "schema": "tes-hook-health@1",
@@ -2369,6 +2376,7 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
             },
         },
         "agents": agents,
+        "finding_counts": finding_counts,
         "findings": findings,
     }
 
@@ -2688,7 +2696,7 @@ def status(args: argparse.Namespace) -> int:
 def hook_health(args: argparse.Namespace) -> int:
     result = hook_health_payload(args.target)
     print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if result["status"] in {"PASS", "NEEDS_EVIDENCE"} else 1
+    return 0 if result["status"] in {"PASS", "PASS_WITH_FINDINGS", "NEEDS_EVIDENCE"} else 1
 
 
 def self_test() -> int:
@@ -3289,6 +3297,28 @@ def self_test() -> int:
         }
         if mesh_after != mesh_before:
             failures.append("Cortex PreToolUse advisory must not write operating mesh files")
+        configured_only_target = target / "configured-only-health"
+        configured_only_target.mkdir()
+        run(["git", "init"], cwd=configured_only_target)
+        (configured_only_target / ".codex").mkdir()
+        (configured_only_target / ".codex/config.toml").write_text(
+            '[features]\nhooks = true\n\n[[hooks.SessionStart]]\ncommand = "python3 .tes/bin/tes_install.py hook --agent codex --target ."\n',
+            encoding="utf-8",
+        )
+        configured_only_health = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(configured_only_target),
+                "--json-only",
+            ],
+            cwd=source_root(),
+        )
+        configured_only_payload = parse_json_output(configured_only_health.stdout)
+        if configured_only_health.returncode != 0 or configured_only_payload.get("status") != "NEEDS_EVIDENCE":
+            failures.append("hook-health must keep configured-only hooks as NEEDS_EVIDENCE with exit 0")
         duplicate_health_target = target / "duplicate-health"
         duplicate_health_target.mkdir()
         run(["git", "init"], cwd=duplicate_health_target)
@@ -3323,8 +3353,34 @@ def self_test() -> int:
             cwd=source_root(),
         )
         duplicate_payload = parse_json_output(duplicate_health.stdout)
-        if duplicate_health.returncode == 0 or duplicate_payload.get("status") != "DEGRADED":
-            failures.append("hook-health must degrade duplicate runtime hook records")
+        if duplicate_health.returncode != 0 or duplicate_payload.get("status") != "PASS_WITH_FINDINGS":
+            failures.append("hook-health must keep duplicate runtime hook records as non-blocking findings")
+        duplicate_findings = duplicate_payload.get("findings") if isinstance(duplicate_payload.get("findings"), list) else []
+        if not any(
+            isinstance(finding, dict) and finding.get("type") == "duplicate_runtime_hook_records"
+            for finding in duplicate_findings
+        ):
+            failures.append("hook-health duplicate fixture must report duplicate_runtime_hook_records finding")
+        unexpected_health_target = target / "unexpected-health"
+        unexpected_health_target.mkdir()
+        run(["git", "init"], cwd=unexpected_health_target)
+        unexpected_sentinel = unexpected_health_target / HOOK_SENTINEL_PATH
+        unexpected_sentinel.parent.mkdir(parents=True)
+        unexpected_sentinel.write_text(json.dumps(duplicate_record, sort_keys=True) + "\n", encoding="utf-8")
+        unexpected_health = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(unexpected_health_target),
+                "--json-only",
+            ],
+            cwd=source_root(),
+        )
+        unexpected_payload = parse_json_output(unexpected_health.stdout)
+        if unexpected_health.returncode == 0 or unexpected_payload.get("status") != "DEGRADED":
+            failures.append("hook-health must degrade runtime records observed without matching config")
         second_hook = run(
             [
                 sys.executable,

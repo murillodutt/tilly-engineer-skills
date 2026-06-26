@@ -107,7 +107,7 @@ The install surface is protected by a layered oracle set; see `docs/install/AGEN
 - `install_mcp.py --self-test` — helper install + real MCP handshake.
 - `install_smoke.py --self-test` — capsule install, reversibility, attach/detach, skills surface, GPS capsule mode probes.
 - `attach_health_oracle.py` / `capsule_residue_oracle.py` — source-package per-surface health and zero-residue proof.
-- `tes_install.py hook-health --target . --json-only` — installed-target hook config versus runtime ledger proof.
+- `tes_install.py hook-health --target . --json-only` — installed-target hook config versus runtime ledger proof, with non-blocking findings separated from functional `DEGRADED` status.
 - `tes_npx_oracle.py --self-test` / `--release-check` — the bin contract and the published GitHub ref certification.
 - `public_pages_oracle.py` — GitHub Pages live serving.
 

@@ -22,7 +22,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.206"
+VERSION = "0.3.207"
 RETROFIT_DIR = ".tes/retrofit"
 CANONICAL_SOURCE_REL = "docs/agents/PROJECT-CONTEXT.md"
 

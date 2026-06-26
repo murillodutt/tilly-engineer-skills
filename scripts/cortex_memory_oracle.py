@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import cortex_memory_benchmark as benchmark  # noqa: E402
 
 
-VERSION = "0.3.206"
+VERSION = "0.3.207"
 
 
 def load_json(path: Path) -> object:

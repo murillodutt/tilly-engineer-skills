@@ -92,12 +92,12 @@ tes bump     -> /tes-bump
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.206 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.207 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | project-scoped Cortex surface, preferred for recall/read/curation/reflection and governed remember |
 | MCP host recognition | separate state after file registration: `config_present`, `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`, `host_connected`, or `session_restart_required` |
 | Installed certification | aggregate installed state: core runtime, MCP registration, Mantra Gate adoption, command trigger parity, quality-gate path, artifact hygiene, and provenance; report `PARTIAL` when MCP passes but any non-MCP component fails |
-| Hook health | installed-target hook evidence: `tes_install.py hook-health --target . --json-only` reports each Claude Code, Codex, and Cursor lifecycle event as `OBSERVED`, `CONFIGURED`, `STALE/UNEXPECTED`, or `NOT_CONFIGURED` from current runtime ledgers and host config |
+| Hook health | installed-target hook evidence: `tes_install.py hook-health --target . --json-only` reports each Claude Code, Codex, and Cursor lifecycle event as `OBSERVED`, `CONFIGURED`, `STALE/UNEXPECTED`, or `NOT_CONFIGURED` from current runtime ledgers and host config; global status separates functional failure from non-blocking findings (`PASS`, `PASS_WITH_FINDINGS`, `NEEDS_EVIDENCE`, `DEGRADED`) |
 | skills | user-intent routers in runtimes that support skills |
 | goal materialization skill | explicit mature-artifact-to-`/goal` prompt materialization with artifact maturity, execution-unit fidelity, internal tree, material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
