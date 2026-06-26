@@ -1,0 +1,38 @@
+{
+  "fixture_schema": "tes.host-runtime-contract.v1",
+  "host": "git-native",
+  "host_family": "git-hook-manager",
+  "source_refs": [
+    "https://git-scm.com/docs/githooks",
+    "https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath"
+  ],
+  "setup": {
+    "core_hooks_path": null,
+    "files": {}
+  },
+  "contract": {
+    "config_owner": "git",
+    "install_path": ".git/hooks/pre-push",
+    "active_entrypoint": ".git/hooks/pre-push",
+    "output_style": "shell-exit-nonblocking",
+    "blocks_delivery": false,
+    "idempotency": "same hook path, no duplicate backup",
+    "observable_proof": "execute active pre-push hook in a temporary Git repository"
+  },
+  "expected_install": {
+    "status": "PASS",
+    "hook": ".git/hooks/pre-push",
+    "hook_mode": "git-default",
+    "forbidden_marker_paths": [
+      ".githooks/pre-push",
+      ".husky/pre-push",
+      ".husky/_/pre-push"
+    ]
+  },
+  "negative_cases": [
+    {
+      "name": "reject_hooks_path_projection",
+      "hook": ".githooks/pre-push"
+    }
+  ]
+}

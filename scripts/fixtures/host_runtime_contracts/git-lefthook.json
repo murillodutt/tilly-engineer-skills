@@ -1,0 +1,40 @@
+{
+  "fixture_schema": "tes.host-runtime-contract.v1",
+  "host": "git-lefthook",
+  "host_family": "git-hook-manager",
+  "source_refs": [
+    "https://lefthook.dev/configuration/",
+    "https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath"
+  ],
+  "setup": {
+    "core_hooks_path": ".githooks",
+    "files": {
+      "lefthook.yml": "pre-commit:\n  commands:\n    placeholder:\n      run: true\n"
+    }
+  },
+  "contract": {
+    "config_owner": "lefthook project configuration",
+    "install_path": ".githooks/pre-push",
+    "active_entrypoint": ".githooks/pre-push",
+    "output_style": "shell-exit-nonblocking",
+    "blocks_delivery": false,
+    "idempotency": "respect project hook routing and do not write dormant .git/hooks",
+    "observable_proof": "execute active pre-push hook in a temporary Git repository"
+  },
+  "expected_install": {
+    "status": "PASS",
+    "hook": ".githooks/pre-push",
+    "hook_mode": "core.hooksPath",
+    "forbidden_marker_paths": [
+      ".git/hooks/pre-push",
+      ".husky/pre-push",
+      ".husky/_/pre-push"
+    ]
+  },
+  "negative_cases": [
+    {
+      "name": "reject_default_git_hook_when_lefthook_routes_elsewhere",
+      "hook": ".git/hooks/pre-push"
+    }
+  ]
+}

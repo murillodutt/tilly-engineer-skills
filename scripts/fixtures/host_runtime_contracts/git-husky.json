@@ -1,0 +1,43 @@
+{
+  "fixture_schema": "tes.host-runtime-contract.v1",
+  "host": "git-husky",
+  "host_family": "git-hook-manager",
+  "source_refs": [
+    "https://typicode.github.io/husky/",
+    "https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath"
+  ],
+  "setup": {
+    "core_hooks_path": ".husky/_",
+    "files": {
+      ".husky/_/pre-push": "#!/usr/bin/env sh\nhook_dir=\"$(dirname \"$0\")\"\nif [ -f \"$hook_dir/../pre-push\" ]; then\n  sh \"$hook_dir/../pre-push\" \"$@\"\nfi\nexit 0\n"
+    },
+    "executable": [
+      ".husky/_/pre-push"
+    ]
+  },
+  "contract": {
+    "config_owner": "husky internal wrapper",
+    "install_path": ".husky/pre-push",
+    "active_entrypoint": ".husky/_/pre-push",
+    "output_style": "shell-wrapper-to-user-hook",
+    "blocks_delivery": false,
+    "idempotency": "preserve Husky internal wrapper and compose user hook",
+    "observable_proof": "execute Husky wrapper in a temporary Git repository"
+  },
+  "expected_install": {
+    "status": "PASS",
+    "hook": ".husky/pre-push",
+    "hook_mode": "husky",
+    "forbidden_marker_paths": [
+      ".git/hooks/pre-push",
+      ".githooks/pre-push",
+      ".husky/_/pre-push"
+    ]
+  },
+  "negative_cases": [
+    {
+      "name": "reject_internal_wrapper_overwrite",
+      "hook": ".husky/_/pre-push"
+    }
+  ]
+}

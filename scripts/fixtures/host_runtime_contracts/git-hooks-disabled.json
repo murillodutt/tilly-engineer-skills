@@ -1,0 +1,38 @@
+{
+  "fixture_schema": "tes.host-runtime-contract.v1",
+  "host": "git-hooks-disabled",
+  "host_family": "git-hook-manager",
+  "source_refs": [
+    "https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath"
+  ],
+  "setup": {
+    "core_hooks_path": "/dev/null",
+    "files": {}
+  },
+  "contract": {
+    "config_owner": "project-owned disabled hook routing",
+    "install_path": null,
+    "active_entrypoint": null,
+    "output_style": "HOST_UNOBSERVABLE",
+    "blocks_delivery": true,
+    "idempotency": "report BLOCKED without hook writes",
+    "observable_proof": "installer result reports BLOCKED"
+  },
+  "expected_install": {
+    "status": "BLOCKED",
+    "hook": null,
+    "hook_mode": null,
+    "forbidden_marker_paths": [
+      ".git/hooks/pre-push",
+      ".githooks/pre-push",
+      ".husky/pre-push",
+      ".husky/_/pre-push"
+    ]
+  },
+  "negative_cases": [
+    {
+      "name": "reject_any_hook_write",
+      "hook": ".git/hooks/pre-push"
+    }
+  ]
+}

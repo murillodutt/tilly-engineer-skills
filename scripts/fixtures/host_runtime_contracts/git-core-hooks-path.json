@@ -1,0 +1,38 @@
+{
+  "fixture_schema": "tes.host-runtime-contract.v1",
+  "host": "git-core-hooks-path",
+  "host_family": "git-hook-manager",
+  "source_refs": [
+    "https://git-scm.com/docs/githooks",
+    "https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath"
+  ],
+  "setup": {
+    "core_hooks_path": ".githooks",
+    "files": {}
+  },
+  "contract": {
+    "config_owner": "project-owned core.hooksPath",
+    "install_path": ".githooks/pre-push",
+    "active_entrypoint": ".githooks/pre-push",
+    "output_style": "shell-exit-nonblocking",
+    "blocks_delivery": false,
+    "idempotency": "same hook path, no orphan .git/hooks hook",
+    "observable_proof": "execute active pre-push hook in a temporary Git repository"
+  },
+  "expected_install": {
+    "status": "PASS",
+    "hook": ".githooks/pre-push",
+    "hook_mode": "core.hooksPath",
+    "forbidden_marker_paths": [
+      ".git/hooks/pre-push",
+      ".husky/pre-push",
+      ".husky/_/pre-push"
+    ]
+  },
+  "negative_cases": [
+    {
+      "name": "reject_orphan_git_hook",
+      "hook": ".git/hooks/pre-push"
+    }
+  ]
+}
