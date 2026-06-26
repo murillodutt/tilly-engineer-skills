@@ -117,7 +117,7 @@ VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 
 Two bands control visibility and blocking. Proactive supervision covers ordinary local edits, focused oracles, staging, and local commits: advise only when a real contract obligation or drift appears. The hard gate covers destructive, remote, release, sync, secret-bearing, high-impact actions, and closure claims that depend on them.
 
-The normal compact marker is `[🍳 Flash-Fry]`. It is a discreet status signal, not a user command. Quiet proceed is acceptable; report detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is needed, or the user explicitly asks for audit detail.
+The normal compact marker is `🍳 Flash-Fry`, rendered with Markdown backticks instead of square brackets. It is a discreet status signal, not a user command. Quiet proceed is acceptable; report detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is needed, or the user explicitly asks for audit detail.
 
 ## Infrastructure Decision Gate
 

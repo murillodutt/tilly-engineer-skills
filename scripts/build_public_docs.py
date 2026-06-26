@@ -13,7 +13,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 STRUCTURE = ROOT / "docs/i18n/tes-public.structure.yml"
 CONTENT = ROOT / "docs/i18n/tes-public.content.json"
-FLASH_FRY_MARKER = "[🍳 Flash-Fry]"
+FLASH_FRY_MARKER = "🍳 Flash-Fry"
 
 
 def load_sources() -> tuple[dict, dict]:
@@ -1844,7 +1844,7 @@ JS = r"""
         if (!docContent) return;
         const firstParagraph = docContent.querySelector("h1 + p");
         if (firstParagraph) firstParagraph.classList.add("doc-lede");
-        docContent.querySelectorAll("code").forEach((node) => { if ((node.textContent || "").trim() === "[🍳 Flash-Fry]") node.classList.add("flash-fry-stamp"); });
+        docContent.querySelectorAll("code").forEach((node) => { if ((node.textContent || "").trim() === "🍳 Flash-Fry") node.classList.add("flash-fry-stamp"); });
         normalizeDocLinks(docContent);
         docContent.querySelectorAll("a[href^='http']").forEach((link) => {
           link.setAttribute("target", "_blank");

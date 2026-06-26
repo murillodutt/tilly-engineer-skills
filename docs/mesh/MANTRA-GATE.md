@@ -27,10 +27,10 @@ This is anti-cry-wolf behavior: benign reads and ordinary code edits are silent;
 
 ## Compact Marker
 
-The compact marker is:
+The compact marker is rendered with Markdown backticks:
 
-```text
-[🍳 Flash-Fry]
+```markdown
+`🍳 Flash-Fry`
 ```
 
 The marker is a discreet signal, not an invocation surface. Do not create, advertise, or route a `/flash-fry` skill or command.

@@ -34,7 +34,7 @@ FIXTURE_DIR = ROOT / "tmp" / "regression-fixture-clean"
 PLAN_PATH = ROOT / "tmp" / "regression-remutation-plan.json"
 
 EXPECTED_GATE_FIELDS = ("VERIFY", "SCOPE", "BEST_PATH", "DOCUMENT", "ORACLE", "RESOLVE", "STATUS")
-EXPECTED_MARKER = "[🍳 Flash-Fry]"
+EXPECTED_MARKER = "`🍳 Flash-Fry`"
 EXPECTED_GATE_WEIGHT = {"PROCEED": 0, "NEEDS_REVIEW": 1, "BLOCKED": 2}
 EXPECTED_STATUSES = {"PROCEED", "BLOCKED", "NEEDS_REVIEW"}
 EXPECTED_ORACLE_WEIGHT = {"OK": 0, "DEGRADED": 1, "BYPASS_SUSPECTED": 2, "NEEDS_REVIEW": 3, "BLOCKED": 4}
@@ -212,7 +212,7 @@ def write_plan() -> Path:
     plan = {"oracles": [
         oracle(
             "marker-identity", "mantra_gate.MARKER is the Flash-Fry marker", "marker-mutation",
-            'MARKER = "[\U0001f373 Flash-Fry]"', 'MARKER = "[REGRESSED]"',
+            'MARKER = "`\U0001f373 Flash-Fry`"', 'MARKER = "[REGRESSED]"',
         ),
         oracle(
             "gate-status-weight", "mantra_gate.STATUS_WEIGHT keeps PROCEED/NEEDS_REVIEW/BLOCKED at 0/1/2",

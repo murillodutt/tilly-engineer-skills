@@ -228,7 +228,7 @@ SPEC-004 evidence:
 - scripts/** classification: scripts/test_mantra_gate_no_regression.py is maintainer-only oracle; scripts/mantra_gate.py is delivered behavior and was not changed.
 - Changed files: scripts/test_mantra_gate_no_regression.py.
 - Material diff: `git show --stat --oneline c2edd87e` reports 1 file changed, 56 insertions, 2 deletions.
-- Sample clean proceed output: exactly `[🍳 Flash-Fry]\n`, stderr empty, exit 0.
+- Sample clean proceed output: exactly <code>`🍳 Flash-Fry`\n</code>, stderr empty, exit 0.
 - Sample BLOCKED/NEEDS_REVIEW output: JSON status detail, no marker-only output, exit 1 for BLOCKED and exit 2 for NEEDS_REVIEW.
 - Negative semantic grep: no `/flash-fry`, no always-verbose success, no src/docs/tmp/package edits in this commit.
 - Sync status: LOCAL_COMMITTED; REMOTE_SYNC_NOT_REQUESTED.

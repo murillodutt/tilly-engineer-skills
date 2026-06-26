@@ -14,9 +14,9 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.198"
+VERSION = "0.3.199"
 SCHEMA = "tes-mantra-gate@1"
-MARKER = "[🍳 Flash-Fry]"
+MARKER = "`🍳 Flash-Fry`"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW", "DRIFT_FROM_CONTRACT")
 STATUS_WEIGHT = {"PROCEED": 0, "NEEDS_REVIEW": 1, "BLOCKED": 2, "DRIFT_FROM_CONTRACT": 3}
 RISK_LEVELS = ("routine", "material", "high-risk", "forbidden")
