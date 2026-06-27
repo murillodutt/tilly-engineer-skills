@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -18,6 +19,9 @@ VERSION = "0.3.220"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
+LOCK_PATH = ".tes/tes-install-lock.json"
+PRETOOLUSE_CONTRACT_PACKAGE_PATH = "docs/architecture/PRETOOLUSE-CONTRACT.md"
+PRETOOLUSE_CONTRACT_INSTALLED_PATH = ".tes/docs/architecture/PRETOOLUSE-CONTRACT.md"
 PARTIAL_STATUSES = {"DEGRADED", "FAIL", "PARTIAL"}
 REVIEW_STATUSES = {"NEEDS_REVIEW"}
 BLOCKED_STATUSES = {"BLOCKED", "BYPASS_SUSPECTED"}
@@ -30,6 +34,7 @@ REPAIR_ROUTES = {
     "quality_gates_path": "Run tes_legacy_retirement.py or tes_update.py to replace retired discipline paths, then recertify.",
     "artifact_hygiene": "Remove OS residue from package source/materialized setup surfaces, rebuild materialization if authorized, then recertify.",
     "hook_config_hygiene": "Remove or regenerate stale hook config through tes_install.py attach/detach/update, then recertify.",
+    "pretooluse_contract_reference": "Rerun tes_install.py from the package version that owns the installed target, then recertify.",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,6 +47,10 @@ def read_json(path: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     return data if isinstance(data, dict) else {}
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def rel(path: Path, root: Path) -> str:
@@ -156,6 +165,60 @@ def hook_config_hygiene(target: Path) -> dict[str, Any]:
     }
 
 
+def pretooluse_contract_reference(target: Path) -> dict[str, Any]:
+    """Verify the installed PreToolUse contract copy and lock without source reads."""
+    has_capsule_signal = any(
+        (target / relpath).exists()
+        for relpath in (
+            ".tes/manifest.json",
+            ".tes/bin/tes_install.py",
+            LOCK_PATH,
+            PRETOOLUSE_CONTRACT_INSTALLED_PATH,
+        )
+    )
+    if not has_capsule_signal:
+        return {"status": "NOT_APPLIED", "failures": [], "reason": "capsule not installed"}
+
+    failures: list[str] = []
+    lock = read_json(target / LOCK_PATH)
+    reference = lock.get("pretooluse_contract") if isinstance(lock.get("pretooluse_contract"), dict) else None
+    if reference is None:
+        failures.append(f"{LOCK_PATH} missing pretooluse_contract")
+        reference = {}
+
+    expected = {
+        "package_path": PRETOOLUSE_CONTRACT_PACKAGE_PATH,
+        "installed_path": PRETOOLUSE_CONTRACT_INSTALLED_PATH,
+        "version": VERSION,
+    }
+    for key, value in expected.items():
+        if reference.get(key) != value:
+            failures.append(f"pretooluse_contract.{key} expected {value!r}, got {reference.get(key)!r}")
+
+    installed = target / PRETOOLUSE_CONTRACT_INSTALLED_PATH
+    actual_sha: str | None = None
+    if not installed.is_file():
+        failures.append(f"installed PreToolUse contract missing: {PRETOOLUSE_CONTRACT_INSTALLED_PATH}")
+    else:
+        actual_sha = sha256_file(installed)
+        if reference.get("sha256") != actual_sha:
+            failures.append(
+                "pretooluse_contract.sha256 mismatch: "
+                f"lock={reference.get('sha256')!r} installed={actual_sha!r}"
+            )
+
+    return {
+        "status": "NEEDS_REVIEW" if failures else "PASS",
+        "lock_path": LOCK_PATH,
+        "package_path": reference.get("package_path"),
+        "installed_path": PRETOOLUSE_CONTRACT_INSTALLED_PATH,
+        "sha256": reference.get("sha256"),
+        "actual_sha256": actual_sha,
+        "version": reference.get("version"),
+        "failures": failures,
+    }
+
+
 def adoption_status(target: Path) -> dict[str, Any]:
     if not any((target / relpath).exists() for relpath in ("AGENTS.md", "CLAUDE.md", "CURSOR.md")):
         return {"status": "NOT_APPLIED", "reason": "root-context not attached"}
@@ -193,6 +256,7 @@ def evaluate(target: Path) -> dict[str, Any]:
     quality = quality_gates_path_status(target)
     hygiene = artifact_hygiene(target)
     hook_hygiene = hook_config_hygiene(target)
+    contract_reference = pretooluse_contract_reference(target)
     components = {
         "mcp_registration": mcp_registration(target),
         "mantra_gate_adoption": adoption_status(target),
@@ -200,6 +264,7 @@ def evaluate(target: Path) -> dict[str, Any]:
         "quality_gates_path": quality,
         "artifact_hygiene": hygiene,
         "hook_config_hygiene": hook_hygiene,
+        "pretooluse_contract_reference": contract_reference,
     }
     findings: list[dict[str, Any]] = []
     for name, payload in components.items():
@@ -227,6 +292,7 @@ def evaluate(target: Path) -> dict[str, Any]:
             "stale_discipline_path_absent": not quality.get("failures"),
             "os_residue_absent": not hygiene.get("residue"),
             "stale_codex_hooks_json_absent": not hook_hygiene.get("failures"),
+            "pretooluse_contract_reference_valid": not contract_reference.get("failures"),
         },
     }
 
@@ -339,6 +405,21 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     }
     (target / ".tes").mkdir(parents=True, exist_ok=True)
     (target / ".tes/manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    contract_text = "# PreToolUse Contract\n\nFixture contract.\n"
+    contract_path = target / PRETOOLUSE_CONTRACT_INSTALLED_PATH
+    contract_path.parent.mkdir(parents=True, exist_ok=True)
+    contract_path.write_text(contract_text, encoding="utf-8")
+    lock = {
+        "schema": "tes-install-lock@1",
+        "version": VERSION,
+        "pretooluse_contract": {
+            "package_path": PRETOOLUSE_CONTRACT_PACKAGE_PATH,
+            "installed_path": PRETOOLUSE_CONTRACT_INSTALLED_PATH,
+            "sha256": sha256_file(contract_path),
+            "version": VERSION,
+        },
+    }
+    (target / LOCK_PATH).write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if not healthy:
         residue = target / ".tes/setup/0.0.0/adapters/codex/.agents/skills/tes-goal-maestro/__MACOSX/._SKILL.md"
         residue.parent.mkdir(parents=True, exist_ok=True)
@@ -374,6 +455,10 @@ def self_test() -> dict[str, Any]:
             failures.append(f"healthy fixture must report PASS, got {healthy_result['status']}")
         if not healthy_result["negative_checks"]["host_connected_not_inferred"]:
             failures.append("installed certification must never infer host_connected")
+        if healthy_result["components"]["pretooluse_contract_reference"]["status"] != "PASS":
+            failures.append("healthy fixture must expose PASS PreToolUse contract reference")
+        if not healthy_result["negative_checks"]["pretooluse_contract_reference_valid"]:
+            failures.append("healthy fixture must mark pretooluse_contract_reference_valid")
 
         # A schema-invalid historical gate record on an otherwise healthy target
         # must surface in the certification finding's detail (naming the invalid
@@ -428,6 +513,20 @@ def self_test() -> dict[str, Any]:
             failures.append("stale .codex/hooks.json TES command must produce hook_config_hygiene NEEDS_REVIEW")
         if not any(f.get("component") == "hook_config_hygiene" for f in stale_result.get("findings", [])):
             failures.append("stale .codex/hooks.json must be reported as a certification finding")
+
+        stale_contract_target = root / "healthy-with-stale-contract-lock"
+        write_base_fixture(stale_contract_target, healthy=True)
+        stale_lock_path = stale_contract_target / LOCK_PATH
+        stale_lock = read_json(stale_lock_path)
+        stale_lock["pretooluse_contract"]["version"] = "0.0.0"
+        stale_lock["pretooluse_contract"]["sha256"] = "0" * 64
+        stale_lock_path.write_text(json.dumps(stale_lock, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        stale_contract_result = evaluate(stale_contract_target)
+        stale_contract_component = stale_contract_result["components"]["pretooluse_contract_reference"]
+        if stale_contract_component["status"] != "NEEDS_REVIEW":
+            failures.append("stale PreToolUse contract lock must produce NEEDS_REVIEW")
+        if not any(f.get("component") == "pretooluse_contract_reference" for f in stale_contract_result.get("findings", [])):
+            failures.append("stale PreToolUse contract lock must be reported as a certification finding")
     return {
         "schema": SCHEMA,
         "version": VERSION,

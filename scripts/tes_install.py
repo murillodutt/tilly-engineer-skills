@@ -36,6 +36,8 @@ LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
 POSTINSTALL_RUN_INDEX = POSTINSTALL_RUN_ROOT / "index.json"
+PRETOOLUSE_CONTRACT_PACKAGE_PATH = Path("docs/architecture/PRETOOLUSE-CONTRACT.md")
+PRETOOLUSE_CONTRACT_INSTALLED_PATH = Path(".tes/docs/architecture/PRETOOLUSE-CONTRACT.md")
 POSTINSTALL_SENTINEL_RUN_LIMIT = 20
 AGENTS = ("codex", "claude", "cursor")
 POSTINSTALL_STATES = {"pending", "running", "complete", "needs_review"}
@@ -955,6 +957,16 @@ def write_review_sentinel(
     return write_json(target / POSTINSTALL_PATH, payload, dry_run=dry_run)
 
 
+def pretooluse_contract_lock_reference(target: Path) -> dict[str, Any]:
+    installed = target / PRETOOLUSE_CONTRACT_INSTALLED_PATH
+    return {
+        "package_path": PRETOOLUSE_CONTRACT_PACKAGE_PATH.as_posix(),
+        "installed_path": PRETOOLUSE_CONTRACT_INSTALLED_PATH.as_posix(),
+        "sha256": sha256_file(installed) if installed.is_file() else None,
+        "version": VERSION,
+    }
+
+
 def write_install_lock(
     target: Path,
     agent: str,
@@ -981,6 +993,7 @@ def write_install_lock(
         "mode": mode,
         "source_repository": metadata.get("source_repository"),
         "source_commit": metadata.get("source_commit"),
+        "pretooluse_contract": pretooluse_contract_lock_reference(target),
         "stage": summarize_result(stage),
         "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
         "attached_surfaces": attached_surfaces or ["capsule"],
@@ -1625,6 +1638,23 @@ def install(args: argparse.Namespace) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         print("[tes-install] FAIL")
         return 1
+    # Installed certification reads the installed lock, so write the reference
+    # once before certification and overwrite it with the final summary below.
+    pending_certification_result = {"status": "PENDING", "payload": {}, "failures": []}
+    write_install_lock(
+        target,
+        args.agent,
+        agents,
+        args.mode,
+        stage,
+        legacy_retirement_result,
+        apply_result,
+        hook_actions,
+        mcp_result,
+        pending_certification_result,
+        args.dry_run,
+        sorted(surfaces),
+    )
     certification_result = run_installed_certification(target, args.dry_run, args.timeout)
     # The first-session post-install sentinel (.tes/postinstall.json) is what the
     # installed SessionStart hook reads to announce setup and trigger first-run
@@ -3583,6 +3613,7 @@ def self_test() -> int:
             ".tes/bin/tes_install.py",
             ".tes/bin/cortex_runtime.py",
             ".tes/tes-install-lock.json",
+            ".tes/docs/architecture/PRETOOLUSE-CONTRACT.md",
             ".tes/postinstall.json",
             ".codex/config.toml",
             ".mcp.json",
@@ -3594,6 +3625,27 @@ def self_test() -> int:
         ):
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
+        canonical_contract = source_root() / PRETOOLUSE_CONTRACT_PACKAGE_PATH
+        installed_contract = target / PRETOOLUSE_CONTRACT_INSTALLED_PATH
+        if canonical_contract.is_file() and installed_contract.is_file():
+            canonical_hash = sha256_file(canonical_contract)
+            installed_hash = sha256_file(installed_contract)
+            if installed_hash != canonical_hash:
+                failures.append("thin install must copy the canonical PreToolUse contract byte-for-byte")
+        else:
+            canonical_hash = None
+        install_lock = read_json(target / LOCK_PATH)
+        contract_ref = install_lock.get("pretooluse_contract") if isinstance(install_lock.get("pretooluse_contract"), dict) else {}
+        expected_contract_ref = {
+            "package_path": PRETOOLUSE_CONTRACT_PACKAGE_PATH.as_posix(),
+            "installed_path": PRETOOLUSE_CONTRACT_INSTALLED_PATH.as_posix(),
+            "version": VERSION,
+        }
+        for key, expected in expected_contract_ref.items():
+            if contract_ref.get(key) != expected:
+                failures.append(f"install lock pretooluse_contract.{key} must be {expected!r}")
+        if canonical_hash and contract_ref.get("sha256") != canonical_hash:
+            failures.append("install lock pretooluse_contract.sha256 must match the canonical contract")
         if (target / ".vscode/mcp.json").exists():
             failures.append("thin install --agent all must not create VS Code MCP config")
         codex_config = (target / ".codex/config.toml").read_text(encoding="utf-8") if (target / ".codex/config.toml").exists() else ""

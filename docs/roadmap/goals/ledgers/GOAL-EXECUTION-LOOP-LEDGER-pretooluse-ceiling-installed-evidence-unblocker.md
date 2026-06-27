@@ -242,3 +242,59 @@ ACTIVE_SPEC: `SPEC-002`
 BASELINE_ONLY_COMMITS: `e1e51351,89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
 LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
 MAY_EDIT: `yes`
+
+## SPEC-002
+
+spec_id: `SPEC-002`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-003`
+failed_attempt_recovery_decision: `not_applicable`
+commit: 2b6b7d6e
+oracle_status: `PASS: python3 scripts/tes_install.py --self-test; python3 scripts/host_runtime_matrix_oracle.py --self-test; python3 scripts/hook_audit_prompt_oracle.py --self-test; npm run commit:check`
+structural_method_id: `platform-python-installer-internal-sections`
+topology_decision: `internal-section patch in installed hook-health plus prompt/matrix oracle assertions`
+topology_decision_artifact: `scripts/tes_install.py; scripts/host_runtime_matrix_oracle.py; scripts/hook_audit_prompt_oracle.py; docs/install/HOOK-AUDIT-PROMPT.md; this ledger`
+structural_debt: `none`
+next_structural_constraint: `SPEC-003 may add installed contract reference without changing helper/discoverability semantics`
+topology_probe_result: `PASS`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: installed hook-health JSON emits helper_contract_status and discoverability_status from installed evidence`
+adversary_objection: `not_applicable`
+shared_contract_extended: `yes`
+extension_point_proven: `yes`
+contract_handoff_artifact: `this ledger`
+api_lint_status: `PASS`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `not_applicable`
+distinct_refuters: `not_applicable`
+stop_state: `SPEC-002_LOCAL_COMMITTED`
+next_allowed_action: `open SPEC-003`
+
+SPEC-002 evidence:
+
+- Commit: `2b6b7d6e feat(pretooluse): expose installed hook health statuses`.
+- `git show --stat --oneline 2b6b7d6e`: changed `docs/install/HOOK-AUDIT-PROMPT.md`, `scripts/hook_audit_prompt_oracle.py`, `scripts/host_runtime_matrix_oracle.py`, `scripts/tes_install.py`, and this ledger.
+- Negative check: `host_runtime_matrix_oracle.py` no longer assigns `health["discoverability_status"]` after parsing hook-health.
+- Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+## Pre-Edit Gate For SPEC-003
+
+EXECUTE_LOOP_REQUESTED: `yes`
+READY_GOAL_PROMPT: `present`
+ANCHOR_CLASS: `Super-SPEC`
+ANCHOR_PATH: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-pretooluse-ceiling-installed-evidence-unblocker.md`
+ANCHOR_HASH: `03df2c6a936dc64fafbf0029ad65144f48ee4277`
+TREE_ADVERSARY_STATUS: `OBJECTIONS_REPAIRED`
+DECLARED_UNITS: `SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006`
+FIRST_UNEXECUTED_UNIT: `SPEC-003`
+ACTIVE_SPEC: `SPEC-003`
+BASELINE_ONLY_COMMITS: `2b6b7d6e,e1e51351,89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
+LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
+MAY_EDIT: `yes`

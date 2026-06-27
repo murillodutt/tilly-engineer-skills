@@ -653,6 +653,10 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
                 "scripts/fixtures/INVENTORY-HYGIENE.minimal.yml",
             ),
             (
+                "docs/architecture/PRETOOLUSE-CONTRACT.md",
+                "docs/architecture/PRETOOLUSE-CONTRACT.md",
+            ),
+            (
                 "scripts/fixtures/cortex_host_contracts/claude-code.json",
                 "scripts/fixtures/cortex_host_contracts/claude-code.json",
             ),
