@@ -70,6 +70,11 @@ def _assert(condition: bool, failures: list[str], message: str) -> None:
         failures.append(message)
 
 
+def _reason_codes(row: dict[str, Any]) -> list[str]:
+    value = row.get("reason_codes")
+    return [str(item) for item in value] if isinstance(value, list) else []
+
+
 def _contains_marker(*parts: str) -> bool:
     return mantra_gate.MARKER in "".join(parts)
 
@@ -111,6 +116,16 @@ def evaluate() -> dict[str, Any]:
                 _assert(governed_rows[0].get("marker_emitted") is True, failures, f"{agent}: first ledger marker")
                 _assert(governed_rows[1].get("marker_emitted") is False, failures, f"{agent}: second ledger marker")
                 _assert(governed_rows[1].get("context_suppressed") is True, failures, f"{agent}: second ledger suppressed")
+                _assert(
+                    "governed_surface_mutation" in _reason_codes(governed_rows[0]),
+                    failures,
+                    f"{agent}: first governed row must persist governed_surface_mutation reason code",
+                )
+                _assert(
+                    "anti_crywolf_suppressed" in _reason_codes(governed_rows[1]),
+                    failures,
+                    f"{agent}: repeated governed row must persist anti_crywolf_suppressed reason code",
+                )
 
             forbidden_session = forbidden["session_id"]
             forbidden_rows = [row for row in rows if row.get("agent") == agent and row.get("session") == forbidden_session]
@@ -118,6 +133,11 @@ def evaluate() -> dict[str, Any]:
             for index, row in enumerate(forbidden_rows, start=1):
                 _assert(row.get("block") is True, failures, f"{agent}: forbidden row #{index} must block")
                 _assert(row.get("marker_emitted") is True, failures, f"{agent}: forbidden row #{index} marker")
+                _assert(
+                    "forbidden_class" in _reason_codes(row),
+                    failures,
+                    f"{agent}: forbidden row #{index} must persist forbidden_class reason code",
+                )
 
     return {
         "oracle": "pretooluse-session",

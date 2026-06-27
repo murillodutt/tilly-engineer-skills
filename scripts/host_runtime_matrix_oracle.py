@@ -212,6 +212,11 @@ def _matching_records(records: list[dict[str, Any]], **filters: Any) -> list[dic
     return [record for record in records if _record_matches(record, **filters)]
 
 
+def _reason_codes(record: dict[str, Any]) -> list[str]:
+    value = record.get("reason_codes")
+    return [str(item) for item in value] if isinstance(value, list) else []
+
+
 def _write_fixture_project(target: Path) -> None:
     (target / "README.md").write_text("# Host Runtime Matrix Fixture\n", encoding="utf-8")
     (target / "src").mkdir()
@@ -632,19 +637,22 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         and item.get("decision") == "allow"
         and item.get("permission_decision") == "allow"
         and item.get("marker_emitted") is True
+        and "governed_surface_mutation" in _reason_codes(item)
+        and "patch_body_path_extracted" in _reason_codes(item)
         for item in codex_apply
     ):
         failures.append(
-            "ledger: codex apply_patch first governed record must persist allow decision and marker_emitted=true"
+            "ledger: codex apply_patch first governed record must persist allow decision, marker, and reason codes"
         )
     if not any(
         item.get("decision") == "allow"
         and item.get("permission_decision") == "allow"
         and item.get("context_suppressed") is True
         and item.get("marker_emitted") is False
+        and "anti_crywolf_suppressed" in _reason_codes(item)
         for item in codex_apply
     ):
-        failures.append("ledger: codex apply_patch second governed record must persist context_suppressed=true")
+        failures.append("ledger: codex apply_patch second governed record must persist suppression reason code")
 
     for name in (
         "input",
@@ -666,9 +674,11 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             and item.get("decision") == "allow"
             and item.get("permission_decision") == "allow"
             and item.get("marker_emitted") is True
+            and "governed_surface_mutation" in _reason_codes(item)
+            and "patch_body_path_extracted" in _reason_codes(item)
             for item in codex_alias
         ):
-            failures.append(f"ledger: codex apply_patch {name} must persist marker_emitted=true")
+            failures.append(f"ledger: codex apply_patch {name} must persist marker and reason codes")
 
     for tool in ("Bash", "Shell", "shell"):
         forbidden = _matching_records(
@@ -683,10 +693,11 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             and item.get("decision") == "block"
             and item.get("permission_decision") == "deny"
             and item.get("marker_emitted") is True
+            and "forbidden_class" in _reason_codes(item)
             for item in forbidden
         ):
             failures.append(
-                f"ledger: codex {tool} forbidden record must persist deny decision, block=true, and marker_emitted=true"
+                f"ledger: codex {tool} forbidden record must persist deny decision, block=true, marker, and reason codes"
             )
 
     cursor_governed = _matching_records(
@@ -729,6 +740,8 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             "shell_command",
         }:
             failures.append(f"ledger: PreToolUse record must persist a redaction-safe command_category {item!r}")
+        if not _reason_codes(item):
+            failures.append(f"ledger: PreToolUse record must persist non-empty reason_codes {item!r}")
 
     health_proc = _run(
         [

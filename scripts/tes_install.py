@@ -2105,6 +2105,23 @@ def hook_command_category(command: str) -> str:
     return "shell_command"
 
 
+def hook_reason_codes(*values: Any) -> list[str]:
+    """Normalize kernel/session reason codes before writing runtime evidence."""
+    reason_codes: list[str] = []
+    for value in values:
+        if isinstance(value, str):
+            items: tuple[Any, ...] = (value,)
+        elif isinstance(value, (list, tuple, set)):
+            items = tuple(value)
+        else:
+            continue
+        for item in items:
+            code = str(item)
+            if code and code not in reason_codes:
+                reason_codes.append(code)
+    return reason_codes
+
+
 def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
     event_name = hook_event_name(hook_input)
     output: dict[str, Any] = {
@@ -2276,6 +2293,9 @@ def record_hook_execution(
             if invocation:
                 record["invocation"] = str(invocation)
             if pretooluse_decision:
+                reason_codes = hook_reason_codes(pretooluse_decision.get("reason_codes"))
+                if reason_codes:
+                    record["reason_codes"] = reason_codes
                 for key in (
                     "risk",
                     "outcome",
@@ -2309,6 +2329,7 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "invocation",
     "risk",
     "outcome",
+    "reason_codes",
     "block",
     "decision",
     "permission_decision",
@@ -2319,8 +2340,16 @@ HOOK_RECORD_DEDUPE_FIELDS = (
 )
 
 
+def hook_record_dedupe_value(value: Any) -> Any:
+    if isinstance(value, list | tuple):
+        return tuple(hook_record_dedupe_value(item) for item in value)
+    if isinstance(value, dict):
+        return tuple(sorted((str(key), hook_record_dedupe_value(item)) for key, item in value.items()))
+    return value
+
+
 def hook_record_dedupe_key(record: dict[str, Any]) -> tuple[Any, ...]:
-    return tuple(record.get(field) for field in HOOK_RECORD_DEDUPE_FIELDS)
+    return tuple(hook_record_dedupe_value(record.get(field)) for field in HOOK_RECORD_DEDUPE_FIELDS)
 
 
 def hook_record_already_written(sentinel: Path, record: dict[str, Any]) -> bool:
@@ -2743,6 +2772,9 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             include_capture=False,
         )
     combined_context = _join_context(context, cortex_context)
+    reason_codes = hook_reason_codes(decision.get("reason_codes"), session_context.reason_codes)
+    if cortex_context:
+        reason_codes = hook_reason_codes(reason_codes, "cortex_advisory_no_write")
     record_hook_execution(
         target,
         args.agent,
@@ -2750,6 +2782,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         mode="pretooluse",
         pretooluse_decision={
             **decision,
+            "reason_codes": reason_codes,
             "decision": "allow",
             "permission_decision": "allow",
             "marker_emitted": bool(context),
@@ -3498,6 +3531,9 @@ def self_test() -> int:
                 failures.append("Cursor PreToolUse sentinel must record mode=pretooluse")
             if cursor_record.get("tool") != "Write" or str(cursor_record.get("path") or "") != str(mesh_path):
                 failures.append("Cursor PreToolUse sentinel must record tool and path details")
+            reason_codes = cursor_record.get("reason_codes") if isinstance(cursor_record.get("reason_codes"), list) else []
+            if "cortex_advisory_no_write" not in reason_codes:
+                failures.append("Cursor PreToolUse Cortex row must persist cortex_advisory_no_write reason code")
 
         dedupe_input = {
             "hook_event_name": "PreToolUse",
@@ -3553,6 +3589,7 @@ def self_test() -> int:
             **dedupe_decision,
             "risk": "forbidden",
             "block": True,
+            "reason_codes": ["forbidden_class"],
             "decision": "block",
             "permission_decision": "deny",
             "marker_emitted": True,

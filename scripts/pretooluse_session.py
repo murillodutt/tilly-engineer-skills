@@ -23,6 +23,7 @@ class PreToolUseSessionContext:
     context_suppressed: bool
     session_id: str
     sentinel_path: Path
+    reason_codes: tuple[str, ...] = ()
 
 
 def pretooluse_session_id(hook_input: dict[str, Any]) -> str:
@@ -54,7 +55,7 @@ def coordinate_pretooluse_context(
         if sentinel.exists():
             seen = set(sentinel.read_text(encoding="utf-8").splitlines())
         if context in seen:
-            return PreToolUseSessionContext("", True, session_id, sentinel)
+            return PreToolUseSessionContext("", True, session_id, sentinel, ("anti_crywolf_suppressed",))
         sentinel.parent.mkdir(parents=True, exist_ok=True)
         with sentinel.open("a", encoding="utf-8") as handle:
             handle.write(context + "\n")
