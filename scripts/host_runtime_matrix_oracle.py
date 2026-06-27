@@ -833,7 +833,6 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         if _event_state(health, agent, event) != "OBSERVED":
             failures.append(f"hook-health: {agent} {event} must be OBSERVED after matrix")
     _assert_hook_health_contract(health, failures)
-    health["discoverability_status"] = "NEEDS_DISCOVERABILITY" if discoverability_proven else "MISSING"
     return health
 
 
@@ -850,6 +849,16 @@ def _assert_hook_health_contract(health: dict[str, Any], failures: list[str]) ->
         failures.append(f"hook-health: expected ceiling_status=NEEDS_FLOOR until floor evidence is complete, got {health.get('ceiling_status')!r}")
     if health.get("ceiling_status") == "PASS_CEILING":
         failures.append("hook-health: matrix must not collapse hook-health PASS into PASS_CEILING")
+    if "helper_contract_status" not in health:
+        failures.append("hook-health: must expose top-level helper_contract_status")
+    elif health.get("helper_contract_status") != "PASS":
+        failures.append(f"hook-health: expected helper_contract_status=PASS, got {health.get('helper_contract_status')!r}")
+    if "discoverability_status" not in health:
+        failures.append("hook-health: must expose top-level discoverability_status")
+    elif health.get("discoverability_status") != "NEEDS_DISCOVERABILITY":
+        failures.append(
+            f"hook-health: expected discoverability_status=NEEDS_DISCOVERABILITY from installed ledger, got {health.get('discoverability_status')!r}"
+        )
 
     ceiling_scope = _as_dict(health.get("ceiling_evidence_scope"))
     if ceiling_scope.get("schema_version") != tes_install.PRETOOLUSE_LEDGER_SCHEMA_VERSION:
@@ -1024,7 +1033,7 @@ def evaluate() -> dict[str, Any]:
         "coverage": "installed-target-hook-runtime-matrix",
         "install_status": install_payload.get("status"),
         "install_certification_status": install_payload.get("certification", {}).get("status"),
-        "helper_contract_status": helper_contract.get("status"),
+        "helper_contract_status": health.get("helper_contract_status"),
         "hook_health_status": health.get("status"),
         "hook_health_floor_status": health.get("floor_status"),
         "hook_health_ceiling_status": health.get("ceiling_status"),

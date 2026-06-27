@@ -2731,6 +2731,100 @@ def hook_ceiling_status(floor_status: str, ceiling_gaps: list[str]) -> str:
     return "PASS_CEILING" if not ceiling_gaps else "NEEDS_CEILING_EVIDENCE"
 
 
+def installed_pretooluse_helper_contract_status(target: Path) -> str:
+    """Verify the installed PreToolUse helper contract without source imports."""
+    bin_dir = target / ".tes/bin"
+    helper_paths = [bin_dir / "pretooluse_kernel.py", bin_dir / "pretooluse_session.py"]
+    if not all(path.is_file() for path in helper_paths):
+        return "MISSING"
+
+    probe = r'''
+import importlib
+import json
+from pathlib import Path
+import sys
+
+failures = []
+bin_dir = Path(".tes/bin").resolve()
+sys.path.insert(0, str(bin_dir))
+try:
+    kernel = importlib.import_module("pretooluse_kernel")
+    session = importlib.import_module("pretooluse_session")
+    if Path(kernel.__file__).resolve().parent != bin_dir:
+        failures.append("pretooluse_kernel not imported from .tes/bin")
+    if Path(session.__file__).resolve().parent != bin_dir:
+        failures.append("pretooluse_session not imported from .tes/bin")
+    for name in ("decide_pretooluse", "hook_event_name", "hook_tool_input", "hook_tool_name", "hook_tool_path"):
+        if not callable(getattr(kernel, name, None)):
+            failures.append(f"pretooluse_kernel missing callable {name}")
+    for name in ("coordinate_pretooluse_context", "pretooluse_session_id", "pretooluse_sentinel_path"):
+        if not callable(getattr(session, name, None)):
+            failures.append(f"pretooluse_session missing callable {name}")
+    hook_input = {
+        "hook_event_name": "PreToolUse",
+        "tool_name": "PatchFile",
+        "tool_input": {"file_path": "docs/adr/0010-future.md"},
+        "session_id": "installed-hook-health-helper-probe",
+    }
+    decision = kernel.decide_pretooluse(
+        hook_input,
+        risk_classifier=lambda action, paths: "routine",
+        marker="`installed-hook-health-helper-probe`",
+    )
+    reason_codes = decision.get("reason_codes") if isinstance(decision.get("reason_codes"), list) else []
+    classifier_trace = decision.get("classifier_trace") if isinstance(decision.get("classifier_trace"), dict) else {}
+    if decision.get("outcome") != "needs_discoverability":
+        failures.append("kernel did not preserve needs_discoverability outcome")
+    if decision.get("risk") != "needs-discoverability":
+        failures.append("kernel did not preserve needs-discoverability risk")
+    if "needs_discoverability_unknown_mutation" not in reason_codes:
+        failures.append("kernel missing discoverability reason code")
+    if classifier_trace.get("unknown_mutating") is not True:
+        failures.append("kernel missing unknown_mutating classifier trace")
+    session_context = session.coordinate_pretooluse_context(Path("."), hook_input, "")
+    if session_context.context != "" or session_context.context_suppressed is not False:
+        failures.append("session helper did not preserve empty-context no-write contract")
+except Exception as exc:
+    failures.append(f"{type(exc).__name__}: {exc}")
+
+print(json.dumps({"status": "PASS" if not failures else "FAIL", "failures": failures}, sort_keys=True))
+'''
+    try:
+        proc = subprocess.run(
+            [python_executable(), "-c", probe],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=10,
+        )
+    except subprocess.TimeoutExpired:
+        return "FAIL"
+    payload = parse_json_output(proc.stdout)
+    if proc.returncode != 0 or payload.get("status") != "PASS":
+        return "FAIL"
+    return "PASS"
+
+
+def pretooluse_discoverability_status(records: list[dict[str, Any]]) -> str:
+    """Report installed discoverability proof from current v2 hook ledger rows."""
+    has_v2_pretooluse = False
+    for record in pretooluse_runtime_records(records):
+        if record.get("schema_version") != PRETOOLUSE_LEDGER_SCHEMA_VERSION:
+            continue
+        has_v2_pretooluse = True
+        reason_codes = record.get("reason_codes") if isinstance(record.get("reason_codes"), list) else []
+        renderer_trace = record.get("renderer_trace") if isinstance(record.get("renderer_trace"), dict) else {}
+        if (
+            record.get("outcome") == "needs_discoverability"
+            and record.get("risk") == "needs-discoverability"
+            and "needs_discoverability_unknown_mutation" in reason_codes
+            and bool(renderer_trace.get("output_contract"))
+        ):
+            return "NEEDS_DISCOVERABILITY"
+    return "NEEDS_EVIDENCE" if has_v2_pretooluse else "MISSING"
+
+
 def hook_health_payload(target: Path) -> dict[str, Any]:
     target = target_root(target)
     configured = configured_hook_events(target)
@@ -2836,12 +2930,16 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
     floor_status_value = hook_floor_status(status_value, current_records)
     ceiling_evidence_scope, ceiling_gaps = pretooluse_ceiling_evidence(current_records, configured=configured)
     ceiling_status_value = hook_ceiling_status(floor_status_value, ceiling_gaps)
+    helper_contract_status = installed_pretooluse_helper_contract_status(target)
+    discoverability_status = pretooluse_discoverability_status(current_records)
 
     return {
         "schema": HOOK_HEALTH_SCHEMA_VERSION,
         "legacy_schema": HOOK_HEALTH_LEGACY_SCHEMA_VERSION,
         "version": VERSION,
         "status": status_value,
+        "helper_contract_status": helper_contract_status,
+        "discoverability_status": discoverability_status,
         "floor_status": floor_status_value,
         "ceiling_status": ceiling_status_value,
         "ceiling_gaps": ceiling_gaps,
@@ -3963,6 +4061,33 @@ def self_test() -> int:
                 failures.append("runtime hook ledger must identify the pretooluse_decision@2 schema")
             if redaction_record.get("command_redacted") is not True:
                 failures.append("runtime hook ledger must mark command text as redacted")
+        codex_discoverability = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hookEventName": "PreToolUse",
+                    "sessionId": "hook-health-discoverability",
+                    "toolName": "PatchFile",
+                    "toolInput": {"filePath": "docs/adr/0010-future.md"},
+                }
+            ),
+        )
+        if codex_discoverability.returncode != 0 or codex_discoverability.stdout.strip():
+            failures.append("hook-health discoverability fixture must allow with stderr context only")
+        if (
+            "outcome=needs_discoverability" not in codex_discoverability.stderr
+            or "risk=needs-discoverability" not in codex_discoverability.stderr
+        ):
+            failures.append("hook-health discoverability fixture must surface installed discoverability output")
         if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
             failures.append("new hook runtime must not write the legacy tracked hook sentinel")
         ignore_probe = run(["git", "check-ignore", HOOK_SENTINEL_PATH.as_posix()], cwd=target)
@@ -4017,6 +4142,14 @@ def self_test() -> int:
         if hook_health_payload_result.get("floor_status") != "PASS_BASIC":
             failures.append(
                 f"hook-health complete fixture must report floor_status=PASS_BASIC, got {hook_health_payload_result.get('floor_status')}"
+            )
+        if hook_health_payload_result.get("helper_contract_status") != "PASS":
+            failures.append(
+                "hook-health complete fixture must report helper_contract_status=PASS from installed .tes/bin helpers"
+            )
+        if hook_health_payload_result.get("discoverability_status") != "NEEDS_DISCOVERABILITY":
+            failures.append(
+                "hook-health complete fixture must report discoverability_status=NEEDS_DISCOVERABILITY from installed ledger evidence"
             )
         if hook_health_payload_result.get("ceiling_status") == "PASS_CEILING":
             failures.append("hook-health must not report PASS_CEILING while ADR 0009 ceiling evidence is incomplete")
@@ -4128,6 +4261,10 @@ def self_test() -> int:
             failures.append("hook-health configured-only fixture must report floor_status=NEEDS_EVIDENCE")
         if configured_only_payload.get("ceiling_status") != "NEEDS_FLOOR":
             failures.append("hook-health configured-only fixture must report ceiling_status=NEEDS_FLOOR")
+        if configured_only_payload.get("helper_contract_status") != "MISSING":
+            failures.append("hook-health configured-only fixture must not fill helper_contract_status from source imports")
+        if configured_only_payload.get("discoverability_status") != "MISSING":
+            failures.append("hook-health configured-only fixture must explicitly report missing discoverability evidence")
         duplicate_health_target = target / "duplicate-health"
         duplicate_health_target.mkdir()
         run(["git", "init"], cwd=duplicate_health_target)

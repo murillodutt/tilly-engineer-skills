@@ -150,8 +150,9 @@ command line. The simulation must cover:
   `outcome=needs_discoverability`, `risk=needs-discoverability`, and
   `reason_codes` including `needs_discoverability_unknown_mutation`. Runtime
   output must include `outcome=needs_discoverability` and
-  `risk=needs-discoverability`; the source matrix output must report
-  `discoverability_status=NEEDS_DISCOVERABILITY`. The ledger row must include
+  `risk=needs-discoverability`; the final hook-health JSON must expose top-level
+  `discoverability_status=NEEDS_DISCOVERABILITY` from installed evidence, not a
+  source-matrix synthesis. The ledger row must include
   `classifier_trace.unknown_mutating=true`, `renderer_trace.output_contract`,
   and redacted payload evidence (`command_category`, not raw `command`). If an
   installed target still returns routine allow, report `PASS_BASIC` with a
@@ -171,16 +172,19 @@ command line. The simulation must cover:
   tool, path, risk, marker, or mode differ.
 - Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the
   legacy functional field and adds `floor_status`, `ceiling_status`, and
-  `ceiling_gaps`. `floor_status=PASS_BASIC` is not `PASS_CEILING`; the ceiling
-  passes only when `ceiling_status=PASS_CEILING` and no `ceiling_gaps` remain.
+  `ceiling_gaps`. It must also expose top-level `helper_contract_status` and
+  `discoverability_status`. `floor_status=PASS_BASIC` is not `PASS_CEILING`; the
+  ceiling passes only when `ceiling_status=PASS_CEILING` and no `ceiling_gaps`
+  remain.
 - PreToolUse helper packaging: TES 0.3.218+ installs must include
   `.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both
   must import successfully from `.tes/bin`. Missing or non-importable helpers
   are FAIL because `tes_install.py` depends on them before rendering
-  host-specific hook output. The source matrix should report
-  `helper_contract_status=PASS` after simulating the installed helpers. Do not
-  require a standalone external PreToolUse package; the kernel and session
-  coordinator are internal TES helpers.
+  host-specific hook output. The final hook-health JSON must expose top-level
+  `helper_contract_status=PASS` computed from installed `.tes/bin` helpers;
+  source-only imports cannot fill this field. Do not require a standalone
+  external PreToolUse package; the kernel and session coordinator are internal
+  TES helpers.
 - Cortex no-write: hook context may propose recall/alignment/capture, but the
   runtime must report no automatic durable writes.
 - Fixture completeness: if `.tes/bin/cortex_runtime.py --self-test` exists,
@@ -237,9 +241,10 @@ Also classify PreToolUse maturity against the canonical contract:
 Ceiling evidence checklist: before reporting `PASS_CEILING`, verify installed
 evidence names `reason_codes`, `classifier_trace`, `renderer_trace`,
 `command_redacted=true` or `command_category`, `dedupe_contract`,
-`helper_contract_status=PASS`, `floor_status`, `ceiling_status`,
-`ceiling_gaps`, and `discoverability_status=NEEDS_DISCOVERABILITY` or native
-equivalent. Missing checklist item is a ceiling gap, not a floor failure.
+top-level hook-health `helper_contract_status=PASS`, `floor_status`,
+`ceiling_status`, `ceiling_gaps`, and top-level hook-health
+`discoverability_status=NEEDS_DISCOVERABILITY` or native equivalent. Missing
+checklist item is a ceiling gap, not a floor failure.
 
 Do not collapse `PASS` into `PASS_CEILING`. If only the floor is proven, say the
 hooks are operational at `PASS_BASIC` and list ceiling gaps separately.

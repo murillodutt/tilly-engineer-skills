@@ -185,3 +185,60 @@ ACTIVE_SPEC: `SPEC-001`
 BASELINE_ONLY_COMMITS: `89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
 LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
 MAY_EDIT: `yes`
+
+## SPEC-001
+
+spec_id: `SPEC-001`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-002`
+failed_attempt_recovery_decision: `not_applicable`
+commit: e1e51351
+oracle_status: `PASS: python3 scripts/tes_install.py --self-test; python3 scripts/host_runtime_matrix_oracle.py --self-test; npm run commit:check`
+structural_method_id: `platform-python-installer-internal-sections`
+topology_decision: `internal-section patch in scripts/tes_install.py plus matrix assertions; no new runtime module`
+topology_decision_artifact: `scripts/tes_install.py; scripts/host_runtime_matrix_oracle.py; this ledger`
+structural_debt: `none`
+next_structural_constraint: `SPEC-002 may extend hook-health JSON fields only through installed evidence, not source-matrix synthesis`
+topology_probe_result: `PASS`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: installed hook-health path exercised by tes_install self-test and host-runtime matrix`
+adversary_objection: `repaired before SPEC-001 open`
+shared_contract_extended: `yes`
+extension_point_proven: `yes`
+contract_handoff_artifact: `this ledger`
+api_lint_status: `PASS`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `not_applicable`
+distinct_refuters: `not_applicable`
+stop_state: `SPEC-001_LOCAL_COMMITTED`
+next_allowed_action: `open SPEC-002`
+
+SPEC-001 evidence:
+
+- Commit: `e1e51351 feat(pretooluse): scope ceiling evidence per host`.
+- `git show --stat --oneline e1e51351`: changed `scripts/tes_install.py`, `scripts/host_runtime_matrix_oracle.py`, this ledger, and `docs/tds/DOCS-INDEX.yml`.
+- Red fixture before repair: legacy pre-v2 row produced current v2 gaps, and cross-host pooling returned no gaps.
+- Parent validation after repair: same-host legacy rows are ignored for current v2 gaps, ignored legacy counts are reported, and cross-host split evidence produces gaps per host.
+- Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+## Pre-Edit Gate For SPEC-002
+
+EXECUTE_LOOP_REQUESTED: `yes`
+READY_GOAL_PROMPT: `present`
+ANCHOR_CLASS: `Super-SPEC`
+ANCHOR_PATH: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-pretooluse-ceiling-installed-evidence-unblocker.md`
+ANCHOR_HASH: `03df2c6a936dc64fafbf0029ad65144f48ee4277`
+TREE_ADVERSARY_STATUS: `OBJECTIONS_REPAIRED`
+DECLARED_UNITS: `SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006`
+FIRST_UNEXECUTED_UNIT: `SPEC-002`
+ACTIVE_SPEC: `SPEC-002`
+BASELINE_ONLY_COMMITS: `e1e51351,89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
+LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
+MAY_EDIT: `yes`

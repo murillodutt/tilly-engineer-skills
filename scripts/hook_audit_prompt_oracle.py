@@ -58,12 +58,14 @@ REQUIRED_TERMS = (
     "not duplicates when\n  tool, path, risk, marker, or mode differ",
     "Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the\n  legacy functional field",
     "`floor_status`, `ceiling_status`, and\n  `ceiling_gaps`",
+    "It must also expose top-level `helper_contract_status` and\n  `discoverability_status`",
     "`floor_status=PASS_BASIC` is not `PASS_CEILING`",
-    "`ceiling_status=PASS_CEILING` and no `ceiling_gaps` remain",
+    "`ceiling_status=PASS_CEILING` and no `ceiling_gaps`\n  remain",
     "PreToolUse helper packaging: TES 0.3.218+ installs must include",
     "`.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both",
     "must import successfully from `.tes/bin`",
-    "`helper_contract_status=PASS`",
+    "The final hook-health JSON must expose top-level\n  `helper_contract_status=PASS` computed from installed `.tes/bin` helpers",
+    "source-only imports cannot fill this field",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
     "When hook-health JSON exposes `dedupe_contract`",
@@ -72,16 +74,17 @@ REQUIRED_TERMS = (
     "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`",
     "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
     "Runtime\n  output must include `outcome=needs_discoverability`",
-    "`risk=needs-discoverability`; the source matrix output must report\n  `discoverability_status=NEEDS_DISCOVERABILITY`",
+    "`risk=needs-discoverability`; the final hook-health JSON must expose top-level\n  `discoverability_status=NEEDS_DISCOVERABILITY` from installed evidence",
+    "not a\n  source-matrix synthesis",
     "`classifier_trace.unknown_mutating=true`",
     "`renderer_trace.output_contract`",
     "redacted payload evidence (`command_category`, not raw `command`)",
     "Ceiling evidence checklist: before reporting `PASS_CEILING`",
     "evidence names `reason_codes`, `classifier_trace`, `renderer_trace`",
     "`command_redacted=true` or `command_category`, `dedupe_contract`",
-    "`helper_contract_status=PASS`, `floor_status`, `ceiling_status`",
-    "`ceiling_gaps`, and `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
-    "Missing checklist item is a ceiling gap, not a floor failure.",
+    "top-level hook-health `helper_contract_status=PASS`, `floor_status`",
+    "`ceiling_status`, `ceiling_gaps`, and top-level hook-health\n`discoverability_status=NEEDS_DISCOVERABILITY` or native equivalent",
+    "Missing\nchecklist item is a ceiling gap, not a floor failure.",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
 )
 
@@ -279,13 +282,18 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "floor_status",
         ),
         Mutation(
+            "without_hook_health_helper_discoverability_fields",
+            _remove(text, "It must also expose top-level `helper_contract_status` and\n  `discoverability_status`"),
+            "helper_contract_status",
+        ),
+        Mutation(
             "without_hook_health_basic_not_ceiling",
             _remove(text, "`floor_status=PASS_BASIC` is not `PASS_CEILING`"),
             "PASS_BASIC",
         ),
         Mutation(
             "without_hook_health_ceiling_gap_rule",
-            _remove(text, "`ceiling_status=PASS_CEILING` and no `ceiling_gaps` remain"),
+            _remove(text, "`ceiling_status=PASS_CEILING` and no `ceiling_gaps`\n  remain"),
             "ceiling_status",
         ),
         Mutation(
@@ -305,8 +313,16 @@ def red_capability_mutations(text: str) -> list[Mutation]:
         ),
         Mutation(
             "without_pretooluse_helper_contract_status",
-            _remove(_remove(text, "`helper_contract_status=PASS`"), "`helper_contract_status=PASS`"),
+            _remove(
+                text,
+                "The final hook-health JSON must expose top-level\n  `helper_contract_status=PASS` computed from installed `.tes/bin` helpers",
+            ),
             "helper_contract_status",
+        ),
+        Mutation(
+            "without_helper_source_import_guard",
+            _remove(text, "source-only imports cannot fill this field"),
+            "source-only",
         ),
         Mutation(
             "open_pass_with_findings_allowance",
@@ -344,12 +360,17 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "outcome=needs_discoverability",
         ),
         Mutation(
-            "without_discoverability_matrix_status",
+            "without_discoverability_hook_health_status",
             _remove(
                 text,
-                "`risk=needs-discoverability`; the source matrix output must report\n  `discoverability_status=NEEDS_DISCOVERABILITY`",
+                "`risk=needs-discoverability`; the final hook-health JSON must expose top-level\n  `discoverability_status=NEEDS_DISCOVERABILITY` from installed evidence",
             ),
             "discoverability_status",
+        ),
+        Mutation(
+            "without_discoverability_no_matrix_synthesis",
+            _remove(text, "not a\n  source-matrix synthesis"),
+            "source-matrix",
         ),
         Mutation(
             "without_discoverability_classifier_trace",
@@ -383,20 +404,20 @@ def red_capability_mutations(text: str) -> list[Mutation]:
         ),
         Mutation(
             "without_ceiling_checklist_helper_floor_ceiling",
-            _remove(text, "`helper_contract_status=PASS`, `floor_status`, `ceiling_status`"),
+            _remove(text, "top-level hook-health `helper_contract_status=PASS`, `floor_status`"),
             "helper_contract_status",
         ),
         Mutation(
             "without_ceiling_checklist_discoverability",
             _remove(
                 text,
-                "`ceiling_gaps`, and `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
+                "`ceiling_status`, `ceiling_gaps`, and top-level hook-health\n`discoverability_status=NEEDS_DISCOVERABILITY` or native equivalent",
             ),
             "discoverability_status",
         ),
         Mutation(
             "without_ceiling_gap_not_floor_failure",
-            _remove(text, "Missing checklist item is a ceiling gap, not a floor failure."),
+            _remove(text, "Missing\nchecklist item is a ceiling gap, not a floor failure."),
             "ceiling gap",
         ),
         Mutation(
