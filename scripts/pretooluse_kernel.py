@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Host-neutral PreToolUse decision kernel.
+
+This module owns only the input normalization and decision contract for the
+senior-manager PreToolUse gate. It deliberately does not render Claude/Codex/
+Cursor output, write hook ledgers, evaluate Cortex, or install/update hooks;
+those integration concerns stay in `tes_install.py` so host-specific contracts
+cannot leak into the decision core.
+"""
+
+from __future__ import annotations
+
+import re
+from typing import Any, Callable
+
+
+PATCH_FILE_HEADER_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$")
+GOVERNED_ARTIFACT_HINTS = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/adr/",
+    "docs/governance/",
+    "/SKILL.md",
+    ".cursor/rules/",
+)
+MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Shell", "shell", "apply_patch")
+RiskClassifier = Callable[[str, list[str]], str]
+
+
+def hook_event_name(hook_input: dict[str, Any], default: str = "SessionStart") -> str:
+    value = hook_input.get("hook_event_name") or hook_input.get("hookEventName") or hook_input.get("event")
+    return str(value or default)
+
+
+def hook_tool_name(hook_input: dict[str, Any]) -> str:
+    value = hook_input.get("tool_name") or hook_input.get("toolName")
+    if isinstance(value, str):
+        return value
+    tool = hook_input.get("tool")
+    return tool if isinstance(tool, str) else ""
+
+
+def hook_tool_input(hook_input: dict[str, Any]) -> dict[str, Any]:
+    value = hook_input.get("tool_input")
+    if value is None:
+        value = hook_input.get("toolInput")
+    return value if isinstance(value, dict) else {}
+
+
+def hook_patch_paths(command: str) -> list[str]:
+    paths: list[str] = []
+    for line in command.splitlines():
+        match = PATCH_FILE_HEADER_RE.match(line.strip())
+        if match:
+            paths.append(match.group(1).strip())
+    return paths
+
+
+def _first_string_value(*values: Any) -> str:
+    for value in values:
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def _tool_command_from_payload(payload: dict[str, Any]) -> str:
+    command = _first_string_value(
+        payload.get("command"),
+        payload.get("input"),
+        payload.get("patch"),
+    )
+    if command:
+        return command
+    arguments = payload.get("arguments")
+    if isinstance(arguments, dict):
+        return _first_string_value(
+            arguments.get("command"),
+            arguments.get("input"),
+            arguments.get("patch"),
+        )
+    return ""
+
+
+def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
+    return _tool_command_from_payload(tool_input) or _tool_command_from_payload(hook_input)
+
+
+def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
+    value = (
+        tool_input.get("file_path")
+        or tool_input.get("path")
+        or tool_input.get("filePath")
+        or hook_input.get("file_path")
+        or hook_input.get("path")
+        or hook_input.get("filePath")
+    )
+    if value:
+        return str(value)
+    command = hook_tool_command(hook_input, tool_input)
+    patch_paths = hook_patch_paths(command)
+    return patch_paths[0] if patch_paths else ""
+
+
+def decide_pretooluse(
+    hook_input: dict[str, Any],
+    *,
+    risk_classifier: RiskClassifier,
+    marker: str,
+) -> dict[str, Any]:
+    """Return the host-neutral PreToolUse decision for a normalized tool call.
+
+    The returned shape is intentionally small: `block` decides allow vs hard
+    gate, `risk` records the classifier result, and `context`/`reason` carry the
+    host-neutral message that renderers may project into their own protocol.
+    """
+    tool_name = hook_tool_name(hook_input)
+    tool_input = hook_tool_input(hook_input)
+    file_path = hook_tool_path(hook_input, tool_input)
+    command = hook_tool_command(hook_input, tool_input)
+    action = " ".join(part for part in (tool_name, command, file_path) if part).strip()
+    paths = [file_path] if file_path else []
+    for patch_path in hook_patch_paths(command):
+        if patch_path and patch_path not in paths:
+            paths.append(patch_path)
+
+    risk = risk_classifier(action, paths)
+    governed_paths = [path for path in paths if any(hint in path for hint in GOVERNED_ARTIFACT_HINTS)]
+    governed = bool(governed_paths)
+    mutating = tool_name in MUTATING_TOOLS
+    if risk == "routine" and governed and mutating:
+        risk = "material"
+
+    if risk == "forbidden":
+        return {
+            "block": True,
+            "risk": risk,
+            "outcome": "block",
+            "reason": (
+                f"{marker} Mantra Gate (senior manager): forbidden-class action "
+                f"({action or tool_name}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
+                "DOCUMENT/ORACLE/RESOLVE/STATUS) and get explicit authorization before proceeding."
+            ),
+        }
+    if governed and mutating and risk in ("material", "high-risk"):
+        return {
+            "block": False,
+            "risk": risk,
+            "outcome": "supervise",
+            "context": (
+                f"{marker} Mantra Gate supervising: {risk} change to governed artifact "
+                f"{governed_paths[0] if governed_paths else file_path}. "
+                "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
+            ),
+        }
+    return {"block": False, "risk": risk, "outcome": "allow", "context": ""}

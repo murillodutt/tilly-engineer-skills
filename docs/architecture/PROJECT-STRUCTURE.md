@@ -70,7 +70,7 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`. `sr
 
 `scripts/bootstrap/install.sh` and `scripts/bootstrap/install.ps1` are the canonical shell entrypoints for mechanical adapter installation. Root `install.sh` and `install.ps1` are intentionally absent so the root remains user-facing rather than a script surface.
 
-`scripts/tes_install.py` is the thin mechanical package installer. It stages a TES bundle, applies runtime capabilities, writes `.tes/tes-install-lock.json` and `.tes/postinstall.json`, installs first-session hooks for selected agents, and leaves semantic project preparation to the idempotent post-install routine.
+`scripts/tes_install.py` is the thin mechanical package installer. It stages a TES bundle, applies runtime capabilities, writes `.tes/tes-install-lock.json` and `.tes/postinstall.json`, installs first-session hooks for selected agents, renders host-specific hook output, writes runtime hook evidence, and leaves semantic project preparation to the idempotent post-install routine. `scripts/pretooluse_kernel.py` is the associated host-neutral PreToolUse decision kernel: it normalizes tool payloads, extracts paths, classifies allow/supervise/block outcomes, and intentionally does not install hooks, render Claude/Codex/Cursor protocols, or write ledgers.
 
 `bin/tes.js` is the commercial npx entrypoint. It accepts `add` and `install` as user-facing aliases, resolves Python, then delegates to `scripts/tes_install.py install` without reimplementing installer logic.
 

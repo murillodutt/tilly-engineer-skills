@@ -102,6 +102,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test
 python3 scripts/cortex_runtime.py --self-test
+python3 scripts/pretooluse_kernel_oracle.py
 python3 scripts/cortex_host_contract_oracle.py --self-test
 python3 scripts/host_runtime_contract_oracle.py --self-test
 python3 scripts/runtime_topology_oracle.py --self-test

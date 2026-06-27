@@ -35,6 +35,7 @@ Use installed-target evidence only. Inspect these paths when present:
 - .tes/runtime/hooks/executed.jsonl
 - .tes/hooks/executed.jsonl only as legacy or residue
 - .tes/bin/tes_install.py
+- .tes/bin/pretooluse_kernel.py
 - .tes/bin/installed_certification_oracle.py
 - .tes/bin/mantra_gate_adoption_oracle.py
 - .claude/settings.json
@@ -47,6 +48,7 @@ Run only commands that exist in installed targets:
 - python3 .tes/bin/mantra_gate_adoption_oracle.py --target .
 - python3 .tes/bin/tes_install.py status --target .
 - python3 .tes/bin/tes_install.py hook-health --target . --json-only
+- python3 -c 'import sys; sys.path.insert(0, ".tes/bin"); import pretooluse_kernel; print("PRETOOLUSE_KERNEL_IMPORT_OK")'
 
 If this is the TES source repository, run `npm run host-runtime:matrix` before
 the installed-target checks. If this is an adopter target, mark that source gate
@@ -123,6 +125,11 @@ command line. The simulation must cover:
   timestamps as replay history, not duplicate hook execution. Report duplicate
   runtime hooks only when the same agent/event/invocation/decision/timestamp is
   repeated identically.
+- PreToolUse kernel packaging: TES 0.3.217+ installs must include
+  `.tes/bin/pretooluse_kernel.py` and it must import successfully from
+  `.tes/bin`. Missing or non-importable kernel is FAIL because `tes_install.py`
+  depends on it before rendering host-specific hook output. Do not require a
+  standalone external PreToolUse package; the kernel is an internal TES helper.
 - Cortex no-write: hook context may propose recall/alignment/capture, but the
   runtime must report no automatic durable writes.
 - Fixture completeness: if `.tes/bin/cortex_runtime.py --self-test` exists,

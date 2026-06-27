@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.216"
+VERSION = "0.3.217"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -38,6 +38,7 @@ SERVER_FILES = (
     "install_mcp_hosts/vscode.py",
     "cortex.py",
     "cortex_runtime.py",
+    "pretooluse_kernel.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
     "scope_contract.py",

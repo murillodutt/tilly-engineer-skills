@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover - exercised only when the oracle is abse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.216"
+VERSION = "0.3.217"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (

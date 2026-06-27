@@ -7,7 +7,6 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import shlex
 import shutil
 import subprocess
@@ -18,8 +17,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from pretooluse_kernel import (
+    decide_pretooluse,
+    hook_event_name as kernel_hook_event_name,
+    hook_patch_paths as kernel_hook_patch_paths,
+    hook_tool_command as kernel_hook_tool_command,
+    hook_tool_input as kernel_hook_tool_input,
+    hook_tool_name as kernel_hook_tool_name,
+    hook_tool_path as kernel_hook_tool_path,
+)
 
-VERSION = "0.3.216"
+
+VERSION = "0.3.217"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -32,13 +41,12 @@ POSTINSTALL_STATES = {"pending", "running", "complete", "needs_review"}
 CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
 # PreToolUse (senior-manager pre-action) matcher: the mutating tools the gate supervises.
 CLAUDE_PRETOOLUSE_MATCHER = "Write|Edit|MultiEdit|NotebookEdit|Bash|Shell|shell|apply_patch"
-PATCH_FILE_HEADER_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$")
 DEFAULT_POSTINSTALL_COMMANDS = (
     ("tes_init.py", ("--target", "{target}", "--yes")),
     ("project_context_oracle.py", ("--target", "{target}")),
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
-HOOK_RUNTIME_HELPERS = ("cortex_runtime.py",)
+HOOK_RUNTIME_HELPERS = ("cortex_runtime.py", "pretooluse_kernel.py")
 OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/PROJECT-STATE.md",
     "docs/agents/PROJECT-ROADMAP.md",
@@ -2056,77 +2064,27 @@ def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any
 
 
 def hook_event_name(hook_input: dict[str, Any], default: str = "SessionStart") -> str:
-    value = hook_input.get("hook_event_name") or hook_input.get("hookEventName") or hook_input.get("event")
-    return str(value or default)
+    return kernel_hook_event_name(hook_input, default)
 
 
 def hook_tool_name(hook_input: dict[str, Any]) -> str:
-    value = hook_input.get("tool_name") or hook_input.get("toolName")
-    if isinstance(value, str):
-        return value
-    tool = hook_input.get("tool")
-    return tool if isinstance(tool, str) else ""
+    return kernel_hook_tool_name(hook_input)
 
 
 def hook_tool_input(hook_input: dict[str, Any]) -> dict[str, Any]:
-    value = hook_input.get("tool_input")
-    if value is None:
-        value = hook_input.get("toolInput")
-    return value if isinstance(value, dict) else {}
+    return kernel_hook_tool_input(hook_input)
 
 
 def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
-    value = (
-        tool_input.get("file_path")
-        or tool_input.get("path")
-        or tool_input.get("filePath")
-        or hook_input.get("file_path")
-        or hook_input.get("path")
-        or hook_input.get("filePath")
-    )
-    if value:
-        return str(value)
-    command = hook_tool_command(hook_input, tool_input)
-    patch_paths = hook_patch_paths(command)
-    return patch_paths[0] if patch_paths else ""
+    return kernel_hook_tool_path(hook_input, tool_input)
 
 
 def hook_patch_paths(command: str) -> list[str]:
-    paths: list[str] = []
-    for line in command.splitlines():
-        match = PATCH_FILE_HEADER_RE.match(line.strip())
-        if match:
-            paths.append(match.group(1).strip())
-    return paths
-
-
-def _first_string_value(*values: Any) -> str:
-    for value in values:
-        if isinstance(value, str) and value:
-            return value
-    return ""
-
-
-def _tool_command_from_payload(payload: dict[str, Any]) -> str:
-    command = _first_string_value(
-        payload.get("command"),
-        payload.get("input"),
-        payload.get("patch"),
-    )
-    if command:
-        return command
-    arguments = payload.get("arguments")
-    if isinstance(arguments, dict):
-        return _first_string_value(
-            arguments.get("command"),
-            arguments.get("input"),
-            arguments.get("patch"),
-        )
-    return ""
+    return kernel_hook_patch_paths(command)
 
 
 def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
-    return _tool_command_from_payload(tool_input) or _tool_command_from_payload(hook_input)
+    return kernel_hook_tool_command(hook_input, tool_input)
 
 
 def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
@@ -2606,18 +2564,6 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
     }
 
 
-GOVERNED_ARTIFACT_HINTS = (
-    "AGENTS.md",
-    "CLAUDE.md",
-    "docs/adr/",
-    "docs/governance/",
-    "/SKILL.md",
-    ".cursor/rules/",
-)
-# Tools that change state. A non-mutating tool (Read/Grep/Glob) is never gated.
-MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Shell", "shell", "apply_patch")
-
-
 def _classify_pretooluse_risk(action: str, paths: list[str]) -> str:
     """Project the bootloader criterion onto a tool call via mantra_gate.classify_risk.
 
@@ -2707,56 +2653,12 @@ def _append_claude_additional_context(output: dict[str, Any], event_name: str, c
 
 
 def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
-    """Decide supervise-vs-block for a PreToolUse tool call, faithful to the bootloader.
-
-    Two registers (mirrors the <mantra_gate> two-register rule), anchored on the
-    reliable tool+path signal and reinforced by classify_risk:
-      - forbidden by intent (e.g. `push --force`, secret disclosure) -> BLOCK.
-      - a MUTATING tool touching a GOVERNED artifact at material+ risk -> SUPERVISE
-        (allow, surface the contract obligation as context once per session).
-      - everything else (non-mutating tool, ordinary code, routine) -> ALLOW silently.
-    The agent still reasons over the surfaced context — the hook injects, it does not
-    decide the agent's intent (the inject-not-decide form). Ordinary local work is
-    never blocked; only the unambiguous forbidden class wakes the hard gate.
-    """
-    tool_name = hook_tool_name(hook_input)
-    tool_input = hook_tool_input(hook_input)
-    file_path = hook_tool_path(hook_input, tool_input)
-    command = hook_tool_command(hook_input, tool_input)
-    action = " ".join(part for part in (tool_name, command, file_path) if part).strip()
-    paths = [file_path] if file_path else []
-    for patch_path in hook_patch_paths(command):
-        if patch_path and patch_path not in paths:
-            paths.append(patch_path)
-
-    risk = _classify_pretooluse_risk(action, paths)
-    governed_paths = [path for path in paths if any(hint in path for hint in GOVERNED_ARTIFACT_HINTS)]
-    governed = bool(governed_paths)
-    mutating = tool_name in MUTATING_TOOLS
-    if risk == "routine" and governed and mutating:
-        risk = "material"
-
-    if risk == "forbidden":
-        return {
-            "block": True,
-            "risk": risk,
-            "reason": (
-                f"{_mantra_gate_marker()} Mantra Gate (senior manager): forbidden-class action "
-                f"({action or tool_name}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
-                "DOCUMENT/ORACLE/RESOLVE/STATUS) and get explicit authorization before proceeding."
-            ),
-        }
-    if governed and mutating and risk in ("material", "high-risk"):
-        return {
-            "block": False,
-            "risk": risk,
-            "context": (
-                f"{_mantra_gate_marker()} Mantra Gate supervising: {risk} change to governed artifact "
-                f"{governed_paths[0] if governed_paths else file_path}. "
-                "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
-            ),
-        }
-    return {"block": False, "risk": risk, "context": ""}
+    """Compatibility wrapper around the host-neutral PreToolUse kernel."""
+    return decide_pretooluse(
+        hook_input,
+        risk_classifier=_classify_pretooluse_risk,
+        marker=_mantra_gate_marker(),
+    )
 
 
 def _pretooluse_seen_this_session(target: Path, hook_input: dict[str, Any], key: str) -> bool:

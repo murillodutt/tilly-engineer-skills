@@ -1,4 +1,4 @@
-version: 0.3.216
+version: 0.3.217
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -829,6 +829,13 @@ documents:
     evidence_level: L1
   - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-tes-host-hook-ceiling-hardening.md
     id: roadmap.goal_execution_loop_ledger_tes_host_hook_ceiling_hardening
+    class: roadmap
+    status: active
+    consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-kernel.md
+    id: roadmap.goal_execution_loop_ledger_pretooluse_kernel
     class: roadmap
     status: active
     consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
