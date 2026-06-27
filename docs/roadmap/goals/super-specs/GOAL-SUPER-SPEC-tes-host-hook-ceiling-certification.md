@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_host_hook_ceiling_certification
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
 source_of_truth: false
 evidence_level: L1
@@ -10,10 +10,9 @@ tver: 0.1.0
 
 # GOAL Super SPEC: TES Host Hook Ceiling Certification
 
-Status: active corrective execution plan. This document converts the post-`0.3.209`
-host-hook audit failures into one ordered, falsifiable closure contract. It does
-not deliver runtime behavior by itself; delivery occurs only through source
-patches, executable oracles, release identity, and per-host native reruns.
+Status: archived historical execution plan. ADR 0009 execution is superseded by
+`GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md`; keep this file
+only as prior `0.3.209` hook-ceiling evidence, not as the current prompt track.
 
 Capability: make TES installed hook behavior ceiling-grade across Codex, Claude
 Code, and Cursor by closing legacy-update gaps, unsafe native matcher gaps,

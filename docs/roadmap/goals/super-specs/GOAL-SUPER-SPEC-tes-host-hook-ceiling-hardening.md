@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_host_hook_ceiling_hardening
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
 source_of_truth: false
 evidence_level: L1
@@ -10,9 +10,10 @@ tver: 0.1.0
 
 # GOAL Super SPEC: TES Host Hook Ceiling Hardening
 
-Status: active corrective execution plan for the post-`0.3.210` hook audit
-findings. This document does not replace runtime proof; it binds the patch,
-oracles, release identity, and next per-host prompt.
+Status: archived historical execution plan for post-`0.3.210` hook audit
+findings. ADR 0009 execution is superseded by
+`GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md`; keep this file
+as prior hardening evidence, not as the current prompt track.
 
 Protected baseline: release `0.3.210`, commit
 `4ffc350a36b44b5492f5c70e832ef5758700e476`, public bundle SHA
