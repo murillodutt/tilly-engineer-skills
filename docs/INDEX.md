@@ -17,6 +17,7 @@ This documentation layer explains the method behind the source package without t
 | Need | Document |
 |------|----------|
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
+| PreToolUse canonical contract | `architecture/PRETOOLUSE-CONTRACT.md` |
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | Archived TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
 | Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |

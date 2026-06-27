@@ -346,6 +346,21 @@ def gate_plan() -> list[Gate]:
             ),
         ),
         Gate(
+            "pretooluse-contract",
+            ["python3", "scripts/pretooluse_contract_oracle.py", "--self-test"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "docs/architecture/PRETOOLUSE-CONTRACT.md",
+                    "docs/architecture/INSTALLATION-FRAMEWORK.md",
+                    "docs/install/HOOK-AUDIT-PROMPT.md",
+                    "scripts/pretooluse_contract_oracle.py",
+                    "scripts/staged_commit_gate.py",
+                    "package.json",
+                ),
+            ),
+        ),
+        Gate(
             "pretooluse-session",
             ["python3", "scripts/pretooluse_session_oracle.py"],
             matcher=lambda paths: any_match(

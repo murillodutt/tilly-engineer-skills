@@ -17,6 +17,11 @@ VERSION = "0.3.219"
 
 REQUIRED_TERMS = (
     "This is a per-host native audit",
+    "docs/architecture/PRETOOLUSE-CONTRACT.md",
+    "floor contract (`PASS_BASIC`)",
+    "ceiling contract (`PASS_CEILING`)",
+    "Do not collapse `PASS` into `PASS_CEILING`.",
+    "## Ceiling Assessment",
     "Do not fail the current run only because\nanother platform's native tool is unavailable",
     "CONFIGURED, OBSERVED from prior ledger records, CONTRACT_SIMULATED, or",
     "If this is an adopter target, mark that source gate\nN/A",
@@ -53,6 +58,7 @@ REQUIRED_TERMS = (
     "not duplicates when\n  tool, path, risk, marker, or mode differ",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
+    "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
 )
 
@@ -93,6 +99,31 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_per_host_native_contract",
             _remove(text, "This is a per-host native audit"),
             "per-host native audit",
+        ),
+        Mutation(
+            "without_canonical_pretooluse_contract",
+            _remove(text, "docs/architecture/PRETOOLUSE-CONTRACT.md"),
+            "PRETOOLUSE-CONTRACT",
+        ),
+        Mutation(
+            "without_pass_basic_status",
+            _remove(text, "floor contract (`PASS_BASIC`)"),
+            "PASS_BASIC",
+        ),
+        Mutation(
+            "without_pass_ceiling_status",
+            _remove(text, "ceiling contract (`PASS_CEILING`)"),
+            "PASS_CEILING",
+        ),
+        Mutation(
+            "without_no_pass_to_ceiling_collapse",
+            _remove(text, "Do not collapse `PASS` into `PASS_CEILING`."),
+            "PASS_CEILING",
+        ),
+        Mutation(
+            "without_ceiling_assessment_section",
+            _remove(text, "## Ceiling Assessment"),
+            "Ceiling Assessment",
         ),
         Mutation(
             "without_contract_simulated_evidence_class",
@@ -218,6 +249,11 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "open_pass_with_findings_allowance",
             _remove(text, "PASS_WITH_FINDINGS allowance is closed and narrow"),
             "PASS_WITH_FINDINGS allowance",
+        ),
+        Mutation(
+            "without_needs_discoverability_status",
+            _remove(text, "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe"),
+            "NEEDS_DISCOVERABILITY",
         ),
         Mutation(
             "all_hosts_native_false_fail",

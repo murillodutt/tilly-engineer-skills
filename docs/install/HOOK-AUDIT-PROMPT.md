@@ -18,6 +18,12 @@ installed config, ledger history, or safe hook-entrypoint simulation.
 Analyze the TES agent hooks present in this project and generate an objective
 report for the TES team.
 
+Use the source-package `docs/architecture/PRETOOLUSE-CONTRACT.md` as the
+canonical PreToolUse contract when available. This audit must distinguish the
+floor contract (`PASS_BASIC`) from the ceiling contract (`PASS_CEILING`): a host
+can be operationally healthy while still missing ceiling-grade reason codes,
+classifier trace, discoverability, renderer parity, or ledger analytics proof.
+
 Do not push, tag, release, publish, use secrets, or perform destructive
 actions. You may run read-only local diagnostics and exactly one safe native
 write/edit smoke for the current host. If a hook runtime ledger records this
@@ -190,6 +196,20 @@ when `hook-health` classifies them as info/warning and they are not used as
 proof for the current host's native smoke. Missing current-host native
 PreToolUse, matcher gaps, or execution of a forbidden command is FAIL.
 
+Also classify PreToolUse maturity against the canonical contract:
+- `PASS_BASIC`: routine silence, governed supervision, forbidden block,
+  anti-cry-wolf, runtime evidence, host output contract, and Cortex no-write all
+  pass for the current host.
+- `PASS_CEILING`: `PASS_BASIC` plus stable decision reason codes, classifier
+  trace, redacted host payload evidence, discoverability handling for new
+  mutating tool names, host renderer parity, ledger analytics semantics, and
+  drift source attribution.
+- `NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe
+  but not yet classifiable with enough evidence.
+
+Do not collapse `PASS` into `PASS_CEILING`. If only the floor is proven, say the
+hooks are operational at `PASS_BASIC` and list ceiling gaps separately.
+
 Report with this template:
 
 # TES Agent Hooks Report
@@ -236,6 +256,12 @@ Cursor:
 - Hook output contract:
 - Runtime ledger fidelity:
 - Cortex advisory behavior:
+
+## Ceiling Assessment
+- Floor status:
+- Ceiling status:
+- Missing ceiling evidence:
+- Drift/discoverability risks:
 
 ## Findings
 Use H/M/L severity labels with impact and recommendation.
