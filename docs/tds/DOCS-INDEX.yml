@@ -99,6 +99,13 @@ documents:
     consumer: maintainers, runtime authors, hook authors, installer authors, adapter authors, oracle authors, and release operators
     source_of_truth: true
     evidence_level: L1
+  - path: docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+    id: architecture.adr_0009_pretooluse_ceiling_contract_and_hook_topology
+    class: architecture
+    status: active
+    consumer: maintainers, hook authors, installer authors, oracle authors, hook auditors, and release operators
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter

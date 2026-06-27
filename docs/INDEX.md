@@ -28,6 +28,7 @@ This documentation layer explains the method behind the source package without t
 | Active Goal Maestro decision-lens evolution and self-falsifying ceiling ADR | `adr/0006-decision-lens-evolution-and-routable-gate-closure.md` |
 | Active Cortex runtime-first memory and mesh drift ADR | `adr/0007-cortex-proactive-memory-and-mesh-drift.md` |
 | Active host-aware runtime contracts ADR | `adr/0008-host-aware-runtime-contracts.md` |
+| Active PreToolUse ceiling contract and hook topology ADR | `adr/0009-pretooluse-ceiling-contract-and-hook-topology.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
