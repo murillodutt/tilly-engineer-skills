@@ -876,6 +876,13 @@ documents:
     consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md
+    id: roadmap.goal_execution_loop_ledger_pretooluse_ceiling_installed_evidence_unblocker
+    class: roadmap
+    status: active
+    consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/SPEC-CONVERGENCE-CERTIFICATION-mantra-senior-manager-birth.md
     id: roadmap.spec_convergence_mantra_senior_manager_birth
     class: roadmap

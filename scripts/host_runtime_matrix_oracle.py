@@ -851,6 +851,34 @@ def _assert_hook_health_contract(health: dict[str, Any], failures: list[str]) ->
     if health.get("ceiling_status") == "PASS_CEILING":
         failures.append("hook-health: matrix must not collapse hook-health PASS into PASS_CEILING")
 
+    ceiling_scope = _as_dict(health.get("ceiling_evidence_scope"))
+    if ceiling_scope.get("schema_version") != tes_install.PRETOOLUSE_LEDGER_SCHEMA_VERSION:
+        failures.append("hook-health: ceiling_evidence_scope must expose pretooluse_decision@2")
+    if ceiling_scope.get("claim_scope") != "all_configured_hosts":
+        failures.append("hook-health: ceiling_evidence_scope must claim all configured hosts")
+    if ceiling_scope.get("aggregation_policy") != tes_install.PRETOOLUSE_CEILING_AGGREGATION_POLICY:
+        failures.append("hook-health: ceiling_evidence_scope must use per-host no-cross-fill aggregation")
+    if ceiling_scope.get("current_host") is not None:
+        failures.append("hook-health: all-host ceiling_evidence_scope must keep current_host null")
+    if ceiling_scope.get("required_hosts") != list(tes_install.PRETOOLUSE_CEILING_HOST_ORDER):
+        failures.append(f"hook-health: ceiling_evidence_scope required_hosts mismatch {ceiling_scope.get('required_hosts')!r}")
+    if ceiling_scope.get("legacy_policy") != tes_install.PRETOOLUSE_LEGACY_POLICY:
+        failures.append("hook-health: ceiling_evidence_scope must mark legacy rows as historical context only")
+    per_host = _as_dict(ceiling_scope.get("per_host"))
+    for agent in tes_install.AGENTS:
+        entry = _as_dict(per_host.get(agent))
+        for field in (
+            "agent",
+            "native_evidence",
+            "considered_records",
+            "ignored_legacy_records",
+            "oldest_considered_ts",
+            "newest_considered_ts",
+            "status",
+        ):
+            if field not in entry:
+                failures.append(f"hook-health: ceiling_evidence_scope missing {agent}.{field}")
+
     counts = _as_dict(health.get("finding_counts"))
     if counts.get("error", 0) != 0:
         failures.append(f"hook-health: unexpected error findings count {counts.get('error')!r}")

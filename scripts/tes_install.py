@@ -56,6 +56,9 @@ OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/DECISIONS/",
 )
 PRETOOLUSE_LEDGER_SCHEMA_VERSION = "pretooluse_decision@2"
+PRETOOLUSE_CEILING_AGGREGATION_POLICY = "per_host_no_cross_fill"
+PRETOOLUSE_CEILING_HOST_ORDER = ("claude", "codex", "cursor")
+PRETOOLUSE_LEGACY_POLICY = "historical_context_only"
 HOOK_DEDUPE_CONTRACT_SCHEMA = "tes-hook-dedupe@1"
 HOOK_HEALTH_SCHEMA_VERSION = "tes-hook-health@2"
 HOOK_HEALTH_LEGACY_SCHEMA_VERSION = "tes-hook-health@1"
@@ -2563,26 +2566,66 @@ def hook_floor_status(status_value: str, current_records: list[dict[str, Any]]) 
     return status_value
 
 
-def pretooluse_ceiling_gaps(records: list[dict[str, Any]]) -> list[str]:
-    """Return missing ADR 0009 ceiling evidence from installed PreToolUse rows."""
-    gaps: list[str] = []
-    pretooluse_records = [
+def pretooluse_runtime_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
         record
         for record in records
         if canonical_hook_event(str(record.get("event_canonical") or record.get("event") or "")) == "PreToolUse"
     ]
-    if not pretooluse_records:
+
+
+def pretooluse_required_hosts(
+    records: list[dict[str, Any]],
+    configured: dict[str, set[str]] | None = None,
+    current_host: str | None = None,
+) -> list[str]:
+    if current_host:
+        return [current_host]
+
+    hosts: list[str] = []
+    if configured:
+        for agent in AGENTS:
+            if any(canonical_hook_event(event) == "PreToolUse" for event in configured.get(agent, set())):
+                hosts.append(agent)
+        if not hosts:
+            hosts.extend(agent for agent in AGENTS if configured.get(agent))
+
+    for record in pretooluse_runtime_records(records):
+        agent = str(record.get("agent") or "")
+        if agent and agent not in hosts:
+            hosts.append(agent)
+
+    ordered = [agent for agent in PRETOOLUSE_CEILING_HOST_ORDER if agent in hosts]
+    ordered.extend(sorted(agent for agent in hosts if agent not in PRETOOLUSE_CEILING_HOST_ORDER))
+    return ordered
+
+
+def pretooluse_considered_timestamps(records: list[dict[str, Any]]) -> tuple[str | None, str | None]:
+    values = sorted(str(record.get("ts") or "") for record in records if record.get("ts"))
+    if not values:
+        return None, None
+    return values[0], values[-1]
+
+
+def pretooluse_host_ceiling_gaps(
+    records: list[dict[str, Any]],
+    *,
+    ignored_legacy_records: int = 0,
+) -> list[str]:
+    """Evaluate ADR 0009 ceiling evidence inside one host scope only."""
+    gaps: list[str] = []
+    if not records:
+        if ignored_legacy_records:
+            return ["missing_pretooluse_decision_v2_schema"]
         return ["missing_pretooluse_runtime_rows"]
 
     has_discoverability = False
     has_redacted_command = False
     has_renderer_projection = False
-    for record in pretooluse_records:
+    for record in records:
         reason_codes = record.get("reason_codes") if isinstance(record.get("reason_codes"), list) else []
         classifier_trace = record.get("classifier_trace") if isinstance(record.get("classifier_trace"), dict) else {}
         renderer_trace = record.get("renderer_trace") if isinstance(record.get("renderer_trace"), dict) else {}
-        if record.get("schema_version") != PRETOOLUSE_LEDGER_SCHEMA_VERSION:
-            gaps.append("missing_pretooluse_decision_v2_schema")
         if not reason_codes:
             gaps.append("missing_reason_codes")
         if not classifier_trace:
@@ -2611,6 +2654,75 @@ def pretooluse_ceiling_gaps(records: list[dict[str, Any]]) -> list[str]:
     if not has_renderer_projection:
         gaps.append("missing_renderer_projection_reason")
     return sorted(set(gaps))
+
+
+def pretooluse_ceiling_evidence(
+    records: list[dict[str, Any]],
+    *,
+    configured: dict[str, set[str]] | None = None,
+    current_host: str | None = None,
+    required_hosts: list[str] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
+    pretooluse_records = pretooluse_runtime_records(records)
+    hosts = list(required_hosts) if required_hosts is not None else pretooluse_required_hosts(records, configured, current_host)
+    scoped_gaps: list[str] = []
+    per_host: dict[str, dict[str, Any]] = {}
+
+    for host in hosts:
+        host_records = [record for record in pretooluse_records if str(record.get("agent") or "") == host]
+        considered_records = [
+            record
+            for record in host_records
+            if record.get("schema_version") == PRETOOLUSE_LEDGER_SCHEMA_VERSION
+        ]
+        ignored_legacy_records = len(host_records) - len(considered_records)
+        gaps = pretooluse_host_ceiling_gaps(
+            considered_records,
+            ignored_legacy_records=ignored_legacy_records,
+        )
+        scoped_gaps.extend(gaps)
+        oldest_ts, newest_ts = pretooluse_considered_timestamps(considered_records)
+        if not considered_records:
+            status = "NEEDS_EVIDENCE"
+        elif gaps:
+            status = "PASS_BASIC_WITH_CEILING_GAPS"
+        else:
+            status = "PASS_CEILING"
+        per_host[host] = {
+            "agent": host,
+            "native_evidence": "observed" if considered_records else "not_available",
+            "considered_records": len(considered_records),
+            "ignored_legacy_records": ignored_legacy_records,
+            "oldest_considered_ts": oldest_ts,
+            "newest_considered_ts": newest_ts,
+            "status": status,
+        }
+
+    if not hosts and not pretooluse_records:
+        scoped_gaps.append("missing_pretooluse_runtime_rows")
+
+    return (
+        {
+            "schema_version": PRETOOLUSE_LEDGER_SCHEMA_VERSION,
+            "claim_scope": "current_host" if current_host else "all_configured_hosts",
+            "aggregation_policy": PRETOOLUSE_CEILING_AGGREGATION_POLICY,
+            "current_host": current_host,
+            "required_hosts": hosts,
+            "per_host": per_host,
+            "legacy_policy": PRETOOLUSE_LEGACY_POLICY,
+        },
+        sorted(set(scoped_gaps)),
+    )
+
+
+def pretooluse_ceiling_gaps(
+    records: list[dict[str, Any]],
+    *,
+    required_hosts: list[str] | None = None,
+) -> list[str]:
+    """Return missing ADR 0009 ceiling evidence from current v2 rows by host."""
+    _, gaps = pretooluse_ceiling_evidence(records, required_hosts=required_hosts)
+    return gaps
 
 
 def hook_ceiling_status(floor_status: str, ceiling_gaps: list[str]) -> str:
@@ -2722,7 +2834,7 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
         status_value = "PASS_WITH_FINDINGS"
 
     floor_status_value = hook_floor_status(status_value, current_records)
-    ceiling_gaps = pretooluse_ceiling_gaps(current_records)
+    ceiling_evidence_scope, ceiling_gaps = pretooluse_ceiling_evidence(current_records, configured=configured)
     ceiling_status_value = hook_ceiling_status(floor_status_value, ceiling_gaps)
 
     return {
@@ -2733,6 +2845,7 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
         "floor_status": floor_status_value,
         "ceiling_status": ceiling_status_value,
         "ceiling_gaps": ceiling_gaps,
+        "ceiling_evidence_scope": ceiling_evidence_scope,
         "target": str(target),
         "dedupe_contract": hook_dedupe_contract(),
         "sentinels": {
@@ -3078,6 +3191,97 @@ def self_test() -> int:
                 stdout,
                 stderr.strip() or f"timed out after {timeout:g}s",
             )
+
+    def ceiling_record(
+        agent: str,
+        session: str,
+        *,
+        reason_codes: list[str] | None = None,
+        command_redacted: bool = True,
+        command_category: str = "shell_command",
+        outcome: str = "needs_discoverability",
+    ) -> dict[str, Any]:
+        return {
+            "schema_version": PRETOOLUSE_LEDGER_SCHEMA_VERSION,
+            "agent": agent,
+            "event_canonical": "PreToolUse",
+            "mode": "pretooluse",
+            "session": session,
+            "ts": "2026-06-27T00:00:00Z",
+            "reason_codes": reason_codes
+            if reason_codes is not None
+            else ["needs_discoverability_unknown_mutation", "renderer_contract_projected"],
+            "classifier_trace": {"payload_source": "tool_input", "path_source": "tool_input.file_path"},
+            "renderer_trace": {"renderer": f"{agent}_pretooluse", "output_contract": "stderr_context"},
+            "command_category": command_category,
+            "command_redacted": command_redacted,
+            "payload_source": "tool_input",
+            "decision": "allow",
+            "permission_decision": "allow",
+            "outcome": outcome,
+        }
+
+    complete_codex = ceiling_record("codex", "complete-v2")
+    legacy_codex = {
+        "agent": "codex",
+        "event_canonical": "PreToolUse",
+        "mode": "pretooluse",
+        "session": "legacy-pre-v2",
+        "ts": "2026-06-26T00:00:00Z",
+    }
+    mixed_scope, mixed_gaps = pretooluse_ceiling_evidence([complete_codex, legacy_codex])
+    mixed_codex = mixed_scope.get("per_host", {}).get("codex", {})
+    if mixed_gaps:
+        failures.append(f"PreToolUse ceiling scope must ignore legacy gaps when same-host v2 evidence is complete: {mixed_gaps}")
+    if mixed_codex.get("ignored_legacy_records") != 1 or mixed_codex.get("considered_records") != 1:
+        failures.append("PreToolUse ceiling scope must report same-host ignored legacy counts")
+    if mixed_scope.get("schema_version") != PRETOOLUSE_LEDGER_SCHEMA_VERSION:
+        failures.append("PreToolUse ceiling scope must expose pretooluse_decision@2 schema")
+    if mixed_scope.get("aggregation_policy") != PRETOOLUSE_CEILING_AGGREGATION_POLICY:
+        failures.append("PreToolUse ceiling scope must use per_host_no_cross_fill aggregation")
+    if mixed_scope.get("legacy_policy") != PRETOOLUSE_LEGACY_POLICY:
+        failures.append("PreToolUse ceiling scope must mark legacy rows as historical context only")
+    duplicate_legacy = duplicate_hook_records([legacy_codex, legacy_codex])
+    if not duplicate_legacy:
+        failures.append("PreToolUse ceiling legacy scoping must preserve exact duplicate warnings")
+
+    partial_v2 = {**complete_codex, "session": "partial-v2", "classifier_trace": {}}
+    partial_gaps = pretooluse_ceiling_gaps([partial_v2], required_hosts=["codex"])
+    if "missing_classifier_trace" not in partial_gaps:
+        failures.append("PreToolUse ceiling scope must still fail current v2 rows with missing required fields")
+
+    claude_discoverability = ceiling_record(
+        "claude",
+        "claude-discoverability-only",
+        reason_codes=["needs_discoverability_unknown_mutation"],
+        command_redacted=False,
+        command_category="no_command",
+    )
+    codex_redaction = ceiling_record(
+        "codex",
+        "codex-redaction-only",
+        reason_codes=["governed_surface_mutation"],
+        outcome="allow",
+    )
+    cursor_renderer = ceiling_record(
+        "cursor",
+        "cursor-renderer-only",
+        reason_codes=["renderer_contract_projected"],
+        command_redacted=False,
+        command_category="no_command",
+        outcome="allow",
+    )
+    cross_scope, cross_gaps = pretooluse_ceiling_evidence(
+        [claude_discoverability, codex_redaction, cursor_renderer],
+        required_hosts=list(PRETOOLUSE_CEILING_HOST_ORDER),
+    )
+    cross_statuses = {
+        str(agent): str(entry.get("status"))
+        for agent, entry in cross_scope.get("per_host", {}).items()
+        if isinstance(entry, dict)
+    }
+    if not cross_gaps or any(status == "PASS_CEILING" for status in cross_statuses.values()):
+        failures.append("PreToolUse ceiling scope must not borrow evidence fields across hosts")
 
     # derive_sentinel_reason: the review reason must name the gate that actually
     # blocks, not always the obsolete-cleanup boilerplate. Exercise BOTH the
@@ -3819,6 +4023,32 @@ def self_test() -> int:
         ceiling_gaps = hook_health_payload_result.get("ceiling_gaps")
         if not isinstance(ceiling_gaps, list) or not ceiling_gaps:
             failures.append("hook-health must list ceiling_gaps when ceiling_status is not PASS_CEILING")
+        ceiling_scope = hook_health_payload_result.get("ceiling_evidence_scope")
+        ceiling_scope = ceiling_scope if isinstance(ceiling_scope, dict) else {}
+        if ceiling_scope.get("schema_version") != PRETOOLUSE_LEDGER_SCHEMA_VERSION:
+            failures.append("hook-health must expose the PreToolUse ceiling evidence schema version")
+        if ceiling_scope.get("aggregation_policy") != PRETOOLUSE_CEILING_AGGREGATION_POLICY:
+            failures.append("hook-health must expose per-host no-cross-fill ceiling aggregation")
+        if ceiling_scope.get("legacy_policy") != PRETOOLUSE_LEGACY_POLICY:
+            failures.append("hook-health must expose historical-only legacy ceiling policy")
+        if ceiling_scope.get("current_host") is not None:
+            failures.append("hook-health all-host scope must expose current_host=null")
+        if ceiling_scope.get("required_hosts") != list(PRETOOLUSE_CEILING_HOST_ORDER):
+            failures.append(f"hook-health all-host scope must require all installed hosts, got {ceiling_scope.get('required_hosts')!r}")
+        per_host_scope = ceiling_scope.get("per_host") if isinstance(ceiling_scope.get("per_host"), dict) else {}
+        for agent in AGENTS:
+            entry = per_host_scope.get(agent) if isinstance(per_host_scope.get(agent), dict) else {}
+            for field in (
+                "agent",
+                "native_evidence",
+                "considered_records",
+                "ignored_legacy_records",
+                "oldest_considered_ts",
+                "newest_considered_ts",
+                "status",
+            ):
+                if field not in entry:
+                    failures.append(f"hook-health ceiling evidence scope must expose {agent}.{field}")
         dedupe_contract = hook_health_payload_result.get("dedupe_contract")
         dedupe_contract = dedupe_contract if isinstance(dedupe_contract, dict) else {}
         dedupe_fields = dedupe_contract.get("fields") if isinstance(dedupe_contract.get("fields"), list) else []
