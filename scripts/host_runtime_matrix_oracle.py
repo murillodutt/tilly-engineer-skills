@@ -43,6 +43,7 @@ HOST_FIXTURES = (
     "cursor.json",
     "negative-flat-contract.json",
 )
+PRETOOLUSE_HELPERS = ("pretooluse_kernel.py", "pretooluse_session.py")
 
 
 def _parse_first_json(text: str) -> dict[str, Any]:
@@ -880,16 +881,99 @@ def _assert_cortex_no_write(target: Path, failures: list[str]) -> None:
         failures.append("cortex runtime: self-test must report filesystem_changed=false")
 
 
+def _assert_pretooluse_helper_packaging(target: Path, failures: list[str]) -> dict[str, Any]:
+    helper_failures: list[str] = []
+    helpers: list[dict[str, Any]] = []
+    for helper in PRETOOLUSE_HELPERS:
+        installed = target / ".tes/bin" / helper
+        source = SCRIPTS / helper
+        if not installed.is_file():
+            helper_failures.append(f"{helper}: installed helper missing")
+            continue
+        if not source.is_file():
+            helper_failures.append(f"{helper}: source helper missing")
+            continue
+        matches_source = installed.read_bytes() == source.read_bytes()
+        helpers.append(
+            {
+                "helper": helper,
+                "installed_path": installed.relative_to(target).as_posix(),
+                "matches_source": matches_source,
+            }
+        )
+        if not matches_source:
+            helper_failures.append(f"{helper}: installed helper differs from source")
+
+    probe = r'''
+import importlib
+import json
+import sys
+from pathlib import Path
+
+bin_dir = Path(".tes/bin").resolve()
+sys.path.insert(0, str(bin_dir))
+kernel = importlib.import_module("pretooluse_kernel")
+session = importlib.import_module("pretooluse_session")
+hook_input = {
+    "hook_event_name": "PreToolUse",
+    "tool_name": "PatchFile",
+    "tool_input": {"file_path": "docs/adr/0010-future.md"},
+    "session_id": "installed-helper-probe",
+}
+decision = kernel.decide_pretooluse(
+    hook_input,
+    risk_classifier=lambda action, paths: "routine",
+    marker="`installed-helper-probe`",
+)
+session_context = session.coordinate_pretooluse_context(Path("."), hook_input, str(decision.get("context") or ""))
+print(json.dumps({
+    "kernel_file": str(Path(kernel.__file__).resolve()),
+    "session_file": str(Path(session.__file__).resolve()),
+    "outcome": decision.get("outcome"),
+    "risk": decision.get("risk"),
+    "reason_codes": decision.get("reason_codes"),
+    "session_context_suppressed": session_context.context_suppressed,
+    "sentinel_path": str(session_context.sentinel_path),
+}, sort_keys=True))
+'''
+    proc = _run([sys.executable, "-c", probe], cwd=target)
+    payload = _parse_first_json(proc.stdout)
+    bin_prefix = str((target / ".tes/bin").resolve())
+    if proc.returncode != 0:
+        helper_failures.append(f"installed helper import probe failed: {proc.stderr.strip()}")
+    if not str(payload.get("kernel_file") or "").startswith(bin_prefix):
+        helper_failures.append("installed helper probe must import pretooluse_kernel from .tes/bin")
+    if not str(payload.get("session_file") or "").startswith(bin_prefix):
+        helper_failures.append("installed helper probe must import pretooluse_session from .tes/bin")
+    if payload.get("outcome") != "needs_discoverability" or payload.get("risk") != "needs-discoverability":
+        helper_failures.append("installed helper probe must preserve the v2 discoverability contract")
+    reason_codes = payload.get("reason_codes") if isinstance(payload.get("reason_codes"), list) else []
+    if "needs_discoverability_unknown_mutation" not in reason_codes:
+        helper_failures.append("installed helper probe must preserve discoverability reason code")
+    if payload.get("session_context_suppressed") is not False:
+        helper_failures.append("installed helper session probe must surface first context")
+
+    failures.extend(helper_failures)
+    return {
+        "status": "PASS" if not helper_failures else "FAIL",
+        "helpers": helpers,
+        "probe": payload,
+        "failures": helper_failures,
+    }
+
+
 def evaluate() -> dict[str, Any]:
     failures: list[str] = []
     install_payload: dict[str, Any] = {}
     health: dict[str, Any] = {}
+    helper_contract: dict[str, Any] = {}
     with tempfile.TemporaryDirectory(prefix="tes-host-runtime-matrix-") as tmp:
         target = Path(tmp)
         _write_fixture_project(target)
         install_payload = _install_hooks(target, failures)
         _assert_install_scope(install_payload, failures)
         _assert_installed_configs(target, failures)
+        helper_contract = _assert_pretooluse_helper_packaging(target, failures)
         _assert_codex_legacy_migration(target, failures)
         _assert_fixture_completeness(target, failures)
         _assert_hook_contracts(target, failures)
@@ -902,6 +986,7 @@ def evaluate() -> dict[str, Any]:
         "coverage": "installed-target-hook-runtime-matrix",
         "install_status": install_payload.get("status"),
         "install_certification_status": install_payload.get("certification", {}).get("status"),
+        "helper_contract_status": helper_contract.get("status"),
         "hook_health_status": health.get("status"),
         "discoverability_status": health.get("discoverability_status"),
         "native_smoke_scope": "manual-per-host; see docs/install/HOOK-AUDIT-PROMPT.md",

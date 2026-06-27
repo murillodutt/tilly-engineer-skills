@@ -56,6 +56,10 @@ REQUIRED_TERMS = (
     "include at least tool, risk, path or command, and\n  session/mode when present",
     "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp",
     "not duplicates when\n  tool, path, risk, marker, or mode differ",
+    "PreToolUse helper packaging: TES 0.3.218+ installs must include",
+    "`.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both",
+    "must import successfully from `.tes/bin`",
+    "`helper_contract_status=PASS`",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
     "When hook-health JSON exposes `dedupe_contract`",
@@ -253,6 +257,26 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_cursor_explicit_strreplace_simulation",
             _remove(text, "hook-entrypoint simulation with explicit `tool: \"StrReplace\"`"),
             "hook-entrypoint",
+        ),
+        Mutation(
+            "without_pretooluse_helper_packaging_contract",
+            _remove(text, "PreToolUse helper packaging: TES 0.3.218+ installs must include"),
+            "PreToolUse helper packaging",
+        ),
+        Mutation(
+            "without_pretooluse_helper_paths",
+            _remove(text, "`.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both"),
+            "pretooluse_kernel",
+        ),
+        Mutation(
+            "without_pretooluse_helper_import_contract",
+            _remove(text, "must import successfully from `.tes/bin`"),
+            ".tes/bin",
+        ),
+        Mutation(
+            "without_pretooluse_helper_contract_status",
+            _remove(text, "`helper_contract_status=PASS`"),
+            "helper_contract_status",
         ),
         Mutation(
             "open_pass_with_findings_allowance",

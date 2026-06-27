@@ -173,8 +173,10 @@ command line. The simulation must cover:
   `.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both
   must import successfully from `.tes/bin`. Missing or non-importable helpers
   are FAIL because `tes_install.py` depends on them before rendering
-  host-specific hook output. Do not require a standalone external PreToolUse
-  package; the kernel and session coordinator are internal TES helpers.
+  host-specific hook output. The source matrix should report
+  `helper_contract_status=PASS` after simulating the installed helpers. Do not
+  require a standalone external PreToolUse package; the kernel and session
+  coordinator are internal TES helpers.
 - Cortex no-write: hook context may propose recall/alignment/capture, but the
   runtime must report no automatic durable writes.
 - Fixture completeness: if `.tes/bin/cortex_runtime.py --self-test` exists,
