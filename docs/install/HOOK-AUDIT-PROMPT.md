@@ -144,6 +144,13 @@ command line. The simulation must cover:
   after a StrReplace UI action is host labeling evidence, while a safe
   hook-entrypoint simulation with explicit `tool: "StrReplace"` proves the TES
   kernel path directly.
+- Discoverability: simulate an unknown mutating-looking tool such as
+  `PatchFile` on a governed path such as `docs/adr/0010-future.md`. It must not
+  classify as routine. A ceiling-ready kernel returns
+  `outcome=needs_discoverability`, `risk=needs-discoverability`, and
+  `reason_codes` including `needs_discoverability_unknown_mutation`. If an
+  installed target still returns routine allow, report `PASS_BASIC` with a
+  ceiling gap, not `PASS_CEILING`.
 - Anti-cry-wolf: the same governed supervision in the same session is surfaced
   once, then silenced.
 - Runtime ledger: `.tes/runtime/hooks/executed.jsonl` records agent, event,
@@ -265,6 +272,7 @@ Cursor:
 ## Ceiling Assessment
 - Floor status:
 - Ceiling status:
+- Discoverability result:
 - Missing ceiling evidence:
 - Drift/discoverability risks:
 

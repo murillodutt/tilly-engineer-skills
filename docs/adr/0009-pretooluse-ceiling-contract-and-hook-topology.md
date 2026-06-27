@@ -274,6 +274,12 @@ dedup and analytics. P0 is complete only when the source oracles can fail red
 for a missing reason code, missing trace, flattened renderer output, silently
 routine unknown mutating tool, or ambiguous ledger analytics key.
 
+Current source status: the kernel implements the first P0 slice for stable
+decision `reason_codes` and unknown mutating-looking governed tools returning
+`needs_discoverability`. Full P0 remains incomplete until redacted classifier
+trace, host payload evidence, renderer trace, ledger trace, and renderer parity
+ownership are source-oracle enforced.
+
 **P1: installed-target ceiling certification.** P1 starts only after P0 is green
 in source. It updates the installed audit flow so `HOOK-AUDIT-PROMPT.md`,
 `hook-health`, installed helper packaging, and target-project canaries can prove
@@ -353,7 +359,9 @@ A future ceiling implementation is not complete until all of these pass:
    owner for Claude Code, Codex, and Cursor output shapes for allow, supervise,
    block, and suppression, with `scripts/host_runtime_matrix_oracle.py`
    consuming that owner;
-5. a discoverability fixture that fails for unknown mutating-looking tools;
+5. the discoverability fixture in `scripts/pretooluse_kernel_oracle.py`, which
+   fails when unknown mutating-looking tools on governed paths fall through to
+   routine allow;
 6. `scripts/hook_audit_prompt_oracle.py --self-test`;
 7. `python3 scripts/validate_tds.py`;
 8. `npm run commit:check`;

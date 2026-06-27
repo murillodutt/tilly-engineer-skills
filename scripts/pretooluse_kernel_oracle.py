@@ -71,6 +71,11 @@ def evaluate() -> dict[str, Any]:
     )
     _assert(routine.get("outcome") == "allow", failures, "routine Read must allow")
     _assert(routine.get("context") == "", failures, "routine Read must stay silent")
+    _assert(
+        "routine_non_mutating" in routine.get("reason_codes", []),
+        failures,
+        "routine Read must carry routine_non_mutating reason code",
+    )
 
     governed = _decision(
         {
@@ -82,6 +87,11 @@ def evaluate() -> dict[str, Any]:
     _assert(governed.get("outcome") == "supervise", failures, "governed Edit must supervise")
     _assert("docs/governance/policy/SKILL.md" in str(governed.get("context")), failures, "governed context must name path")
     _assert(mantra_gate.MARKER in str(governed.get("context")), failures, "governed context must include marker")
+    _assert(
+        "governed_surface_mutation" in governed.get("reason_codes", []),
+        failures,
+        "governed Edit must carry governed_surface_mutation reason code",
+    )
 
     cursor_replace = _decision(
         {
@@ -101,6 +111,34 @@ def evaluate() -> dict[str, Any]:
         "Cursor StrReplace context must name governed path",
     )
 
+    discoverability = _decision(
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "PatchFile",
+            "tool_input": {"file_path": "docs/adr/0010-future.md"},
+        }
+    )
+    _assert(
+        discoverability.get("outcome") == "needs_discoverability",
+        failures,
+        "unknown mutating-looking tool on governed path must need discoverability",
+    )
+    _assert(
+        discoverability.get("risk") == "needs-discoverability",
+        failures,
+        "unknown mutating-looking tool must not remain routine",
+    )
+    _assert(
+        "needs_discoverability_unknown_mutation" in discoverability.get("reason_codes", []),
+        failures,
+        "discoverability decision must carry needs_discoverability_unknown_mutation reason code",
+    )
+    _assert(
+        mantra_gate.MARKER in str(discoverability.get("context")),
+        failures,
+        "discoverability context must include marker",
+    )
+
     forbidden = _decision(
         {
             "hook_event_name": "PreToolUse",
@@ -111,6 +149,11 @@ def evaluate() -> dict[str, Any]:
     _assert(forbidden.get("outcome") == "block", failures, "forbidden Bash must block")
     _assert(forbidden.get("block") is True, failures, "forbidden Bash must set block=true")
     _assert(mantra_gate.MARKER in str(forbidden.get("reason")), failures, "forbidden reason must include marker")
+    _assert(
+        "forbidden_class" in forbidden.get("reason_codes", []),
+        failures,
+        "forbidden Bash must carry forbidden_class reason code",
+    )
 
     alias_payloads = {
         "command": {"tool_input": {"command": _patch(".tes/runtime/hook-smoke/codex/command/SKILL.md")}},
@@ -135,6 +178,11 @@ def evaluate() -> dict[str, Any]:
         decision = _decision(hook_input)
         _assert(decision.get("outcome") == "supervise", failures, f"{name}: apply_patch must supervise")
         _assert(path in str(decision.get("context")), failures, f"{name}: context must name extracted path")
+        _assert(
+            "patch_body_path_extracted" in decision.get("reason_codes", []),
+            failures,
+            f"{name}: apply_patch must carry patch_body_path_extracted reason code",
+        )
 
     source_text = (ROOT / "scripts" / "pretooluse_kernel.py").read_text(encoding="utf-8")
     for token in HOST_PROTOCOL_TOKENS:

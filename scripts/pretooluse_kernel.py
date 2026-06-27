@@ -26,6 +26,21 @@ GOVERNED_ARTIFACT_HINTS = (
 # Keep host-emitted mutation names here, not in renderers, so governed-path
 # supervision stays host-neutral while each adapter keeps its own output shape.
 MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "StrReplace", "Bash", "Shell", "shell", "apply_patch")
+MUTATING_TOOL_NAME_HINTS = (
+    "patch",
+    "write",
+    "edit",
+    "replace",
+    "delete",
+    "remove",
+    "create",
+    "update",
+    "move",
+    "rename",
+    "insert",
+    "append",
+    "modify",
+)
 RiskClassifier = Callable[[str, list[str]], str]
 
 
@@ -103,6 +118,12 @@ def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> st
     return patch_paths[0] if patch_paths else ""
 
 
+def looks_like_mutating_tool(tool_name: str) -> bool:
+    """Return whether an unknown host tool name appears to mutate state."""
+    normalized = tool_name.lower()
+    return bool(normalized) and any(hint in normalized for hint in MUTATING_TOOL_NAME_HINTS)
+
+
 def decide_pretooluse(
     hook_input: dict[str, Any],
     *,
@@ -121,7 +142,8 @@ def decide_pretooluse(
     command = hook_tool_command(hook_input, tool_input)
     action = " ".join(part for part in (tool_name, command, file_path) if part).strip()
     paths = [file_path] if file_path else []
-    for patch_path in hook_patch_paths(command):
+    patch_paths = hook_patch_paths(command)
+    for patch_path in patch_paths:
         if patch_path and patch_path not in paths:
             paths.append(patch_path)
 
@@ -129,6 +151,10 @@ def decide_pretooluse(
     governed_paths = [path for path in paths if any(hint in path for hint in GOVERNED_ARTIFACT_HINTS)]
     governed = bool(governed_paths)
     mutating = tool_name in MUTATING_TOOLS
+    unknown_mutating = bool(tool_name) and not mutating and looks_like_mutating_tool(tool_name)
+    reason_codes: list[str] = []
+    if patch_paths:
+        reason_codes.append("patch_body_path_extracted")
     if risk == "routine" and governed and mutating:
         risk = "material"
 
@@ -137,10 +163,23 @@ def decide_pretooluse(
             "block": True,
             "risk": risk,
             "outcome": "block",
+            "reason_codes": reason_codes + ["forbidden_class"],
             "reason": (
                 f"{marker} Mantra Gate (senior manager): forbidden-class action "
                 f"({action or tool_name}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
                 "DOCUMENT/ORACLE/RESOLVE/STATUS) and get explicit authorization before proceeding."
+            ),
+        }
+    if risk == "routine" and governed and unknown_mutating:
+        return {
+            "block": False,
+            "risk": "needs-discoverability",
+            "outcome": "needs_discoverability",
+            "reason_codes": reason_codes + ["needs_discoverability_unknown_mutation"],
+            "context": (
+                f"{marker} Mantra Gate discoverability: unknown mutating-looking tool "
+                f"{tool_name} touched governed artifact {governed_paths[0]}. "
+                "Add host fixture/native evidence before treating this as routine."
             ),
         }
     if governed and mutating and risk in ("material", "high-risk"):
@@ -148,10 +187,15 @@ def decide_pretooluse(
             "block": False,
             "risk": risk,
             "outcome": "supervise",
+            "reason_codes": reason_codes + ["governed_surface_mutation"],
             "context": (
                 f"{marker} Mantra Gate supervising: {risk} change to governed artifact "
                 f"{governed_paths[0] if governed_paths else file_path}. "
                 "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
             ),
         }
-    return {"block": False, "risk": risk, "outcome": "allow", "context": ""}
+    if mutating:
+        reason_codes.append("routine_non_governed")
+    else:
+        reason_codes.append("routine_non_mutating")
+    return {"block": False, "risk": risk, "outcome": "allow", "reason_codes": reason_codes, "context": ""}

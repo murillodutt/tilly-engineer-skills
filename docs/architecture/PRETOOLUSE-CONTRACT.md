@@ -56,6 +56,15 @@ PreToolUse reaches `PASS_CEILING` only when it proves the floor contract and add
 
 If a run proves the floor but not these ceiling guarantees, report `PASS_BASIC` plus ceiling gaps. Do not call it `PASS_CEILING`.
 
+## Current Runtime Slice
+
+The source kernel currently implements the first ceiling substrate slice: every
+kernel decision carries stable `reason_codes`, and an unknown mutating-looking
+tool on a governed path returns `NEEDS_DISCOVERABILITY` instead of routine
+allow. This is not yet `PASS_CEILING`: classifier trace, host payload evidence,
+renderer trace, ledger trace, hook-health floor/ceiling split, and installed
+per-host ceiling evidence remain required.
+
 ## Status Vocabulary
 
 - `PASS_BASIC`: the current installed host satisfies the floor contract.
