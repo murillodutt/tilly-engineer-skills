@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
-VERSION = "0.3.218"
+VERSION = "0.3.219"
 
 
 REQUIRED_TERMS = (
@@ -20,7 +20,8 @@ REQUIRED_TERMS = (
     "Do not fail the current run only because\nanother platform's native tool is unavailable",
     "CONFIGURED, OBSERVED from prior ledger records, CONTRACT_SIMULATED, or",
     "If this is an adopter target, mark that source gate\nN/A",
-    "Edit/MultiEdit/StrReplace coverage is optional",
+    "If the current Cursor host exposes StrReplace",
+    "use\n  StrReplace for the second same-path mutation",
     "marker_emitted: true",
     "Before any native forbidden-shell test",
     "Do\nnot write helper scripts, audit harnesses, or payload files inside the target\nproject",
@@ -28,6 +29,9 @@ REQUIRED_TERMS = (
     "Codex `tool_input.command` is the canonical patch-body field",
     "defensive aliases `input`, `patch`, and `arguments.*`",
     "alias-key failures are findings",
+    "if native `StrReplace` is observed or exposed",
+    "governed\n  `StrReplace`",
+    "must classify as material/supervised\n  rather than routine",
     "Cursor `preToolUse` deny messages are\nagent-visible, but governed allow messages may be ledger-only in the native UI",
     "do not classify ledger-proven Cursor allow supervision as a finding solely\nbecause no visible allow banner was shown",
     "Do not place the forbidden token\nsequence in the outer shell command, heredoc, comment, label, or inline script",
@@ -133,13 +137,14 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "duplicate",
         ),
         Mutation(
-            "cursor_edit_made_mandatory",
-            text.replace(
-                "Edit/MultiEdit/StrReplace coverage is optional",
-                "Edit/MultiEdit/StrReplace coverage is mandatory",
-                1,
-            ),
-            "Edit/MultiEdit/StrReplace coverage is optional",
+            "without_cursor_strreplace_native_requirement",
+            _remove(text, "If the current Cursor host exposes StrReplace"),
+            "StrReplace",
+        ),
+        Mutation(
+            "without_cursor_strreplace_material_classification",
+            _remove(text, "must classify as material/supervised\n  rather than routine"),
+            "material/supervised",
         ),
         Mutation(
             "open_pass_with_findings_allowance",

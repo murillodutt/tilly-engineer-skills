@@ -67,3 +67,13 @@ Entry format:
 - Patch or no-patch reason: patched package source because the session state was delivered hook behavior and remained coupled to the installer adapter.
 - Next strategic cut: leave host-specific rendering and ledger writing in `tes_install.py`; consider extracting only when there is a red-capable renderer parity oracle.
 - Stop condition: stop if target-project install cannot prove both `pretooluse_kernel.py` and `pretooluse_session.py` are delivered and `hook-health` remains PASS.
+
+## [2026-06-27T17:55:00Z] loop | Cursor StrReplace classified as mutating
+
+- Strategy decision: treat Cursor-emitted `StrReplace` as a mutating PreToolUse tool inside the host-neutral kernel.
+- Protected contract: governed artifact mutations must supervise regardless of the host's exact edit-tool name; anti-cry-wolf may suppress repeated markers but must not downgrade governed mutation classification to routine.
+- Evidence: target-project native Cursor audit observed `StrReplace` on a governed `/SKILL.md` path allowing silently because the 0.3.218 kernel did not list `StrReplace` in `MUTATING_TOOLS`.
+- Failure/gap/bug: `StrReplace` was a real host-emitted mutation, so classifying it as routine contradicted the PreToolUse governed-supervision contract even though `hook-health` remained green.
+- Patch or no-patch reason: patch package source and audit prompt because this is delivered hook behavior and the old prompt left the exact regression optional.
+- Next strategic cut: keep the mutation-name set in the kernel until a host supplies a documented closed enum; do not add unobserved tool names without runtime or official-schema evidence.
+- Stop condition: stop if the kernel oracle cannot prove governed `StrReplace` supervises while routine reads stay silent and forbidden shell blocks remain unchanged.

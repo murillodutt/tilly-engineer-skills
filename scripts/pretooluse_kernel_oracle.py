@@ -83,6 +83,24 @@ def evaluate() -> dict[str, Any]:
     _assert("docs/governance/policy/SKILL.md" in str(governed.get("context")), failures, "governed context must name path")
     _assert(mantra_gate.MARKER in str(governed.get("context")), failures, "governed context must include marker")
 
+    cursor_replace = _decision(
+        {
+            "hook_event_name": "preToolUse",
+            "tool_name": "StrReplace",
+            "tool_input": {"file_path": ".tes/runtime/hook-smoke/cursor/SKILL.md"},
+        }
+    )
+    _assert(
+        cursor_replace.get("outcome") == "supervise",
+        failures,
+        "Cursor StrReplace on governed paths must supervise",
+    )
+    _assert(
+        ".tes/runtime/hook-smoke/cursor/SKILL.md" in str(cursor_replace.get("context")),
+        failures,
+        "Cursor StrReplace context must name governed path",
+    )
+
     forbidden = _decision(
         {
             "hook_event_name": "PreToolUse",

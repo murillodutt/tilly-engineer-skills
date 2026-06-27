@@ -23,7 +23,9 @@ GOVERNED_ARTIFACT_HINTS = (
     "/SKILL.md",
     ".cursor/rules/",
 )
-MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Shell", "shell", "apply_patch")
+# Keep host-emitted mutation names here, not in renderers, so governed-path
+# supervision stays host-neutral while each adapter keeps its own output shape.
+MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "StrReplace", "Bash", "Shell", "shell", "apply_patch")
 RiskClassifier = Callable[[str, list[str]], str]
 
 
