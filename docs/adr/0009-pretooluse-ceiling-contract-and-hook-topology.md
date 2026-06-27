@@ -224,6 +224,71 @@ frequency.
    after source oracles pass. Source-package proof alone is not sufficient for a
    delivered hook ceiling claim.
 
+## Ceiling Runtime Contract Shape
+
+P0 must introduce a versioned, redaction-safe runtime record testable before
+installed-target claims. Python shape may differ; semantic fields are frozen:
+
+```text
+pretooluse_decision@2
+  schema_version, host, event / event_canonical
+  session_id, invocation_id
+  raw_tool_label, normalized_tool, payload_source
+  paths[], command_category, risk, outcome
+  reason_codes[]
+  classifier_trace, session_trace, renderer_trace, ledger_trace
+```
+
+The record must not store file contents, raw secret-bearing command text, full
+environment dumps, or unrelated host payload fields. It may store command
+categories and redacted token classes such as `forbidden_git_force_push`,
+`forbidden_root_wipe`, `patch_body`, or `no_command`.
+
+Minimum `reason_codes[]` values:
+
+| Code | Required When |
+|------|---------------|
+| `routine_non_mutating` | A non-mutating tool is allowed silently. |
+| `routine_non_governed` | A mutating tool touches no governed surface and is allowed silently. |
+| `governed_surface_mutation` | A mutating tool touches `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `docs/adr/`, `docs/governance/`, or `.cursor/rules/`. |
+| `forbidden_class` | A forbidden command or action class is blocked before execution. |
+| `anti_crywolf_suppressed` | A repeated same-session governed marker is suppressed while the classification stays material. |
+| `host_payload_labeling` | The host raw label differs from the normalized TES classification or requires explanation. |
+| `patch_body_path_extracted` | A governed path is extracted from an `apply_patch` body or alias field. |
+| `needs_discoverability_unknown_mutation` | A mutating-looking host tool has insufficient fixture/native evidence. |
+| `renderer_contract_projected` | A host renderer emits its own output protocol for the decision. |
+| `cortex_advisory_no_write` | Cortex context is advisory and no durable write is performed. |
+
+`classifier_trace` must name only evidence classes: normalized tool, payload
+field source, path match hint, patch-body extraction source, forbidden class,
+and governed-surface match. `session_trace` must identify suppression state
+without exposing unrelated session content. `renderer_trace` must name the host
+renderer and output contract, not duplicate the full rendered message.
+`ledger_trace` must name the hook ledger writer and schema/version used for the
+runtime row.
+
+## P0 Red Fixture Matrix
+
+P0 is not complete until source oracles fail red for these cases:
+
+| Fixture | Expected Ceiling Evidence |
+|---------|---------------------------|
+| Routine read on non-governed path | `outcome=allow`, `risk=routine`, `reason_codes` includes `routine_non_mutating`, no marker. |
+| Non-governed mutating edit | `outcome=allow`, `reason_codes` includes `routine_non_governed`, no marker. |
+| Governed Write/Edit/StrReplace on `SKILL.md` | `outcome=supervise`, `risk=material`, `reason_codes` includes `governed_surface_mutation`. |
+| Same governed path twice in one session | First record supervises; second keeps `risk=material` and adds `anti_crywolf_suppressed`. |
+| Codex `apply_patch` canonical field | Path extracted from patch body; `reason_codes` includes `patch_body_path_extracted`. |
+| Codex `apply_patch` alias fields | Same extraction evidence as canonical field or explicit fixture failure. |
+| Forbidden force-push class | `outcome=block`, `reason_codes` includes `forbidden_class`, command text redacted to category. |
+| Cursor raw tool label differs from TES classification | `raw_tool_label` and `normalized_tool` both present; `reason_codes` includes `host_payload_labeling`. |
+| Unknown mutating-looking host tool on governed path | `outcome=needs_discoverability`, not routine, with `needs_discoverability_unknown_mutation`. |
+| Cursor batched invocation rows | Dedup fixture proves rows differing by tool/risk/path/mode are not duplicate hook execution. |
+| Cortex advisory context | `cortex_advisory_no_write` present and no durable write side effect. |
+| Renderer contract projection | Claude Code, Codex, and Cursor fixture outputs remain host-specific. |
+
+The renderer fixture owner is `scripts/mantra_gate_pretooluse_oracle.py`;
+`scripts/host_runtime_matrix_oracle.py` must consume it, not re-implement it.
+
 ## Runtime Priority Cut
 
 The ceiling implementation must be sequenced as runtime work, not as another
@@ -250,6 +315,24 @@ advisories, Field Reports backlog, mesh alignment, public docs, release sync,
 and general cleanup may be important, but they do not pierce the PreToolUse
 runtime ceiling. Bundle provenance cleanup is required before any release-sealed
 claim, but it is not a substitute for P0 or P1 runtime evidence.
+
+## P1 Installed Evidence Matrix
+
+P1 must prove the P0 record survives packaging, installation, host projection,
+native execution, and hook-health reporting.
+
+| Installed Evidence | Required Claim |
+|--------------------|----------------|
+| `.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py` import | Installed helpers match the P0 source contract. |
+| `.tes/bin/tes_install.py hook --agent <host>` simulation | Host renderer consumes `pretooluse_decision@2` and preserves reason/trace fields. |
+| Native smoke per host | Current-host ledger row contains reason codes, classifier trace, host payload evidence, renderer trace, and ledger trace. |
+| `hook-health --json-only` | Reports both floor status and ceiling status; cannot report `PASS_CEILING` if any P0 field is absent. |
+| `HOOK-AUDIT-PROMPT.md` report | Contains a `Ceiling Assessment` with reason-code, trace, discoverability, renderer, and ledger evidence. |
+| Installed target canary | Replays one Claude Code, one Codex, and one Cursor path or returns explicit `NEEDS_EVIDENCE` / `NEEDS_DISCOVERABILITY`. |
+| Bundle provenance | Release-sealed claim waits for clean `source_commit` and non-dirty source tree state. |
+
+`PASS_BASIC` remains valid for operational safety when these P1 fields are
+missing. `PASS_CEILING` is invalid unless every row above has direct evidence.
 
 ## Rejected Alternatives
 
