@@ -157,6 +157,16 @@ def evaluate() -> dict[str, Any]:
         failures,
         "discoverability context must include marker",
     )
+    _assert(
+        "outcome=needs_discoverability" in str(discoverability.get("context")),
+        failures,
+        "discoverability context must surface needs_discoverability outcome",
+    )
+    _assert(
+        "risk=needs-discoverability" in str(discoverability.get("context")),
+        failures,
+        "discoverability context must surface needs-discoverability risk",
+    )
 
     forbidden = _decision(
         {

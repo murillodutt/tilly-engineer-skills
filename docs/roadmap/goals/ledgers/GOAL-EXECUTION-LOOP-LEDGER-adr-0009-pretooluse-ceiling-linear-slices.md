@@ -70,7 +70,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-002`
 failed_attempt_recovery_decision: `interrupted_attempt_resumed: existing dirty diff classified as current-loop SPEC-002 material`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: 35f53c9790783b4bf852ecb2a2403d4edd763848
 oracle_status: `pre-commit pending; last focused rerun PASS for py_compile, pretooluse_session_oracle, tes_install self-test, host_runtime_matrix_oracle, and git diff --check`
 structural_method_id: `runtime-script-internal-sections`
 topology_decision: `internal-section extension`
@@ -92,8 +92,8 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `not_applicable`
 distinct_refuters: `not_applicable`
-stop_state: `ACTIVE_SPEC_OPEN`
-next_allowed_action: `run focused SPEC-002 oracles, commit locally, then open SPEC-003`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-003`
 
 ## Pre-Edit Gate: SPEC-003
 
@@ -119,7 +119,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-003`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: 4dedc876b4bc7d249f432977f9f8d2b269cab28f
 oracle_status: `PASS: py_compile, pretooluse_kernel_oracle, host_runtime_matrix_oracle, tes_install self-test, pretooluse_session_oracle, pretooluse_contract_oracle, mantra_gate_pretooluse_oracle, validate_tds, doc-size, ledger-no-placeholder, and renderer-token negative grep`
 structural_method_id: `runtime-script-internal-sections`
 topology_decision: `internal-section extension`
@@ -141,8 +141,8 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `not_applicable`
 distinct_refuters: `not_applicable`
-stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-003 files and commit locally`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-004`
 
 ## Pre-Edit Gate: SPEC-004
 
@@ -168,7 +168,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-004`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: 595c3911ef50a5787aaa935170b27de1a89050c9
 oracle_status: `PASS: py_compile, mantra_gate_pretooluse_oracle, host_runtime_matrix_oracle, tes_install self-test, pretooluse_kernel_oracle, pretooluse_session_oracle, and renderer-token negative grep`
 structural_method_id: `runtime-script-internal-sections`
 topology_decision: `internal-section extension`
@@ -190,5 +190,54 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `not_applicable`
 distinct_refuters: `not_applicable`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-005`
+
+## Pre-Edit Gate: SPEC-005
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=ADR
+ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
+FIRST_UNEXECUTED_UNIT=SPEC-005
+ACTIVE_SPEC=SPEC-005
+BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
+MAY_EDIT=yes
+
+## SPEC-005
+
+spec_id: `SPEC-005`
+spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-005`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+oracle_status: `PASS: red failure reproduced in pretooluse_kernel_oracle and host_runtime_matrix_oracle, then PASS for pretooluse_kernel_oracle, host_runtime_matrix_oracle, and hook_audit_prompt_oracle`
+structural_method_id: `runtime-script-internal-sections`
+topology_decision: `internal-section extension plus audit prompt contract update`
+topology_decision_artifact: `ledger-section`
+structural_debt: `none`
+next_structural_constraint: `SPEC-006 owns dedup semantics; SPEC-005 must not broaden the mutating tool allowlist`
+topology_probe_result: `PASS: no new modules; kernel, matrix oracle, audit prompt oracle, and audit prompt only`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: python3 scripts/host_runtime_matrix_oracle.py --self-test reports discoverability_status=NEEDS_DISCOVERABILITY`
+adversary_objection: `none`
+shared_contract_extended: `yes`
+extension_point_proven: `yes: runtime output surfaces outcome=needs_discoverability and risk=needs-discoverability; ledger row carries outcome, risk, reason_codes, classifier_trace, and renderer_trace`
+contract_handoff_artifact: `ledger-section`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: hook_audit_prompt_oracle red-capability mutants cover discoverability runtime output, matrix status, classifier trace, renderer trace, and redacted payload evidence`
+distinct_refuters: `not_applicable`
 stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-004 files and commit locally`
+next_allowed_action: `stage only SPEC-005 files and commit locally`

@@ -148,7 +148,12 @@ command line. The simulation must cover:
   `PatchFile` on a governed path such as `docs/adr/0010-future.md`. It must not
   classify as routine. A ceiling-ready kernel returns
   `outcome=needs_discoverability`, `risk=needs-discoverability`, and
-  `reason_codes` including `needs_discoverability_unknown_mutation`. If an
+  `reason_codes` including `needs_discoverability_unknown_mutation`. Runtime
+  output must include `outcome=needs_discoverability` and
+  `risk=needs-discoverability`; the source matrix output must report
+  `discoverability_status=NEEDS_DISCOVERABILITY`. The ledger row must include
+  `classifier_trace.unknown_mutating=true`, `renderer_trace.output_contract`,
+  and redacted payload evidence (`command_category`, not raw `command`). If an
   installed target still returns routine allow, report `PASS_BASIC` with a
   ceiling gap, not `PASS_CEILING`.
 - Anti-cry-wolf: the same governed supervision in the same session is surfaced

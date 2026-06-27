@@ -259,6 +259,7 @@ def decide_pretooluse(
             "context": (
                 f"{marker} Mantra Gate discoverability: unknown mutating-looking tool "
                 f"{tool_name} touched governed artifact {governed_paths[0]}. "
+                "outcome=needs_discoverability risk=needs-discoverability. "
                 "Add host fixture/native evidence before treating this as routine."
             ),
         }

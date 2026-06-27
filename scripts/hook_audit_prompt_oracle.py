@@ -59,6 +59,11 @@ REQUIRED_TERMS = (
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
     "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
+    "Runtime\n  output must include `outcome=needs_discoverability`",
+    "`risk=needs-discoverability`; the source matrix output must report\n  `discoverability_status=NEEDS_DISCOVERABILITY`",
+    "`classifier_trace.unknown_mutating=true`",
+    "`renderer_trace.output_contract`",
+    "redacted payload evidence (`command_category`, not raw `command`)",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
 )
 
@@ -254,6 +259,34 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_needs_discoverability_status",
             _remove(text, "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe"),
             "NEEDS_DISCOVERABILITY",
+        ),
+        Mutation(
+            "without_discoverability_runtime_output",
+            _remove(text, "Runtime\n  output must include `outcome=needs_discoverability`"),
+            "outcome=needs_discoverability",
+        ),
+        Mutation(
+            "without_discoverability_matrix_status",
+            _remove(
+                text,
+                "`risk=needs-discoverability`; the source matrix output must report\n  `discoverability_status=NEEDS_DISCOVERABILITY`",
+            ),
+            "discoverability_status",
+        ),
+        Mutation(
+            "without_discoverability_classifier_trace",
+            _remove(text, "`classifier_trace.unknown_mutating=true`"),
+            "classifier_trace",
+        ),
+        Mutation(
+            "without_discoverability_renderer_trace",
+            _remove(text, "`renderer_trace.output_contract`"),
+            "renderer_trace",
+        ),
+        Mutation(
+            "without_discoverability_redacted_payload_evidence",
+            _remove(text, "redacted payload evidence (`command_category`, not raw `command`)"),
+            "command_category",
         ),
         Mutation(
             "all_hosts_native_false_fail",

@@ -516,6 +516,17 @@ def _assert_hook_contracts(target: Path, failures: list[str]) -> None:
 
     code, out, err = _run_hook(
         target,
+        "codex",
+        _camel("PatchFile", "matrix-codex-discoverability", filePath="docs/adr/0010-future.md"),
+    )
+    if code != 0 or out.strip():
+        failures.append("codex discoverability: unknown mutating-looking governed tool must allow with stderr context")
+    _assert_marker("codex discoverability", err, failures)
+    if "outcome=needs_discoverability" not in err or "risk=needs-discoverability" not in err:
+        failures.append("codex discoverability: runtime output must surface needs_discoverability outcome and risk")
+
+    code, out, err = _run_hook(
+        target,
         "claude",
         _snake("Edit", "matrix-claude-governed", file_path="docs/governance/MATRIX.md"),
     )
@@ -619,6 +630,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         {"agent": "codex", "tool": "Bash", "session": "matrix-codex-Bash", "command_category": "forbidden_git_force_push"},
         {"agent": "codex", "tool": "Shell", "session": "matrix-codex-Shell", "command_category": "forbidden_git_force_push"},
         {"agent": "codex", "tool": "shell", "session": "matrix-codex-shell", "command_category": "forbidden_git_force_push"},
+        {"agent": "codex", "tool": "PatchFile", "session": "matrix-codex-discoverability", "path": "docs/adr/0010-future.md"},
         {"agent": "claude", "tool": "Edit", "session": "matrix-claude-governed", "path": "docs/governance/MATRIX.md"},
         {"agent": "claude", "tool": "Bash", "session": "matrix-claude-forbidden", "command_category": "forbidden_git_force_push"},
         {"agent": "cursor", "tool": "MultiEdit", "session": "matrix-cursor-governed", "path": ".cursor/rules/matrix.mdc"},
@@ -727,6 +739,30 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
                 f"ledger: codex {tool} forbidden record must persist deny decision, block=true, marker, reason codes, and renderer trace"
             )
 
+    codex_discoverability = _matching_records(
+        records,
+        agent="codex",
+        tool="PatchFile",
+        session="matrix-codex-discoverability",
+        path="docs/adr/0010-future.md",
+    )
+    discoverability_proven = any(
+        item.get("risk") == "needs-discoverability"
+        and item.get("outcome") == "needs_discoverability"
+        and item.get("decision") == "allow"
+        and item.get("permission_decision") == "allow"
+        and item.get("block") is False
+        and item.get("marker_emitted") is True
+        and "needs_discoverability_unknown_mutation" in _reason_codes(item)
+        and "renderer_contract_projected" in _reason_codes(item)
+        and _classifier_trace(item).get("unknown_mutating") is True
+        and _classifier_trace(item).get("path_match") == "governed_surface"
+        and _renderer_trace(item).get("output_contract") == "stderr_context"
+        for item in codex_discoverability
+    )
+    if not discoverability_proven:
+        failures.append("ledger: codex discoverability record must persist outcome, risk, reason codes, and traces")
+
     cursor_governed = _matching_records(
         records,
         agent="cursor",
@@ -796,6 +832,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         if _event_state(health, agent, event) != "OBSERVED":
             failures.append(f"hook-health: {agent} {event} must be OBSERVED after matrix")
     _assert_hook_health_contract(health, failures)
+    health["discoverability_status"] = "NEEDS_DISCOVERABILITY" if discoverability_proven else "MISSING"
     return health
 
 
@@ -856,6 +893,7 @@ def evaluate() -> dict[str, Any]:
         "install_status": install_payload.get("status"),
         "install_certification_status": install_payload.get("certification", {}).get("status"),
         "hook_health_status": health.get("status"),
+        "discoverability_status": health.get("discoverability_status"),
         "native_smoke_scope": "manual-per-host; see docs/install/HOOK-AUDIT-PROMPT.md",
         "failures": failures,
     }
