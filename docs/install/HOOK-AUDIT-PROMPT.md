@@ -69,6 +69,16 @@ shell redirection:
   native Write tool. If the current Cursor host exposes StrReplace, use
   StrReplace for the second same-path mutation and verify the ledger treats it
   as governed material work, even when anti-cry-wolf suppresses the marker.
+  Report the native payload tool label from a redacted raw hook payload or from
+  enough current-session ledger evidence to distinguish host labeling from TES
+  classification. If a native Cursor StrReplace UI action is recorded as
+  `tool: "Write"`, treat that as host payload labeling and not as a TES finding
+  when the row still has `risk=material`, the governed path, and correct
+  marker or anti-cry-wolf fields. Classify it as a finding only when the native
+  payload explicitly records `tool: "StrReplace"` and the hook treats it as
+  routine or silently non-governed. Redact file content, secrets, and unrelated
+  payload fields; the required proof is the tool label, path, session, decision,
+  risk, and marker state.
 
 Expected native result: the current host should allow the edit and surface
 `🍳 Flash-Fry` governed supervision exactly once for the session. For Codex and
@@ -123,7 +133,11 @@ command line. The simulation must cover:
   `StrReplace` on `/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `docs/adr/`,
   `docs/governance/`, or `.cursor/rules/` must classify as material/supervised
   rather than routine; anti-cry-wolf may suppress only the repeated marker, not
-  the governed classification.
+  the governed classification. Cursor reports must separate host payload
+  labeling from TES classification: a native ledger row with `tool: "Write"`
+  after a StrReplace UI action is host labeling evidence, while a safe
+  hook-entrypoint simulation with explicit `tool: "StrReplace"` proves the TES
+  kernel path directly.
 - Anti-cry-wolf: the same governed supervision in the same session is surfaced
   once, then silenced.
 - Runtime ledger: `.tes/runtime/hooks/executed.jsonl` records agent, event,

@@ -77,3 +77,13 @@ Entry format:
 - Patch or no-patch reason: patch package source and audit prompt because this is delivered hook behavior and the old prompt left the exact regression optional.
 - Next strategic cut: keep the mutation-name set in the kernel until a host supplies a documented closed enum; do not add unobserved tool names without runtime or official-schema evidence.
 - Stop condition: stop if the kernel oracle cannot prove governed `StrReplace` supervises while routine reads stay silent and forbidden shell blocks remain unchanged.
+
+## [2026-06-27T18:15:00Z] loop | Cursor payload-label evidence added
+
+- Strategy decision: require the next hook audit to distinguish Cursor's native payload tool label from the TES PreToolUse classification result.
+- Protected contract: a host may normalize a native StrReplace UI action into a `tool: "Write"` payload, but TES must still classify governed mutations as material/supervised and preserve anti-cry-wolf semantics.
+- Evidence: target-project reports converged on a subtle observability case: explicit hook-entrypoint simulation with `tool: "StrReplace"` supervised correctly, while one native Cursor second mutation was reported in the ledger as `tool: "Write"`.
+- Failure/gap/bug: the prior prompt could let auditors report "StrReplace works" or "StrReplace mislabeled" without proving whether the host payload or the TES kernel caused the label.
+- Patch or no-patch reason: patch the audit prompt and its oracle only; no runtime behavior change is warranted before a native payload-label report proves a kernel classification bug.
+- Next strategic cut: rerun the native Cursor battery and require redacted evidence of tool label, path, session, decision, risk, and marker state.
+- Stop condition: stop if a native payload explicitly records `tool: "StrReplace"` and TES still classifies the governed path as routine or silently non-governed.
