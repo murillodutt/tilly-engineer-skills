@@ -197,13 +197,13 @@ def _record_matches(
     tool: str,
     session: str,
     path: str | None = None,
-    command: str | None = None,
+    command_category: str | None = None,
 ) -> bool:
     if record.get("agent") != agent or record.get("tool") != tool or record.get("session") != session:
         return False
     if path is not None and record.get("path") != path:
         return False
-    if command is not None and command not in str(record.get("command") or ""):
+    if command_category is not None and record.get("command_category") != command_category:
         return False
     return True
 
@@ -601,13 +601,13 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             "session": "matrix-codex-apply-top-level-input",
             "path": ".tes/runtime/hook-smoke/codex/top-level-input/SKILL.md",
         },
-        {"agent": "codex", "tool": "Bash", "session": "matrix-codex-Bash", "command": "git push --force origin main"},
-        {"agent": "codex", "tool": "Shell", "session": "matrix-codex-Shell", "command": "git push --force origin main"},
-        {"agent": "codex", "tool": "shell", "session": "matrix-codex-shell", "command": "git push --force origin main"},
+        {"agent": "codex", "tool": "Bash", "session": "matrix-codex-Bash", "command_category": "forbidden_git_force_push"},
+        {"agent": "codex", "tool": "Shell", "session": "matrix-codex-Shell", "command_category": "forbidden_git_force_push"},
+        {"agent": "codex", "tool": "shell", "session": "matrix-codex-shell", "command_category": "forbidden_git_force_push"},
         {"agent": "claude", "tool": "Edit", "session": "matrix-claude-governed", "path": "docs/governance/MATRIX.md"},
-        {"agent": "claude", "tool": "Bash", "session": "matrix-claude-forbidden", "command": "git push --force origin main"},
+        {"agent": "claude", "tool": "Bash", "session": "matrix-claude-forbidden", "command_category": "forbidden_git_force_push"},
         {"agent": "cursor", "tool": "MultiEdit", "session": "matrix-cursor-governed", "path": ".cursor/rules/matrix.mdc"},
-        {"agent": "cursor", "tool": "Bash", "session": "matrix-cursor-forbidden", "command": "sudo rm -rf / --no-preserve-root"},
+        {"agent": "cursor", "tool": "Bash", "session": "matrix-cursor-forbidden", "command_category": "forbidden_root_wipe"},
         {"agent": "cursor", "tool": "Read", "session": "matrix-cursor-read", "path": "src/app.py"},
         {"agent": "codex", "tool": "Edit", "session": "matrix-codex-routine", "path": "src/app.py"},
     ]
@@ -617,7 +617,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         matching = _matching_records(records, **record_filter)
         count = len(matching)
         if count < min_count:
-            locator = record_filter.get("path") or record_filter.get("command") or record_filter["session"]
+            locator = record_filter.get("path") or record_filter.get("command_category") or record_filter["session"]
             failures.append(f"ledger: missing {record_filter['agent']}/{record_filter['tool']}/{locator} record")
 
     codex_apply = _matching_records(
@@ -676,7 +676,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             agent="codex",
             tool=tool,
             session=f"matrix-codex-{tool}",
-            command="git push --force origin main",
+            command_category="forbidden_git_force_push",
         )
         if not any(
             item.get("block") is True
@@ -704,7 +704,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         agent="cursor",
         tool="Bash",
         session="matrix-cursor-forbidden",
-        command="sudo rm -rf / --no-preserve-root",
+        command_category="forbidden_root_wipe",
     )
     if not any(
         item.get("block") is True
@@ -717,6 +717,18 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     for item in records:
         if item.get("event_canonical") != "PreToolUse" or item.get("mode") != "pretooluse":
             failures.append(f"ledger: unexpected runtime record shape {item!r}")
+        if item.get("schema_version") != "pretooluse_decision@2":
+            failures.append(f"ledger: PreToolUse record must use pretooluse_decision@2 schema {item!r}")
+        if "command" in item:
+            failures.append(f"ledger: PreToolUse record must not persist raw command text {item!r}")
+        if item.get("command_category") not in {
+            "forbidden_git_force_push",
+            "forbidden_root_wipe",
+            "no_command",
+            "patch_body",
+            "shell_command",
+        }:
+            failures.append(f"ledger: PreToolUse record must persist a redaction-safe command_category {item!r}")
 
     health_proc = _run(
         [

@@ -55,6 +55,7 @@ OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/QUALITY-GATES.md",
     "docs/agents/DECISIONS/",
 )
+PRETOOLUSE_LEDGER_SCHEMA_VERSION = "pretooluse_decision@2"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 
@@ -2088,6 +2089,22 @@ def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) ->
     return kernel_hook_tool_command(hook_input, tool_input)
 
 
+def hook_command_category(command: str) -> str:
+    """Return a redaction-safe command class for PreToolUse ledger rows."""
+    normalized = " ".join(command.strip().lower().split())
+    if not normalized:
+        return "no_command"
+    if hook_patch_paths(command):
+        return "patch_body"
+    if "push --force" in normalized or "--force-with-lease" in normalized:
+        return "forbidden_git_force_push"
+    if "git push" in normalized and (" --force" in normalized or " -f" in normalized):
+        return "forbidden_git_force_push"
+    if "--no-preserve-root" in normalized or "rm -rf /" in normalized or "rm -fr /" in normalized:
+        return "forbidden_root_wipe"
+    return "shell_command"
+
+
 def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
     event_name = hook_event_name(hook_input)
     output: dict[str, Any] = {
@@ -2249,17 +2266,19 @@ def record_hook_execution(
             path = hook_tool_path(hook_input, tool_input)
             command = hook_tool_command(hook_input, tool_input)
             invocation = hook_input.get("tool_use_id") or hook_input.get("toolUseId")
+            record["schema_version"] = PRETOOLUSE_LEDGER_SCHEMA_VERSION
+            record["command_category"] = hook_command_category(command)
+            record["command_redacted"] = bool(command)
             if tool:
                 record["tool"] = tool
             if path:
                 record["path"] = path
-            if command:
-                record["command"] = command
             if invocation:
                 record["invocation"] = str(invocation)
             if pretooluse_decision:
                 for key in (
                     "risk",
+                    "outcome",
                     "block",
                     "decision",
                     "permission_decision",
@@ -2278,15 +2297,18 @@ def record_hook_execution(
 
 
 HOOK_RECORD_DEDUPE_FIELDS = (
+    "schema_version",
     "agent",
     "event_canonical",
     "mode",
     "session",
     "tool",
     "path",
-    "command",
+    "command_category",
+    "command_redacted",
     "invocation",
     "risk",
+    "outcome",
     "block",
     "decision",
     "permission_decision",
@@ -3520,6 +3542,39 @@ def self_test() -> int:
         ]
         if len(anti_records) != 2:
             failures.append("runtime hook ledger must preserve anti-cry-wolf decision changes")
+        redaction_input = {
+            "hook_event_name": "PreToolUse",
+            "session_id": "ledger-redaction",
+            "tool_name": "Bash",
+            "tool_use_id": "ledger-redaction-tool",
+            "tool_input": {"command": "git push --force origin main"},
+        }
+        redaction_decision = {
+            **dedupe_decision,
+            "risk": "forbidden",
+            "block": True,
+            "decision": "block",
+            "permission_decision": "deny",
+            "marker_emitted": True,
+            "surface_context": True,
+        }
+        record_hook_execution(target, "codex", redaction_input, mode="pretooluse", pretooluse_decision=redaction_decision)
+        redaction_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("agent") == "codex" and record.get("session") == "ledger-redaction"
+        ]
+        if len(redaction_records) != 1:
+            failures.append("runtime hook ledger must record the PreToolUse redaction fixture")
+        else:
+            redaction_record = redaction_records[0]
+            if "command" in redaction_record:
+                failures.append("runtime hook ledger must not persist raw PreToolUse command text")
+            if redaction_record.get("command_category") != "forbidden_git_force_push":
+                failures.append("runtime hook ledger must persist a redacted command_category")
+            if redaction_record.get("schema_version") != "pretooluse_decision@2":
+                failures.append("runtime hook ledger must identify the pretooluse_decision@2 schema")
+            if redaction_record.get("command_redacted") is not True:
+                failures.append("runtime hook ledger must mark command text as redacted")
         if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
             failures.append("new hook runtime must not write the legacy tracked hook sentinel")
         ignore_probe = run(["git", "check-ignore", HOOK_SENTINEL_PATH.as_posix()], cwd=target)
