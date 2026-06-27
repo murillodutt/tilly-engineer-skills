@@ -216,6 +216,32 @@ frequency.
    after source oracles pass. Source-package proof alone is not sufficient for a
    delivered hook ceiling claim.
 
+## Runtime Priority Cut
+
+The ceiling implementation must be sequenced as runtime work, not as another
+documentation-only pass.
+
+**P0: runtime diagnosis substrate.** P0 is the smallest delivered runtime slice
+that makes a future regression explainable. It includes decision reason codes,
+redacted classifier trace, host payload evidence, `NEEDS_DISCOVERABILITY`,
+renderer input/output parity fixtures, and ledger schema/version semantics for
+dedup and analytics. P0 is complete only when the source oracles can fail red
+for a missing reason code, missing trace, flattened renderer output, silently
+routine unknown mutating tool, or ambiguous ledger analytics key.
+
+**P1: installed-target ceiling certification.** P1 starts only after P0 is green
+in source. It updates the installed audit flow so `HOOK-AUDIT-PROMPT.md`,
+`hook-health`, installed helper packaging, and target-project canaries can prove
+`PASS_CEILING` per host. P1 must show where each result came from: host payload,
+kernel classification, session suppression, renderer output, or ledger write.
+P1 is not complete from one host alone; it needs per-host native evidence or an
+explicit `NEEDS_EVIDENCE` / `NEEDS_DISCOVERABILITY` status.
+
+Everything else is lower priority until P0 and P1 are green. Postinstall
+advisories, Field Reports backlog, mesh alignment, public docs, release sync,
+and general cleanup may be important, but they do not pierce the PreToolUse
+runtime ceiling.
+
 ## Rejected Alternatives
 
 | Alternative | Rejection |
