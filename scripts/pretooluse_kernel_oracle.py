@@ -59,6 +59,11 @@ def _assert(condition: bool, failures: list[str], message: str) -> None:
         failures.append(message)
 
 
+def _trace(decision: dict[str, Any]) -> dict[str, Any]:
+    value = decision.get("classifier_trace")
+    return value if isinstance(value, dict) else {}
+
+
 def evaluate() -> dict[str, Any]:
     failures: list[str] = []
 
@@ -76,6 +81,10 @@ def evaluate() -> dict[str, Any]:
         failures,
         "routine Read must carry routine_non_mutating reason code",
     )
+    _assert(routine.get("raw_tool_label") == "Read", failures, "routine Read must preserve raw_tool_label")
+    _assert(routine.get("normalized_tool") == "Read", failures, "routine Read must persist normalized_tool")
+    _assert(routine.get("payload_source") == "tool_input.file_path", failures, "routine Read must persist payload_source")
+    _assert(_trace(routine).get("path_source") == "tool_input.file_path", failures, "routine trace must name path source")
 
     governed = _decision(
         {
@@ -91,6 +100,11 @@ def evaluate() -> dict[str, Any]:
         "governed_surface_mutation" in governed.get("reason_codes", []),
         failures,
         "governed Edit must carry governed_surface_mutation reason code",
+    )
+    _assert(
+        _trace(governed).get("path_match") == "governed_surface",
+        failures,
+        "governed trace must name governed path match",
     )
 
     cursor_replace = _decision(
@@ -134,6 +148,11 @@ def evaluate() -> dict[str, Any]:
         "discoverability decision must carry needs_discoverability_unknown_mutation reason code",
     )
     _assert(
+        _trace(discoverability).get("unknown_mutating") is True,
+        failures,
+        "discoverability trace must name unknown mutating evidence",
+    )
+    _assert(
         mantra_gate.MARKER in str(discoverability.get("context")),
         failures,
         "discoverability context must include marker",
@@ -154,6 +173,7 @@ def evaluate() -> dict[str, Any]:
         failures,
         "forbidden Bash must carry forbidden_class reason code",
     )
+    _assert(_trace(forbidden).get("forbidden_class") is True, failures, "forbidden trace must name forbidden evidence")
 
     alias_payloads = {
         "command": {"tool_input": {"command": _patch(".tes/runtime/hook-smoke/codex/command/SKILL.md")}},
@@ -170,6 +190,15 @@ def evaluate() -> dict[str, Any]:
         },
         "top-level-input": {"input": _patch(".tes/runtime/hook-smoke/codex/top-level-input/SKILL.md")},
     }
+    expected_sources = {
+        "command": "tool_input.command",
+        "input": "tool_input.input",
+        "patch": "tool_input.patch",
+        "arguments.command": "tool_input.arguments.command",
+        "arguments.input": "tool_input.arguments.input",
+        "arguments.patch": "tool_input.arguments.patch",
+        "top-level-input": "hook_input.input",
+    }
     for name, payload in alias_payloads.items():
         hook_input = {"hookEventName": "PreToolUse", "toolName": "apply_patch", **payload}
         tool_input = pretooluse_kernel.hook_tool_input(hook_input)
@@ -182,6 +211,21 @@ def evaluate() -> dict[str, Any]:
             "patch_body_path_extracted" in decision.get("reason_codes", []),
             failures,
             f"{name}: apply_patch must carry patch_body_path_extracted reason code",
+        )
+        _assert(
+            decision.get("payload_source") == expected_sources[name],
+            failures,
+            f"{name}: payload_source must identify the host payload field",
+        )
+        _assert(
+            _trace(decision).get("patch_body_source") == decision.get("payload_source"),
+            failures,
+            f"{name}: classifier_trace must identify patch body source",
+        )
+        _assert(
+            _trace(decision).get("path_source") == "patch_body",
+            failures,
+            f"{name}: classifier_trace must identify patch body path source",
         )
 
     source_text = (ROOT / "scripts" / "pretooluse_kernel.py").read_text(encoding="utf-8")

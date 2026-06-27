@@ -2297,6 +2297,10 @@ def record_hook_execution(
                 if reason_codes:
                     record["reason_codes"] = reason_codes
                 for key in (
+                    "raw_tool_label",
+                    "normalized_tool",
+                    "payload_source",
+                    "classifier_trace",
                     "risk",
                     "outcome",
                     "block",
@@ -2327,6 +2331,10 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "command_category",
     "command_redacted",
     "invocation",
+    "raw_tool_label",
+    "normalized_tool",
+    "payload_source",
+    "classifier_trace",
     "risk",
     "outcome",
     "reason_codes",

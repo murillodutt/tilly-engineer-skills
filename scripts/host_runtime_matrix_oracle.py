@@ -217,6 +217,11 @@ def _reason_codes(record: dict[str, Any]) -> list[str]:
     return [str(item) for item in value] if isinstance(value, list) else []
 
 
+def _classifier_trace(record: dict[str, Any]) -> dict[str, Any]:
+    value = record.get("classifier_trace")
+    return value if isinstance(value, dict) else {}
+
+
 def _write_fixture_project(target: Path) -> None:
     (target / "README.md").write_text("# Host Runtime Matrix Fixture\n", encoding="utf-8")
     (target / "src").mkdir()
@@ -639,10 +644,14 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         and item.get("marker_emitted") is True
         and "governed_surface_mutation" in _reason_codes(item)
         and "patch_body_path_extracted" in _reason_codes(item)
+        and item.get("raw_tool_label") == "apply_patch"
+        and item.get("normalized_tool") == "apply_patch"
+        and item.get("payload_source") == "tool_input.command"
+        and _classifier_trace(item).get("path_source") == "patch_body"
         for item in codex_apply
     ):
         failures.append(
-            "ledger: codex apply_patch first governed record must persist allow decision, marker, and reason codes"
+            "ledger: codex apply_patch first governed record must persist decision, marker, reason codes, and trace fields"
         )
     if not any(
         item.get("decision") == "allow"
@@ -662,6 +671,14 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         "arguments-patch",
         "top-level-input",
     ):
+        expected_source = {
+            "input": "tool_input.input",
+            "patch": "tool_input.patch",
+            "arguments-command": "tool_input.arguments.command",
+            "arguments-input": "tool_input.arguments.input",
+            "arguments-patch": "tool_input.arguments.patch",
+            "top-level-input": "hook_input.input",
+        }[name]
         codex_alias = _matching_records(
             records,
             agent="codex",
@@ -676,9 +693,11 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             and item.get("marker_emitted") is True
             and "governed_surface_mutation" in _reason_codes(item)
             and "patch_body_path_extracted" in _reason_codes(item)
+            and item.get("payload_source") == expected_source
+            and _classifier_trace(item).get("patch_body_source") == expected_source
             for item in codex_alias
         ):
-            failures.append(f"ledger: codex apply_patch {name} must persist marker and reason codes")
+            failures.append(f"ledger: codex apply_patch {name} must persist marker, reason codes, and payload source trace")
 
     for tool in ("Bash", "Shell", "shell"):
         forbidden = _matching_records(
