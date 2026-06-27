@@ -83,6 +83,7 @@ This documentation layer explains the method behind the source package without t
 | Archived TES Host Hook Ceiling Certification Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-certification.md` |
 | Archived TES Host Hook Ceiling Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-hardening.md` |
 | ADR 0009 PreToolUse Ceiling Linear Slices Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md` |
+| PreToolUse Ceiling Installed Evidence Unblocker Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-pretooluse-ceiling-installed-evidence-unblocker.md` |
 | ADR 0008 corrective closure Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0008-corrective-closure.md` |
 | TES Loop Sentinel Harness Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-loop-sentinel.md` |
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |

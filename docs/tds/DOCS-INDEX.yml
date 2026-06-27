@@ -596,6 +596,13 @@ documents:
     consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, execution agents, and hook-audit operators
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-pretooluse-ceiling-installed-evidence-unblocker.md
+    id: roadmap.goal_super_spec_pretooluse_ceiling_installed_evidence_unblocker
+    class: roadmap
+    status: active
+    consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, execution agents, and hook-audit operators
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0008-corrective-closure.md
     id: roadmap.goal_super_spec_adr_0008_corrective_closure
     class: roadmap
