@@ -31,6 +31,12 @@ EXPECTED_MARKER = mantra_gate.MARKER
 EXPECTED_MATCHER = tes_install.CLAUDE_PRETOOLUSE_MATCHER
 HOOK_SENTINEL = Path(".tes/runtime/hooks/executed.jsonl")
 LEGACY_SENTINEL = Path(".tes/hooks/executed.jsonl")
+EXPECTED_HEALTH_INFO = {
+    ("codex", "SessionStart"),
+    ("claude", "SessionStart"),
+    ("cursor", "sessionStart"),
+    ("cursor", "beforeSubmitPrompt"),
+}
 HOST_FIXTURES = (
     "claude-code.json",
     "codex.json",
@@ -113,6 +119,14 @@ def _read_json(path: Path) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def _as_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _as_list(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
 def _read_ledger(target: Path) -> list[dict[str, Any]]:
     path = target / HOOK_SENTINEL
     if not path.exists():
@@ -168,6 +182,27 @@ def _install_hooks(target: Path, failures: list[str]) -> dict[str, Any]:
     return payload
 
 
+def _assert_install_scope(payload: dict[str, Any], failures: list[str]) -> None:
+    certification = _as_dict(payload.get("certification"))
+    cert_status = certification.get("status")
+    if cert_status not in {"PASS", "PARTIAL"}:
+        failures.append(f"install: unexpected certification status {cert_status!r}")
+
+    components = _as_dict(certification.get("components"))
+    for component, status in components.items():
+        if component == "mcp_registration":
+            continue
+        if status in {"FAIL", "PARTIAL"}:
+            failures.append(f"install: unexpected {component} certification status {status!r}")
+
+    for finding in _as_list(certification.get("findings")):
+        item = _as_dict(finding)
+        detail = " ".join(str(part) for part in _as_list(item.get("detail")))
+        if item.get("component") == "mcp_registration" and "missing tes-cortex" in detail:
+            continue
+        failures.append(f"install: unexpected certification finding {item!r}")
+
+
 def _assert_installed_configs(target: Path, failures: list[str]) -> None:
     codex_path = target / ".codex/config.toml"
     try:
@@ -181,25 +216,25 @@ def _assert_installed_configs(target: Path, failures: list[str]) -> None:
         failures.append("codex config: [features].hooks must be true")
     if "codex_hooks" in codex_text:
         failures.append("codex config: deprecated codex_hooks flag must not be emitted")
-    codex_hooks = codex_data.get("hooks", {})
-    codex_pre = codex_hooks.get("PreToolUse", []) if isinstance(codex_hooks, dict) else []
-    codex_start = codex_hooks.get("SessionStart", []) if isinstance(codex_hooks, dict) else []
-    if len(codex_pre) != 1 or codex_pre[0].get("matcher") != EXPECTED_MATCHER:
+    codex_hooks = _as_dict(codex_data.get("hooks"))
+    codex_pre = _as_list(codex_hooks.get("PreToolUse"))
+    codex_start = _as_list(codex_hooks.get("SessionStart"))
+    if len(codex_pre) != 1 or not isinstance(codex_pre[0], dict) or codex_pre[0].get("matcher") != EXPECTED_MATCHER:
         failures.append("codex config: PreToolUse matcher must be complete and singular")
-    if len(codex_start) != 1:
+    if len(codex_start) != 1 or not isinstance(codex_start[0], dict):
         failures.append("codex config: SessionStart hook must be singular")
 
     claude = _read_json(target / ".claude/settings.json")
-    claude_hooks = claude.get("hooks", {}) if isinstance(claude.get("hooks"), dict) else {}
-    claude_pre = claude_hooks.get("PreToolUse", [])
-    claude_start = claude_hooks.get("SessionStart", [])
+    claude_hooks = _as_dict(claude.get("hooks"))
+    claude_pre = _as_list(claude_hooks.get("PreToolUse"))
+    claude_start = _as_list(claude_hooks.get("SessionStart"))
     if not any(isinstance(group, dict) and group.get("matcher") == EXPECTED_MATCHER for group in claude_pre):
         failures.append("claude config: PreToolUse matcher must be complete")
     if not any(isinstance(group, dict) and group.get("matcher") == tes_install.CLAUDE_SESSIONSTART_MATCHER for group in claude_start):
         failures.append("claude config: SessionStart matcher must use official sources")
 
     cursor = _read_json(target / ".cursor/hooks.json")
-    cursor_hooks = cursor.get("hooks", {}) if isinstance(cursor.get("hooks"), dict) else {}
+    cursor_hooks = _as_dict(cursor.get("hooks"))
     for event in ("sessionStart", "beforeSubmitPrompt", "preToolUse"):
         if not isinstance(cursor_hooks.get(event), list) or not cursor_hooks[event]:
             failures.append(f"cursor config: missing {event} hook")
@@ -320,7 +355,29 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     for agent, event in (("codex", "PreToolUse"), ("claude", "PreToolUse"), ("cursor", "preToolUse")):
         if _event_state(health, agent, event) != "OBSERVED":
             failures.append(f"hook-health: {agent} {event} must be OBSERVED after matrix")
+    _assert_hook_health_contract(health, failures)
     return health
+
+
+def _assert_hook_health_contract(health: dict[str, Any], failures: list[str]) -> None:
+    if health.get("status") != "NEEDS_EVIDENCE":
+        failures.append(f"hook-health: expected NEEDS_EVIDENCE for non-native matrix, got {health.get('status')!r}")
+
+    counts = _as_dict(health.get("finding_counts"))
+    if counts.get("error", 0) != 0:
+        failures.append(f"hook-health: unexpected error findings count {counts.get('error')!r}")
+    if counts.get("warning", 0) != 0:
+        failures.append(f"hook-health: unexpected warning findings count {counts.get('warning')!r}")
+
+    for finding in _as_list(health.get("findings")):
+        item = _as_dict(finding)
+        expected_info = (
+            item.get("severity") == "info"
+            and item.get("type") == "configured_without_runtime_observation"
+            and (item.get("agent"), item.get("event")) in EXPECTED_HEALTH_INFO
+        )
+        if not expected_info:
+            failures.append(f"hook-health: unexpected finding {item!r}")
 
 
 def _assert_cortex_no_write(target: Path, failures: list[str]) -> None:
@@ -338,10 +395,13 @@ def _assert_cortex_no_write(target: Path, failures: list[str]) -> None:
 
 def evaluate() -> dict[str, Any]:
     failures: list[str] = []
+    install_payload: dict[str, Any] = {}
+    health: dict[str, Any] = {}
     with tempfile.TemporaryDirectory(prefix="tes-host-runtime-matrix-") as tmp:
         target = Path(tmp)
         _write_fixture_project(target)
         install_payload = _install_hooks(target, failures)
+        _assert_install_scope(install_payload, failures)
         _assert_installed_configs(target, failures)
         _assert_fixture_completeness(target, failures)
         _assert_hook_contracts(target, failures)
