@@ -84,7 +84,7 @@ attempt: `1`
 repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-003`
-failed_attempt_recovery_decision: `fixed closure report TDS frontmatter after validate_tds rejected generic keys`
+failed_attempt_recovery_decision: `not_applicable`
 commit: 4dedc876b4bc7d249f432977f9f8d2b269cab28f
 oracle_status: `PASS: py_compile, pretooluse_kernel_oracle, host_runtime_matrix_oracle, tes_install self-test, pretooluse_session_oracle, pretooluse_contract_oracle, mantra_gate_pretooluse_oracle, validate_tds, doc-size, ledger-no-placeholder, and renderer-token negative grep`
 structural_method_id: `runtime-script-internal-sections`
@@ -381,11 +381,11 @@ MAY_EDIT=yes
 spec_id: `SPEC-012`
 spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
 attempt: `1`
-repair_count: `0`
-audit_repair_cycle: `0`
+repair_count: `1`
+audit_repair_cycle: `1`
 first_unexecuted_unit: `SPEC-012`
-failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+failed_attempt_recovery_decision: `fixed closure report TDS frontmatter after validate_tds rejected generic keys`
+commit: ec40caaa295f64fe12b3fef430e540456921a343
 oracle_status: `PASS: host_runtime_matrix_oracle, pretooluse_evidence_oracle, public_bundle_oracle, validate_reference_package, TDS validation, doc-size, and private vocabulary`
 structural_method_id: `final-ceiling-closure-audit`
 topology_decision: `closure evidence report only; no feature work and no release action`
@@ -403,5 +403,5 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `PASS: closure rejects hook-health PASS as ceiling and requires native installed evidence before PASS_CEILING`
 distinct_refuters: `not_applicable`
-stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-012 files and commit locally`
+stop_state: `COMMITTED`
+next_allowed_action: `loop complete; final status NEEDS_EVIDENCE`
