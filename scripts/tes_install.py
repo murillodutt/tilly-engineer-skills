@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -17,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.207"
+VERSION = "0.3.208"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -29,7 +30,8 @@ AGENTS = ("codex", "claude", "cursor")
 POSTINSTALL_STATES = {"pending", "running", "complete", "needs_review"}
 CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
 # PreToolUse (senior-manager pre-action) matcher: the mutating tools the gate supervises.
-CLAUDE_PRETOOLUSE_MATCHER = "Write|Edit|MultiEdit"
+CLAUDE_PRETOOLUSE_MATCHER = "Write|Edit|MultiEdit|NotebookEdit|Bash|Shell|shell|apply_patch"
+PATCH_FILE_HEADER_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$")
 DEFAULT_POSTINSTALL_COMMANDS = (
     ("tes_init.py", ("--target", "{target}", "--yes")),
     ("project_context_oracle.py", ("--target", "{target}")),
@@ -1964,7 +1966,20 @@ def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> st
         or hook_input.get("path")
         or hook_input.get("filePath")
     )
-    return str(value or "")
+    if value:
+        return str(value)
+    command = hook_tool_command(hook_input, tool_input)
+    patch_paths = hook_patch_paths(command)
+    return patch_paths[0] if patch_paths else ""
+
+
+def hook_patch_paths(command: str) -> list[str]:
+    paths: list[str] = []
+    for line in command.splitlines():
+        match = PATCH_FILE_HEADER_RE.match(line.strip())
+        if match:
+            paths.append(match.group(1).strip())
+    return paths
 
 
 def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
@@ -2390,7 +2405,7 @@ GOVERNED_ARTIFACT_HINTS = (
     ".cursor/rules/",
 )
 # Tools that change state. A non-mutating tool (Read/Grep/Glob) is never gated.
-MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "Bash")
+MUTATING_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Shell", "shell", "apply_patch")
 
 
 def _classify_pretooluse_risk(action: str, paths: list[str]) -> str:
@@ -2500,9 +2515,13 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
     command = hook_tool_command(hook_input, tool_input)
     action = " ".join(part for part in (tool_name, command, file_path) if part).strip()
     paths = [file_path] if file_path else []
+    for patch_path in hook_patch_paths(command):
+        if patch_path and patch_path not in paths:
+            paths.append(patch_path)
 
     risk = _classify_pretooluse_risk(action, paths)
-    governed = any(hint in file_path for hint in GOVERNED_ARTIFACT_HINTS)
+    governed_paths = [path for path in paths if any(hint in path for hint in GOVERNED_ARTIFACT_HINTS)]
+    governed = bool(governed_paths)
     mutating = tool_name in MUTATING_TOOLS
     if risk == "routine" and governed and mutating:
         risk = "material"
@@ -2522,7 +2541,8 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
             "block": False,
             "risk": risk,
             "context": (
-                f"{_mantra_gate_marker()} Mantra Gate supervising: {risk} change to governed artifact {file_path}. "
+                f"{_mantra_gate_marker()} Mantra Gate supervising: {risk} change to governed artifact "
+                f"{governed_paths[0] if governed_paths else file_path}. "
                 "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
             ),
         }

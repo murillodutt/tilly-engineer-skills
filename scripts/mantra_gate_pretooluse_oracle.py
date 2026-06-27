@@ -107,8 +107,19 @@ def evaluate() -> dict[str, object]:
         subprocess.run(["git", "init"], cwd=target, capture_output=True, check=False)
 
         forbidden = _pre("Bash", command="git push --force origin main")
+        forbidden_codex_shell = _pre_camel("shell", "oracle-forbidden-codex-shell", command="git push --force origin main")
         governed = _pre("Edit", file_path="docs/adr/0005-decision.md")
         governed_multi_codex = _pre_camel("MultiEdit", "oracle-multiedit-camel", filePath="docs/adr/0005-decision.md")
+        governed_apply_patch_codex = _pre_camel(
+            "apply_patch",
+            "oracle-apply-patch-codex",
+            command=(
+                "*** Begin Patch\n"
+                "*** Add File: .tes/runtime/hook-smoke/codex/SKILL.md\n"
+                "+# Smoke\n"
+                "*** End Patch\n"
+            ),
+        )
         governed_multi_cursor = _pre_camel("MultiEdit", "oracle-multiedit-cursor", filePath="docs/adr/0005-decision.md")
         benign_read = _pre("Read", file_path="scripts/foo.py")
         benign_code = _pre("Edit", file_path="scripts/foo.py")
@@ -125,6 +136,12 @@ def evaluate() -> dict[str, object]:
             if "Mantra Gate" not in err:
                 failures.append(f"{agent}: forbidden block must write a readable reason to stderr")
             _assert_marker(f"{agent}: forbidden stderr", err, failures)
+        code, _out, err = _run("codex", forbidden_codex_shell, target)
+        if code != 2:
+            failures.append(f"codex: lowercase shell forbidden action must BLOCK with exit 2, got {code}")
+        if "forbidden-class action" not in err:
+            failures.append("codex: lowercase shell forbidden block must explain forbidden class")
+        _assert_marker("codex: lowercase shell forbidden stderr", err, failures)
 
         # --- Destructive filesystem actions are forbidden even outside governed docs. ---
         for agent in ("claude", "codex"):
@@ -198,6 +215,16 @@ def evaluate() -> dict[str, object]:
             if shape == "stdout-json" and agent != "codex" and not out.strip():
                 failures.append(f"{agent}: supervised output must not be empty")
 
+        # Codex native edits arrive as apply_patch with paths embedded in the patch body.
+        code, out, err = _run("codex", governed_apply_patch_codex, target)
+        if code != 0:
+            failures.append(f"codex: governed apply_patch must SUPERVISE (allow), got exit {code}")
+        if "Mantra Gate supervising" not in err or out.strip():
+            failures.append("codex: governed apply_patch must surface stderr context only")
+        if ".tes/runtime/hook-smoke/codex/SKILL.md" not in err:
+            failures.append("codex: governed apply_patch must extract the governed path from the patch body")
+        _assert_marker("codex: governed apply_patch stderr", err, failures)
+
         # --- benign Read -> allow, silent ---
         for agent in ("claude", "codex", "cursor"):
             code, out, err = _run(agent, benign_read, target)
@@ -259,6 +286,15 @@ def evaluate() -> dict[str, object]:
             for rec in sentinel_records
         ):
             failures.append("PreToolUse sentinel must record camelCase Codex MultiEdit execution")
+        if not any(
+            rec.get("agent") == "codex"
+            and rec.get("event_canonical") == "PreToolUse"
+            and rec.get("session") == "oracle-apply-patch-codex"
+            and rec.get("tool") == "apply_patch"
+            and rec.get("path") == ".tes/runtime/hook-smoke/codex/SKILL.md"
+            for rec in sentinel_records
+        ):
+            failures.append("PreToolUse sentinel must record Codex apply_patch execution with extracted path")
 
     return {
         "oracle": "mantra-gate-pretooluse",

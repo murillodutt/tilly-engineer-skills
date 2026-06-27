@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.207"
+VERSION = "0.3.208"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -69,6 +69,10 @@ ADAPTERS = ("codex", "claude", "cursor", "vscode")
 # Helper-adjacent assets copied beside .tes/bin helpers (mirrors tes_bundle bundled_assets).
 HELPER_BUNDLED_ASSETS = (
     "fixtures/INVENTORY-HYGIENE.minimal.yml",
+    "fixtures/cortex_host_contracts/claude-code.json",
+    "fixtures/cortex_host_contracts/codex.json",
+    "fixtures/cortex_host_contracts/cursor.json",
+    "fixtures/cortex_host_contracts/negative-flat-contract.json",
 )
 
 

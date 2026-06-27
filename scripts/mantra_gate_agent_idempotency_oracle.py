@@ -104,7 +104,7 @@ def _evaluate_codex() -> list[str]:
                 "hooks": {
                     "PreToolUse": [
                         {
-                            "matcher": "Write|Edit|MultiEdit",
+                            "matcher": tes_install.CLAUDE_PRETOOLUSE_MATCHER,
                             "hooks": [
                                 {"type": "command", "command": "python3 .tes/bin/tes_install.py hook --agent codex"},
                                 {"type": "command", "command": "echo foreign-codex-json"},
@@ -126,8 +126,8 @@ def _evaluate_codex() -> list[str]:
             failures.append(f"codex: SessionStart blocks after double install = {toml.count('[[hooks.SessionStart]]')} (want 1)")
         if toml.count("[[hooks.PreToolUse]]") != 1:
             failures.append(f"codex: PreToolUse blocks after double install = {toml.count('[[hooks.PreToolUse]]')} (want 1)")
-        if 'matcher = "Write|Edit|MultiEdit"' not in toml:
-            failures.append("codex: PreToolUse matcher must include mutating tools Write|Edit|MultiEdit")
+        if f'matcher = "{tes_install.CLAUDE_PRETOOLUSE_MATCHER}"' not in toml:
+            failures.append("codex: PreToolUse matcher must include the full mutating tool set")
         if "mcp_servers.other" not in toml:
             failures.append("codex: foreign config not preserved across install")
         tes_install.remove_tes_hooks(t, "codex", dry_run=False)

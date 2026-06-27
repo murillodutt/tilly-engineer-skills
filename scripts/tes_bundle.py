@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.207"
+VERSION = "0.3.208"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -649,6 +649,22 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
             (
                 "scripts/fixtures/INVENTORY-HYGIENE.minimal.yml",
                 "scripts/fixtures/INVENTORY-HYGIENE.minimal.yml",
+            ),
+            (
+                "scripts/fixtures/cortex_host_contracts/claude-code.json",
+                "scripts/fixtures/cortex_host_contracts/claude-code.json",
+            ),
+            (
+                "scripts/fixtures/cortex_host_contracts/codex.json",
+                "scripts/fixtures/cortex_host_contracts/codex.json",
+            ),
+            (
+                "scripts/fixtures/cortex_host_contracts/cursor.json",
+                "scripts/fixtures/cortex_host_contracts/cursor.json",
+            ),
+            (
+                "scripts/fixtures/cortex_host_contracts/negative-flat-contract.json",
+                "scripts/fixtures/cortex_host_contracts/negative-flat-contract.json",
             ),
             (
                 "docs/install/scaffolds/DOCUMENTATION-AUTHORITY.target",

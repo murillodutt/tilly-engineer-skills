@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # TES Hook Audit Prompt
@@ -45,15 +45,49 @@ Do not run package-source-only checks such as attach_health_oracle.py or
 cortex_runtime.py --self-test unless those files and their fixtures are present
 inside the installed target.
 
-Exercise the current host's PreToolUse with a safe native file mutation before
-the final hook-health run:
-- Claude Code: create or update .tes/runtime/hook-smoke/claude.md.
-- Codex: create or update .tes/runtime/hook-smoke/codex.md.
-- Cursor: create or update .tes/runtime/hook-smoke/cursor.md.
+Exercise the current host's PreToolUse with a safe native governed mutation
+before the final hook-health run. Use the host's normal file editing tool, not
+shell redirection:
+- Claude Code: create or update .tes/runtime/hook-smoke/claude/SKILL.md with
+  the native Write or Edit tool.
+- Codex: create or update .tes/runtime/hook-smoke/codex/SKILL.md with native
+  apply_patch.
+- Cursor: create or update .tes/runtime/hook-smoke/cursor/SKILL.md with the
+  native Write tool.
 
-Use the host's normal Write/Edit capability, not shell redirection. Remove only
-the smoke file you created if the test policy asks for a clean worktree. Do not
-reuse another host's report as evidence for the current host.
+Expected native result: the current host should allow the edit and surface
+`🍳 Flash-Fry` governed supervision exactly once for the session. A second
+native mutation of the same governed path in the same session should be allowed
+without repeating the marker. Remove only the smoke file you created if the test
+policy asks for a clean worktree. Do not reuse another host's report as evidence
+for the current host.
+
+After the native smoke, use `python3 .tes/bin/tes_install.py hook --agent <host>
+--target .` with JSON on stdin to simulate safe cross-host contracts. Simulate,
+do not execute, forbidden commands such as `git push --force origin main`. The
+simulation must cover:
+- Routine silence: a non-mutating Read or ordinary non-governed edit allows
+  without `Flash-Fry`.
+- Governed supervision: Write/Edit/MultiEdit/apply_patch on `/SKILL.md`,
+  `AGENTS.md`, `CLAUDE.md`, `docs/adr/`, `docs/governance/`, or
+  `.cursor/rules/` allows and surfaces `Flash-Fry`.
+- Forbidden block: `git push --force origin main` and root-wipe patterns are
+  blocked with the host-specific output contract.
+- Host output contract: Claude Code and Codex block with exit 2 plus stderr;
+  Cursor blocks with JSON `permission: "deny"` and exit 0.
+- Matcher coverage: installed PreToolUse config must include the native mutation
+  tools for the host under test. In Codex, verify `apply_patch` is covered and
+  the hook can extract the path from the patch body.
+- Anti-cry-wolf: the same governed supervision in the same session is surfaced
+  once, then silenced.
+- Runtime ledger: `.tes/runtime/hooks/executed.jsonl` records agent, event,
+  tool, session, and path for the native smoke; `.tes/hooks/executed.jsonl` is
+  legacy residue only.
+- Cortex no-write: hook context may propose recall/alignment/capture, but the
+  runtime must report no automatic durable writes.
+- Fixture completeness: if `.tes/bin/cortex_runtime.py --self-test` exists,
+  run it only when `.tes/bin/fixtures/cortex_host_contracts/*.json` is present.
+  Missing fixtures are an installed packaging finding.
 
 Compare hosts as separate contracts, not one universal hook:
 - Claude Code: .claude/settings.json, SessionStart, PreToolUse, JSON additionalContext,
@@ -113,6 +147,10 @@ Cursor:
 - Forbidden block:
 - Governed supervision:
 - Routine silence:
+- Native matcher coverage:
+- Anti-cry-wolf:
+- Hook output contract:
+- Runtime ledger fidelity:
 - Cortex advisory behavior:
 
 ## Findings
