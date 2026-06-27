@@ -315,7 +315,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-007`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: eeecb2af370ba1130e34ba9d8a1cea3f55695a05
 oracle_status: `PASS: py_compile, host_runtime_matrix_oracle, hook_audit_prompt_oracle, tes_install self-test, pretooluse_kernel_oracle, pretooluse_session_oracle, and pretooluse_contract_oracle`
 structural_method_id: `runtime-script-internal-sections`
 topology_decision: `matrix helper-contract extension`
@@ -337,5 +337,54 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `PASS: hook_audit_prompt_oracle red-capability mutants cover helper paths, import contract, and helper_contract_status`
 distinct_refuters: `not_applicable`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-008`
+
+## Pre-Edit Gate: SPEC-008
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=ADR
+ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
+FIRST_UNEXECUTED_UNIT=SPEC-008
+ACTIVE_SPEC=SPEC-008
+BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
+MAY_EDIT=yes
+
+## SPEC-008
+
+spec_id: `SPEC-008`
+spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-008`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+oracle_status: `PASS: py_compile, tes_install self-test, host_runtime_matrix_oracle, hook_audit_prompt_oracle, pretooluse_kernel_oracle, pretooluse_session_oracle, pretooluse_contract_oracle, and mantra_gate_pretooluse_oracle`
+structural_method_id: `runtime-script-internal-sections`
+topology_decision: `hook-health additive contract extension`
+topology_decision_artifact: `ledger-section`
+structural_debt: `none`
+next_structural_constraint: `SPEC-009 owns final audit prompt projection; SPEC-008 must not claim PASS_CEILING without installed ceiling evidence`
+topology_probe_result: `PASS: no new modules; additive hook-health payload extension plus docs/oracle update`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: host runtime matrix reports hook_health_floor_status=NEEDS_EVIDENCE and hook_health_ceiling_status=NEEDS_FLOOR without PASS_CEILING collapse`
+adversary_objection: `none`
+shared_contract_extended: `yes`
+extension_point_proven: `yes: hook-health emits schema tes-hook-health@2, legacy_schema tes-hook-health@1, status, floor_status, ceiling_status, and ceiling_gaps`
+contract_handoff_artifact: `ledger-section`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: hook_audit_prompt_oracle red-capability mutants cover hook-health v2 split, floor/ceiling fields, PASS_BASIC not PASS_CEILING, and ceiling gap rule`
+distinct_refuters: `not_applicable`
 stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-007 files and commit locally`
+next_allowed_action: `stage only SPEC-008 files and commit locally`

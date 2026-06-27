@@ -838,8 +838,18 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
 
 
 def _assert_hook_health_contract(health: dict[str, Any], failures: list[str]) -> None:
+    if health.get("schema") != "tes-hook-health@2":
+        failures.append(f"hook-health: expected tes-hook-health@2 schema, got {health.get('schema')!r}")
+    if health.get("legacy_schema") != "tes-hook-health@1":
+        failures.append("hook-health: expected explicit v1 legacy schema marker")
     if health.get("status") != "NEEDS_EVIDENCE":
         failures.append(f"hook-health: expected NEEDS_EVIDENCE for non-native matrix, got {health.get('status')!r}")
+    if health.get("floor_status") != "NEEDS_EVIDENCE":
+        failures.append(f"hook-health: expected floor_status=NEEDS_EVIDENCE for non-native matrix, got {health.get('floor_status')!r}")
+    if health.get("ceiling_status") != "NEEDS_FLOOR":
+        failures.append(f"hook-health: expected ceiling_status=NEEDS_FLOOR until floor evidence is complete, got {health.get('ceiling_status')!r}")
+    if health.get("ceiling_status") == "PASS_CEILING":
+        failures.append("hook-health: matrix must not collapse hook-health PASS into PASS_CEILING")
 
     counts = _as_dict(health.get("finding_counts"))
     if counts.get("error", 0) != 0:
@@ -988,6 +998,8 @@ def evaluate() -> dict[str, Any]:
         "install_certification_status": install_payload.get("certification", {}).get("status"),
         "helper_contract_status": helper_contract.get("status"),
         "hook_health_status": health.get("status"),
+        "hook_health_floor_status": health.get("floor_status"),
+        "hook_health_ceiling_status": health.get("ceiling_status"),
         "discoverability_status": health.get("discoverability_status"),
         "native_smoke_scope": "manual-per-host; see docs/install/HOOK-AUDIT-PROMPT.md",
         "failures": failures,

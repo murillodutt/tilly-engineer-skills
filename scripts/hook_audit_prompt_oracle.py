@@ -56,6 +56,10 @@ REQUIRED_TERMS = (
     "include at least tool, risk, path or command, and\n  session/mode when present",
     "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp",
     "not duplicates when\n  tool, path, risk, marker, or mode differ",
+    "Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the\n  legacy functional field",
+    "`floor_status`, `ceiling_status`, and\n  `ceiling_gaps`",
+    "`floor_status=PASS_BASIC` is not `PASS_CEILING`",
+    "`ceiling_status=PASS_CEILING` and no `ceiling_gaps` remain",
     "PreToolUse helper packaging: TES 0.3.218+ installs must include",
     "`.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both",
     "must import successfully from `.tes/bin`",
@@ -257,6 +261,26 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_cursor_explicit_strreplace_simulation",
             _remove(text, "hook-entrypoint simulation with explicit `tool: \"StrReplace\"`"),
             "hook-entrypoint",
+        ),
+        Mutation(
+            "without_hook_health_v2_split",
+            _remove(text, "Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the\n  legacy functional field"),
+            "tes-hook-health@2",
+        ),
+        Mutation(
+            "without_hook_health_floor_ceiling_fields",
+            _remove(text, "`floor_status`, `ceiling_status`, and\n  `ceiling_gaps`"),
+            "floor_status",
+        ),
+        Mutation(
+            "without_hook_health_basic_not_ceiling",
+            _remove(text, "`floor_status=PASS_BASIC` is not `PASS_CEILING`"),
+            "PASS_BASIC",
+        ),
+        Mutation(
+            "without_hook_health_ceiling_gap_rule",
+            _remove(text, "`ceiling_status=PASS_CEILING` and no `ceiling_gaps` remain"),
+            "ceiling_status",
         ),
         Mutation(
             "without_pretooluse_helper_packaging_contract",

@@ -169,6 +169,10 @@ command line. The simulation must cover:
   session/mode when present. Cursor may batch multiple native tool projections
   under the same invocation/timestamp, and those rows are not duplicates when
   tool, path, risk, marker, or mode differ.
+- Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the
+  legacy functional field and adds `floor_status`, `ceiling_status`, and
+  `ceiling_gaps`. `floor_status=PASS_BASIC` is not `PASS_CEILING`; the ceiling
+  passes only when `ceiling_status=PASS_CEILING` and no `ceiling_gaps` remain.
 - PreToolUse helper packaging: TES 0.3.218+ installs must include
   `.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both
   must import successfully from `.tes/bin`. Missing or non-importable helpers

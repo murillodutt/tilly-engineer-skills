@@ -57,6 +57,8 @@ OPERATING_MESH_PRETOOLUSE_HINTS = (
 )
 PRETOOLUSE_LEDGER_SCHEMA_VERSION = "pretooluse_decision@2"
 HOOK_DEDUPE_CONTRACT_SCHEMA = "tes-hook-dedupe@1"
+HOOK_HEALTH_SCHEMA_VERSION = "tes-hook-health@2"
+HOOK_HEALTH_LEGACY_SCHEMA_VERSION = "tes-hook-health@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 
@@ -2552,6 +2554,71 @@ def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]
     return duplicates
 
 
+def hook_floor_status(status_value: str, current_records: list[dict[str, Any]]) -> str:
+    """Translate functional hook-health status into the ADR 0009 floor band."""
+    if status_value in {"PASS", "PASS_WITH_FINDINGS"} and current_records:
+        return "PASS_BASIC"
+    if status_value in {"PASS", "PASS_WITH_FINDINGS"}:
+        return "NEEDS_EVIDENCE"
+    return status_value
+
+
+def pretooluse_ceiling_gaps(records: list[dict[str, Any]]) -> list[str]:
+    """Return missing ADR 0009 ceiling evidence from installed PreToolUse rows."""
+    gaps: list[str] = []
+    pretooluse_records = [
+        record
+        for record in records
+        if canonical_hook_event(str(record.get("event_canonical") or record.get("event") or "")) == "PreToolUse"
+    ]
+    if not pretooluse_records:
+        return ["missing_pretooluse_runtime_rows"]
+
+    has_discoverability = False
+    has_redacted_command = False
+    has_renderer_projection = False
+    for record in pretooluse_records:
+        reason_codes = record.get("reason_codes") if isinstance(record.get("reason_codes"), list) else []
+        classifier_trace = record.get("classifier_trace") if isinstance(record.get("classifier_trace"), dict) else {}
+        renderer_trace = record.get("renderer_trace") if isinstance(record.get("renderer_trace"), dict) else {}
+        if record.get("schema_version") != PRETOOLUSE_LEDGER_SCHEMA_VERSION:
+            gaps.append("missing_pretooluse_decision_v2_schema")
+        if not reason_codes:
+            gaps.append("missing_reason_codes")
+        if not classifier_trace:
+            gaps.append("missing_classifier_trace")
+        if not renderer_trace.get("output_contract"):
+            gaps.append("missing_renderer_trace")
+        if "command" in record:
+            gaps.append("raw_command_not_redacted")
+        if not record.get("command_category"):
+            gaps.append("missing_command_category")
+        if not record.get("payload_source"):
+            gaps.append("missing_payload_source")
+        if not record.get("decision") or not record.get("permission_decision"):
+            gaps.append("missing_decision_projection")
+        if record.get("outcome") == "needs_discoverability" and "needs_discoverability_unknown_mutation" in reason_codes:
+            has_discoverability = True
+        if record.get("command_redacted") is True and record.get("command_category") not in {"", "no_command", None}:
+            has_redacted_command = True
+        if "renderer_contract_projected" in reason_codes and renderer_trace.get("output_contract"):
+            has_renderer_projection = True
+
+    if not has_discoverability:
+        gaps.append("missing_discoverability_runtime_row")
+    if not has_redacted_command:
+        gaps.append("missing_redacted_command_evidence")
+    if not has_renderer_projection:
+        gaps.append("missing_renderer_projection_reason")
+    return sorted(set(gaps))
+
+
+def hook_ceiling_status(floor_status: str, ceiling_gaps: list[str]) -> str:
+    if floor_status != "PASS_BASIC":
+        return "NEEDS_FLOOR"
+    return "PASS_CEILING" if not ceiling_gaps else "NEEDS_CEILING_EVIDENCE"
+
+
 def hook_health_payload(target: Path) -> dict[str, Any]:
     target = target_root(target)
     configured = configured_hook_events(target)
@@ -2654,10 +2721,18 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
     elif findings:
         status_value = "PASS_WITH_FINDINGS"
 
+    floor_status_value = hook_floor_status(status_value, current_records)
+    ceiling_gaps = pretooluse_ceiling_gaps(current_records)
+    ceiling_status_value = hook_ceiling_status(floor_status_value, ceiling_gaps)
+
     return {
-        "schema": "tes-hook-health@1",
+        "schema": HOOK_HEALTH_SCHEMA_VERSION,
+        "legacy_schema": HOOK_HEALTH_LEGACY_SCHEMA_VERSION,
         "version": VERSION,
         "status": status_value,
+        "floor_status": floor_status_value,
+        "ceiling_status": ceiling_status_value,
+        "ceiling_gaps": ceiling_gaps,
         "target": str(target),
         "dedupe_contract": hook_dedupe_contract(),
         "sentinels": {
@@ -3729,8 +3804,21 @@ def self_test() -> int:
             failures.extend(hook_health_result.stdout.splitlines())
             failures.extend(hook_health_result.stderr.splitlines())
         hook_health_payload_result = parse_json_output(hook_health_result.stdout)
+        if hook_health_payload_result.get("schema") != HOOK_HEALTH_SCHEMA_VERSION:
+            failures.append("hook-health must report tes-hook-health@2 schema")
+        if hook_health_payload_result.get("legacy_schema") != HOOK_HEALTH_LEGACY_SCHEMA_VERSION:
+            failures.append("hook-health must preserve the v1 schema migration marker")
         if hook_health_payload_result.get("status") != "PASS":
             failures.append(f"hook-health complete fixture must report PASS, got {hook_health_payload_result.get('status')}")
+        if hook_health_payload_result.get("floor_status") != "PASS_BASIC":
+            failures.append(
+                f"hook-health complete fixture must report floor_status=PASS_BASIC, got {hook_health_payload_result.get('floor_status')}"
+            )
+        if hook_health_payload_result.get("ceiling_status") == "PASS_CEILING":
+            failures.append("hook-health must not report PASS_CEILING while ADR 0009 ceiling evidence is incomplete")
+        ceiling_gaps = hook_health_payload_result.get("ceiling_gaps")
+        if not isinstance(ceiling_gaps, list) or not ceiling_gaps:
+            failures.append("hook-health must list ceiling_gaps when ceiling_status is not PASS_CEILING")
         dedupe_contract = hook_health_payload_result.get("dedupe_contract")
         dedupe_contract = dedupe_contract if isinstance(dedupe_contract, dict) else {}
         dedupe_fields = dedupe_contract.get("fields") if isinstance(dedupe_contract.get("fields"), list) else []
@@ -3806,6 +3894,10 @@ def self_test() -> int:
         configured_only_payload = parse_json_output(configured_only_health.stdout)
         if configured_only_health.returncode != 0 or configured_only_payload.get("status") != "NEEDS_EVIDENCE":
             failures.append("hook-health must keep configured-only hooks as NEEDS_EVIDENCE with exit 0")
+        if configured_only_payload.get("floor_status") != "NEEDS_EVIDENCE":
+            failures.append("hook-health configured-only fixture must report floor_status=NEEDS_EVIDENCE")
+        if configured_only_payload.get("ceiling_status") != "NEEDS_FLOOR":
+            failures.append("hook-health configured-only fixture must report ceiling_status=NEEDS_FLOOR")
         duplicate_health_target = target / "duplicate-health"
         duplicate_health_target.mkdir()
         run(["git", "init"], cwd=duplicate_health_target)
