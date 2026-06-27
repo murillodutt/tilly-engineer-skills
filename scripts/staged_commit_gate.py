@@ -312,6 +312,20 @@ def gate_plan() -> list[Gate]:
             ),
         ),
         Gate(
+            "host-runtime-matrix",
+            ["python3", "scripts/host_runtime_matrix_oracle.py", "--self-test"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "scripts/tes_install.py",
+                    "scripts/mantra_gate_pretooluse_oracle.py",
+                    "scripts/host_runtime_matrix_oracle.py",
+                    "docs/install/HOOK-AUDIT-PROMPT.md",
+                    "package.json",
+                ),
+            ),
+        ),
+        Gate(
             "materialize",
             ["python3", "scripts/materialize_adapter.py", "all", "--check"],
             matcher=lambda paths: any_match(
