@@ -100,39 +100,39 @@ auditor_distinct_from_operator: `tree-adversary subagent closed after objections
 auditor_rewrote_no_oracle: `no`
 audit_remutation: `PASS (hook_audit_prompt_oracle in-memory mutants; host_runtime_matrix negative fixtures)`
 distinct_refuters: `tree-adversary subagent plus commit:check gates`
-stop_state: `NEEDS_OWNER_DECISION`
-next_allowed_action: `SPEC-005 release identity: patch bump, bundle/public docs, full closure, push/tag/release only after explicit authorization`
+stop_state: `SPEC-005_AUTHORIZED`
+next_allowed_action: `commit release ledger, push main, create/push v0.3.210, run release:check and public_pages_oracle, then execute SPEC-006 per-host native reruns`
 
 ## SPEC-005 Release Identity Gate
 
 spec_id: `SPEC-005`
 spec_version: `0.1.2`
-attempt: `1`
-repair_count: `0`
+attempt: `2`
+repair_count: `1`
 audit_repair_cycle: `0`
-first_unexecuted_unit: `SPEC-005`
-failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: release identity requires explicit sync/release authorization
-oracle_status: `FAIL_EXPECTED (npm run commit:closure stopped at public_bundle_oracle because scripts/tes_install.py differs from published 0.3.209 bundle while VERSION has not advanced)`
+first_unexecuted_unit: `SPEC-006`
+failed_attempt_recovery_decision: `OWNER_AUTHORIZED_SYNC: user explicitly requested sync completo; release identity advanced from 0.3.209 to 0.3.210`
+commit: e8baf42a65515fbd9a960a6a68fc48b9235140c0
+oracle_status: `PASS (tes_bump patch, tes_bundle publish, build_public_docs, validate_reference_package, host-runtime:matrix, validate_tds, tds_surface_oracle, commit:check, commit:closure)`
 structural_method_id: `release-identity`
 topology_decision: `patch version and regenerated public bundle are required before installed-target reruns can be final`
-topology_decision_artifact: `commit:closure output; tes_bump dry-run`
-structural_debt: `none; gate correctly prevents sealing source changes under 0.3.209`
-next_structural_constraint: `do not run push, tag, public release check, or public-page certification without explicit authorization`
-topology_probe_result: `python3 scripts/tes_bump.py patch --dry-run --json => 0.3.209 -> 0.3.210`
+topology_decision_artifact: `docs/dist/0.3.210/tilly-engineer-skills-0.3.210.zip; docs/dist/0.3.210/tilly-engineer-skills-0.3.210.zip.sha256`
+structural_debt: `SPEC-006 still requires per-host native audits on updated installed targets`
+next_structural_constraint: `tag v0.3.210 must resolve to the final ledger-bearing commit; release:check and public_pages_oracle must pass before release closure is claimed`
+topology_probe_result: `python3 scripts/tes_bump.py patch --yes --json => 0.3.209 -> 0.3.210; bundle sha256 d0b6c015459432ed0927d57a186edfeaf8ece686d5ad5ba09ab90be6f8118bd6`
 browser_metrics_contract: `not_applicable`
 visual_spatial_oracle: `not_applicable`
 browser_attempt: `not_applicable`
 visual_evidence: `not_applicable`
-runtime_smoke_oracle: `not_applicable`
+runtime_smoke_oracle: `npm run host-runtime:matrix PASS; python3 scripts/hook_audit_prompt_oracle.py --self-test PASS`
 adversary_objection: `not_applicable`
 shared_contract_extended: `not_applicable`
 extension_point_proven: `not_applicable`
-contract_handoff_artifact: `ledger-section`
+contract_handoff_artifact: `release commit plus ledger section`
 api_lint_status: `not_applicable`
 auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
-audit_remutation: `not_applicable`
-distinct_refuters: `public_bundle_oracle`
-stop_state: `NEEDS_OWNER_DECISION`
-next_allowed_action: `authorize SPEC-005 sync/release, then run patch bump, regenerate bundle/public docs, commit, closure, push/tag/release checks`
+audit_remutation: `PASS (hook_audit_prompt_oracle red mutants; commit:closure host-runtime and hook prompt gates)`
+distinct_refuters: `public_bundle_oracle, commit:check, commit:closure`
+stop_state: `SPEC-005_LOCAL_RELEASE_READY`
+next_allowed_action: `push main, create/push v0.3.210, run release:check and public_pages_oracle, then execute SPEC-006 per-host native rerun protocol`
