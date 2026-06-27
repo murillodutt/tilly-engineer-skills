@@ -114,21 +114,6 @@ distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-004`
 
-## Pre-Edit Gate: SPEC-004
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-004
-ACTIVE_SPEC=SPEC-004
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
-
 ## SPEC-004
 
 spec_id: `SPEC-004`
@@ -163,21 +148,6 @@ distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-005`
 
-## Pre-Edit Gate: SPEC-005
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-005
-ACTIVE_SPEC=SPEC-005
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
-
 ## SPEC-005
 
 spec_id: `SPEC-005`
@@ -211,21 +181,6 @@ audit_remutation: `PASS: hook_audit_prompt_oracle red-capability mutants cover d
 distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-006`
-
-## Pre-Edit Gate: SPEC-006
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-006
-ACTIVE_SPEC=SPEC-006
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
 
 ## SPEC-006
 
@@ -383,7 +338,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-009`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: 4e1f87b1ff452c436fb02d79ba4a032d66bbc01b
 oracle_status: `PASS: hook_audit_prompt_oracle --self-test and py_compile`
 structural_method_id: `docs-oracle-tightening`
 topology_decision: `audit prompt checklist consolidation`
@@ -405,5 +360,54 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `PASS: hook_audit_prompt_oracle checked 56 red-capability mutants`
 distinct_refuters: `not_applicable`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-010`
+
+## Pre-Edit Gate: SPEC-010
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=ADR
+ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
+FIRST_UNEXECUTED_UNIT=SPEC-010
+ACTIVE_SPEC=SPEC-010
+BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71,4e1f87b1
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
+MAY_EDIT=yes
+
+## SPEC-010
+
+spec_id: `SPEC-010`
+spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-010`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+oracle_status: `PASS: pretooluse_evidence_oracle, host_runtime_matrix_oracle, py_compile`
+structural_method_id: `evidence-packet-plus-oracle`
+topology_decision: `temporal evidence report under docs/evidence/reports/2026/06/27/hooks`
+topology_decision_artifact: `ledger-section`
+structural_debt: `none`
+next_structural_constraint: `SPEC-011 owns release identity; SPEC-010 must not bump package version or claim release seal`
+topology_probe_result: `PASS: one sanitized report packet, summary.json, TDS index entry, and focused evidence oracle`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: host runtime matrix remains PASS with hook_health_ceiling_status=NEEDS_FLOOR`
+adversary_objection: `none`
+shared_contract_extended: `yes`
+extension_point_proven: `yes: evidence packet records privacy_state=sanitized, native_evidence_status=NEEDS_EVIDENCE, canary_replay_status=NOT_RUN_NO_AUTHORIZATION, host attribution, and no PASS_CEILING claim`
+contract_handoff_artifact: `docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: pretooluse_evidence_oracle rejects missing sanitization, native-evidence overclaim, canary ambiguity, private paths, missing host attribution, and PASS_CEILING claim`
+distinct_refuters: `not_applicable`
 stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-009 files and commit locally`
+next_allowed_action: `stage only SPEC-010 files and commit locally`
