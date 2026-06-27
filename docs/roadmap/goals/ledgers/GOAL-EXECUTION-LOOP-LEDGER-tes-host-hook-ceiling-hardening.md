@@ -43,7 +43,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-001`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: execution in progress
+commit: 62c9b4e102016e96924f658bb92526678924b382
 oracle_status: `PASS (validate_tds, doc-size focused paths, git diff --check)`
 structural_method_id: `platform-runtime-hook-hardening`
 topology_decision: `patch delivered hook runtime and oracles; no new adapter boundary`
@@ -65,8 +65,8 @@ auditor_distinct_from_operator: `official docs cross-check plus red-capable orac
 auditor_rewrote_no_oracle: `no`
 audit_remutation: `PENDING for implementation units`
 distinct_refuters: `validate_tds, doc-size, git diff --check`
-stop_state: `SPEC-000_READY_TO_COMMIT`
-next_allowed_action: `commit SPEC-000 docs/index packet, then continue SPEC-001`
+stop_state: `SPEC-000_COMMITTED`
+next_allowed_action: `continue SPEC-001 through SPEC-003 material runtime/prompt hardening`
 
 ## Execution Cost Draft
 
@@ -92,3 +92,37 @@ ACTIVE_SPEC: `SPEC-001`
 BASELINE_ONLY_COMMITS: `4ffc350a36b44b5492f5c70e832ef5758700e476`
 LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-tes-host-hook-ceiling-hardening.md`
 MAY_EDIT: `yes`
+
+## Material Runtime And Prompt Hardening
+
+spec_ids: `SPEC-001`, `SPEC-002`, `SPEC-003`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-004`
+failed_attempt_recovery_decision: `not_applicable`
+commit: 758ea20667ab236672ef0dccaac222efe6e8699e
+oracle_status: `PASS (host-runtime:matrix, tes_install self-test, hook_audit_prompt_oracle, validate_reference_package, tds_surface_oracle, public-docs check, git diff --check, commit:check)`
+structural_method_id: `platform-runtime-hook-hardening`
+topology_decision: `internal-section patch inside existing delivered scripts and prompt; no new module`
+topology_decision_artifact: `scripts/tes_install.py; scripts/host_runtime_matrix_oracle.py; scripts/hook_audit_prompt_oracle.py; docs/install/HOOK-AUDIT-PROMPT.md`
+structural_debt: `SPEC-001 through SPEC-003 share one material commit because parser, matrix, and prompt oracle form one cross-file contract surface`
+next_structural_constraint: `SPEC-004 must advance release identity to 0.3.211 before installed targets can certify the fix`
+topology_probe_result: `PASS (validate_reference_package staged/full and host-runtime matrix)`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS (npm run host-runtime:matrix)`
+adversary_objection: `RESOLVED: P1 alias payloads now have red-capable matrix records; P2/P3 exact duplicate semantics are self-tested; prompt oracle carries dual-projection terms`
+shared_contract_extended: `yes (defensive aliases do not replace official Codex command field)`
+extension_point_proven: `yes (hook_tool_command alias resolution and host_runtime alias cases)`
+contract_handoff_artifact: `docs/install/HOOK-AUDIT-PROMPT.md`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `official docs cross-check, prompt red mutants, host-runtime matrix, commit gate`
+auditor_rewrote_no_oracle: `no`
+audit_remutation: `PASS (hook_audit_prompt_oracle mutants_checked=9; host-runtime matrix alias fixtures)`
+distinct_refuters: `commit:check, host-runtime:matrix, tes_install self-test, hook_audit_prompt_oracle`
+stop_state: `SPEC-004_READY`
+next_allowed_action: `run full release identity sync for 0.3.211`
