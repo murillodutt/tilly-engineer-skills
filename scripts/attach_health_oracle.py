@@ -37,7 +37,7 @@ from typing import Any
 import capsule_residue_oracle as residue
 
 
-VERSION = "0.3.220"
+VERSION = "0.3.221"
 
 # Surface set mirrors tes_install ALL_ATTACH_SURFACES.
 SURFACES = ("mcp", "docs-mesh", "root-context", "skills", "hooks", "field-reports", "gps", "goals", "mantra")

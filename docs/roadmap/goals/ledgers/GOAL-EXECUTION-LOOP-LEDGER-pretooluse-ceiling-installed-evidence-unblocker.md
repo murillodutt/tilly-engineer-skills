@@ -431,7 +431,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-006`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit-self-reference-pending-parent-local-commit
+commit: e67ee51e
 oracle_status: `PASS: python3 scripts/pretooluse_evidence_oracle.py --packet docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence --expect needs-evidence; python3 scripts/pretooluse_evidence_oracle.py --self-test; python3 scripts/private_vocabulary_oracle.py --paths docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/summary.json; git diff --check`
 structural_method_id: `platform-python-evidence-packet-oracle`
 topology_decision: `extend existing evidence oracle with expectation modes and temporary self-test fixtures; no new module`
@@ -474,3 +474,20 @@ SPEC-005 verification notes:
 - Negative check: current sanitized packet with `--expect pass-ceiling` fails as expected because it has no native host evidence.
 - Final SPEC-005 status: `NEEDS_EVIDENCE`.
 - Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+## SPEC-006
+
+spec_id: `SPEC-006`
+spec_version: `0.1.0`
+attempt: `1`
+first_unexecuted_unit: `none`
+commit: no-commit-self-reference-pending-parent-local-commit
+oracle_status: `PASS: validate_reference_package.py; validate_tds.py; validate_doc_size.py; public_bundle_oracle.py; tes_bundle.py --self-test; tes_bump.py --governance-check --json; git diff --check`
+topology_decision: `release identity patch via tes_bump.py plus local public bundle regeneration`
+topology_decision_artifact: `package/version targets; docs/dist/0.3.221/*; docs/i18n/tes-public.structure.yml; this ledger`
+runtime_smoke_oracle: `PASS: public_bundle_oracle.py certified local bundle`
+audit_remutation: `not_applicable`
+stop_state: `LOCAL_BUNDLED_NEEDS_EVIDENCE`
+next_allowed_action: `parent validation and local commit only; no push, tag, publish, or release check without owner authorization`
+
+SPEC-006 evidence: version `0.3.220` -> `0.3.221`; bundle `docs/dist/0.3.221/tilly-engineer-skills-0.3.221.zip`; sha256 `edac2cbba41fac9b4bd19cf8b403f1ae3382edb3a5670866c97486ec203c00b1`; `docs/dist/0.3.220` pruned by single-current-dist policy; source green, installed floor/ceiling remain `NEEDS_EVIDENCE`, and no global `PASS_CEILING` was claimed.
