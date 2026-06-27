@@ -167,7 +167,7 @@ Installed host configs are projections, not the semantic source:
 Current reports and oracles establish the floor for the recent installed-target
 baseline:
 
-- Claude Code, Codex, and Cursor hook configs are materialized and observed.
+- Claude Code, Codex, and Cursor hook configs are materialized and observed by recent per-host reports; retained repo evidence is not yet a strong sanitized baseline archive.
 - Native smokes have proven governed supervision and anti-cry-wolf per host.
 - Forbidden classes block before execution with host-specific output semantics.
 - Codex covers `apply_patch`, `Bash`, `Shell`, and `shell`, and extracts patch
@@ -186,43 +186,11 @@ This evidence supports `PASS_BASIC`. It does not by itself support
 
 ## What Must Be Implemented To Pierce The Ceiling
 
-The next implementation wave should be small in diff but strategic in evidence.
-It should add diagnostic structure without changing the user-facing marker
-frequency.
-
-1. **Decision reason codes.** Add stable reason codes to the host-neutral
-   decision record, renderer inputs, and ledger rows. Minimum codes should cover
-   routine non-mutating work, governed surface, forbidden class, anti-cry-wolf
-   suppression, host payload labeling, and needs-discoverability.
-2. **Classifier trace.** Add a redacted trace object for material and forbidden
-   decisions. It should name extracted paths, command category, payload field
-   source, normalized event/tool, governed match reason, forbidden class, and
-   renderer path without logging secrets or file contents.
-3. **Host payload evidence.** Persist enough redacted host evidence to
-   distinguish host labels from TES classification. At minimum, record raw host
-   tool label, normalized tool, payload field source, host renderer id, risk,
-   and path or command category.
-4. **Discoverability gate.** Add `NEEDS_DISCOVERABILITY` as a first-class safe
-   outcome when host tool semantics are mutating-looking but not fixture-backed.
-   Add at least one red fixture that fails if the kernel silently treats an
-   unknown mutating surface as routine.
-5. **Renderer parity fixtures.** Extend `scripts/mantra_gate_pretooluse_oracle.py`
-   as the single renderer parity owner for Claude Code, Codex, and Cursor allow,
-   supervise, block, and anti-cry-wolf output shapes, and have
-   `scripts/host_runtime_matrix_oracle.py` consume that owner. Do not add a
-   parallel renderer oracle unless it replaces this owner and absorbs the cases.
-6. **Ledger analytics schema.** Add schema/version guidance and fixture coverage
-   for dedup keys that include tool, risk, path or command, session or mode, and
-   marker state.
-7. **Drift attribution.** Make audits able to say whether a failure came from
-   host payload shape, kernel classification, session suppression, host renderer
-   output, or ledger writing.
-8. **Audit prompt enforcement.** Keep `HOOK-AUDIT-PROMPT.md` aligned with the
-   new fields so installed-target audits must report floor status, ceiling
-   status, discoverability status, and drift source.
-9. **Installed target canaries.** Prove the ceiling on target-project installs
-   after source oracles pass. Source-package proof alone is not sufficient for a
-   delivered hook ceiling claim.
+The next wave must add diagnostic structure without increasing marker noise:
+reason codes, classifier trace, host payload evidence, discoverability,
+renderer parity, ledger analytics schema, drift attribution, audit-prompt
+enforcement, and installed-target canaries. P0/P1 below make those requirements
+executable.
 
 ## Ceiling Runtime Contract Shape
 
@@ -250,7 +218,7 @@ Minimum `reason_codes[]` values:
 |------|---------------|
 | `routine_non_mutating` | A non-mutating tool is allowed silently. |
 | `routine_non_governed` | A mutating tool touches no governed surface and is allowed silently. |
-| `governed_surface_mutation` | A mutating tool touches `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `docs/adr/`, `docs/governance/`, or `.cursor/rules/`. |
+| `governed_surface_mutation` | A mutating tool touches a path segment ending in `/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `docs/adr/`, `docs/governance/`, or `.cursor/rules/`. |
 | `forbidden_class` | A forbidden command or action class is blocked before execution. |
 | `anti_crywolf_suppressed` | A repeated same-session governed marker is suppressed while the classification stays material. |
 | `host_payload_labeling` | The host raw label differs from the normalized TES classification or requires explanation. |
@@ -265,7 +233,9 @@ and governed-surface match. `session_trace` must identify suppression state
 without exposing unrelated session content. `renderer_trace` must name the host
 renderer and output contract, not duplicate the full rendered message.
 `ledger_trace` must name the hook ledger writer and schema/version used for the
-runtime row.
+runtime row. The current floor ledger may still persist raw `command`; P0 must
+replace or supplement that with redacted `command_category` before any
+`PASS_CEILING` claim.
 
 ## P0 Red Fixture Matrix
 
@@ -275,7 +245,7 @@ P0 is not complete until source oracles fail red for these cases:
 |---------|---------------------------|
 | Routine read on non-governed path | `outcome=allow`, `risk=routine`, `reason_codes` includes `routine_non_mutating`, no marker. |
 | Non-governed mutating edit | `outcome=allow`, `reason_codes` includes `routine_non_governed`, no marker. |
-| Governed Write/Edit/StrReplace on `SKILL.md` | `outcome=supervise`, `risk=material`, `reason_codes` includes `governed_surface_mutation`. |
+| Governed Write/Edit/StrReplace on `/SKILL.md` path | `outcome=supervise`, `risk=material`, `reason_codes` includes `governed_surface_mutation`. |
 | Same governed path twice in one session | First record supervises; second keeps `risk=material` and adds `anti_crywolf_suppressed`. |
 | Codex `apply_patch` canonical field | Path extracted from patch body; `reason_codes` includes `patch_body_path_extracted`. |
 | Codex `apply_patch` alias fields | Same extraction evidence as canonical field or explicit fixture failure. |
@@ -288,6 +258,8 @@ P0 is not complete until source oracles fail red for these cases:
 
 The renderer fixture owner is `scripts/mantra_gate_pretooluse_oracle.py`;
 `scripts/host_runtime_matrix_oracle.py` must consume it, not re-implement it.
+The current matrix contains floor renderer cases; P0 must route ceiling renderer
+assertions through the owner before adding new ceiling cases.
 
 ## Runtime Priority Cut
 
@@ -326,8 +298,9 @@ native execution, and hook-health reporting.
 | `.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py` import | Installed helpers match the P0 source contract. |
 | `.tes/bin/tes_install.py hook --agent <host>` simulation | Host renderer consumes `pretooluse_decision@2` and preserves reason/trace fields. |
 | Native smoke per host | Current-host ledger row contains reason codes, classifier trace, host payload evidence, renderer trace, and ledger trace. |
-| `hook-health --json-only` | Reports both floor status and ceiling status; cannot report `PASS_CEILING` if any P0 field is absent. |
+| `hook-health --json-only` | Current `tes-hook-health@1` is floor-oriented. P1 must add floor and ceiling status; it cannot report `PASS_CEILING` if any P0 field is absent. |
 | `HOOK-AUDIT-PROMPT.md` report | Contains a `Ceiling Assessment` with reason-code, trace, discoverability, renderer, and ledger evidence. |
+| Sanitized per-host evidence | Retains current-host native audit summaries in repo evidence without private target names or absolute paths. |
 | Installed target canary | Replays one Claude Code, one Codex, and one Cursor path or returns explicit `NEEDS_EVIDENCE` / `NEEDS_DISCOVERABILITY`. |
 | Bundle provenance | Release-sealed claim waits for clean `source_commit` and non-dirty source tree state. |
 

@@ -203,7 +203,12 @@ Also classify PreToolUse maturity against the canonical contract:
 - `PASS_CEILING`: `PASS_BASIC` plus stable decision reason codes, classifier
   trace, redacted host payload evidence, discoverability handling for new
   mutating tool names, host renderer parity, ledger analytics semantics, and
-  drift source attribution.
+  drift source attribution. Required reason-code vocabulary is
+  `routine_non_mutating`, `routine_non_governed`,
+  `governed_surface_mutation`, `forbidden_class`,
+  `anti_crywolf_suppressed`, `host_payload_labeling`,
+  `patch_body_path_extracted`, `needs_discoverability_unknown_mutation`,
+  `renderer_contract_projected`, and `cortex_advisory_no_write`.
 - `NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe
   but not yet classifiable with enough evidence.
 

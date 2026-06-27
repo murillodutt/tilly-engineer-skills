@@ -45,7 +45,7 @@ The floor contract is operational correctness. A host reaches `PASS_BASIC` only 
 
 PreToolUse reaches `PASS_CEILING` only when it proves the floor contract and adds these higher-grade guarantees:
 
-- decision reason codes: every non-trivial decision records a stable reason code such as `routine_non_mutating`, `governed_surface`, `forbidden_pattern`, `anti_crywolf_suppressed`, `host_payload_labeling`, or `needs_discoverability`;
+- decision reason codes: every decision records at least one stable reason code. Canonical codes are `routine_non_mutating`, `routine_non_governed`, `governed_surface_mutation`, `forbidden_class`, `anti_crywolf_suppressed`, `host_payload_labeling`, `patch_body_path_extracted`, `needs_discoverability_unknown_mutation`, `renderer_contract_projected`, and `cortex_advisory_no_write`;
 - classifier trace: material and forbidden outcomes name the evidence used, including path, command fragment category, payload field source, and renderer path, without leaking secrets or file content;
 - host payload evidence: audits distinguish host payload labeling from TES classification, especially Cursor cases where a native UI action may arrive as `tool: "Write"`;
 - discoverability gate: observed or exposed host tool names that look mutating must not be silently classified as routine; ambiguous host semantics produce `NEEDS_DISCOVERABILITY` until fixture or native evidence resolves them;
