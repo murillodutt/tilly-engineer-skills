@@ -146,7 +146,11 @@ command line. The simulation must cover:
   parallel host projections. Treat repeated stable simulation ids with different
   timestamps as replay history, not duplicate hook execution. Report duplicate
   runtime hooks only when the same agent/event/invocation/decision/timestamp is
-  repeated identically.
+  repeated identically. For external dedup or analytics, do not key only on
+  invocation and timestamp; include at least tool, risk, path or command, and
+  session/mode when present. Cursor may batch multiple native tool projections
+  under the same invocation/timestamp, and those rows are not duplicates when
+  tool, path, risk, marker, or mode differ.
 - PreToolUse helper packaging: TES 0.3.218+ installs must include
   `.tes/bin/pretooluse_kernel.py` and `.tes/bin/pretooluse_session.py`, and both
   must import successfully from `.tes/bin`. Missing or non-importable helpers

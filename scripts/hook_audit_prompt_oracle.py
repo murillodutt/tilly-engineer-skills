@@ -47,6 +47,10 @@ REQUIRED_TERMS = (
     "construct it from fragments inside the payload\ngenerator or use a temp file created without contiguous forbidden text on the\ncommand line",
     "Treat repeated stable simulation ids with different\n  timestamps as replay history, not duplicate hook execution.",
     "duplicate\n  runtime hooks only when the same agent/event/invocation/decision/timestamp is\n  repeated identically",
+    "For external dedup or analytics, do not key only on\n  invocation and timestamp",
+    "include at least tool, risk, path or command, and\n  session/mode when present",
+    "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp",
+    "not duplicates when\n  tool, path, risk, marker, or mode differ",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
@@ -144,6 +148,26 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_duplicate_timestamp_contract",
             _remove(text, "duplicate\n  runtime hooks only when the same agent/event/invocation/decision/timestamp is\n  repeated identically"),
             "duplicate",
+        ),
+        Mutation(
+            "without_external_dedup_key_warning",
+            _remove(text, "For external dedup or analytics, do not key only on\n  invocation and timestamp"),
+            "external dedup",
+        ),
+        Mutation(
+            "without_external_dedup_fields",
+            _remove(text, "include at least tool, risk, path or command, and\n  session/mode when present"),
+            "tool, risk",
+        ),
+        Mutation(
+            "without_cursor_batched_projection_note",
+            _remove(text, "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp"),
+            "Cursor",
+        ),
+        Mutation(
+            "without_non_duplicate_differing_fields",
+            _remove(text, "not duplicates when\n  tool, path, risk, marker, or mode differ"),
+            "not duplicates",
         ),
         Mutation(
             "without_cursor_strreplace_native_requirement",

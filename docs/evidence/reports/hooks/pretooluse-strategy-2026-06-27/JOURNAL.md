@@ -87,3 +87,13 @@ Entry format:
 - Patch or no-patch reason: patch the audit prompt and its oracle only; no runtime behavior change is warranted before a native payload-label report proves a kernel classification bug.
 - Next strategic cut: rerun the native Cursor battery and require redacted evidence of tool label, path, session, decision, risk, and marker state.
 - Stop condition: stop if a native payload explicitly records `tool: "StrReplace"` and TES still classifies the governed path as routine or silently non-governed.
+
+## [2026-06-27T18:35:00Z] loop | Ledger dedup evidence clarified
+
+- Strategy decision: require external ledger readers to deduplicate PreToolUse evidence with tool/risk/path context, not only invocation and timestamp.
+- Protected contract: Cursor and parallel host projections may legitimately share invocation/timestamp while representing different tools, paths, modes, or classification states.
+- Evidence: target-project reports showed zero `hook-health` duplicate findings while naive grouping by invocation/timestamp surfaced apparent Cursor collisions that differed in tool or mode.
+- Failure/gap/bug: a naive dedup key can convert valid batched projections into false duplicate findings and distract from the actual PreToolUse contract.
+- Patch or no-patch reason: patch the audit prompt and oracle only; the ledger schema and hook behavior are already sufficient.
+- Next strategic cut: if external reports keep misclassifying projections, add a consumer-facing ledger analysis note or oracle fixture.
+- Stop condition: stop if `hook-health` itself reports identical duplicate rows after including tool, path, risk, marker, and mode fields.
