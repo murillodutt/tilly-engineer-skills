@@ -56,6 +56,7 @@ OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/DECISIONS/",
 )
 PRETOOLUSE_LEDGER_SCHEMA_VERSION = "pretooluse_decision@2"
+HOOK_DEDUPE_CONTRACT_SCHEMA = "tes-hook-dedupe@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 
@@ -2383,6 +2384,33 @@ def hook_record_dedupe_key(record: dict[str, Any]) -> tuple[Any, ...]:
     return tuple(hook_record_dedupe_value(record.get(field)) for field in HOOK_RECORD_DEDUPE_FIELDS)
 
 
+def hook_dedupe_contract() -> dict[str, Any]:
+    """Expose the runtime dedupe identity for auditors and hook-health callers."""
+    return {
+        "schema": HOOK_DEDUPE_CONTRACT_SCHEMA,
+        "fields": list(HOOK_RECORD_DEDUPE_FIELDS),
+        "timestamp_rule": "same_semantic_different_timestamp_is_replay_history",
+        "cursor_batch_rule": "same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate",
+    }
+
+
+def hook_record_identity(record: dict[str, Any]) -> dict[str, Any]:
+    """Return a compact explanation of the fields that made a hook row distinct."""
+    return {
+        "agent": str(record.get("agent") or ""),
+        "event_canonical": str(record.get("event_canonical") or canonical_hook_event(str(record.get("event") or ""))),
+        "mode": str(record.get("mode") or ""),
+        "session": str(record.get("session") or ""),
+        "invocation": str(record.get("invocation") or ""),
+        "tool": str(record.get("tool") or ""),
+        "risk": str(record.get("risk") or ""),
+        "path_or_command": str(record.get("path") or record.get("command_category") or ""),
+        "decision": str(record.get("decision") or record.get("permission_decision") or ""),
+        "marker_emitted": record.get("marker_emitted"),
+        "context_suppressed": record.get("context_suppressed"),
+    }
+
+
 def hook_record_already_written(sentinel: Path, record: dict[str, Any]) -> bool:
     if not sentinel.is_file():
         return False
@@ -2513,6 +2541,7 @@ def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]
                     "event_canonical": event,
                     "mode": str(record.get("mode") or ""),
                     "session_or_invocation": session,
+                    "identity": hook_record_identity(record),
                     "count": 2,
                 }
             )
@@ -2598,6 +2627,7 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
             {
                 "severity": "warning",
                 "type": "duplicate_runtime_hook_records",
+                "dedupe_fields": list(HOOK_RECORD_DEDUPE_FIELDS),
                 "records": duplicate_records,
             }
         )
@@ -2629,6 +2659,7 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
         "version": VERSION,
         "status": status_value,
         "target": str(target),
+        "dedupe_contract": hook_dedupe_contract(),
         "sentinels": {
             "current": {
                 "path": HOOK_SENTINEL_PATH.as_posix(),
@@ -3700,6 +3731,14 @@ def self_test() -> int:
         hook_health_payload_result = parse_json_output(hook_health_result.stdout)
         if hook_health_payload_result.get("status") != "PASS":
             failures.append(f"hook-health complete fixture must report PASS, got {hook_health_payload_result.get('status')}")
+        dedupe_contract = hook_health_payload_result.get("dedupe_contract")
+        dedupe_contract = dedupe_contract if isinstance(dedupe_contract, dict) else {}
+        dedupe_fields = dedupe_contract.get("fields") if isinstance(dedupe_contract.get("fields"), list) else []
+        if dedupe_contract.get("schema") != "tes-hook-dedupe@1":
+            failures.append("hook-health must expose the v2 ledger dedupe analytics contract")
+        for field in ("agent", "tool", "risk", "path", "command_category", "session", "mode", "marker_emitted"):
+            if field not in dedupe_fields:
+                failures.append(f"hook-health dedupe contract must include {field}")
         health_agents = hook_health_payload_result.get("agents") if isinstance(hook_health_payload_result.get("agents"), dict) else {}
         for agent, expected_events in {
             "codex": ("SessionStart", "PreToolUse"),
@@ -3809,6 +3848,19 @@ def self_test() -> int:
             for finding in duplicate_findings
         ):
             failures.append("hook-health duplicate fixture must report duplicate_runtime_hook_records finding")
+        if not any(
+            isinstance(finding, dict)
+            and finding.get("type") == "duplicate_runtime_hook_records"
+            and isinstance(finding.get("dedupe_fields"), list)
+            and "tool" in finding.get("dedupe_fields", [])
+            and "risk" in finding.get("dedupe_fields", [])
+            and isinstance(finding.get("records"), list)
+            and finding["records"]
+            and isinstance(finding["records"][0], dict)
+            and finding["records"][0].get("identity", {}).get("session") == "dup"
+            for finding in duplicate_findings
+        ):
+            failures.append("hook-health duplicate finding must include diagnostic dedupe fields and record identity")
         replay_health_target = target / "replay-health"
         replay_health_target.mkdir()
         run(["git", "init"], cwd=replay_health_target)
@@ -3845,6 +3897,70 @@ def self_test() -> int:
             for finding in replay_findings
         ):
             failures.append("hook-health must not report replayed historical records as duplicate runtime hooks")
+        cursor_batch_target = target / "cursor-batch-health"
+        cursor_batch_target.mkdir()
+        run(["git", "init"], cwd=cursor_batch_target)
+        (cursor_batch_target / ".cursor").mkdir()
+        (cursor_batch_target / ".cursor/hooks.json").write_text(
+            json.dumps(
+                {
+                    "hooks": {
+                        "preToolUse": [
+                            {
+                                "command": "python3 .tes/bin/tes_install.py hook --agent cursor --target .",
+                            }
+                        ]
+                    }
+                },
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        cursor_batch_sentinel = cursor_batch_target / HOOK_SENTINEL_PATH
+        cursor_batch_sentinel.parent.mkdir(parents=True)
+        cursor_batch_base = {
+            "agent": "cursor",
+            "event": "preToolUse",
+            "event_canonical": "PreToolUse",
+            "mode": "pretooluse",
+            "schema_version": PRETOOLUSE_LEDGER_SCHEMA_VERSION,
+            "session": "cursor-batch",
+            "invocation": "cursor-batch-invocation",
+            "ts": "2026-06-27T00:10:00Z",
+            "risk": "material",
+            "decision": "allow",
+            "permission_decision": "allow",
+            "marker_emitted": True,
+        }
+        cursor_batch_first = {**cursor_batch_base, "tool": "Write", "path": ".cursor/rules/a.mdc"}
+        cursor_batch_second = {**cursor_batch_base, "tool": "MultiEdit", "path": ".cursor/rules/b.mdc"}
+        cursor_batch_sentinel.write_text(
+            json.dumps(cursor_batch_first, sort_keys=True)
+            + "\n"
+            + json.dumps(cursor_batch_second, sort_keys=True)
+            + "\n",
+            encoding="utf-8",
+        )
+        cursor_batch_health = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(cursor_batch_target),
+                "--json-only",
+            ],
+            cwd=source_root(),
+        )
+        cursor_batch_payload = parse_json_output(cursor_batch_health.stdout)
+        cursor_batch_findings = cursor_batch_payload.get("findings") if isinstance(cursor_batch_payload.get("findings"), list) else []
+        if cursor_batch_health.returncode != 0 or cursor_batch_payload.get("status") != "PASS":
+            failures.append("hook-health must not collapse distinct Cursor batch records into duplicates")
+        if any(
+            isinstance(finding, dict) and finding.get("type") == "duplicate_runtime_hook_records"
+            for finding in cursor_batch_findings
+        ):
+            failures.append("Cursor batch rows with different tool/path/risk/marker fields must not be duplicate findings")
         unexpected_health_target = target / "unexpected-health"
         unexpected_health_target.mkdir()
         run(["git", "init"], cwd=unexpected_health_target)

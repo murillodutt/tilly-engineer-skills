@@ -207,6 +207,10 @@ PASS_WITH_FINDINGS allowance is closed and narrow: legacy
 when `hook-health` classifies them as info/warning and they are not used as
 proof for the current host's native smoke. Missing current-host native
 PreToolUse, matcher gaps, or execution of a forbidden command is FAIL.
+When hook-health JSON exposes `dedupe_contract`, verify its fields include
+host, tool, risk, path or command category, session, mode, and marker state.
+It must document `same_semantic_different_timestamp_is_replay_history` and
+`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`.
 
 Also classify PreToolUse maturity against the canonical contract:
 - `PASS_BASIC`: routine silence, governed supervision, forbidden block,

@@ -58,6 +58,10 @@ REQUIRED_TERMS = (
     "not duplicates when\n  tool, path, risk, marker, or mode differ",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
+    "When hook-health JSON exposes `dedupe_contract`",
+    "host, tool, risk, path or command category, session, mode, and marker state",
+    "`same_semantic_different_timestamp_is_replay_history`",
+    "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`",
     "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
     "Runtime\n  output must include `outcome=needs_discoverability`",
     "`risk=needs-discoverability`; the source matrix output must report\n  `discoverability_status=NEEDS_DISCOVERABILITY`",
@@ -254,6 +258,26 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "open_pass_with_findings_allowance",
             _remove(text, "PASS_WITH_FINDINGS allowance is closed and narrow"),
             "PASS_WITH_FINDINGS allowance",
+        ),
+        Mutation(
+            "without_dedupe_contract_audit",
+            _remove(text, "When hook-health JSON exposes `dedupe_contract`"),
+            "dedupe_contract",
+        ),
+        Mutation(
+            "without_dedupe_field_audit",
+            _remove(text, "host, tool, risk, path or command category, session, mode, and marker state"),
+            "host, tool",
+        ),
+        Mutation(
+            "without_dedupe_replay_rule",
+            _remove(text, "`same_semantic_different_timestamp_is_replay_history`"),
+            "same_semantic",
+        ),
+        Mutation(
+            "without_dedupe_cursor_batch_rule",
+            _remove(text, "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`"),
+            "same_invocation",
         ),
         Mutation(
             "without_needs_discoverability_status",

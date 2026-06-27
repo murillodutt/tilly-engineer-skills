@@ -846,6 +846,16 @@ def _assert_hook_health_contract(health: dict[str, Any], failures: list[str]) ->
     if counts.get("warning", 0) != 0:
         failures.append(f"hook-health: unexpected warning findings count {counts.get('warning')!r}")
 
+    dedupe_contract = _as_dict(health.get("dedupe_contract"))
+    dedupe_fields = _as_list(dedupe_contract.get("fields"))
+    for field in ("agent", "tool", "risk", "path", "command_category", "session", "mode", "marker_emitted"):
+        if field not in dedupe_fields:
+            failures.append(f"hook-health: dedupe_contract fields must include {field!r}")
+    if dedupe_contract.get("cursor_batch_rule") != "same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate":
+        failures.append("hook-health: dedupe_contract must document Cursor batch semantics")
+    if dedupe_contract.get("timestamp_rule") != "same_semantic_different_timestamp_is_replay_history":
+        failures.append("hook-health: dedupe_contract must document replay timestamp semantics")
+
     for finding in _as_list(health.get("findings")):
         item = _as_dict(finding)
         expected_info = (
