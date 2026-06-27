@@ -1,0 +1,53 @@
+{
+  "schema": "pretooluse-ceiling-execution-loop-audit@1",
+  "audit_date": "2026-06-27",
+  "final_status": "LOCAL_BUNDLED_NEEDS_EVIDENCE",
+  "pass_ceiling": false,
+  "package_version": "0.3.221",
+  "bundle": {
+    "path": "docs/dist/0.3.221/tilly-engineer-skills-0.3.221.zip",
+    "sha256": "edac2cbba41fac9b4bd19cf8b403f1ae3382edb3a5670866c97486ec203c00b1"
+  },
+  "remote_action": "not_requested",
+  "tag_action": "not_requested",
+  "release_check": "not_run_no_authorization",
+  "native_evidence_status": "NEEDS_EVIDENCE",
+  "canary_replay_status": "NOT_RUN_NO_AUTHORIZATION",
+  "units": {
+    "SPEC-000": {
+      "commit": null,
+      "status": "READ_ONLY_PREFLIGHT_PASS"
+    },
+    "SPEC-001": {
+      "commit": "e1e51351",
+      "status": "PASS"
+    },
+    "SPEC-002": {
+      "commit": "2b6b7d6e",
+      "status": "PASS"
+    },
+    "SPEC-003": {
+      "commit": "986cfc0a",
+      "status": "PASS"
+    },
+    "SPEC-004": {
+      "commit": "aae491ec",
+      "status": "PASS"
+    },
+    "SPEC-005": {
+      "commit": "e67ee51e",
+      "status": "NEEDS_EVIDENCE"
+    },
+    "SPEC-006": {
+      "commit": "2de324bc",
+      "status": "LOCAL_BUNDLED"
+    }
+  },
+  "post_commit_oracles": {
+    "public_bundle_oracle": "PASS",
+    "validate_reference_package": "PASS",
+    "tes_bump_governance_check": "PASS",
+    "pretooluse_evidence_needs_evidence": "PASS",
+    "pretooluse_evidence_pass_ceiling_negative": "EXPECTED_FAIL"
+  }
+}
