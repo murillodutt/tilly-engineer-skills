@@ -56,6 +56,8 @@ REQUIRED_TERMS = (
     "include at least tool, risk, path or command, and\n  session/mode when present",
     "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp",
     "not duplicates when\n  tool, path, risk, marker, or mode differ",
+    "Duplicate history, replay residue, and Cursor batch rows are warning/info\n  hygiene only; they must not block `PASS_CEILING` by themselves",
+    "ceiling only when current `pretooluse_decision@2` rows for the same host/scope\n  contradict decision, risk, renderer trace, redaction, or marker state",
     "Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the\n  legacy functional field",
     "`floor_status`, `ceiling_status`, and\n  `ceiling_gaps`",
     "It must also expose top-level `helper_contract_status` and\n  `discoverability_status`",
@@ -72,6 +74,8 @@ REQUIRED_TERMS = (
     "host, tool, risk, path or command category, session, mode, and marker state",
     "`same_semantic_different_timestamp_is_replay_history`",
     "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`",
+    "If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor\nbatch noise non-blocking without a current v2 contradiction",
+    "`current_v2_contradiction_rule` must scope the blocker to the same host/scope",
     "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
     "Runtime\n  output must include `outcome=needs_discoverability`",
     "`risk=needs-discoverability`; the final hook-health JSON must expose top-level\n  `discoverability_status=NEEDS_DISCOVERABILITY` from installed evidence",
@@ -227,6 +231,22 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "not duplicates",
         ),
         Mutation(
+            "without_historical_noise_non_blocking_ceiling_rule",
+            _remove(
+                text,
+                "Duplicate history, replay residue, and Cursor batch rows are warning/info\n  hygiene only; they must not block `PASS_CEILING` by themselves",
+            ),
+            "warning/info",
+        ),
+        Mutation(
+            "without_current_v2_contradiction_ceiling_rule",
+            _remove(
+                text,
+                "ceiling only when current `pretooluse_decision@2` rows for the same host/scope\n  contradict decision, risk, renderer trace, redaction, or marker state",
+            ),
+            "pretooluse_decision@2",
+        ),
+        Mutation(
             "without_cursor_strreplace_native_requirement",
             _remove(text, "If the current Cursor host exposes StrReplace"),
             "StrReplace",
@@ -348,6 +368,19 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_dedupe_cursor_batch_rule",
             _remove(text, "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`"),
             "same_invocation",
+        ),
+        Mutation(
+            "without_dedupe_ceiling_noise_rule",
+            _remove(
+                text,
+                "If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor\nbatch noise non-blocking without a current v2 contradiction",
+            ),
+            "ceiling_noise_rule",
+        ),
+        Mutation(
+            "without_dedupe_current_v2_contradiction_rule",
+            _remove(text, "`current_v2_contradiction_rule` must scope the blocker to the same host/scope"),
+            "current_v2_contradiction_rule",
         ),
         Mutation(
             "without_needs_discoverability_status",

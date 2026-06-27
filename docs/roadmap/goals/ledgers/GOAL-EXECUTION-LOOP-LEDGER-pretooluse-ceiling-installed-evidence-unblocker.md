@@ -298,3 +298,109 @@ ACTIVE_SPEC: `SPEC-003`
 BASELINE_ONLY_COMMITS: `2b6b7d6e,e1e51351,89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
 LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
 MAY_EDIT: `yes`
+
+## SPEC-003
+
+spec_id: `SPEC-003`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-004`
+failed_attempt_recovery_decision: `not_applicable`
+commit: 986cfc0a
+oracle_status: `PASS: python3 scripts/tes_install.py --self-test; python3 scripts/installed_certification_oracle.py --self-test; python3 scripts/validate_reference_package.py; python3 scripts/hook_audit_prompt_oracle.py --self-test`
+structural_method_id: `platform-python-installer-internal-sections`
+topology_decision: `internal installer/certification patch for installed contract reference`
+topology_decision_artifact: `scripts/tes_install.py; scripts/installed_certification_oracle.py; scripts/tes_bundle.py; this ledger`
+structural_debt: `none`
+next_structural_constraint: `SPEC-004 may formalize dedupe/noise semantics without changing installed native audit packet validation`
+topology_probe_result: `PASS`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: installed contract reference is copied under .tes/docs and lock metadata records path/hash/version`
+adversary_objection: `not_applicable`
+shared_contract_extended: `yes`
+extension_point_proven: `yes`
+contract_handoff_artifact: `this ledger`
+api_lint_status: `PASS`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `not_applicable`
+distinct_refuters: `not_applicable`
+stop_state: `SPEC-003_LOCAL_COMMITTED`
+next_allowed_action: `open SPEC-004`
+
+SPEC-003 evidence:
+
+- Commit: `986cfc0a feat(pretooluse): install contract reference`.
+- `git show --stat --oneline 986cfc0a`: changed `scripts/tes_install.py`, `scripts/installed_certification_oracle.py`, `scripts/tes_bundle.py`, and this ledger.
+- Parent context confirms installed `PRETOOLUSE-CONTRACT.md` copy and lock/certification hash/version validation.
+- Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+## Pre-Edit Gate For SPEC-004
+
+EXECUTE_LOOP_REQUESTED: `yes`
+READY_GOAL_PROMPT: `present`
+ANCHOR_CLASS: `Super-SPEC`
+ANCHOR_PATH: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-pretooluse-ceiling-installed-evidence-unblocker.md`
+ANCHOR_HASH: `03df2c6a936dc64fafbf0029ad65144f48ee4277`
+TREE_ADVERSARY_STATUS: `OBJECTIONS_REPAIRED`
+DECLARED_UNITS: `SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006`
+FIRST_UNEXECUTED_UNIT: `SPEC-004`
+ACTIVE_SPEC: `SPEC-004`
+BASELINE_ONLY_COMMITS: `986cfc0a,2b6b7d6e,e1e51351,89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
+LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
+MAY_EDIT: `yes`
+
+## SPEC-004
+
+spec_id: `SPEC-004`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-005`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit-self-reference-pending-parent-local-commit
+oracle_status: `PASS: python3 scripts/tes_install.py --self-test; python3 scripts/hook_audit_prompt_oracle.py --self-test; git diff --check`
+structural_method_id: `platform-python-installer-internal-sections`
+topology_decision: `internal hook-health ceiling/noise policy patch plus prompt oracle hardening`
+topology_decision_artifact: `scripts/tes_install.py; docs/install/HOOK-AUDIT-PROMPT.md; scripts/hook_audit_prompt_oracle.py; this ledger`
+structural_debt: `none`
+next_structural_constraint: `SPEC-005 may validate installed native audit packets without redefining duplicate/replay/Cursor batch policy`
+topology_probe_result: `PASS`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: self-test fixtures prove historical duplicate noise, stable replay, and distinct Cursor batch rows do not block ceiling; same-host current v2 contradictions block only the affected host/scope`
+adversary_objection: `not_applicable`
+shared_contract_extended: `yes`
+extension_point_proven: `yes`
+contract_handoff_artifact: `this ledger`
+api_lint_status: `PASS`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `not_applicable`
+distinct_refuters: `not_applicable`
+stop_state: `SPEC-004_PARENT_VALIDATION_PENDING`
+next_allowed_action: `parent validation, local commit, then open SPEC-005`
+
+SPEC-004 implementation notes:
+
+- `hook_dedupe_contract()` now exposes explicit ceiling noise and current v2 contradiction rules.
+- `pretooluse_ceiling_evidence()` now reports per-host `gaps` and `current_v2_contradictions`.
+- Current v2 contradiction detection compares same-host semantic PreToolUse rows for decision, permission decision, risk, renderer output contract, command redaction, and marker contract.
+- Anti-cry-wolf suppression is normalized as accounted marker state, so expected repeated-governed suppression is not a contradiction.
+- `HOOK-AUDIT-PROMPT.md` now forbids treating duplicate history, replay residue, or Cursor batch rows as ceiling blockers without a same-host/scope current v2 contradiction.
+- SPEC-005 installed native audit packet validation and `pretooluse_evidence_oracle.py` were intentionally not edited.
+
+SPEC-004 verification notes:
+
+- `python3 scripts/tes_install.py --self-test`: PASS.
+- `python3 scripts/hook_audit_prompt_oracle.py --self-test`: PASS, `mutants_checked=63`.
+- `git diff --check`: PASS.
+- Sync status: `REMOTE_SYNC_NOT_REQUESTED`.

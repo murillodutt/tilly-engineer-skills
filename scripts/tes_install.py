@@ -2405,6 +2405,14 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "cortex_context_emitted",
     "surface_context",
 )
+PRETOOLUSE_CONTRADICTION_FIELDS = (
+    "decision",
+    "permission_decision",
+    "risk",
+    "renderer_output_contract",
+    "command_redacted",
+    "marker_contract",
+)
 
 
 def hook_record_dedupe_value(value: Any) -> Any:
@@ -2426,6 +2434,8 @@ def hook_dedupe_contract() -> dict[str, Any]:
         "fields": list(HOOK_RECORD_DEDUPE_FIELDS),
         "timestamp_rule": "same_semantic_different_timestamp_is_replay_history",
         "cursor_batch_rule": "same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate",
+        "ceiling_noise_rule": "historical_duplicate_replay_and_cursor_batch_noise_is_non_blocking_without_current_v2_contradiction",
+        "current_v2_contradiction_rule": "same_host_scope_decision_risk_renderer_redaction_marker_contradiction_blocks_ceiling",
     }
 
 
@@ -2587,6 +2597,74 @@ def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]
     return duplicates
 
 
+def pretooluse_marker_contract(record: dict[str, Any]) -> str:
+    """Normalize marker state so anti-cry-wolf suppression is not a contradiction."""
+    risk = str(record.get("risk") or "")
+    if record.get("marker_emitted") is True or record.get("context_suppressed") is True:
+        return "accounted"
+    if risk in {"material", "forbidden", "needs-discoverability"}:
+        return "missing"
+    return "silent"
+
+
+def pretooluse_contradiction_key(record: dict[str, Any]) -> tuple[Any, ...]:
+    event = canonical_hook_event(str(record.get("event_canonical") or record.get("event") or ""))
+    return (
+        str(record.get("agent") or ""),
+        event,
+        str(record.get("mode") or ""),
+        str(record.get("session") or ""),
+        str(record.get("invocation") or ""),
+        str(record.get("tool") or record.get("normalized_tool") or record.get("raw_tool_label") or ""),
+        str(record.get("path") or ""),
+        str(record.get("command_category") or ""),
+        str(record.get("payload_source") or ""),
+    )
+
+
+def pretooluse_contradiction_signature(record: dict[str, Any]) -> dict[str, Any]:
+    renderer_trace = record.get("renderer_trace") if isinstance(record.get("renderer_trace"), dict) else {}
+    return {
+        "decision": str(record.get("decision") or ""),
+        "permission_decision": str(record.get("permission_decision") or ""),
+        "risk": str(record.get("risk") or ""),
+        "renderer_output_contract": str(renderer_trace.get("output_contract") or ""),
+        "command_redacted": record.get("command_redacted"),
+        "marker_contract": pretooluse_marker_contract(record),
+    }
+
+
+def pretooluse_current_v2_contradictions(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Find same-host current v2 contradictions while allowing stable replay noise."""
+    seen: dict[tuple[Any, ...], tuple[dict[str, Any], dict[str, Any]]] = {}
+    contradictions: list[dict[str, Any]] = []
+    for record in records:
+        if record.get("schema_version") != PRETOOLUSE_LEDGER_SCHEMA_VERSION:
+            continue
+        key = pretooluse_contradiction_key(record)
+        signature = pretooluse_contradiction_signature(record)
+        previous = seen.get(key)
+        if previous is None:
+            seen[key] = (record, signature)
+            continue
+        previous_record, previous_signature = previous
+        if previous_signature == signature:
+            continue
+        fields = [
+            field
+            for field in PRETOOLUSE_CONTRADICTION_FIELDS
+            if previous_signature.get(field) != signature.get(field)
+        ]
+        contradictions.append(
+            {
+                "fields": fields,
+                "first": hook_record_identity(previous_record),
+                "current": hook_record_identity(record),
+            }
+        )
+    return contradictions
+
+
 def hook_floor_status(status_value: str, current_records: list[dict[str, Any]]) -> str:
     """Translate functional hook-health status into the ADR 0009 floor band."""
     if status_value in {"PASS", "PASS_WITH_FINDINGS"} and current_records:
@@ -2683,6 +2761,8 @@ def pretooluse_host_ceiling_gaps(
         gaps.append("missing_redacted_command_evidence")
     if not has_renderer_projection:
         gaps.append("missing_renderer_projection_reason")
+    if pretooluse_current_v2_contradictions(records):
+        gaps.append("current_v2_contradiction")
     return sorted(set(gaps))
 
 
@@ -2725,6 +2805,8 @@ def pretooluse_ceiling_evidence(
             "ignored_legacy_records": ignored_legacy_records,
             "oldest_considered_ts": oldest_ts,
             "newest_considered_ts": newest_ts,
+            "gaps": gaps,
+            "current_v2_contradictions": pretooluse_current_v2_contradictions(considered_records),
             "status": status,
         }
 
@@ -3328,6 +3410,12 @@ def self_test() -> int:
         command_redacted: bool = True,
         command_category: str = "shell_command",
         outcome: str = "needs_discoverability",
+        risk: str = "needs-discoverability",
+        tool: str = "PatchFile",
+        path: str = "docs/adr/0010-future.md",
+        invocation: str | None = None,
+        marker_emitted: bool = True,
+        context_suppressed: bool = False,
     ) -> dict[str, Any]:
         return {
             "schema_version": PRETOOLUSE_LEDGER_SCHEMA_VERSION,
@@ -3335,7 +3423,10 @@ def self_test() -> int:
             "event_canonical": "PreToolUse",
             "mode": "pretooluse",
             "session": session,
+            "invocation": invocation or session,
             "ts": "2026-06-27T00:00:00Z",
+            "tool": tool,
+            "path": path,
             "reason_codes": reason_codes
             if reason_codes is not None
             else ["needs_discoverability_unknown_mutation", "renderer_contract_projected"],
@@ -3344,9 +3435,12 @@ def self_test() -> int:
             "command_category": command_category,
             "command_redacted": command_redacted,
             "payload_source": "tool_input",
+            "risk": risk,
             "decision": "allow",
             "permission_decision": "allow",
             "outcome": outcome,
+            "marker_emitted": marker_emitted,
+            "context_suppressed": context_suppressed,
         }
 
     complete_codex = ceiling_record("codex", "complete-v2")
@@ -3372,11 +3466,73 @@ def self_test() -> int:
     duplicate_legacy = duplicate_hook_records([legacy_codex, legacy_codex])
     if not duplicate_legacy:
         failures.append("PreToolUse ceiling legacy scoping must preserve exact duplicate warnings")
+    historical_noise_scope, historical_noise_gaps = pretooluse_ceiling_evidence(
+        [complete_codex, legacy_codex, legacy_codex],
+        required_hosts=["codex"],
+    )
+    historical_noise_codex = historical_noise_scope.get("per_host", {}).get("codex", {})
+    if historical_noise_gaps or historical_noise_codex.get("status") != "PASS_CEILING":
+        failures.append("PreToolUse ceiling scope must keep historical duplicate noise non-blocking")
+
+    replayed_codex = {**complete_codex, "ts": "2026-06-27T00:05:00Z"}
+    replay_scope, replay_gaps = pretooluse_ceiling_evidence([complete_codex, replayed_codex], required_hosts=["codex"])
+    replay_codex = replay_scope.get("per_host", {}).get("codex", {})
+    if replay_gaps or replay_codex.get("status") != "PASS_CEILING":
+        failures.append("PreToolUse ceiling scope must treat stable current v2 replay rows as non-blocking")
+
+    cursor_batch_write = ceiling_record(
+        "cursor",
+        "cursor-batch",
+        tool="Write",
+        path=".cursor/rules/a.mdc",
+        invocation="cursor-batch-invocation",
+    )
+    cursor_batch_multiedit = ceiling_record(
+        "cursor",
+        "cursor-batch",
+        reason_codes=["governed_surface_mutation", "renderer_contract_projected"],
+        outcome="allow",
+        risk="material",
+        tool="MultiEdit",
+        path=".cursor/rules/b.mdc",
+        invocation="cursor-batch-invocation",
+        marker_emitted=False,
+        context_suppressed=True,
+    )
+    cursor_batch_scope, cursor_batch_gaps = pretooluse_ceiling_evidence(
+        [cursor_batch_write, cursor_batch_multiedit],
+        required_hosts=["cursor"],
+    )
+    cursor_batch_cursor = cursor_batch_scope.get("per_host", {}).get("cursor", {})
+    if cursor_batch_gaps or cursor_batch_cursor.get("status") != "PASS_CEILING":
+        failures.append("PreToolUse ceiling scope must keep distinct Cursor batch rows non-blocking")
 
     partial_v2 = {**complete_codex, "session": "partial-v2", "classifier_trace": {}}
     partial_gaps = pretooluse_ceiling_gaps([partial_v2], required_hosts=["codex"])
     if "missing_classifier_trace" not in partial_gaps:
         failures.append("PreToolUse ceiling scope must still fail current v2 rows with missing required fields")
+
+    complete_claude = ceiling_record("claude", "complete-v2-claude")
+    contradictory_codex = {**complete_codex, "decision": "block", "permission_decision": "deny"}
+    contradiction_scope, contradiction_gaps = pretooluse_ceiling_evidence(
+        [complete_codex, contradictory_codex, complete_claude],
+        required_hosts=["codex", "claude"],
+    )
+    contradiction_codex = contradiction_scope.get("per_host", {}).get("codex", {})
+    contradiction_claude = contradiction_scope.get("per_host", {}).get("claude", {})
+    if "current_v2_contradiction" not in contradiction_gaps:
+        failures.append("PreToolUse ceiling scope must block current v2 contradictions")
+    if "current_v2_contradiction" not in contradiction_codex.get("gaps", []):
+        failures.append("PreToolUse ceiling contradiction must be scoped to the affected host")
+    if contradiction_claude.get("status") != "PASS_CEILING" or contradiction_claude.get("gaps"):
+        failures.append("PreToolUse ceiling contradiction must not block unaffected hosts")
+    current_host_scope, current_host_gaps = pretooluse_ceiling_evidence(
+        [complete_codex, contradictory_codex, complete_claude],
+        current_host="claude",
+    )
+    current_host_claude = current_host_scope.get("per_host", {}).get("claude", {})
+    if current_host_gaps or current_host_claude.get("status") != "PASS_CEILING":
+        failures.append("PreToolUse current-host ceiling scope must ignore other-host v2 contradictions")
 
     claude_discoverability = ceiling_record(
         "claude",
@@ -4239,6 +4395,16 @@ def self_test() -> int:
         dedupe_fields = dedupe_contract.get("fields") if isinstance(dedupe_contract.get("fields"), list) else []
         if dedupe_contract.get("schema") != "tes-hook-dedupe@1":
             failures.append("hook-health must expose the v2 ledger dedupe analytics contract")
+        if (
+            dedupe_contract.get("ceiling_noise_rule")
+            != "historical_duplicate_replay_and_cursor_batch_noise_is_non_blocking_without_current_v2_contradiction"
+        ):
+            failures.append("hook-health dedupe contract must expose the non-blocking ceiling noise rule")
+        if (
+            dedupe_contract.get("current_v2_contradiction_rule")
+            != "same_host_scope_decision_risk_renderer_redaction_marker_contradiction_blocks_ceiling"
+        ):
+            failures.append("hook-health dedupe contract must expose the scoped current v2 contradiction rule")
         for field in ("agent", "tool", "risk", "path", "command_category", "session", "mode", "marker_emitted"):
             if field not in dedupe_fields:
                 failures.append(f"hook-health dedupe contract must include {field}")

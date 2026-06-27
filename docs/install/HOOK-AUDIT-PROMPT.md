@@ -170,6 +170,10 @@ command line. The simulation must cover:
   session/mode when present. Cursor may batch multiple native tool projections
   under the same invocation/timestamp, and those rows are not duplicates when
   tool, path, risk, marker, or mode differ.
+  Duplicate history, replay residue, and Cursor batch rows are warning/info
+  hygiene only; they must not block `PASS_CEILING` by themselves. They block
+  ceiling only when current `pretooluse_decision@2` rows for the same host/scope
+  contradict decision, risk, renderer trace, redaction, or marker state.
 - Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the
   legacy functional field and adds `floor_status`, `ceiling_status`, and
   `ceiling_gaps`. It must also expose top-level `helper_contract_status` and
@@ -221,6 +225,9 @@ When hook-health JSON exposes `dedupe_contract`, verify its fields include
 host, tool, risk, path or command category, session, mode, and marker state.
 It must document `same_semantic_different_timestamp_is_replay_history` and
 `same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`.
+If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor
+batch noise non-blocking without a current v2 contradiction, and
+`current_v2_contradiction_rule` must scope the blocker to the same host/scope.
 
 Also classify PreToolUse maturity against the canonical contract:
 - `PASS_BASIC`: routine silence, governed supervision, forbidden block,
