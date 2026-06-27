@@ -123,11 +123,16 @@ def load_json(path: Path) -> Any:
 
 
 def write_text_atomic(path: Path, text: str) -> None:
+    existing_mode = path.stat().st_mode if path.exists() else None
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, delete=False) as handle:
         handle.write(text)
         temp_name = handle.name
-    Path(temp_name).replace(path)
+    temp_path = Path(temp_name)
+    # Preserve executable bits for versioned entrypoints such as bin/tes.js.
+    if existing_mode is not None:
+        temp_path.chmod(existing_mode)
+    temp_path.replace(path)
 
 
 def write_json_atomic(path: Path, payload: Any) -> None:
@@ -797,6 +802,31 @@ def self_test() -> int:
         miss = update_target(Target(root / "i18n.json", "regex-all", "i18n.json", "zzz{{VERSION}}"), "0.5.0", dry_run=True, current="0.4.0")
         if miss.status != "failed":
             print("self-test failure: regex-all should fail when pattern is absent", file=sys.stderr)
+            return 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_json_atomic(root / "package.json", {"name": "fixture", "version": "0.3.9"})
+        bin_dir = root / "bin"
+        bin_dir.mkdir()
+        launcher = bin_dir / "tes.js"
+        launcher.write_text('const TES_VERSION = "0.3.9";\n', encoding="utf-8")
+        launcher.chmod(0o755)
+        write_json_atomic(
+            root / ".tes/bump.json",
+            {
+                "project": "fixture",
+                "versionTargets": [
+                    {"path": "bin/tes.js", "type": "regex", "pattern": 'TES_VERSION = "{{VERSION}}"'}
+                ],
+            },
+        )
+        rc = run(root, "patch", dry_run=False, yes=True, json_output=True)
+        if rc != 0:
+            print("self-test failure: executable bump fixture returned nonzero", file=sys.stderr)
+            return rc
+        if not (launcher.stat().st_mode & 0o111):
+            print("self-test failure: executable target lost execute bits", file=sys.stderr)
             return 1
 
     for current, request, expected in (

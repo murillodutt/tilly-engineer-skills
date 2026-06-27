@@ -19,7 +19,7 @@ from typing import Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.217"
+VERSION = "0.3.218"
 
 TEXT_SCAN_SUFFIXES = {
     ".md",
@@ -338,6 +338,21 @@ def gate_plan() -> list[Gate]:
                 (
                     "scripts/pretooluse_kernel.py",
                     "scripts/pretooluse_kernel_oracle.py",
+                    "scripts/pretooluse_session.py",
+                    "scripts/pretooluse_session_oracle.py",
+                    "scripts/tes_install.py",
+                    "package.json",
+                ),
+            ),
+        ),
+        Gate(
+            "pretooluse-session",
+            ["python3", "scripts/pretooluse_session_oracle.py"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "scripts/pretooluse_session.py",
+                    "scripts/pretooluse_session_oracle.py",
                     "scripts/tes_install.py",
                     "package.json",
                 ),
@@ -351,6 +366,8 @@ def gate_plan() -> list[Gate]:
                 (
                     "scripts/pretooluse_kernel.py",
                     "scripts/pretooluse_kernel_oracle.py",
+                    "scripts/pretooluse_session.py",
+                    "scripts/pretooluse_session_oracle.py",
                     "scripts/tes_install.py",
                     "scripts/mantra_gate_pretooluse_oracle.py",
                     "scripts/host_runtime_matrix_oracle.py",

@@ -26,9 +26,10 @@ from pretooluse_kernel import (
     hook_tool_name as kernel_hook_tool_name,
     hook_tool_path as kernel_hook_tool_path,
 )
+from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.217"
+VERSION = "0.3.218"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -46,7 +47,7 @@ DEFAULT_POSTINSTALL_COMMANDS = (
     ("project_context_oracle.py", ("--target", "{target}")),
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
-HOOK_RUNTIME_HELPERS = ("cortex_runtime.py", "pretooluse_kernel.py")
+HOOK_RUNTIME_HELPERS = ("cortex_runtime.py", "pretooluse_kernel.py", "pretooluse_session.py")
 OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/PROJECT-STATE.md",
     "docs/agents/PROJECT-ROADMAP.md",
@@ -2661,24 +2662,6 @@ def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
     )
 
 
-def _pretooluse_seen_this_session(target: Path, hook_input: dict[str, Any], key: str) -> bool:
-    """Anti-cry-wolf: surface a given supervision context at most once per session."""
-    session = str(hook_input.get("session_id") or hook_input.get("sessionId") or hook_input.get("session") or "default")
-    sentinel = target / ".tes" / "mantra-gates" / f"pretooluse-{session}.seen"
-    try:
-        seen = set()
-        if sentinel.exists():
-            seen = set(sentinel.read_text(encoding="utf-8").splitlines())
-        if key in seen:
-            return True
-        sentinel.parent.mkdir(parents=True, exist_ok=True)
-        with sentinel.open("a", encoding="utf-8") as handle:
-            handle.write(key + "\n")
-    except OSError:
-        return False
-    return False
-
-
 def _pretooluse_may_touch_operating_mesh(hook_input: dict[str, Any]) -> bool:
     tool_input = hook_tool_input(hook_input)
     values = [
@@ -2728,11 +2711,9 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         print(reason, file=sys.stderr)
         return 2
 
-    context = decision.get("context") or ""
-    context_suppressed = False
-    if context and _pretooluse_seen_this_session(target, hook_input, context):
-        context = ""
-        context_suppressed = True
+    session_context = coordinate_pretooluse_context(target, hook_input, str(decision.get("context") or ""))
+    context = session_context.context
+    context_suppressed = session_context.context_suppressed
     cortex_context = ""
     if _pretooluse_may_touch_operating_mesh(hook_input):
         cortex_context = _cortex_runtime_context(

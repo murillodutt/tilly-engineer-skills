@@ -177,6 +177,7 @@ def analyze() -> dict[str, Any]:
     failures.extend(run_self_test("scripts/cortex_runtime.py"))
     failures.extend(run_self_test("scripts/host_runtime_contract_oracle.py"))
     failures.extend(run_self_test("scripts/pretooluse_kernel_oracle.py"))
+    failures.extend(run_self_test("scripts/pretooluse_session_oracle.py"))
     failures.extend(run_self_test("scripts/mantra_gate_pretooluse_oracle.py"))
     agent_hosts, agent_failures = agent_fixture_failures()
     git_hosts, git_failures = git_fixture_failures()

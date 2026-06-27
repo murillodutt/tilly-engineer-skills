@@ -57,3 +57,13 @@ Entry format:
 - Patch or no-patch reason: create a scoped, indexed evidence journal for PreToolUse strategy.
 - Next strategic cut: use this file only when a PreToolUse strategy decision changes or when an oracle/canary surfaces new hook evidence.
 - Stop condition: do not append routine progress, command transcripts, or general release notes.
+
+## [2026-06-27T17:20:00Z] loop | Session coordinator extracted
+
+- Strategy decision: move anti-cry-wolf sentinel and same-session suppression out of `tes_install.py` into `scripts/pretooluse_session.py`, keeping it as an internal TES helper beside the decision kernel.
+- Protected contract: the first governed PreToolUse context surfaces once per session/context, the second same-session governed context is silent, forbidden blocks always surface and block independently of suppression state, and Claude Code/Codex/Cursor keep their host-specific output protocols.
+- Evidence: `scripts/pretooluse_session_oracle.py` exercises `tes_install.py hook_pretooluse` for all three agents and requires governed first/second parity plus repeated forbidden blocks.
+- Failure/gap/bug: the first oracle draft used identical forbidden payloads without `tool_use_id`, so runtime ledger dedupe correctly collapsed the second row; the oracle now uses distinct invocations while keeping the same session.
+- Patch or no-patch reason: patched package source because the session state was delivered hook behavior and remained coupled to the installer adapter.
+- Next strategic cut: leave host-specific rendering and ledger writing in `tes_install.py`; consider extracting only when there is a red-capable renderer parity oracle.
+- Stop condition: stop if target-project install cannot prove both `pretooluse_kernel.py` and `pretooluse_session.py` are delivered and `hook-health` remains PASS.

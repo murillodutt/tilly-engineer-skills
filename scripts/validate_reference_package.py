@@ -13,7 +13,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.217"
+VERSION = "0.3.218"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -30,9 +30,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.217/index.json",
-    "docs/dist/0.3.217/tilly-engineer-skills-0.3.217.zip",
-    "docs/dist/0.3.217/tilly-engineer-skills-0.3.217.zip.sha256",
+    "docs/dist/0.3.218/index.json",
+    "docs/dist/0.3.218/tilly-engineer-skills-0.3.218.zip",
+    "docs/dist/0.3.218/tilly-engineer-skills-0.3.218.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -223,6 +223,8 @@ REQUIRED_PATHS = (
     "scripts/mantra_gate_adoption_oracle.py",
     "scripts/pretooluse_kernel.py",
     "scripts/pretooluse_kernel_oracle.py",
+    "scripts/pretooluse_session.py",
+    "scripts/pretooluse_session_oracle.py",
     "scripts/github_readiness_oracle.py",
     "scripts/hook_audit_prompt_oracle.py",
     "scripts/tes_install.py",
