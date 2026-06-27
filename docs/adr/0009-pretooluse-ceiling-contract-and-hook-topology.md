@@ -33,11 +33,15 @@ contract first, installed-target evidence second, no competing local protocol.
 
 ## Context
 
-TES host hooks now pass the basic installed-target contract on Claude Code,
-Codex, and Cursor: routine work stays quiet, governed mutations are supervised,
-forbidden classes block before execution, anti-cry-wolf suppresses repeat
-markers, the current runtime ledger is present, legacy hook ledgers are retired,
-and host-specific output contracts are not flattened.
+Recent per-host installed-target reports indicate that TES host hooks satisfy
+the basic contract on Claude Code, Codex, and Cursor: routine work stays quiet,
+governed mutations are supervised, forbidden classes block before execution,
+anti-cry-wolf suppresses repeat markers, the current runtime ledger is present,
+legacy hook ledgers are retired, and host-specific output contracts are not
+flattened. That evidence is operational audit input, not a release-sealed bundle
+claim. A release identity claim still requires clean bundle provenance in
+`docs/dist/<version>/index.json`, including a reproducible `source_commit` and
+non-dirty source tree state.
 
 That is the floor. The strategic next problem is different. The hook runtime can
 work and still be too opaque to diagnose the next host payload change, renderer
@@ -70,7 +74,7 @@ The source package owns the following hook-related surfaces:
 | `scripts/pretooluse_kernel.py` | Host-neutral decision kernel: payload normalization, path extraction, governed-surface detection, forbidden-classification input, and allow/supervise/block decision record. |
 | `scripts/pretooluse_session.py` | Session coordinator for anti-cry-wolf sentinel state and same-session context suppression. |
 | `scripts/mantra_gate.py` | Mantra marker, governed-surface and risk policy inputs used by PreToolUse. |
-| `scripts/event_ledger.py` | General event-ledger helper and schema inspection surface used around runtime evidence. |
+| `scripts/event_ledger.py` | Adjacent lifecycle ledger helper for `.tes/events/ledger.jsonl`; it is not the current hook runtime writer. Hook runtime rows are written by `record_hook_execution` in `scripts/tes_install.py`. |
 | `scripts/tes_legacy_retirement.py` | Legacy runtime residue and migration hygiene support. |
 | `scripts/install_mcp.py` | Installed helper allowlist; ensures PreToolUse helpers are delivered into target `.tes/bin/**`. |
 | `bin/tes.js` | Thin npx entrypoint; delegates installation to `scripts/tes_install.py` and must not duplicate hook logic. |
@@ -150,7 +154,9 @@ Installed host configs are projections, not the semantic source:
 6. **Discoverability beats guessing.** Unknown or newly exposed mutating tool
    names must not be silently treated as routine. If host payload semantics are
    unclear, the correct state is `NEEDS_DISCOVERABILITY` until fixture or native
-   evidence resolves the host contract.
+   evidence resolves the host contract. This is a ceiling obligation, not
+   current floor behavior: the current floor still depends on the kernel's
+   known mutating-tool set and the existing risk classifier.
 7. **Ledger analytics must be part of the contract.** External analytics and
    dedup guidance must include tool, risk, path or command, session or mode, and
    marker state. Invocation plus timestamp is insufficient for Cursor batched
@@ -200,9 +206,11 @@ frequency.
    outcome when host tool semantics are mutating-looking but not fixture-backed.
    Add at least one red fixture that fails if the kernel silently treats an
    unknown mutating surface as routine.
-5. **Renderer parity fixtures.** Add fixtures that prove Claude Code, Codex, and
-   Cursor render allow, supervise, block, and anti-cry-wolf outcomes without
-   flattening output protocols.
+5. **Renderer parity fixtures.** Extend `scripts/mantra_gate_pretooluse_oracle.py`
+   as the single renderer parity owner for Claude Code, Codex, and Cursor allow,
+   supervise, block, and anti-cry-wolf output shapes, and have
+   `scripts/host_runtime_matrix_oracle.py` consume that owner. Do not add a
+   parallel renderer oracle unless it replaces this owner and absorbs the cases.
 6. **Ledger analytics schema.** Add schema/version guidance and fixture coverage
    for dedup keys that include tool, risk, path or command, session or mode, and
    marker state.
@@ -240,7 +248,8 @@ explicit `NEEDS_EVIDENCE` / `NEEDS_DISCOVERABILITY` status.
 Everything else is lower priority until P0 and P1 are green. Postinstall
 advisories, Field Reports backlog, mesh alignment, public docs, release sync,
 and general cleanup may be important, but they do not pierce the PreToolUse
-runtime ceiling.
+runtime ceiling. Bundle provenance cleanup is required before any release-sealed
+claim, but it is not a substitute for P0 or P1 runtime evidence.
 
 ## Rejected Alternatives
 
@@ -265,7 +274,8 @@ runtime ceiling.
   reproducible operator surface for target-project evidence.
 - Release identity remains a separate decision. This ADR does not require a
   version bump by itself, but any delivered runtime or audit-prompt behavior
-  change that follows it does.
+  change that follows it does. A dirty or non-reproducible bundle index blocks
+  release-sealed claims even when this ADR and its documentation gates pass.
 
 ## Non-Goals
 
@@ -283,8 +293,10 @@ A future ceiling implementation is not complete until all of these pass:
 1. `scripts/pretooluse_contract_oracle.py --self-test`
 2. `scripts/pretooluse_kernel_oracle.py`
 3. `scripts/pretooluse_session_oracle.py`
-4. a renderer parity oracle that proves Claude Code, Codex, and Cursor output
-   shapes for allow, supervise, block, and suppression;
+4. `scripts/mantra_gate_pretooluse_oracle.py` extended as the renderer parity
+   owner for Claude Code, Codex, and Cursor output shapes for allow, supervise,
+   block, and suppression, with `scripts/host_runtime_matrix_oracle.py`
+   consuming that owner;
 5. a discoverability fixture that fails for unknown mutating-looking tools;
 6. `scripts/hook_audit_prompt_oracle.py --self-test`;
 7. `python3 scripts/validate_tds.py`;
