@@ -1331,6 +1331,13 @@ documents:
     consumer: installer authors, context-oracle maintainers, and certification reviewers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/hooks/pretooluse-strategy-2026-06-27/JOURNAL.md
+    id: evidence.hooks.pretooluse_strategy_2026_06_27_journal
+    class: evidence
+    status: active
+    consumer: TES maintainers, hook authors, installer authors, oracle authors, and strategy reviewers
+    source_of_truth: false
+    evidence_level: L3
   - path: docs/evidence/reports/context-mesh/project-alignment-oracle-false-positive-2026-05-13/JOURNAL.md
     id: evidence.context_mesh.project_alignment_oracle_false_positive_2026_05_13_journal
     class: evidence
