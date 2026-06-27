@@ -79,6 +79,7 @@ This documentation layer explains the method behind the source package without t
 | Cortex MCP Host Segmentation Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
 | Host-Aware Runtime Contracts Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-host-aware-runtime-contracts.md` |
 | TES Host Hook Ceiling Certification Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-certification.md` |
+| TES Host Hook Ceiling Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-hardening.md` |
 | ADR 0008 corrective closure Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0008-corrective-closure.md` |
 | TES Loop Sentinel Harness Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-loop-sentinel.md` |
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |

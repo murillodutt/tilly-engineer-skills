@@ -49,6 +49,7 @@ This folder preserves roadmap lineage without turning the roadmap into the work.
 | TES installed certification and Field Reports | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES root context composition | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | TES inherited context canonical source | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md` |
+| TES host hook ceiling hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-hardening.md` |
 | ADR 0005 asset transfer realignment | Active | `goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md` |
 | Goal Maestro progressive disclosure | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-progressive-disclosure.md` |
 | Goal Maestro ceiling (self-falsifying proof generator) | Complete | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-ceiling-self-falsifying.md` (ADR 0006; EXECUTION_LOOP_COMPLETE) |
