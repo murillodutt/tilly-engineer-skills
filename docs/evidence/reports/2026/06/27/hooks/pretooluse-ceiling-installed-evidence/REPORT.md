@@ -18,6 +18,8 @@ Evidence source: `python3 scripts/host_runtime_matrix_oracle.py --self-test`.
 
 Evidence kind: installed-target simulation. The source matrix installs TES into a temporary target, runs the installed `.tes/bin/tes_install.py` hook entrypoint, and validates host-specific output contracts plus runtime ledger fields.
 
+Representation scope: post-SPEC-004 local source state, after `SPEC-001` `e1e51351`, `SPEC-002` `2b6b7d6e`, `SPEC-003` `986cfc0a`, and `SPEC-004` `aae491ec`.
+
 Native evidence status: `NEEDS_EVIDENCE`. No native editor smoke is claimed by this packet.
 
 Canary replay status: `NOT_RUN_NO_AUTHORIZATION`. No `~/Dev/tes-canaries` replay was used for this packet.
@@ -31,6 +33,7 @@ Summary:
 - Hook-health floor status: `NEEDS_EVIDENCE`.
 - Hook-health ceiling status: `NEEDS_FLOOR`.
 - Ceiling claim: not claimed.
+- SPEC-005 status: `NEEDS_EVIDENCE`.
 
 Host attribution:
 
@@ -41,3 +44,7 @@ Host attribution:
 Boundary:
 
 This packet supports P0/P1 source and installed-simulation evidence only. It does not certify `PASS_CEILING`; native host evidence and any canary replay must be recorded separately before a ceiling claim.
+
+SPEC-005 decision:
+
+`PASS_CEILING` is not claimable from this packet because the current environment has no authorized native editor host transcript or canary replay. The `pass-ceiling` oracle mode is available for future sanitized native packets and must fail this simulated-only packet.

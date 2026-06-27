@@ -17,6 +17,14 @@
     "status": "PASS"
   },
   "native_evidence_status": "NEEDS_EVIDENCE",
+  "native_evidence_unavailable_reason": "NO_AUTHORIZED_NATIVE_EDITOR_HOST_OR_CANARY_TRANSCRIPT",
+  "pass_ceiling_mode_result": "FAIL_EXPECTED_WITHOUT_NATIVE_EVIDENCE",
   "privacy_state": "sanitized",
+  "represented_after_specs": {
+    "SPEC-001": "e1e51351",
+    "SPEC-002": "2b6b7d6e",
+    "SPEC-003": "986cfc0a",
+    "SPEC-004": "aae491ec"
+  },
   "schema": "pretooluse-installed-evidence@1"
 }

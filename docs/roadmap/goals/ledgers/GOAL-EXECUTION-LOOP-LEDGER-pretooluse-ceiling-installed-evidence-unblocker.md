@@ -364,7 +364,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-005`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit-self-reference-pending-parent-local-commit
+commit: aae491ec
 oracle_status: `PASS: python3 scripts/tes_install.py --self-test; python3 scripts/hook_audit_prompt_oracle.py --self-test; git diff --check`
 structural_method_id: `platform-python-installer-internal-sections`
 topology_decision: `internal hook-health ceiling/noise policy patch plus prompt oracle hardening`
@@ -386,8 +386,8 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `not_applicable`
 distinct_refuters: `not_applicable`
-stop_state: `SPEC-004_PARENT_VALIDATION_PENDING`
-next_allowed_action: `parent validation, local commit, then open SPEC-005`
+stop_state: `SPEC-004_LOCAL_COMMITTED`
+next_allowed_action: `open SPEC-005`
 
 SPEC-004 implementation notes:
 
@@ -400,7 +400,77 @@ SPEC-004 implementation notes:
 
 SPEC-004 verification notes:
 
+- Commit: `aae491ec feat(pretooluse): formalize ceiling dedupe noise`.
 - `python3 scripts/tes_install.py --self-test`: PASS.
 - `python3 scripts/hook_audit_prompt_oracle.py --self-test`: PASS, `mutants_checked=63`.
 - `git diff --check`: PASS.
+- Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+## Pre-Edit Gate For SPEC-005
+
+EXECUTE_LOOP_REQUESTED: `yes`
+READY_GOAL_PROMPT: `present`
+ANCHOR_CLASS: `Super-SPEC`
+ANCHOR_PATH: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-pretooluse-ceiling-installed-evidence-unblocker.md`
+ANCHOR_HASH: `03df2c6a936dc64fafbf0029ad65144f48ee4277`
+TREE_ADVERSARY_STATUS: `OBJECTIONS_REPAIRED`
+DECLARED_UNITS: `SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006`
+FIRST_UNEXECUTED_UNIT: `SPEC-005`
+ACTIVE_SPEC: `SPEC-005`
+BASELINE_ONLY_COMMITS: `aae491ec,986cfc0a,2b6b7d6e,e1e51351,89e6e000,ad028e99,b76a9d1e,ec40caaa,33b60f73,9a538daf,a270dc71`
+LEDGER: `docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`
+NATIVE_EVIDENCE_AUTHORIZATION: `not_available`
+MAY_EDIT: `yes`
+
+## SPEC-005
+
+spec_id: `SPEC-005`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-006`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit-self-reference-pending-parent-local-commit
+oracle_status: `PASS: python3 scripts/pretooluse_evidence_oracle.py --packet docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence --expect needs-evidence; python3 scripts/pretooluse_evidence_oracle.py --self-test; python3 scripts/private_vocabulary_oracle.py --paths docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/summary.json; git diff --check`
+structural_method_id: `platform-python-evidence-packet-oracle`
+topology_decision: `extend existing evidence oracle with expectation modes and temporary self-test fixtures; no new module`
+topology_decision_artifact: `scripts/pretooluse_evidence_oracle.py; sanitized evidence packet; this ledger`
+structural_debt: `none`
+next_structural_constraint: `SPEC-006 owns release identity; SPEC-005 must not bump version, regenerate bundle, push, tag, release, or claim PASS_CEILING without native host evidence`
+topology_probe_result: `PASS`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `NEEDS_EVIDENCE: no authorized native editor host transcript or canary replay is available in this environment`
+adversary_objection: `not_applicable`
+shared_contract_extended: `yes`
+extension_point_proven: `yes`
+contract_handoff_artifact: `docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md`
+api_lint_status: `PASS`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: pass-ceiling self-test rejects simulated-only packets, missing host attribution, missing scoped native evidence, and cross-filled host ceiling status`
+distinct_refuters: `not_applicable`
+stop_state: `NEEDS_EVIDENCE`
+next_allowed_action: `open SPEC-006 only for release identity decision; no remote action without owner authorization`
+
+SPEC-005 implementation notes:
+
+- `scripts/pretooluse_evidence_oracle.py` now accepts `--expect needs-evidence|pass-ceiling`; the default remains `needs-evidence`.
+- The existing `needs-evidence` packet contract is unchanged.
+- `pass-ceiling` mode requires sanitized native evidence, a claimed host, `OBSERVED` host attribution, `PASS_BASIC` floor status, `PASS_CEILING` ceiling status, and matching per-host scoped ceiling evidence.
+- The current sanitized packet records post-SPEC-004 representation and remains `NEEDS_EVIDENCE`.
+
+SPEC-005 verification notes:
+
+- `python3 scripts/pretooluse_evidence_oracle.py --packet docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence --expect needs-evidence`: PASS.
+- `python3 scripts/pretooluse_evidence_oracle.py --self-test`: PASS.
+- `python3 scripts/private_vocabulary_oracle.py --paths docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/summary.json`: PASS.
+- `git diff --check`: PASS.
+- `python3 scripts/validate_tds.py`: PASS.
+- `python3 scripts/validate_doc_size.py --paths docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-pretooluse-ceiling-installed-evidence-unblocker.md`: PASS with ledger partition warning at 476 lines.
+- Negative check: current sanitized packet with `--expect pass-ceiling` fails as expected because it has no native host evidence.
+- Final SPEC-005 status: `NEEDS_EVIDENCE`.
 - Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
