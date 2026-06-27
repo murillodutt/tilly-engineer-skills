@@ -127,6 +127,46 @@ def _as_list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
 
 
+def _handler_command(handler: Any) -> str:
+    return str(_as_dict(handler).get("command") or "")
+
+
+def _assert_command_handler(
+    label: str,
+    handler: Any,
+    failures: list[str],
+    *,
+    agent: str,
+    timeout: int,
+    require_type: bool = True,
+    extra_tokens: tuple[str, ...] = (),
+) -> None:
+    item = _as_dict(handler)
+    command = _handler_command(item)
+    if require_type and item.get("type") != "command":
+        failures.append(f"{label}: handler type must be command")
+    if item.get("timeout") != timeout:
+        failures.append(f"{label}: handler timeout must be {timeout}")
+    required = (
+        ".tes/bin/tes_install.py",
+        " hook ",
+        f"--agent {agent}",
+        "--target",
+        *extra_tokens,
+    )
+    for token in required:
+        if token not in command:
+            failures.append(f"{label}: command missing {token!r}")
+
+
+def _single_group_handler(label: str, group: Any, failures: list[str]) -> dict[str, Any]:
+    handlers = _as_list(_as_dict(group).get("hooks"))
+    if len(handlers) != 1 or not isinstance(handlers[0], dict):
+        failures.append(f"{label}: expected exactly one command handler")
+        return {}
+    return handlers[0]
+
+
 def _read_ledger(target: Path) -> list[dict[str, Any]]:
     path = target / HOOK_SENTINEL
     if not path.exists():
@@ -148,6 +188,24 @@ def _event_state(health: dict[str, Any], agent: str, event: str) -> str:
         if isinstance(item, dict) and item.get("event") == event:
             return str(item.get("state") or "")
     return ""
+
+
+def _record_matches(
+    record: dict[str, Any],
+    *,
+    agent: str,
+    tool: str,
+    session: str,
+    path: str | None = None,
+    command: str | None = None,
+) -> bool:
+    if record.get("agent") != agent or record.get("tool") != tool or record.get("session") != session:
+        return False
+    if path is not None and record.get("path") != path:
+        return False
+    if command is not None and command not in str(record.get("command") or ""):
+        return False
+    return True
 
 
 def _write_fixture_project(target: Path) -> None:
@@ -219,25 +277,91 @@ def _assert_installed_configs(target: Path, failures: list[str]) -> None:
     codex_hooks = _as_dict(codex_data.get("hooks"))
     codex_pre = _as_list(codex_hooks.get("PreToolUse"))
     codex_start = _as_list(codex_hooks.get("SessionStart"))
-    if len(codex_pre) != 1 or not isinstance(codex_pre[0], dict) or codex_pre[0].get("matcher") != EXPECTED_MATCHER:
+    if (
+        len(codex_pre) != 1
+        or not isinstance(codex_pre[0], dict)
+        or codex_pre[0].get("matcher") != EXPECTED_MATCHER
+    ):
         failures.append("codex config: PreToolUse matcher must be complete and singular")
+    else:
+        handler = _single_group_handler("codex config: PreToolUse", codex_pre[0], failures)
+        if handler:
+            _assert_command_handler("codex config: PreToolUse", handler, failures, agent="codex", timeout=10)
     if len(codex_start) != 1 or not isinstance(codex_start[0], dict):
         failures.append("codex config: SessionStart hook must be singular")
+    else:
+        handler = _single_group_handler("codex config: SessionStart", codex_start[0], failures)
+        if handler:
+            _assert_command_handler("codex config: SessionStart", handler, failures, agent="codex", timeout=120)
 
     claude = _read_json(target / ".claude/settings.json")
     claude_hooks = _as_dict(claude.get("hooks"))
     claude_pre = _as_list(claude_hooks.get("PreToolUse"))
     claude_start = _as_list(claude_hooks.get("SessionStart"))
-    if not any(isinstance(group, dict) and group.get("matcher") == EXPECTED_MATCHER for group in claude_pre):
+    claude_pre_groups = [
+        group for group in claude_pre if isinstance(group, dict) and group.get("matcher") == EXPECTED_MATCHER
+    ]
+    if len(claude_pre_groups) != 1:
         failures.append("claude config: PreToolUse matcher must be complete")
-    if not any(isinstance(group, dict) and group.get("matcher") == tes_install.CLAUDE_SESSIONSTART_MATCHER for group in claude_start):
+    else:
+        handler = _single_group_handler("claude config: PreToolUse", claude_pre_groups[0], failures)
+        if handler:
+            _assert_command_handler("claude config: PreToolUse", handler, failures, agent="claude", timeout=10)
+    claude_start_groups = [
+        group for group in claude_start if isinstance(group, dict) and group.get("matcher") == tes_install.CLAUDE_SESSIONSTART_MATCHER
+    ]
+    if len(claude_start_groups) != 1:
         failures.append("claude config: SessionStart matcher must use official sources")
+    else:
+        handlers = _as_list(claude_start_groups[0].get("hooks"))
+        if len(handlers) != 2:
+            failures.append("claude config: SessionStart must install announce and async rewake handlers")
+        announce = [handler for handler in handlers if "--announce-start" in _handler_command(handler)]
+        rewake = [handler for handler in handlers if "--rewake-on-complete" in _handler_command(handler)]
+        if len(announce) != 1:
+            failures.append("claude config: SessionStart announce handler must be singular")
+        else:
+            _assert_command_handler(
+                "claude config: SessionStart announce",
+                announce[0],
+                failures,
+                agent="claude",
+                timeout=5,
+                extra_tokens=("--announce-start",),
+            )
+        if len(rewake) != 1:
+            failures.append("claude config: SessionStart rewake handler must be singular")
+        else:
+            rewake_handler = _as_dict(rewake[0])
+            _assert_command_handler(
+                "claude config: SessionStart rewake",
+                rewake_handler,
+                failures,
+                agent="claude",
+                timeout=120,
+                extra_tokens=("--rewake-on-complete",),
+            )
+            if rewake_handler.get("async") is not True or rewake_handler.get("asyncRewake") is not True:
+                failures.append("claude config: SessionStart rewake handler must be async")
 
     cursor = _read_json(target / ".cursor/hooks.json")
     cursor_hooks = _as_dict(cursor.get("hooks"))
-    for event in ("sessionStart", "beforeSubmitPrompt", "preToolUse"):
+    for event, timeout in (("sessionStart", 120), ("beforeSubmitPrompt", 120), ("preToolUse", 10)):
         if not isinstance(cursor_hooks.get(event), list) or not cursor_hooks[event]:
             failures.append(f"cursor config: missing {event} hook")
+            continue
+        handlers = _as_list(cursor_hooks.get(event))
+        if len(handlers) != 1:
+            failures.append(f"cursor config: {event} hook must be singular")
+            continue
+        _assert_command_handler(
+            f"cursor config: {event}",
+            handlers[0],
+            failures,
+            agent="cursor",
+            timeout=timeout,
+            require_type=False,
+        )
 
 
 def _assert_fixture_completeness(target: Path, failures: list[str]) -> None:
@@ -329,15 +453,35 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     if (target / LEGACY_SENTINEL).exists():
         failures.append("ledger: legacy .tes/hooks/executed.jsonl must not be written by matrix")
 
-    expected = [
-        ("codex", "apply_patch", ".tes/runtime/hook-smoke/codex/SKILL.md"),
-        ("claude", "Edit", "docs/governance/MATRIX.md"),
-        ("cursor", "MultiEdit", ".cursor/rules/matrix.mdc"),
-        ("cursor", "Read", "src/app.py"),
+    expected_records = [
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply",
+            "path": ".tes/runtime/hook-smoke/codex/SKILL.md",
+            "min_count": 2,
+        },
+        {"agent": "codex", "tool": "Bash", "session": "matrix-codex-Bash", "command": "git push --force origin main"},
+        {"agent": "codex", "tool": "Shell", "session": "matrix-codex-Shell", "command": "git push --force origin main"},
+        {"agent": "codex", "tool": "shell", "session": "matrix-codex-shell", "command": "git push --force origin main"},
+        {"agent": "claude", "tool": "Edit", "session": "matrix-claude-governed", "path": "docs/governance/MATRIX.md"},
+        {"agent": "claude", "tool": "Bash", "session": "matrix-claude-forbidden", "command": "git push --force origin main"},
+        {"agent": "cursor", "tool": "MultiEdit", "session": "matrix-cursor-governed", "path": ".cursor/rules/matrix.mdc"},
+        {"agent": "cursor", "tool": "Bash", "session": "matrix-cursor-forbidden", "command": "sudo rm -rf / --no-preserve-root"},
+        {"agent": "cursor", "tool": "Read", "session": "matrix-cursor-read", "path": "src/app.py"},
+        {"agent": "codex", "tool": "Edit", "session": "matrix-codex-routine", "path": "src/app.py"},
     ]
-    for agent, tool, path in expected:
-        if not any(item.get("agent") == agent and item.get("tool") == tool and item.get("path") == path for item in records):
-            failures.append(f"ledger: missing {agent}/{tool}/{path} record")
+    for expected in expected_records:
+        min_count = int(expected.get("min_count", 1))
+        record_filter = {key: value for key, value in expected.items() if key != "min_count"}
+        count = sum(1 for item in records if _record_matches(item, **record_filter))
+        if count < min_count:
+            locator = record_filter.get("path") or record_filter.get("command") or record_filter["session"]
+            failures.append(f"ledger: missing {record_filter['agent']}/{record_filter['tool']}/{locator} record")
+
+    for item in records:
+        if item.get("event_canonical") != "PreToolUse" or item.get("mode") != "pretooluse":
+            failures.append(f"ledger: unexpected runtime record shape {item!r}")
 
     health_proc = _run(
         [
