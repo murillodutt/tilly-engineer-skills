@@ -2024,8 +2024,33 @@ def hook_patch_paths(command: str) -> list[str]:
     return paths
 
 
+def _first_string_value(*values: Any) -> str:
+    for value in values:
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def _tool_command_from_payload(payload: dict[str, Any]) -> str:
+    command = _first_string_value(
+        payload.get("command"),
+        payload.get("input"),
+        payload.get("patch"),
+    )
+    if command:
+        return command
+    arguments = payload.get("arguments")
+    if isinstance(arguments, dict):
+        return _first_string_value(
+            arguments.get("command"),
+            arguments.get("input"),
+            arguments.get("patch"),
+        )
+    return ""
+
+
 def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
-    return str(tool_input.get("command") or hook_input.get("command") or "")
+    return _tool_command_from_payload(tool_input) or _tool_command_from_payload(hook_input)
 
 
 def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
@@ -2210,10 +2235,53 @@ def record_hook_execution(
                 ):
                     if key in pretooluse_decision:
                         record[key] = pretooluse_decision[key]
-        with sentinel.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record, sort_keys=True) + "\n")
+        if not hook_record_already_written(sentinel, record):
+            with sentinel.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(record, sort_keys=True) + "\n")
     except OSError:
         pass
+
+
+HOOK_RECORD_DEDUPE_FIELDS = (
+    "agent",
+    "event_canonical",
+    "mode",
+    "session",
+    "tool",
+    "path",
+    "command",
+    "invocation",
+    "risk",
+    "block",
+    "decision",
+    "permission_decision",
+    "marker_emitted",
+    "context_suppressed",
+    "cortex_context_emitted",
+    "surface_context",
+)
+
+
+def hook_record_dedupe_key(record: dict[str, Any]) -> tuple[Any, ...]:
+    return tuple(record.get(field) for field in HOOK_RECORD_DEDUPE_FIELDS)
+
+
+def hook_record_already_written(sentinel: Path, record: dict[str, Any]) -> bool:
+    if not sentinel.is_file():
+        return False
+    expected = hook_record_dedupe_key(record)
+    try:
+        lines = sentinel.read_text(encoding="utf-8").splitlines()[-50:]
+    except OSError:
+        return False
+    for line in reversed(lines):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict) and hook_record_dedupe_key(payload) == expected:
+            return True
+    return False
 
 
 def _command_mentions_tes_hook(command: Any, agent: str) -> bool:
@@ -2306,26 +2374,19 @@ def hook_record_matches(record: dict[str, Any], agent: str, event: str, event_ca
 
 
 def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    seen: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    seen: dict[tuple[Any, ...], dict[str, Any]] = {}
     duplicates: list[dict[str, Any]] = []
     for record in records:
         event = str(record.get("event_canonical") or canonical_hook_event(str(record.get("event") or "")))
-        if event == "PreToolUse" and not record.get("invocation"):
-            continue
-        session = str(record.get("invocation") or record.get("session") or "")
-        key = (
-            str(record.get("agent") or ""),
-            event,
-            str(record.get("mode") or ""),
-            session,
-        )
+        key = hook_record_dedupe_key({**record, "event_canonical": event})
         if key in seen:
+            session = str(record.get("invocation") or record.get("session") or "")
             duplicates.append(
                 {
-                    "agent": key[0],
-                    "event_canonical": key[1],
-                    "mode": key[2],
-                    "session_or_invocation": key[3],
+                    "agent": str(record.get("agent") or ""),
+                    "event_canonical": event,
+                    "mode": str(record.get("mode") or ""),
+                    "session_or_invocation": session,
                     "count": 2,
                 }
             )
@@ -3382,6 +3443,50 @@ def self_test() -> int:
                 failures.append("Cursor PreToolUse sentinel must record mode=pretooluse")
             if cursor_record.get("tool") != "Write" or str(cursor_record.get("path") or "") != str(mesh_path):
                 failures.append("Cursor PreToolUse sentinel must record tool and path details")
+
+        dedupe_input = {
+            "hook_event_name": "PreToolUse",
+            "session_id": "dedupe-routine",
+            "tool_name": "Read",
+            "tool_use_id": "dedupe-routine-tool",
+            "tool_input": {"file_path": "src/app.py"},
+        }
+        dedupe_decision = {
+            "risk": "routine",
+            "block": False,
+            "decision": "allow",
+            "permission_decision": "allow",
+            "marker_emitted": False,
+            "context_suppressed": False,
+            "cortex_context_emitted": False,
+            "surface_context": False,
+        }
+        record_hook_execution(target, "cursor", dedupe_input, mode="pretooluse", pretooluse_decision=dedupe_decision)
+        record_hook_execution(target, "cursor", dedupe_input, mode="pretooluse", pretooluse_decision=dedupe_decision)
+        dedupe_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("agent") == "cursor" and record.get("session") == "dedupe-routine"
+        ]
+        if len(dedupe_records) != 1:
+            failures.append("runtime hook ledger must skip exact duplicate PreToolUse records")
+
+        anti_input = {
+            "hook_event_name": "PreToolUse",
+            "session_id": "dedupe-anti-cry-wolf",
+            "tool_name": "Write",
+            "tool_use_id": "dedupe-anti-tool",
+            "tool_input": {"file_path": ".tes/runtime/hook-smoke/dedupe/SKILL.md"},
+        }
+        first_anti = {**dedupe_decision, "risk": "material", "marker_emitted": True, "surface_context": True}
+        second_anti = {**dedupe_decision, "risk": "material", "context_suppressed": True}
+        record_hook_execution(target, "cursor", anti_input, mode="pretooluse", pretooluse_decision=first_anti)
+        record_hook_execution(target, "cursor", anti_input, mode="pretooluse", pretooluse_decision=second_anti)
+        anti_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("agent") == "cursor" and record.get("session") == "dedupe-anti-cry-wolf"
+        ]
+        if len(anti_records) != 2:
+            failures.append("runtime hook ledger must preserve anti-cry-wolf decision changes")
         if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
             failures.append("new hook runtime must not write the legacy tracked hook sentinel")
         ignore_probe = run(["git", "check-ignore", HOOK_SENTINEL_PATH.as_posix()], cwd=target)

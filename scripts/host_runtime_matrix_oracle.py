@@ -429,22 +429,69 @@ def _assert_fixture_completeness(target: Path, failures: list[str]) -> None:
 
 
 def _assert_hook_contracts(target: Path, failures: list[str]) -> None:
-    patch_body = (
-        "*** Begin Patch\n"
-        "*** Add File: .tes/runtime/hook-smoke/codex/SKILL.md\n"
-        "+# Smoke\n"
-        "*** End Patch\n"
-    )
+    def patch_body(path: str) -> str:
+        return (
+            "*** Begin Patch\n"
+            f"*** Add File: {path}\n"
+            "+# Smoke\n"
+            "*** End Patch\n"
+        )
 
-    code, out, err = _run_hook(target, "codex", _camel("apply_patch", "matrix-codex-apply", command=patch_body))
+    canonical_path = ".tes/runtime/hook-smoke/codex/SKILL.md"
+    canonical_patch = patch_body(canonical_path)
+
+    code, out, err = _run_hook(target, "codex", _camel("apply_patch", "matrix-codex-apply", command=canonical_patch))
     if code != 0 or out.strip():
         failures.append(f"codex apply_patch: expected allow with stderr context only, got rc={code}")
     _assert_marker("codex apply_patch", err, failures)
-    if ".tes/runtime/hook-smoke/codex/SKILL.md" not in err:
+    if canonical_path not in err:
         failures.append("codex apply_patch: path extracted from patch body must surface")
-    code, out, err = _run_hook(target, "codex", _camel("apply_patch", "matrix-codex-apply", command=patch_body))
+    code, out, err = _run_hook(target, "codex", _camel("apply_patch", "matrix-codex-apply", command=canonical_patch))
     if code != 0 or out.strip() or err.strip():
         failures.append("codex apply_patch: second same-session governed mutation must be silent")
+
+    alias_cases: tuple[tuple[str, dict[str, Any]], ...] = (
+        ("input", {"input": patch_body(".tes/runtime/hook-smoke/codex/input/SKILL.md")}),
+        ("patch", {"patch": patch_body(".tes/runtime/hook-smoke/codex/patch/SKILL.md")}),
+        ("arguments-command", {"arguments": {"command": patch_body(".tes/runtime/hook-smoke/codex/arguments-command/SKILL.md")}}),
+        ("arguments-input", {"arguments": {"input": patch_body(".tes/runtime/hook-smoke/codex/arguments-input/SKILL.md")}}),
+        ("arguments-patch", {"arguments": {"patch": patch_body(".tes/runtime/hook-smoke/codex/arguments-patch/SKILL.md")}}),
+    )
+    for name, tool_input in alias_cases:
+        expected_path = f".tes/runtime/hook-smoke/codex/{name}/SKILL.md"
+        code, out, err = _run_hook(
+            target,
+            "codex",
+            _camel("apply_patch", f"matrix-codex-apply-{name}", **tool_input),
+        )
+        if code != 0 or out.strip():
+            failures.append(f"codex apply_patch {name}: expected allow with stderr context only, got rc={code}")
+        _assert_marker(f"codex apply_patch {name}", err, failures)
+        if expected_path not in err:
+            failures.append(f"codex apply_patch {name}: path extracted from alias patch body must surface")
+
+    top_level_patch = (
+        "*** Begin Patch\n"
+        "*** Add File: .tes/runtime/hook-smoke/codex/top-level-input/SKILL.md\n"
+        "+# Smoke\n"
+        "*** End Patch\n"
+    )
+    code, out, err = _run_hook(
+        target,
+        "codex",
+        {
+            "hookEventName": "PreToolUse",
+            "toolName": "apply_patch",
+            "toolInput": {},
+            "input": top_level_patch,
+            "sessionId": "matrix-codex-apply-top-level-input",
+        },
+    )
+    if code != 0 or out.strip():
+        failures.append(f"codex apply_patch top-level-input: expected allow with stderr context only, got rc={code}")
+    _assert_marker("codex apply_patch top-level-input", err, failures)
+    if ".tes/runtime/hook-smoke/codex/top-level-input/SKILL.md" not in err:
+        failures.append("codex apply_patch top-level-input: path extracted from top-level patch body must surface")
 
     for tool in ("Bash", "Shell", "shell"):
         code, out, err = _run_hook(target, "codex", _camel(tool, f"matrix-codex-{tool}", command="git push --force origin main"))
@@ -518,6 +565,42 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             "path": ".tes/runtime/hook-smoke/codex/SKILL.md",
             "min_count": 2,
         },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply-input",
+            "path": ".tes/runtime/hook-smoke/codex/input/SKILL.md",
+        },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply-patch",
+            "path": ".tes/runtime/hook-smoke/codex/patch/SKILL.md",
+        },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply-arguments-command",
+            "path": ".tes/runtime/hook-smoke/codex/arguments-command/SKILL.md",
+        },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply-arguments-input",
+            "path": ".tes/runtime/hook-smoke/codex/arguments-input/SKILL.md",
+        },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply-arguments-patch",
+            "path": ".tes/runtime/hook-smoke/codex/arguments-patch/SKILL.md",
+        },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
+            "session": "matrix-codex-apply-top-level-input",
+            "path": ".tes/runtime/hook-smoke/codex/top-level-input/SKILL.md",
+        },
         {"agent": "codex", "tool": "Bash", "session": "matrix-codex-Bash", "command": "git push --force origin main"},
         {"agent": "codex", "tool": "Shell", "session": "matrix-codex-Shell", "command": "git push --force origin main"},
         {"agent": "codex", "tool": "shell", "session": "matrix-codex-shell", "command": "git push --force origin main"},
@@ -562,6 +645,30 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         for item in codex_apply
     ):
         failures.append("ledger: codex apply_patch second governed record must persist context_suppressed=true")
+
+    for name in (
+        "input",
+        "patch",
+        "arguments-command",
+        "arguments-input",
+        "arguments-patch",
+        "top-level-input",
+    ):
+        codex_alias = _matching_records(
+            records,
+            agent="codex",
+            tool="apply_patch",
+            session=f"matrix-codex-apply-{name}",
+            path=f".tes/runtime/hook-smoke/codex/{name}/SKILL.md",
+        )
+        if not any(
+            item.get("risk") == "material"
+            and item.get("decision") == "allow"
+            and item.get("permission_decision") == "allow"
+            and item.get("marker_emitted") is True
+            for item in codex_alias
+        ):
+            failures.append(f"ledger: codex apply_patch {name} must persist marker_emitted=true")
 
     for tool in ("Bash", "Shell", "shell"):
         forbidden = _matching_records(

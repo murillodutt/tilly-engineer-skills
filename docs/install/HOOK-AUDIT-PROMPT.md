@@ -99,13 +99,18 @@ simulation must cover:
 - Matcher coverage: installed PreToolUse config must include the native mutation
   tools for the host under test. In Codex, verify `apply_patch`, `Bash`,
   `Shell`, and `shell` are covered and the hook can extract the path from the
-  patch body. A Codex config with only `Write|Edit|MultiEdit` is FAIL for Codex
-  native coverage until the target is updated.
+  patch body. Codex `tool_input.command` is the canonical patch-body field, and
+  defensive aliases `input`, `patch`, and `arguments.*` should also be tested by
+  safe hook-entrypoint simulation; alias-key failures are findings even when the
+  canonical native path passes. A Codex config with only `Write|Edit|MultiEdit`
+  is FAIL for Codex native coverage until the target is updated.
 - Anti-cry-wolf: the same governed supervision in the same session is surfaced
   once, then silenced.
 - Runtime ledger: `.tes/runtime/hooks/executed.jsonl` records agent, event,
   tool, session, and path for the native smoke; `.tes/hooks/executed.jsonl` is
-  legacy residue only.
+  legacy residue only. Treat dual-agent ledger rows for the same invocation as
+  parallel host projections unless the same agent/event/invocation/decision is
+  repeated identically.
 - Cortex no-write: hook context may propose recall/alignment/capture, but the
   runtime must report no automatic durable writes.
 - Fixture completeness: if `.tes/bin/cortex_runtime.py --self-test` exists,

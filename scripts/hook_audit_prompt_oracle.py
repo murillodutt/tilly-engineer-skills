@@ -24,6 +24,10 @@ REQUIRED_TERMS = (
     "marker_emitted: true",
     "Before any native forbidden-shell test",
     "verify `apply_patch`, `Bash`,\n  `Shell`, and `shell`",
+    "Codex `tool_input.command` is the canonical patch-body field",
+    "defensive aliases `input`, `patch`, and `arguments.*`",
+    "alias-key failures are findings",
+    "parallel host projections unless the same agent/event/invocation/decision is\n  repeated identically",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
@@ -81,6 +85,16 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_marker_ledger_proof",
             _remove(text, "marker_emitted: true"),
             "marker_emitted",
+        ),
+        Mutation(
+            "without_codex_patch_alias_contract",
+            _remove(text, "defensive aliases `input`, `patch`, and `arguments.*`"),
+            "defensive aliases",
+        ),
+        Mutation(
+            "without_dual_projection_contract",
+            _remove(text, "parallel host projections unless the same agent/event/invocation/decision is\n  repeated identically"),
+            "parallel host projections",
         ),
         Mutation(
             "cursor_edit_made_mandatory",
