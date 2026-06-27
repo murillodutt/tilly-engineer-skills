@@ -51,8 +51,8 @@ Declared units:
 spec_id: `SPEC-002`
 spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
 attempt: `1`
-repair_count: `0`
-audit_repair_cycle: `0`
+repair_count: `1`
+audit_repair_cycle: `1`
 first_unexecuted_unit: `SPEC-002`
 failed_attempt_recovery_decision: `interrupted_attempt_resumed: existing dirty diff classified as current-loop SPEC-002 material`
 commit: 35f53c9790783b4bf852ecb2a2403d4edd763848
@@ -63,10 +63,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-003 may extend v2 ledger fields only through explicit trace fields and focused oracles`
 topology_probe_result: `PASS: no new modules; existing runtime/helper files only`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: python3 scripts/host_runtime_matrix_oracle.py --self-test`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -88,7 +84,7 @@ attempt: `1`
 repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-003`
-failed_attempt_recovery_decision: `not_applicable`
+failed_attempt_recovery_decision: `fixed closure report TDS frontmatter after validate_tds rejected generic keys`
 commit: 4dedc876b4bc7d249f432977f9f8d2b269cab28f
 oracle_status: `PASS: py_compile, pretooluse_kernel_oracle, host_runtime_matrix_oracle, tes_install self-test, pretooluse_session_oracle, pretooluse_contract_oracle, mantra_gate_pretooluse_oracle, validate_tds, doc-size, ledger-no-placeholder, and renderer-token negative grep`
 structural_method_id: `runtime-script-internal-sections`
@@ -97,10 +93,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-004 owns renderer trace and parity; SPEC-003 must not encode renderer protocol fields in the kernel`
 topology_probe_result: `PASS: no new modules; kernel/writer/oracle internal sections only`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: python3 scripts/host_runtime_matrix_oracle.py --self-test`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -131,10 +123,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-005 may consume renderer_trace but must not move renderer semantics into the kernel`
 topology_probe_result: `PASS: no new modules; runtime/oracle internal sections only`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: python3 scripts/host_runtime_matrix_oracle.py --self-test`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -165,10 +153,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-006 owns dedup semantics; SPEC-005 must not broaden the mutating tool allowlist`
 topology_probe_result: `PASS: no new modules; kernel, matrix oracle, audit prompt oracle, and audit prompt only`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: python3 scripts/host_runtime_matrix_oracle.py --self-test reports discoverability_status=NEEDS_DISCOVERABILITY`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -199,10 +183,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-007 owns installed helper packaging; SPEC-006 must not change helper packaging or release identity`
 topology_probe_result: `PASS: no new modules; hook-health analytics helpers, runtime fixtures, matrix oracle, audit prompt oracle, and audit prompt only`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: python3 scripts/tes_install.py --self-test and python3 scripts/host_runtime_matrix_oracle.py --self-test`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -248,10 +228,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-008 owns hook-health floor/ceiling split; SPEC-007 must not rename hook-health schema or claim PASS_CEILING`
 topology_probe_result: `PASS: no new modules; installed helper import/parity probe added to host_runtime_matrix_oracle only, with audit prompt/oracle update`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: python3 scripts/host_runtime_matrix_oracle.py --self-test reports helper_contract_status=PASS`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -282,10 +258,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-009 owns final audit prompt projection; SPEC-008 must not claim PASS_CEILING without installed ceiling evidence`
 topology_probe_result: `PASS: no new modules; additive hook-health payload extension plus docs/oracle update`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: host runtime matrix reports hook_health_floor_status=NEEDS_EVIDENCE and hook_health_ceiling_status=NEEDS_FLOOR without PASS_CEILING collapse`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -316,10 +288,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-010 owns sanitized installed evidence; SPEC-009 must not create canary packet or release identity`
 topology_probe_result: `PASS: no new files; HOOK-AUDIT-PROMPT and hook_audit_prompt_oracle only`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `not_applicable: documentation projection unit; runtime covered by SPEC-008 baseline`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -350,10 +318,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-011 owns release identity; SPEC-010 must not bump package version or claim release seal`
 topology_probe_result: `PASS: one sanitized report packet, summary.json, TDS index entry, and focused evidence oracle`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: host runtime matrix remains PASS with hook_health_ceiling_status=NEEDS_FLOOR`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -367,21 +331,6 @@ distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-011`
 
-## Pre-Edit Gate: SPEC-011
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-011
-ACTIVE_SPEC=SPEC-011
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71,4e1f87b1,9a538daf
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
-
 ## SPEC-011
 
 spec_id: `SPEC-011`
@@ -391,7 +340,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-011`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: 33b60f7351a3639f098c2aad49ac3883a7910536
 oracle_status: `PASS: tes_bump governance-check, public_bundle_oracle, validate_reference_package, public_docs check, host_runtime_matrix_oracle, tes_install self-test, tes_npx self-test, materialize check, pretooluse_contract_oracle, hook_audit_prompt_oracle, pretooluse_evidence_oracle, TDS validation, private vocabulary, and doc-size`
 structural_method_id: `local-release-identity-bump`
 topology_decision: `patch bump 0.3.219 to 0.3.220 plus public bundle regeneration`
@@ -399,10 +348,6 @@ topology_decision_artifact: `ledger-section`
 structural_debt: `none`
 next_structural_constraint: `SPEC-012 owns final closure status; SPEC-011 must not push, tag, publish remotely, or claim PASS_CEILING`
 topology_probe_result: `PASS: tes_bump dry-run planned synchronized version surfaces; release check remains gated until authorized tag`
-browser_metrics_contract: `not_applicable`
-visual_spatial_oracle: `not_applicable`
-browser_attempt: `not_applicable`
-visual_evidence: `not_applicable`
 runtime_smoke_oracle: `PASS: host runtime matrix still reports NEEDS_DISCOVERABILITY, helper_contract_status=PASS, hook_health_floor_status=NEEDS_EVIDENCE, and hook_health_ceiling_status=NEEDS_FLOOR`
 adversary_objection: `none`
 shared_contract_extended: `yes`
@@ -413,5 +358,50 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `PASS: public_bundle_oracle certifies bundle hash/apply path; tes_bump dry-run now includes pretooluse_contract_oracle; governance-check rejects unsynchronized delivered behavior; hook audit prompt still rejects PASS_CEILING collapse`
 distinct_refuters: `not_applicable`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-012`
+
+## Pre-Edit Gate: SPEC-012
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=ADR
+ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
+FIRST_UNEXECUTED_UNIT=SPEC-012
+ACTIVE_SPEC=SPEC-012
+BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71,4e1f87b1,9a538daf,33b60f73
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
+MAY_EDIT=yes
+
+## SPEC-012
+
+spec_id: `SPEC-012`
+spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-012`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+oracle_status: `PASS: host_runtime_matrix_oracle, pretooluse_evidence_oracle, public_bundle_oracle, validate_reference_package, TDS validation, doc-size, and private vocabulary`
+structural_method_id: `final-ceiling-closure-audit`
+topology_decision: `closure evidence report only; no feature work and no release action`
+topology_decision_artifact: `ledger-section`
+structural_debt: `none`
+next_structural_constraint: `closure must not declare PASS_CEILING without native installed evidence containing reason codes, trace, renderer trace, ledger trace, redaction, and discoverability`
+topology_probe_result: `PASS: closure report and summary retain final_status=NEEDS_EVIDENCE with no PASS_CEILING claim`
+runtime_smoke_oracle: `PASS: host runtime matrix remains floor/ceiling split with hook_health_status=NEEDS_EVIDENCE and hook_health_ceiling_status=NEEDS_FLOOR`
+adversary_objection: `none`
+shared_contract_extended: `no`
+extension_point_proven: `yes: closure evidence records final status, missing native evidence, release identity commit, and required native ceiling fields`
+contract_handoff_artifact: `docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-closure-audit/REPORT.md`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: closure rejects hook-health PASS as ceiling and requires native installed evidence before PASS_CEILING`
+distinct_refuters: `not_applicable`
 stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-011 files and commit locally`
+next_allowed_action: `stage only SPEC-012 files and commit locally`

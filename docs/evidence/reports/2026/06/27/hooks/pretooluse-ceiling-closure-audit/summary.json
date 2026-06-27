@@ -1,0 +1,32 @@
+{
+  "schema": "pretooluse-ceiling-closure@1",
+  "date": "2026-06-27",
+  "final_status": "NEEDS_EVIDENCE",
+  "pass_ceiling": false,
+  "package_version": "0.3.220",
+  "release_identity_commit": "33b60f7351a3639f098c2aad49ac3883a7910536",
+  "release_action": "local_identity_only",
+  "remote_action": "not_requested",
+  "tag_action": "not_requested",
+  "native_evidence_status": "NEEDS_EVIDENCE",
+  "canary_replay_status": "NOT_RUN_NO_AUTHORIZATION",
+  "matrix": {
+    "status": "PASS",
+    "discoverability_status": "NEEDS_DISCOVERABILITY",
+    "helper_contract_status": "PASS",
+    "hook_health_status": "NEEDS_EVIDENCE",
+    "hook_health_floor_status": "NEEDS_EVIDENCE",
+    "hook_health_ceiling_status": "NEEDS_FLOOR"
+  },
+  "required_native_fields": [
+    "reason_codes",
+    "classifier_trace",
+    "renderer_trace",
+    "ledger_trace",
+    "command_redacted",
+    "command_category",
+    "discoverability",
+    "floor_status",
+    "ceiling_status"
+  ]
+}
