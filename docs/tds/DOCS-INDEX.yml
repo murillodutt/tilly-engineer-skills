@@ -1,4 +1,4 @@
-version: 0.3.208
+version: 0.3.209
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -1427,5 +1427,12 @@ documents:
     class: evidence
     status: active
     consumer: maintainers, release reviewers, and sync operators
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/evidence/reports/2026/06/27/sync/tes-sync-0.3.209/REPORT.md
+    id: evidence.report.tes_sync_0_3_209
+    class: evidence
+    status: active
+    consumer: maintainers, release reviewers, and hook-audit operators
     source_of_truth: false
     evidence_level: L1
