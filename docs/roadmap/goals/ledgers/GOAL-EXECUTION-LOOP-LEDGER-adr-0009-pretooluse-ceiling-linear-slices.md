@@ -46,21 +46,6 @@ Declared units:
 12. `SPEC-011`
 13. `SPEC-012`
 
-## Pre-Edit Gate: SPEC-002
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-002
-ACTIVE_SPEC=SPEC-002
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
-
 ## SPEC-002
 
 spec_id: `SPEC-002`
@@ -94,21 +79,6 @@ audit_remutation: `not_applicable`
 distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-003`
-
-## Pre-Edit Gate: SPEC-003
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-003
-ACTIVE_SPEC=SPEC-003
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
 
 ## SPEC-003
 
@@ -364,7 +334,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-008`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: a270dc71c164496812c97a8fedac781be22aed89
 oracle_status: `PASS: py_compile, tes_install self-test, host_runtime_matrix_oracle, hook_audit_prompt_oracle, pretooluse_kernel_oracle, pretooluse_session_oracle, pretooluse_contract_oracle, and mantra_gate_pretooluse_oracle`
 structural_method_id: `runtime-script-internal-sections`
 topology_decision: `hook-health additive contract extension`
@@ -386,5 +356,54 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `PASS: hook_audit_prompt_oracle red-capability mutants cover hook-health v2 split, floor/ceiling fields, PASS_BASIC not PASS_CEILING, and ceiling gap rule`
 distinct_refuters: `not_applicable`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-009`
+
+## Pre-Edit Gate: SPEC-009
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=ADR
+ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
+FIRST_UNEXECUTED_UNIT=SPEC-009
+ACTIVE_SPEC=SPEC-009
+BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
+MAY_EDIT=yes
+
+## SPEC-009
+
+spec_id: `SPEC-009`
+spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-009`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+oracle_status: `PASS: hook_audit_prompt_oracle --self-test and py_compile`
+structural_method_id: `docs-oracle-tightening`
+topology_decision: `audit prompt checklist consolidation`
+topology_decision_artifact: `ledger-section`
+structural_debt: `none`
+next_structural_constraint: `SPEC-010 owns sanitized installed evidence; SPEC-009 must not create canary packet or release identity`
+topology_probe_result: `PASS: no new files; HOOK-AUDIT-PROMPT and hook_audit_prompt_oracle only`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `not_applicable: documentation projection unit; runtime covered by SPEC-008 baseline`
+adversary_objection: `none`
+shared_contract_extended: `yes`
+extension_point_proven: `yes: audit prompt now has explicit ceiling evidence checklist covering reason_codes, classifier_trace, renderer_trace, redaction, ledger analytics, helper parity, floor/ceiling fields, and discoverability`
+contract_handoff_artifact: `ledger-section`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: hook_audit_prompt_oracle checked 56 red-capability mutants`
+distinct_refuters: `not_applicable`
 stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-008 files and commit locally`
+next_allowed_action: `stage only SPEC-009 files and commit locally`

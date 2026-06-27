@@ -234,6 +234,13 @@ Also classify PreToolUse maturity against the canonical contract:
 - `NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe
   but not yet classifiable with enough evidence.
 
+Ceiling evidence checklist: before reporting `PASS_CEILING`, verify installed
+evidence names `reason_codes`, `classifier_trace`, `renderer_trace`,
+`command_redacted=true` or `command_category`, `dedupe_contract`,
+`helper_contract_status=PASS`, `floor_status`, `ceiling_status`,
+`ceiling_gaps`, and `discoverability_status=NEEDS_DISCOVERABILITY` or native
+equivalent. Missing checklist item is a ceiling gap, not a floor failure.
+
 Do not collapse `PASS` into `PASS_CEILING`. If only the floor is proven, say the
 hooks are operational at `PASS_BASIC` and list ceiling gaps separately.
 

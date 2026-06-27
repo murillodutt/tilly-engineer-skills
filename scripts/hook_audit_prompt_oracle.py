@@ -76,6 +76,12 @@ REQUIRED_TERMS = (
     "`classifier_trace.unknown_mutating=true`",
     "`renderer_trace.output_contract`",
     "redacted payload evidence (`command_category`, not raw `command`)",
+    "Ceiling evidence checklist: before reporting `PASS_CEILING`",
+    "evidence names `reason_codes`, `classifier_trace`, `renderer_trace`",
+    "`command_redacted=true` or `command_category`, `dedupe_contract`",
+    "`helper_contract_status=PASS`, `floor_status`, `ceiling_status`",
+    "`ceiling_gaps`, and `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
+    "Missing checklist item is a ceiling gap, not a floor failure.",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
 )
 
@@ -299,7 +305,7 @@ def red_capability_mutations(text: str) -> list[Mutation]:
         ),
         Mutation(
             "without_pretooluse_helper_contract_status",
-            _remove(text, "`helper_contract_status=PASS`"),
+            _remove(_remove(text, "`helper_contract_status=PASS`"), "`helper_contract_status=PASS`"),
             "helper_contract_status",
         ),
         Mutation(
@@ -359,6 +365,39 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_discoverability_redacted_payload_evidence",
             _remove(text, "redacted payload evidence (`command_category`, not raw `command`)"),
             "command_category",
+        ),
+        Mutation(
+            "without_ceiling_evidence_checklist",
+            _remove(text, "Ceiling evidence checklist: before reporting `PASS_CEILING`"),
+            "Ceiling evidence checklist",
+        ),
+        Mutation(
+            "without_ceiling_checklist_trace_fields",
+            _remove(text, "evidence names `reason_codes`, `classifier_trace`, `renderer_trace`"),
+            "classifier_trace",
+        ),
+        Mutation(
+            "without_ceiling_checklist_redaction_analytics",
+            _remove(text, "`command_redacted=true` or `command_category`, `dedupe_contract`"),
+            "command_redacted",
+        ),
+        Mutation(
+            "without_ceiling_checklist_helper_floor_ceiling",
+            _remove(text, "`helper_contract_status=PASS`, `floor_status`, `ceiling_status`"),
+            "helper_contract_status",
+        ),
+        Mutation(
+            "without_ceiling_checklist_discoverability",
+            _remove(
+                text,
+                "`ceiling_gaps`, and `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
+            ),
+            "discoverability_status",
+        ),
+        Mutation(
+            "without_ceiling_gap_not_floor_failure",
+            _remove(text, "Missing checklist item is a ceiling gap, not a floor failure."),
+            "ceiling gap",
         ),
         Mutation(
             "all_hosts_native_false_fail",
