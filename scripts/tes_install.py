@@ -2122,6 +2122,27 @@ def hook_reason_codes(*values: Any) -> list[str]:
     return reason_codes
 
 
+def pretooluse_renderer_trace(agent: str, *, block: bool, context: str = "", cortex_context: str = "") -> dict[str, str]:
+    """Name the host renderer contract without duplicating rendered output."""
+    if block:
+        output_contract = "json_permission_deny" if agent == "cursor" else "exit_2_stderr_block"
+    elif context or cortex_context:
+        if agent == "cursor":
+            if context and cortex_context:
+                output_contract = "json_permission_allow_user_agent_message"
+            elif context:
+                output_contract = "json_permission_allow_user_message"
+            else:
+                output_contract = "json_permission_allow_agent_message"
+        elif agent == "claude":
+            output_contract = "json_hookSpecificOutput_allow"
+        else:
+            output_contract = "stderr_context"
+    else:
+        output_contract = "json_permission_allow_silent" if agent == "cursor" else "silent_allow"
+    return {"renderer": f"{agent}_pretooluse", "output_contract": output_contract}
+
+
 def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
     event_name = hook_event_name(hook_input)
     output: dict[str, Any] = {
@@ -2301,6 +2322,7 @@ def record_hook_execution(
                     "normalized_tool",
                     "payload_source",
                     "classifier_trace",
+                    "renderer_trace",
                     "risk",
                     "outcome",
                     "block",
@@ -2335,6 +2357,7 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "normalized_tool",
     "payload_source",
     "classifier_trace",
+    "renderer_trace",
     "risk",
     "outcome",
     "reason_codes",
@@ -2748,6 +2771,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     decision = _pretooluse_decision(hook_input)
 
     if decision["block"]:
+        reason_codes = hook_reason_codes(decision.get("reason_codes"), "renderer_contract_projected")
         record_hook_execution(
             target,
             args.agent,
@@ -2755,6 +2779,8 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             mode="pretooluse",
             pretooluse_decision={
                 **decision,
+                "reason_codes": reason_codes,
+                "renderer_trace": pretooluse_renderer_trace(args.agent, block=True),
                 "decision": "block",
                 "permission_decision": "deny",
                 "marker_emitted": True,
@@ -2783,6 +2809,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     reason_codes = hook_reason_codes(decision.get("reason_codes"), session_context.reason_codes)
     if cortex_context:
         reason_codes = hook_reason_codes(reason_codes, "cortex_advisory_no_write")
+    reason_codes = hook_reason_codes(reason_codes, "renderer_contract_projected")
     record_hook_execution(
         target,
         args.agent,
@@ -2791,6 +2818,12 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         pretooluse_decision={
             **decision,
             "reason_codes": reason_codes,
+            "renderer_trace": pretooluse_renderer_trace(
+                args.agent,
+                block=False,
+                context=context,
+                cortex_context=cortex_context,
+            ),
             "decision": "allow",
             "permission_decision": "allow",
             "marker_emitted": bool(context),

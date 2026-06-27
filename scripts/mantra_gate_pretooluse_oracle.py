@@ -100,6 +100,11 @@ def _read_sentinel(target: Path) -> list[dict]:
     return records
 
 
+def _renderer_trace(record: dict) -> dict:
+    value = record.get("renderer_trace")
+    return value if isinstance(value, dict) else {}
+
+
 def evaluate() -> dict[str, object]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory(prefix="tes-pretooluse-oracle-") as tmp:
@@ -277,6 +282,30 @@ def evaluate() -> dict[str, object]:
         )
         if codex_multiedit is None:
             failures.append("PreToolUse sentinel must record canonical Codex MultiEdit execution with tool/path details")
+        elif _renderer_trace(codex_multiedit).get("output_contract") != "stderr_context":
+            failures.append("codex: governed MultiEdit row must record stderr_context renderer_trace")
+        expected_renderer_contracts = {
+            ("claude", "oracle-Bash-git push --force origin main"): "exit_2_stderr_block",
+            ("codex", "oracle-forbidden-camel"): "exit_2_stderr_block",
+            ("cursor", "oracle-Bash-git push --force origin main"): "json_permission_deny",
+            ("claude", "oracle-Edit-docs/adr/0005-decision.md"): "json_hookSpecificOutput_allow",
+            ("cursor", "oracle-multiedit-cursor"): "json_permission_allow_user_message",
+        }
+        for (agent, session), output_contract in expected_renderer_contracts.items():
+            match = next(
+                (rec for rec in sentinel_records if rec.get("agent") == agent and rec.get("session") == session),
+                None,
+            )
+            if match is None:
+                failures.append(f"{agent}: missing renderer trace fixture row for {session}")
+                continue
+            trace = _renderer_trace(match)
+            if trace.get("renderer") != f"{agent}_pretooluse":
+                failures.append(f"{agent}: renderer_trace must name host renderer for {session}")
+            if trace.get("output_contract") != output_contract:
+                failures.append(f"{agent}: renderer_trace for {session} must be {output_contract}")
+            if "renderer_contract_projected" not in match.get("reason_codes", []):
+                failures.append(f"{agent}: renderer projection row must carry renderer_contract_projected reason code")
         if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
             failures.append("PreToolUse hook must not write the legacy tracked hook sentinel")
         if not any(

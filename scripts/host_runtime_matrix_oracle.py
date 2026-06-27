@@ -222,6 +222,11 @@ def _classifier_trace(record: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _renderer_trace(record: dict[str, Any]) -> dict[str, Any]:
+    value = record.get("renderer_trace")
+    return value if isinstance(value, dict) else {}
+
+
 def _write_fixture_project(target: Path) -> None:
     (target / "README.md").write_text("# Host Runtime Matrix Fixture\n", encoding="utf-8")
     (target / "src").mkdir()
@@ -648,6 +653,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         and item.get("normalized_tool") == "apply_patch"
         and item.get("payload_source") == "tool_input.command"
         and _classifier_trace(item).get("path_source") == "patch_body"
+        and _renderer_trace(item).get("output_contract") == "stderr_context"
         for item in codex_apply
     ):
         failures.append(
@@ -713,10 +719,12 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             and item.get("permission_decision") == "deny"
             and item.get("marker_emitted") is True
             and "forbidden_class" in _reason_codes(item)
+            and "renderer_contract_projected" in _reason_codes(item)
+            and _renderer_trace(item).get("output_contract") == "exit_2_stderr_block"
             for item in forbidden
         ):
             failures.append(
-                f"ledger: codex {tool} forbidden record must persist deny decision, block=true, marker, and reason codes"
+                f"ledger: codex {tool} forbidden record must persist deny decision, block=true, marker, reason codes, and renderer trace"
             )
 
     cursor_governed = _matching_records(
@@ -728,6 +736,8 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     )
     if not any(item.get("decision") == "allow" and item.get("permission_decision") == "allow" for item in cursor_governed):
         failures.append("ledger: cursor governed record must persist allow decision")
+    if not any(_renderer_trace(item).get("output_contract") == "json_permission_allow_user_message" for item in cursor_governed):
+        failures.append("ledger: cursor governed record must persist Cursor renderer trace")
 
     cursor_forbidden = _matching_records(
         records,
@@ -740,9 +750,11 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         item.get("block") is True
         and item.get("decision") == "block"
         and item.get("permission_decision") == "deny"
+        and "renderer_contract_projected" in _reason_codes(item)
+        and _renderer_trace(item).get("output_contract") == "json_permission_deny"
         for item in cursor_forbidden
     ):
-        failures.append("ledger: cursor forbidden record must persist deny decision and block=true")
+        failures.append("ledger: cursor forbidden record must persist deny decision, block=true, and renderer trace")
 
     for item in records:
         if item.get("event_canonical") != "PreToolUse" or item.get("mode") != "pretooluse":
@@ -761,6 +773,11 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             failures.append(f"ledger: PreToolUse record must persist a redaction-safe command_category {item!r}")
         if not _reason_codes(item):
             failures.append(f"ledger: PreToolUse record must persist non-empty reason_codes {item!r}")
+        renderer_trace = _renderer_trace(item)
+        if renderer_trace.get("renderer") != f"{item.get('agent')}_pretooluse":
+            failures.append(f"ledger: PreToolUse record must persist host renderer_trace {item!r}")
+        if not renderer_trace.get("output_contract"):
+            failures.append(f"ledger: PreToolUse record must persist renderer output contract {item!r}")
 
     health_proc = _run(
         [
