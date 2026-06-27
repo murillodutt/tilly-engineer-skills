@@ -312,6 +312,18 @@ def gate_plan() -> list[Gate]:
             ),
         ),
         Gate(
+            "hook-audit-prompt",
+            ["python3", "scripts/hook_audit_prompt_oracle.py", "--self-test"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "docs/install/HOOK-AUDIT-PROMPT.md",
+                    "scripts/hook_audit_prompt_oracle.py",
+                    "package.json",
+                ),
+            ),
+        ),
+        Gate(
             "host-runtime-matrix",
             ["python3", "scripts/host_runtime_matrix_oracle.py", "--self-test"],
             matcher=lambda paths: any_match(

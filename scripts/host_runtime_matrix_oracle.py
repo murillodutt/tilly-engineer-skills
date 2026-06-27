@@ -208,6 +208,10 @@ def _record_matches(
     return True
 
 
+def _matching_records(records: list[dict[str, Any]], **filters: Any) -> list[dict[str, Any]]:
+    return [record for record in records if _record_matches(record, **filters)]
+
+
 def _write_fixture_project(target: Path) -> None:
     (target / "README.md").write_text("# Host Runtime Matrix Fixture\n", encoding="utf-8")
     (target / "src").mkdir()
@@ -364,6 +368,59 @@ def _assert_installed_configs(target: Path, failures: list[str]) -> None:
         )
 
 
+def _assert_codex_legacy_migration(target: Path, failures: list[str]) -> None:
+    legacy = target / "legacy-codex-migration"
+    (legacy / ".codex").mkdir(parents=True)
+    command = (
+        'python3 "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" '
+        'hook --agent codex --target "$(git rev-parse --show-toplevel)"'
+    )
+    (legacy / ".codex/config.toml").write_text(
+        "\n".join(
+            [
+                "[features]",
+                "hooks = true",
+                "",
+                "# TES first-session post-install hook.",
+                "[[hooks.SessionStart]]",
+                'matcher = "startup|resume"',
+                "",
+                "[[hooks.SessionStart.hooks]]",
+                'type = "command"',
+                f"command = {json.dumps(command)}",
+                "timeout = 120",
+                'statusMessage = "Checking TES post-install"',
+                "",
+                "# TES PreToolUse senior-manager gate.",
+                "[[hooks.PreToolUse]]",
+                'matcher = "Write|Edit|MultiEdit"',
+                "",
+                "[[hooks.PreToolUse.hooks]]",
+                'type = "command"',
+                f"command = {json.dumps(command)}",
+                "timeout = 10",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    action = tes_install.install_codex_hook(legacy, False)
+    try:
+        data = tomllib.loads((legacy / ".codex/config.toml").read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        failures.append(f"codex legacy migration: unreadable migrated TOML: {exc}")
+        return
+    groups = _as_list(_as_dict(data.get("hooks")).get("PreToolUse"))
+    if len(groups) != 1 or not isinstance(groups[0], dict):
+        failures.append("codex legacy migration: PreToolUse block must be singular after migration")
+        return
+    if groups[0].get("matcher") != EXPECTED_MATCHER:
+        failures.append(
+            "codex legacy migration: old matcher must update to complete matcher "
+            f"(action={action.get('action')!r})"
+        )
+
+
 def _assert_fixture_completeness(target: Path, failures: list[str]) -> None:
     fixture_root = target / ".tes/bin/fixtures/cortex_host_contracts"
     missing = [name for name in HOST_FIXTURES if not (fixture_root / name).is_file()]
@@ -474,10 +531,81 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     for expected in expected_records:
         min_count = int(expected.get("min_count", 1))
         record_filter = {key: value for key, value in expected.items() if key != "min_count"}
-        count = sum(1 for item in records if _record_matches(item, **record_filter))
+        matching = _matching_records(records, **record_filter)
+        count = len(matching)
         if count < min_count:
             locator = record_filter.get("path") or record_filter.get("command") or record_filter["session"]
             failures.append(f"ledger: missing {record_filter['agent']}/{record_filter['tool']}/{locator} record")
+
+    codex_apply = _matching_records(
+        records,
+        agent="codex",
+        tool="apply_patch",
+        session="matrix-codex-apply",
+        path=".tes/runtime/hook-smoke/codex/SKILL.md",
+    )
+    if not any(
+        item.get("risk") == "material"
+        and item.get("decision") == "allow"
+        and item.get("permission_decision") == "allow"
+        and item.get("marker_emitted") is True
+        for item in codex_apply
+    ):
+        failures.append(
+            "ledger: codex apply_patch first governed record must persist allow decision and marker_emitted=true"
+        )
+    if not any(
+        item.get("decision") == "allow"
+        and item.get("permission_decision") == "allow"
+        and item.get("context_suppressed") is True
+        and item.get("marker_emitted") is False
+        for item in codex_apply
+    ):
+        failures.append("ledger: codex apply_patch second governed record must persist context_suppressed=true")
+
+    for tool in ("Bash", "Shell", "shell"):
+        forbidden = _matching_records(
+            records,
+            agent="codex",
+            tool=tool,
+            session=f"matrix-codex-{tool}",
+            command="git push --force origin main",
+        )
+        if not any(
+            item.get("block") is True
+            and item.get("decision") == "block"
+            and item.get("permission_decision") == "deny"
+            and item.get("marker_emitted") is True
+            for item in forbidden
+        ):
+            failures.append(
+                f"ledger: codex {tool} forbidden record must persist deny decision, block=true, and marker_emitted=true"
+            )
+
+    cursor_governed = _matching_records(
+        records,
+        agent="cursor",
+        tool="MultiEdit",
+        session="matrix-cursor-governed",
+        path=".cursor/rules/matrix.mdc",
+    )
+    if not any(item.get("decision") == "allow" and item.get("permission_decision") == "allow" for item in cursor_governed):
+        failures.append("ledger: cursor governed record must persist allow decision")
+
+    cursor_forbidden = _matching_records(
+        records,
+        agent="cursor",
+        tool="Bash",
+        session="matrix-cursor-forbidden",
+        command="sudo rm -rf / --no-preserve-root",
+    )
+    if not any(
+        item.get("block") is True
+        and item.get("decision") == "block"
+        and item.get("permission_decision") == "deny"
+        for item in cursor_forbidden
+    ):
+        failures.append("ledger: cursor forbidden record must persist deny decision and block=true")
 
     for item in records:
         if item.get("event_canonical") != "PreToolUse" or item.get("mode") != "pretooluse":
@@ -547,6 +675,7 @@ def evaluate() -> dict[str, Any]:
         install_payload = _install_hooks(target, failures)
         _assert_install_scope(install_payload, failures)
         _assert_installed_configs(target, failures)
+        _assert_codex_legacy_migration(target, failures)
         _assert_fixture_completeness(target, failures)
         _assert_hook_contracts(target, failures)
         health = _assert_runtime_ledger(target, failures)

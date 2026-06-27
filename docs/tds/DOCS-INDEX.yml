@@ -561,6 +561,13 @@ documents:
     consumer: maintainers, runtime authors, hook authors, installer authors, adapter authors, oracle authors, release reviewers, execution agents, and audit agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-certification.md
+    id: roadmap.goal_super_spec_tes_host_hook_ceiling_certification
+    class: roadmap
+    status: active
+    consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0008-corrective-closure.md
     id: roadmap.goal_super_spec_adr_0008_corrective_closure
     class: roadmap
@@ -804,6 +811,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers and execution agents reviewing the goal-execution loop record
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-tes-host-hook-ceiling-certification.md
+    id: roadmap.goal_execution_loop_ledger_tes_host_hook_ceiling_certification
+    class: roadmap
+    status: active
+    consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and hook-audit operators
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/goals/SPEC-CONVERGENCE-CERTIFICATION-mantra-senior-manager-birth.md

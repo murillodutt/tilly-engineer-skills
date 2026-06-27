@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -263,12 +264,10 @@ def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     updated = replace_or_insert_toml_feature(existing, "hooks", "true")
     updated = remove_toml_feature_line(updated, "codex_hooks")
+    updated = refresh_codex_tes_hook_blocks(updated)
     snippet = codex_hook_snippet().strip()
-    if "TES first-session post-install hook" not in updated:
-        updated = updated.rstrip() + "\n\n" + snippet + "\n"
     pretooluse = codex_pretooluse_snippet().strip()
-    if "TES PreToolUse senior-manager gate" not in updated:
-        updated = updated.rstrip() + "\n\n" + pretooluse + "\n"
+    updated = updated.rstrip() + "\n\n" + snippet + "\n\n" + pretooluse + "\n"
     backup = not is_codex_tes_only_mcp_config(existing)
     return write_text_if_changed(path, updated, target, dry_run, backup=backup)
 
@@ -492,6 +491,49 @@ def _remove_codex_marked_block(lines: list[str], marker: str, section_prefix: st
             end = idx
             break
     return [*lines[:start], *lines[end:]]
+
+
+def _remove_codex_legacy_tes_hook_block(lines: list[str], section_prefix: str) -> list[str]:
+    """Remove an unmarked TES-owned Codex hook block for one TOML hook section."""
+    header = f"[[{section_prefix}]]"
+    index = 0
+    while index < len(lines):
+        if lines[index].strip() != header:
+            index += 1
+            continue
+        end = len(lines)
+        for idx in range(index + 1, len(lines)):
+            stripped = lines[idx].strip()
+            if stripped.startswith("# TES "):
+                end = idx
+                break
+            if (
+                stripped.startswith("[")
+                and stripped.endswith("]")
+                and not stripped.lstrip("[").startswith(section_prefix)
+                and not stripped.lstrip("[").startswith(f"{section_prefix}.hooks")
+            ):
+                end = idx
+                break
+        block = "\n".join(lines[index:end])
+        if ".tes/bin/tes_install.py" in block and " hook" in block and "--agent codex" in block:
+            lines = [*lines[:index], *lines[end:]]
+            continue
+        index += 1
+    return lines
+
+
+def refresh_codex_tes_hook_blocks(text: str) -> str:
+    """Replace TES-owned Codex hook blocks with the current source templates."""
+    lines = text.splitlines()
+    for marker, section_prefix in (
+        ("# TES first-session post-install hook.", "hooks.SessionStart"),
+        ("# TES PreToolUse senior-manager gate.", "hooks.PreToolUse"),
+    ):
+        lines = _remove_codex_marked_block(lines, marker, section_prefix)
+        lines = _remove_codex_legacy_tes_hook_block(lines, section_prefix)
+    body = "\n".join(lines).strip()
+    return (body + "\n") if body else ""
 
 
 def remove_tes_codex_hook_text(text: str) -> str:
@@ -2111,7 +2153,14 @@ def ensure_hook_runtime_excluded(target: Path) -> None:
         return
 
 
-def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any], *, mode: str) -> None:
+def record_hook_execution(
+    target: Path,
+    agent: str,
+    hook_input: dict[str, Any],
+    *,
+    mode: str,
+    pretooluse_decision: dict[str, Any] | None = None,
+) -> None:
     """ADR 0004 SPEC-005: prove the hook actually fired.
 
     Append a capsule-scoped sentinel record on every real hook invocation. The
@@ -2148,6 +2197,19 @@ def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any], 
                 record["command"] = command
             if invocation:
                 record["invocation"] = str(invocation)
+            if pretooluse_decision:
+                for key in (
+                    "risk",
+                    "block",
+                    "decision",
+                    "permission_decision",
+                    "marker_emitted",
+                    "context_suppressed",
+                    "cortex_context_emitted",
+                    "surface_context",
+                ):
+                    if key in pretooluse_decision:
+                        record[key] = pretooluse_decision[key]
         with sentinel.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
     except OSError:
@@ -2589,10 +2651,24 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     A materializer that assumed exit-2 everywhere would break silently on Cursor.
     """
     target = target_root(args.target)
-    record_hook_execution(target, args.agent, hook_input, mode="pretooluse")
     decision = _pretooluse_decision(hook_input)
 
     if decision["block"]:
+        record_hook_execution(
+            target,
+            args.agent,
+            hook_input,
+            mode="pretooluse",
+            pretooluse_decision={
+                **decision,
+                "decision": "block",
+                "permission_decision": "deny",
+                "marker_emitted": True,
+                "context_suppressed": False,
+                "cortex_context_emitted": False,
+                "surface_context": True,
+            },
+        )
         reason = decision["reason"]
         if args.agent == "cursor":
             print(json.dumps({"permission": "deny", "agent_message": reason}, ensure_ascii=False, sort_keys=True))
@@ -2601,8 +2677,10 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         return 2
 
     context = decision.get("context") or ""
+    context_suppressed = False
     if context and _pretooluse_seen_this_session(target, hook_input, context):
         context = ""
+        context_suppressed = True
     cortex_context = ""
     if _pretooluse_may_touch_operating_mesh(hook_input):
         cortex_context = _cortex_runtime_context(
@@ -2610,6 +2688,21 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             include_capture=False,
         )
     combined_context = _join_context(context, cortex_context)
+    record_hook_execution(
+        target,
+        args.agent,
+        hook_input,
+        mode="pretooluse",
+        pretooluse_decision={
+            **decision,
+            "decision": "allow",
+            "permission_decision": "allow",
+            "marker_emitted": bool(context),
+            "context_suppressed": context_suppressed,
+            "cortex_context_emitted": bool(cortex_context),
+            "surface_context": bool(combined_context),
+        },
+    )
     if combined_context:
         if args.agent == "cursor":
             payload: dict[str, Any] = {"continue": True, "permission": "allow"}
@@ -2924,11 +3017,75 @@ def self_test() -> int:
             failures.append("thin install must enable Codex hooks with canonical features.hooks")
         if "codex_hooks = true" in codex_config:
             failures.append("thin install must not emit deprecated codex_hooks feature flag")
+        try:
+            codex_data = tomllib.loads(codex_config)
+            codex_pretooluse = codex_data.get("hooks", {}).get("PreToolUse", [])
+            codex_matchers = [
+                group.get("matcher")
+                for group in codex_pretooluse
+                if isinstance(group, dict) and ".tes/bin/tes_install.py" in json.dumps(group, sort_keys=True)
+            ]
+            if codex_matchers != [CLAUDE_PRETOOLUSE_MATCHER]:
+                failures.append(f"thin install must emit complete Codex PreToolUse matcher, got {codex_matchers!r}")
+        except tomllib.TOMLDecodeError as exc:
+            failures.append(f"thin install Codex config must parse as TOML: {exc}")
         for relpath, server_key in ((".mcp.json", "mcpServers"), (".cursor/mcp.json", "mcpServers")):
             data = read_json(target / relpath)
             servers = data.get(server_key) if isinstance(data.get(server_key), dict) else {}
             if "tes-cortex" not in servers:
                 failures.append(f"thin install must register tes-cortex in {relpath}")
+
+        legacy_codex_target = Path(tempdir) / "legacy-codex-matcher-target"
+        (legacy_codex_target / ".codex").mkdir(parents=True)
+        old_codex_command = (
+            f'{python_command_token()} "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" '
+            'hook --agent codex --target "$(git rev-parse --show-toplevel)"'
+        )
+        (legacy_codex_target / ".codex/config.toml").write_text(
+            "\n".join(
+                [
+                    "[features]",
+                    "hooks = true",
+                    "",
+                    "# TES first-session post-install hook.",
+                    "[[hooks.SessionStart]]",
+                    'matcher = "startup|resume"',
+                    "",
+                    "[[hooks.SessionStart.hooks]]",
+                    'type = "command"',
+                    f"command = {command_literal(old_codex_command)}",
+                    "timeout = 120",
+                    'statusMessage = "Checking TES post-install"',
+                    "",
+                    "# TES PreToolUse senior-manager gate.",
+                    "[[hooks.PreToolUse]]",
+                    'matcher = "Write|Edit|MultiEdit"',
+                    "",
+                    "[[hooks.PreToolUse.hooks]]",
+                    'type = "command"',
+                    f"command = {command_literal(old_codex_command)}",
+                    "timeout = 10",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        legacy_codex_result = install_codex_hook(legacy_codex_target, dry_run=False)
+        try:
+            legacy_codex = tomllib.loads((legacy_codex_target / ".codex/config.toml").read_text(encoding="utf-8"))
+            legacy_pretooluse = legacy_codex.get("hooks", {}).get("PreToolUse", [])
+            legacy_matchers = [
+                group.get("matcher")
+                for group in legacy_pretooluse
+                if isinstance(group, dict) and ".tes/bin/tes_install.py" in json.dumps(group, sort_keys=True)
+            ]
+            if legacy_matchers != [CLAUDE_PRETOOLUSE_MATCHER]:
+                failures.append(
+                    "Codex hook reinstall must migrate legacy PreToolUse matcher "
+                    f"(action={legacy_codex_result.get('action')!r}, matchers={legacy_matchers!r})"
+                )
+        except tomllib.TOMLDecodeError as exc:
+            failures.append(f"Codex legacy matcher migration must keep TOML parseable: {exc}")
 
         partial_target = Path(tempdir) / "partial-target"
         partial_target.mkdir()
