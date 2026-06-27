@@ -265,21 +265,6 @@ distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-008`
 
-## Pre-Edit Gate: SPEC-008
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-008
-ACTIVE_SPEC=SPEC-008
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
-
 ## SPEC-008
 
 spec_id: `SPEC-008`
@@ -313,21 +298,6 @@ audit_remutation: `PASS: hook_audit_prompt_oracle red-capability mutants cover h
 distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-009`
-
-## Pre-Edit Gate: SPEC-009
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-009
-ACTIVE_SPEC=SPEC-009
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
 
 ## SPEC-009
 
@@ -363,21 +333,6 @@ distinct_refuters: `not_applicable`
 stop_state: `COMMITTED`
 next_allowed_action: `open SPEC-010`
 
-## Pre-Edit Gate: SPEC-010
-
-EXECUTE_LOOP_REQUESTED=yes
-READY_GOAL_PROMPT=present
-ANCHOR_CLASS=ADR
-ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
-ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
-TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
-DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-FIRST_UNEXECUTED_UNIT=SPEC-010
-ACTIVE_SPEC=SPEC-010
-BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71,4e1f87b1
-LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
-MAY_EDIT=yes
-
 ## SPEC-010
 
 spec_id: `SPEC-010`
@@ -387,7 +342,7 @@ repair_count: `0`
 audit_repair_cycle: `0`
 first_unexecuted_unit: `SPEC-010`
 failed_attempt_recovery_decision: `not_applicable`
-commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+commit: 9a538daffba3d157a3e780f5c124553f80c547a0
 oracle_status: `PASS: pretooluse_evidence_oracle, host_runtime_matrix_oracle, py_compile`
 structural_method_id: `evidence-packet-plus-oracle`
 topology_decision: `temporal evidence report under docs/evidence/reports/2026/06/27/hooks`
@@ -409,5 +364,54 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `PASS: pretooluse_evidence_oracle rejects missing sanitization, native-evidence overclaim, canary ambiguity, private paths, missing host attribution, and PASS_CEILING claim`
 distinct_refuters: `not_applicable`
+stop_state: `COMMITTED`
+next_allowed_action: `open SPEC-011`
+
+## Pre-Edit Gate: SPEC-011
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=ADR
+ANCHOR_PATH=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
+ANCHOR_HASH=0b960cb31c4c42372412588887545eb9b1d91802
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
+FIRST_UNEXECUTED_UNIT=SPEC-011
+ACTIVE_SPEC=SPEC-011
+BASELINE_ONLY_COMMITS=faa4e8a6,33313d3c,35f53c97,4dedc876,595c3911,3271ac4d,63ce1301,eeecb2af,a270dc71,4e1f87b1,9a538daf
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-adr-0009-pretooluse-ceiling-linear-slices.md
+MAY_EDIT=yes
+
+## SPEC-011
+
+spec_id: `SPEC-011`
+spec_version: `GOAL-SUPER-SPEC-adr-0009-pretooluse-ceiling-linear-slices.md@ed494d0552fc28d7d314996793679f37aaa247bf`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-011`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: active SPEC opened before material commit; commit hash is captured in parent validation after local commit
+oracle_status: `PASS: tes_bump governance-check, public_bundle_oracle, validate_reference_package, public_docs check, host_runtime_matrix_oracle, tes_install self-test, tes_npx self-test, materialize check, pretooluse_contract_oracle, hook_audit_prompt_oracle, pretooluse_evidence_oracle, TDS validation, private vocabulary, and doc-size`
+structural_method_id: `local-release-identity-bump`
+topology_decision: `patch bump 0.3.219 to 0.3.220 plus public bundle regeneration`
+topology_decision_artifact: `ledger-section`
+structural_debt: `none`
+next_structural_constraint: `SPEC-012 owns final closure status; SPEC-011 must not push, tag, publish remotely, or claim PASS_CEILING`
+topology_probe_result: `PASS: tes_bump dry-run planned synchronized version surfaces; release check remains gated until authorized tag`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS: host runtime matrix still reports NEEDS_DISCOVERABILITY, helper_contract_status=PASS, hook_health_floor_status=NEEDS_EVIDENCE, and hook_health_ceiling_status=NEEDS_FLOOR`
+adversary_objection: `none`
+shared_contract_extended: `yes`
+extension_point_proven: `yes: package identity moved to 0.3.220, docs/dist/0.3.220 bundle/index/sha exist, docs/dist/0.3.219 was pruned, and public docs reference 0.3.220`
+contract_handoff_artifact: `docs/dist/0.3.220/index.json`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `PASS: public_bundle_oracle certifies bundle hash/apply path; tes_bump dry-run now includes pretooluse_contract_oracle; governance-check rejects unsynchronized delivered behavior; hook audit prompt still rejects PASS_CEILING collapse`
+distinct_refuters: `not_applicable`
 stop_state: `READY_TO_COMMIT`
-next_allowed_action: `stage only SPEC-010 files and commit locally`
+next_allowed_action: `stage only SPEC-011 files and commit locally`
