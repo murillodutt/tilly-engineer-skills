@@ -102,3 +102,37 @@ audit_remutation: `PASS (hook_audit_prompt_oracle in-memory mutants; host_runtim
 distinct_refuters: `tree-adversary subagent plus commit:check gates`
 stop_state: `NEEDS_OWNER_DECISION`
 next_allowed_action: `SPEC-005 release identity: patch bump, bundle/public docs, full closure, push/tag/release only after explicit authorization`
+
+## SPEC-005 Release Identity Gate
+
+spec_id: `SPEC-005`
+spec_version: `0.1.2`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-005`
+failed_attempt_recovery_decision: `not_applicable`
+commit: no-commit: release identity requires explicit sync/release authorization
+oracle_status: `FAIL_EXPECTED (npm run commit:closure stopped at public_bundle_oracle because scripts/tes_install.py differs from published 0.3.209 bundle while VERSION has not advanced)`
+structural_method_id: `release-identity`
+topology_decision: `patch version and regenerated public bundle are required before installed-target reruns can be final`
+topology_decision_artifact: `commit:closure output; tes_bump dry-run`
+structural_debt: `none; gate correctly prevents sealing source changes under 0.3.209`
+next_structural_constraint: `do not run push, tag, public release check, or public-page certification without explicit authorization`
+topology_probe_result: `python3 scripts/tes_bump.py patch --dry-run --json => 0.3.209 -> 0.3.210`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `not_applicable`
+adversary_objection: `not_applicable`
+shared_contract_extended: `not_applicable`
+extension_point_proven: `not_applicable`
+contract_handoff_artifact: `ledger-section`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `not_applicable`
+auditor_rewrote_no_oracle: `not_applicable`
+audit_remutation: `not_applicable`
+distinct_refuters: `public_bundle_oracle`
+stop_state: `NEEDS_OWNER_DECISION`
+next_allowed_action: `authorize SPEC-005 sync/release, then run patch bump, regenerate bundle/public docs, commit, closure, push/tag/release checks`
