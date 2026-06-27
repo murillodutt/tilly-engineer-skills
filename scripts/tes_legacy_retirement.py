@@ -18,18 +18,29 @@ except Exception:  # noqa: BLE001 - installed copies may audit without package c
     field_reports = None  # type: ignore[assignment]
 
 
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 FIELD_ROOT = Path(".tes/field-reports")
 LEGACY_RETROFIT_ROOT = Path(".tilly/retrofit")
 RETROFIT_ARCHIVE_ROOT = Path(".tes/legacy-retirement/retrofit")
 BACKUP_ROOT = Path(".tes/legacy-retirement")
+LEGACY_HOOK_LEDGER = Path(".tes/hooks/executed.jsonl")
+RUNTIME_HOOK_LEDGER = Path(".tes/runtime/hooks/executed.jsonl")
+HOOK_LEDGER_ARCHIVE = Path(".tes/legacy-retirement/hooks")
+HOOK_SMOKE_ROOT = Path(".tes/runtime/hook-smoke")
 LEGACY_MCP_SERVER = "tilly-cortex"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 KNOWN_TEMPLATE_MARKERS = ("tilly-field-report@1", "Tilly Field Report", "tilly-version")
 SKIP_PARTS = {".git", "node_modules", "dist", ".venv", "venv"}
 CLEANUP_REASONS = {"python bytecode cache", "old TES rollback backup"}
+HOOK_AUDIT_HARNESS_FILES = {
+    "claude-forbidden-payload.json",
+    "forbidden-executed.txt",
+    "run_contract_sim.py",
+    "run_forbidden_test.py",
+    "run_sim.py",
+}
 
 
 def utc_stamp() -> str:
@@ -97,6 +108,15 @@ def known_removals(target: Path) -> list[dict[str, Any]]:
         if not should_skip(path, target) and not covered_by_known(path, target, actions):
             add_action(actions, "remove", path, target, "python bytecode cache")
 
+    smoke_root = target / HOOK_SMOKE_ROOT
+    if smoke_root.exists():
+        for path in sorted(smoke_root.glob("run_*.py")):
+            add_action(actions, "remove", path, target, "legacy hook audit harness residue")
+        for name in sorted(HOOK_AUDIT_HARNESS_FILES):
+            path = smoke_root / name
+            if path.exists():
+                add_action(actions, "remove", path, target, "legacy hook audit harness residue")
+
     template = target / ".github/ISSUE_TEMPLATE/tilly-field-report.yml"
     if template.exists():
         text = read_text(template)
@@ -148,6 +168,40 @@ def mcp_config_actions(target: Path) -> list[dict[str, Any]]:
     return actions
 
 
+def canonical_jsonl_key(line: str) -> str:
+    """Return a stable key for one JSONL record without changing invalid rows."""
+    try:
+        payload = json.loads(line)
+    except json.JSONDecodeError:
+        return line
+    if isinstance(payload, dict):
+        return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return line
+
+
+def runtime_hook_duplicates(path: Path) -> list[str]:
+    """List exact duplicate runtime hook rows; distinct replay rows are kept."""
+    if not path.exists():
+        return []
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    for line in lines:
+        key = canonical_jsonl_key(line)
+        if key in seen:
+            duplicates.append(line)
+        else:
+            seen.add(key)
+    return duplicates
+
+
+def runtime_hook_duplicate_count(path: Path) -> int:
+    return len(runtime_hook_duplicates(path))
+
+
 def migration_actions(target: Path) -> list[dict[str, Any]]:
     actions: list[dict[str, Any]] = []
     legacy = target / LEGACY_FIELD_ROOT
@@ -171,6 +225,30 @@ def migration_actions(target: Path) -> list[dict[str, Any]]:
             "archive legacy retrofit records",
             target_path=RETROFIT_ARCHIVE_ROOT.as_posix(),
             mode="retrofit-records",
+        )
+    legacy_hook_ledger = target / LEGACY_HOOK_LEDGER
+    if legacy_hook_ledger.exists():
+        add_action(
+            actions,
+            "migrate",
+            legacy_hook_ledger,
+            target,
+            "archive legacy hook ledger",
+            target_path=(HOOK_LEDGER_ARCHIVE / "executed.jsonl").as_posix(),
+            mode="legacy-hook-ledger",
+        )
+    runtime_hook_ledger = target / RUNTIME_HOOK_LEDGER
+    duplicate_count = runtime_hook_duplicate_count(runtime_hook_ledger)
+    if duplicate_count:
+        add_action(
+            actions,
+            "compact",
+            runtime_hook_ledger,
+            target,
+            "compact exact duplicate runtime hook records",
+            duplicate_records=duplicate_count,
+            target_path=(HOOK_LEDGER_ARCHIVE / f"executed-duplicates-{utc_stamp()}.jsonl").as_posix(),
+            mode="runtime-hook-ledger",
         )
     return actions
 
@@ -258,6 +336,7 @@ def build_plan(target: Path) -> dict[str, Any]:
         "counts": {
             "remove": sum(1 for item in actions if item["action"] == "remove"),
             "migrate": sum(1 for item in actions if item["action"] == "migrate"),
+            "compact": sum(1 for item in actions if item["action"] == "compact"),
             "edit_config": sum(1 for item in actions if item["action"] == "edit_config"),
             "edit_text": sum(1 for item in actions if item["action"] == "edit_text"),
             "cleanup": sum(1 for item in actions if item.get("reason") in CLEANUP_REASONS),
@@ -427,6 +506,51 @@ def migrate_retrofit_records(target: Path) -> None:
     remove_empty_parents(legacy, target)
 
 
+def append_archive_file(source: Path, destination: Path) -> None:
+    if not source.exists():
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    text = source.read_text(encoding="utf-8", errors="replace")
+    if destination.exists():
+        existing = destination.read_text(encoding="utf-8", errors="replace")
+        prefix = existing if existing.endswith("\n") or not existing else existing + "\n"
+        destination.write_text(prefix + text.rstrip("\n") + "\n", encoding="utf-8")
+        source.unlink()
+    else:
+        source.replace(destination)
+
+
+def migrate_legacy_hook_ledger(target: Path) -> None:
+    legacy = target / LEGACY_HOOK_LEDGER
+    destination = target / HOOK_LEDGER_ARCHIVE / "executed.jsonl"
+    append_archive_file(legacy, destination)
+    remove_empty_parents(legacy, target)
+
+
+def compact_runtime_hook_ledger(target: Path, archive_relpath: str | None = None) -> list[str]:
+    ledger = target / RUNTIME_HOOK_LEDGER
+    if not ledger.exists():
+        return []
+    lines = ledger.read_text(encoding="utf-8", errors="replace").splitlines()
+    seen: set[str] = set()
+    kept: list[str] = []
+    duplicates: list[str] = []
+    for line in lines:
+        key = canonical_jsonl_key(line)
+        if key in seen:
+            duplicates.append(line)
+        else:
+            seen.add(key)
+            kept.append(line)
+    if not duplicates:
+        return []
+    archive = target / (archive_relpath or (HOOK_LEDGER_ARCHIVE / f"executed-duplicates-{utc_stamp()}.jsonl").as_posix())
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    archive.write_text("\n".join(duplicates) + "\n", encoding="utf-8")
+    ledger.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
+    return [rel(archive, target), rel(ledger, target)]
+
+
 def ensure_local_excludes(target: Path) -> str | None:
     if field_reports is None:
         return None
@@ -454,7 +578,7 @@ def apply_plan(target: Path, *, yes: bool) -> dict[str, Any]:
 
     for action in plan["actions"]:
         path = target / action["path"]
-        if action["action"] in {"remove", "edit_config", "edit_text", "migrate"}:
+        if action["action"] in {"remove", "edit_config", "edit_text", "migrate", "compact"}:
             backup = backup_existing(path, target, backup_root)
             if backup:
                 backups.append(backup)
@@ -473,6 +597,8 @@ def apply_plan(target: Path, *, yes: bool) -> dict[str, Any]:
                 migrate_field_reports(target)
             elif action.get("mode") == "retrofit-records":
                 migrate_retrofit_records(target)
+            elif action.get("mode") == "legacy-hook-ledger":
+                migrate_legacy_hook_ledger(target)
             else:
                 return {
                     "version": VERSION,
@@ -484,12 +610,17 @@ def apply_plan(target: Path, *, yes: bool) -> dict[str, Any]:
                 }
             writes.append(action["path"])
             writes.append(str(action["target_path"]))
+        elif action["action"] == "compact":
+            compact_writes = compact_runtime_hook_ledger(target, str(action.get("target_path") or ""))
+            writes.extend(compact_writes or [action["path"]])
 
     audit = audit_target(target)
     return {
         "version": VERSION,
         "status": "PASS" if audit["status"] == "PASS" else "FAIL",
         "target": str(target),
+        "legacy_retirement_required": plan.get("legacy_retirement_required"),
+        "counts": plan.get("counts", {}),
         "writes": sorted(set(writes)),
         "backups": backups,
         "removed_empty_dirs": sorted(set(removed_empty_dirs)),
@@ -570,6 +701,35 @@ def run_self_test() -> dict[str, Any]:
         )
         (target / "__pycache__").mkdir()
         (target / "__pycache__/probe.pyc").write_bytes(b"pyc")
+        (target / ".tes/hooks").mkdir(parents=True)
+        (target / LEGACY_HOOK_LEDGER).write_text(
+            json.dumps({"agent": "codex", "event": "PreToolUse", "session": "legacy", "ts": "2026-06-26T00:00:00Z"}) + "\n",
+            encoding="utf-8",
+        )
+        (target / ".tes/runtime/hooks").mkdir(parents=True)
+        duplicate_hook_record = {
+            "agent": "codex",
+            "event": "PreToolUse",
+            "event_canonical": "PreToolUse",
+            "mode": "pretooluse",
+            "session": "duplicate-runtime",
+            "tool": "apply_patch",
+            "path": "docs/governance/policy/SKILL.md",
+            "decision": "allow",
+            "permission_decision": "allow",
+            "marker_emitted": True,
+            "ts": "2026-06-27T00:00:00Z",
+        }
+        runtime_lines = [
+            json.dumps(duplicate_hook_record, sort_keys=True),
+            json.dumps(duplicate_hook_record, sort_keys=True),
+            json.dumps({**duplicate_hook_record, "session": "unique-runtime"}, sort_keys=True),
+        ]
+        (target / RUNTIME_HOOK_LEDGER).write_text("\n".join(runtime_lines) + "\n", encoding="utf-8")
+        (target / HOOK_SMOKE_ROOT / "claude").mkdir(parents=True)
+        (target / HOOK_SMOKE_ROOT / "claude/SKILL.md").write_text("# Smoke Evidence\n", encoding="utf-8")
+        (target / HOOK_SMOKE_ROOT / "run_sim.py").write_text("print('residue')\n", encoding="utf-8")
+        (target / HOOK_SMOKE_ROOT / "forbidden-executed.txt").write_text("EXECUTED\n", encoding="utf-8")
 
         before = audit_target(target)
         if before["status"] != "FAIL":
@@ -581,6 +741,12 @@ def run_self_test() -> dict[str, Any]:
             failures.append("known legacy fixture must require retirement")
         if not any(item.get("action") == "edit_text" for item in plan["actions"]):
             failures.append("stale quality gate discipline path must require text migration")
+        if not any(item.get("mode") == "legacy-hook-ledger" for item in plan["actions"]):
+            failures.append("legacy hook ledger must require archive migration")
+        if not any(item.get("action") == "compact" and item.get("mode") == "runtime-hook-ledger" for item in plan["actions"]):
+            failures.append("exact duplicate runtime hook records must require compaction")
+        if not any(item.get("path") == f"{HOOK_SMOKE_ROOT.as_posix()}/run_sim.py" for item in plan["actions"]):
+            failures.append("legacy hook audit harness script must be planned for removal")
         result = apply_plan(target, yes=True)
         if result["status"] != "PASS":
             failures.append("known legacy fixture must apply cleanly")
@@ -594,6 +760,9 @@ def run_self_test() -> dict[str, Any]:
             ".tilly/retrofit",
             ".github/ISSUE_TEMPLATE/tilly-field-report.yml",
             "__pycache__",
+            ".tes/hooks/executed.jsonl",
+            ".tes/runtime/hook-smoke/run_sim.py",
+            ".tes/runtime/hook-smoke/forbidden-executed.txt",
         ):
             if (target / relpath).exists():
                 failures.append(f"legacy path still exists after apply: {relpath}")
@@ -603,6 +772,15 @@ def run_self_test() -> dict[str, Any]:
             failures.append("Field Reports DISABLED sentinel must migrate")
         if not (target / ".tes/legacy-retirement/retrofit/previous-retrofit.md").exists():
             failures.append("legacy retrofit records must migrate to TES archive")
+        if not (target / ".tes/legacy-retirement/hooks/executed.jsonl").exists():
+            failures.append("legacy hook ledger must migrate to TES archive")
+        deduped_runtime = (target / RUNTIME_HOOK_LEDGER).read_text(encoding="utf-8").splitlines()
+        if len(deduped_runtime) != 2:
+            failures.append("runtime hook ledger must keep one copy of exact duplicates plus unique records")
+        if not list((target / ".tes/legacy-retirement/hooks").glob("executed-duplicates-*.jsonl")):
+            failures.append("runtime hook duplicate rows must be archived before compaction")
+        if not (target / HOOK_SMOKE_ROOT / "claude/SKILL.md").exists():
+            failures.append("hook smoke SKILL evidence must be preserved")
         if not (target / ".cursor/rules/project.mdc").exists():
             failures.append("project-owned Cursor rule must be preserved")
         if not (target / "AGENTS.md").exists():

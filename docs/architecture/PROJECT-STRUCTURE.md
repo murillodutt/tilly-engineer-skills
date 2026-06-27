@@ -37,6 +37,8 @@ Root files are only entrypoints and local project controls:
 
 `scripts/**` is classified by consumer, not by directory. Validator-only scripts are maintainer gates. Installer, Cortex, MCP, Field Reports, and adapter scripts are delivered behavior when adopters receive, invoke, or certify them. Bootstrap script entrypoints live under `scripts/bootstrap/**`; installer wrappers do not belong in the repository root.
 
+Code files are maintainability surfaces. Any changed code file must carry direct documentation (module docstring, top-level file comment, or targeted inline comment for non-obvious logic) or be named by an associated Markdown document that explains its contract. `scripts/code_documentation_oracle.py` enforces this on staged code in `npm run commit:check`.
+
 ## Source
 
 `src/**` is the only canonical home for installable agent material.
@@ -82,7 +84,7 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`. `sr
 
 `scripts/project_context_oracle.py` certifies that the generated `PROJECT-CONTEXT.md` is useful rather than decorative: it checks identity, manifest evidence, territories, source anchors, quality scripts, explicit unknowns, and absence of bulk-copied source code.
 
-`scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for updates. It removes known old runtime assets, migrates Field Reports state, archives legacy retrofit records, and preserves project context.
+`scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for updates and local npx installs. It removes known old runtime assets, migrates Field Reports state, archives legacy retrofit and hook-ledger records, compacts exact duplicate runtime hook rows, removes ephemeral hook-audit harness residue, and preserves project context.
 
 `scripts/root_context.py` scans root runtime files such as `AGENTS.md`, `CLAUDE.md`, and Cursor rules before or from central backup evidence. Project-owned instructions must be backed up before overwrite and recovered into `docs/agents/**` or marked `NEEDS_REVIEW`.
 

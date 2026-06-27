@@ -66,14 +66,18 @@ shell redirection:
   current Cursor host exposes those tools and its hook config declares them.
 
 Expected native result: the current host should allow the edit and surface
-`🍳 Flash-Fry` governed supervision exactly once for the session. For Codex,
-acceptable proof is either visible hook output or runtime evidence that the hook
-emitted the marker (`marker_emitted: true` in the ledger, or the matching
-`.tes/mantra-gates/pretooluse-*.seen` sentinel plus a current Codex PreToolUse
-ledger record). A second native mutation of the same governed path in the same
-session should be allowed without repeating the marker. Remove only the smoke
-file you created if the test policy asks for a clean worktree. Do not reuse
-another host's report as evidence for the current host's native smoke.
+`🍳 Flash-Fry` governed supervision exactly once for the session. For Codex and
+Cursor governed allow paths, acceptable proof is either visible hook output or
+runtime evidence that the hook emitted the marker (`marker_emitted: true` in the
+ledger, or the matching `.tes/mantra-gates/pretooluse-*.seen` sentinel plus a
+current host PreToolUse ledger record). Cursor `preToolUse` deny messages are
+agent-visible, but governed allow messages may be ledger-only in the native UI;
+do not classify ledger-proven Cursor allow supervision as a finding solely
+because no visible allow banner was shown. A second native mutation of the same
+governed path in the same session should be allowed without repeating the
+marker. Remove only the smoke file you created if the test policy asks for a
+clean worktree. Do not reuse another host's report as evidence for the current
+host's native smoke.
 
 Before any native forbidden-shell test, inspect the current host config and
 confirm that the host's PreToolUse matcher covers shell tools. If shell coverage
@@ -85,8 +89,14 @@ hook fails.
 
 After the native smoke, use `python3 .tes/bin/tes_install.py hook --agent <host>
 --target .` with JSON on stdin to simulate safe cross-host contracts. Simulate,
-do not execute, forbidden commands such as `git push --force origin main`. The
-simulation must cover:
+do not execute, forbidden commands such as `git push --force origin main`. Do
+not write helper scripts, audit harnesses, or payload files inside the target
+project for these simulations; if wrapper code is needed, use stdin or a
+temporary directory outside the target. Do not place the forbidden token
+sequence in the outer shell command, heredoc, comment, label, or inline script
+used to build the simulation; construct it from fragments inside the payload
+generator or use a temp file created without contiguous forbidden text on the
+command line. The simulation must cover:
 - Routine silence: a non-mutating Read or ordinary non-governed edit allows
   without `Flash-Fry`.
 - Governed supervision: Write/Edit/MultiEdit/apply_patch on `/SKILL.md`,
@@ -109,7 +119,9 @@ simulation must cover:
 - Runtime ledger: `.tes/runtime/hooks/executed.jsonl` records agent, event,
   tool, session, and path for the native smoke; `.tes/hooks/executed.jsonl` is
   legacy residue only. Treat dual-agent ledger rows for the same invocation as
-  parallel host projections unless the same agent/event/invocation/decision is
+  parallel host projections. Treat repeated stable simulation ids with different
+  timestamps as replay history, not duplicate hook execution. Report duplicate
+  runtime hooks only when the same agent/event/invocation/decision/timestamp is
   repeated identically.
 - Cortex no-write: hook context may propose recall/alignment/capture, but the
   runtime must report no automatic durable writes.

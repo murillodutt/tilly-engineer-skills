@@ -15,18 +15,18 @@ This Markdown file is the technical installer contract for agents and release op
 - Web: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 - Local package path: `docs/install/USER-MANUAL.html`
 
-The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified. Version `0.3.211` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
+The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified. Version `0.3.216` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
 
 For the agent-side contract behind runtime commands, gates, schemas, and closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.211 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.216 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.211 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.216 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install mode, and final confirmation before writing files. `--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures. `--silent` does the same for Bun's package runner while keeping TES output visible.
@@ -34,10 +34,10 @@ The interactive installer asks for the target project, agent hooks, install mode
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.211 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.216 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.211` is the intended fixed-ref form for a release-certified install channel. Do not call that remote ref certified until `npm run release:check` passes after the tag or fixed ref is authorized and available.
+`#v0.3.216` is the intended fixed-ref form for a release-certified install channel. Do not call that remote ref certified until `npm run release:check` passes after the tag or fixed ref is authorized and available.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
@@ -232,6 +232,7 @@ python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
 ```
 
 The gate archives legacy retrofit records from `.tilly/retrofit/**` under `.tes/legacy-retirement/retrofit/**`; these records must not block runtime retirement when all other legacy paths are known.
+The npx installer runs this closed-catalog retirement before applying the fresh bundle; legacy hook ledgers move under `.tes/legacy-retirement/hooks/**`, exact duplicate hook-runtime rows are compacted with an archive copy, and hook-smoke harness scripts are removed while `SKILL.md` smoke evidence stays in place.
 
 macOS/Linux bootstrap entrypoint:
 

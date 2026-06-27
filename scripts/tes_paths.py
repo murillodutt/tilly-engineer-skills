@@ -26,7 +26,7 @@ import os
 import re
 from pathlib import Path
 
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 
 # Same slug rule as field_reports.safe_slug (kept self-contained so this
 # foundation module does not depend on a capability module).

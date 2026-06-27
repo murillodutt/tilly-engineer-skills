@@ -19,7 +19,7 @@ from typing import Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 
 TEXT_SCAN_SUFFIXES = {
     ".md",
@@ -209,6 +209,7 @@ def execute_gate(gate: Gate, staged: list[Path]) -> tuple[str, int]:
 
 def gate_plan() -> list[Gate]:
     surface_suffixes = {".json", ".yml", ".yaml", ".js", ".mjs", ".cjs", ".py"}
+    code_suffixes = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".sh", ".ps1"}
     doc_suffixes = {".md", ".html", ".mdc"}
     text_suffixes = TEXT_SCAN_SUFFIXES
 
@@ -242,6 +243,12 @@ def gate_plan() -> list[Gate]:
             ["python3", "scripts/staged_surface_check.py"],
             matcher=lambda paths: suffix_match(paths, surface_suffixes),
             file_filter=lambda path: path.suffix.lower() in surface_suffixes,
+        ),
+        Gate(
+            "code-documentation",
+            ["python3", "scripts/code_documentation_oracle.py", "--paths"],
+            matcher=lambda paths: suffix_match(paths, code_suffixes),
+            file_filter=lambda path: path.suffix.lower() in code_suffixes,
         ),
         Gate(
             "private-vocabulary",

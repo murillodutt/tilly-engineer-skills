@@ -26,6 +26,8 @@ A delivered behavior belongs in `docs/install/**`, `src/adapters/**`, user-visib
 
 `scripts/**` is not a layer by itself. A script change is classified by the consumer and behavior it changes. A validator-only change is maintainer layer. A change to `tes_init.py`, `cortex.py`, `install_mcp.py`, `install_adapter.py`, `install_smoke.py`, `field_reports.py`, or an adapter materializer can be delivered behavior when it changes what adopters receive, invoke, or certify.
 
+Every code file changed or added must be documented for future maintainers. The documentation can be direct (module docstring, top-level file comment, or targeted inline comment for non-obvious logic) or associated (an indexed Markdown document that names the code path and explains the contract). Code behavior must not depend on commit history or test names as the only explanation.
+
 ## Layer Decision Test
 
 Run this test before applying the correlation map:
@@ -48,6 +50,7 @@ Before closing a material change, classify the changed surface and inspect the c
 - Field Reports behavior: check `docs/mesh/FIELD-REPORTS.md`, user manual, command triggers, installer prompts, `scripts/field_reports.py`, `.github/**`, GitHub receiver oracle, package scripts, and platform surface oracle.
 - Adapter behavior: check `src/adapters/**`, `docs/adapters/**`, `scripts/materialize_adapter.py`, adapter parity checks, platform surface oracle, and materialization output checks.
 - Governed documentation: check frontmatter, `docs/tds/DOCS-INDEX.yml`, `docs/INDEX.md`, document size budget, reference graph, and TDS validation.
+- Code documentation: check `scripts/code_documentation_oracle.py`, the touched code file's direct comments/docstrings, and any associated Markdown document that names the code path.
 - Repository structure: check `AGENTS.md`, `docs/architecture/PROJECT-STRUCTURE.md`, `README.md` only if the user entrypoint changes, and `scripts/validate_reference_package.py`.
 - GitHub receiver governance: check issue templates, workflows, receiver oracle, Field Reports contract, and manual only if user-visible behavior changed.
 

@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -46,6 +46,8 @@ OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/QUALITY-GATES.md",
     "docs/agents/DECISIONS/",
 )
+STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
+CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 
 
 def python_executable() -> str:
@@ -137,6 +139,17 @@ def selected_agents(agent: str) -> list[str]:
     if agent == "all":
         return list(AGENTS)
     return [agent]
+
+
+def normalize_agent_scope(values: list[Any]) -> list[str]:
+    selected = {str(value) for value in values if str(value) in AGENTS}
+    return [agent for agent in AGENTS if agent in selected]
+
+
+def merged_agent_scope(existing: dict[str, Any], agents: list[str]) -> list[str]:
+    existing_agents = existing.get("agents") if isinstance(existing.get("agents"), list) else []
+    merged = normalize_agent_scope([*existing_agents, *agents])
+    return merged or normalize_agent_scope(agents)
 
 
 def selected_mcp_adapters(agent: str) -> list[str]:
@@ -782,14 +795,16 @@ def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[s
 def sentinel_payload(agent: str, agents: list[str], mode: str, existing: dict[str, Any] | None = None) -> dict[str, Any]:
     existing = existing or {}
     runs = existing.get("runs") if isinstance(existing.get("runs"), list) else []
+    requested_by = existing.get("requested_by")
     return {
         "schema": "tes-postinstall@1",
         "version": VERSION,
         "state": "pending",
         "created_at": existing.get("created_at") or utc_stamp(),
         "updated_at": utc_stamp(),
-        "requested_by": agent,
-        "agents": agents,
+        "requested_by": str(requested_by) if isinstance(requested_by, str) and requested_by else agent,
+        "executed_by": agent,
+        "agents": merged_agent_scope(existing, agents),
         "mode": mode,
         "runs": bounded_sentinel_runs(runs),
     }
@@ -838,9 +853,20 @@ def write_pending_sentinel(target: Path, agent: str, agents: list[str], mode: st
     existing = read_json(target / POSTINSTALL_PATH)
     state = str(existing.get("state") or "")
     if state == "complete":
-        payload = {**existing, "state": "pending", "updated_at": utc_stamp(), "requested_by": agent, "agents": agents}
+        payload = {
+            **existing,
+            "state": "pending",
+            "updated_at": utc_stamp(),
+            "requested_by": agent,
+            "executed_by": agent,
+            "agents": merged_agent_scope(existing, agents),
+        }
     elif state in POSTINSTALL_STATES:
-        payload = {**sentinel_payload(agent, agents, mode, existing), "state": state if state == "running" else "pending"}
+        payload = {
+            **sentinel_payload(agent, agents, mode, existing),
+            "requested_by": agent,
+            "state": state if state == "running" else "pending",
+        }
     else:
         payload = sentinel_payload(agent, agents, mode, existing)
     return write_json(target / POSTINSTALL_PATH, payload, dry_run=dry_run)
@@ -919,6 +945,7 @@ def write_install_lock(
     agents: list[str],
     mode: str,
     stage: dict[str, Any],
+    legacy_retirement_result: dict[str, Any],
     apply_result: dict[str, Any],
     hook_actions: list[dict[str, str]],
     mcp_result: dict[str, Any],
@@ -939,6 +966,7 @@ def write_install_lock(
         "source_repository": metadata.get("source_repository"),
         "source_commit": metadata.get("source_commit"),
         "stage": summarize_result(stage),
+        "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
         "attached_surfaces": attached_surfaces or ["capsule"],
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
@@ -1188,6 +1216,32 @@ def summarize_certification_result(result: dict[str, Any]) -> dict[str, Any]:
         },
         "findings": payload.get("findings", []),
         "negative_checks": payload.get("negative_checks", {}),
+        "failures": result.get("failures", []),
+    }
+
+
+def run_legacy_retirement(target: Path, dry_run: bool) -> dict[str, Any]:
+    """Retire closed-catalog legacy runtime before installing fresh assets."""
+    try:
+        import tes_legacy_retirement  # type: ignore
+    except ModuleNotFoundError as exc:
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": [f"tes_legacy_retirement.py unavailable: {exc}"],
+        }
+    if dry_run:
+        plan = tes_legacy_retirement.build_plan(target)
+        return {**plan, "dry_run": True}
+    return tes_legacy_retirement.apply_plan(target, yes=True)
+
+
+def summarize_legacy_retirement_result(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": result.get("status"),
+        "legacy_retirement_required": result.get("legacy_retirement_required"),
+        "counts": result.get("counts", {}),
+        "writes": result.get("writes", []),
         "failures": result.get("failures", []),
     }
 
@@ -1444,6 +1498,21 @@ def install(args: argparse.Namespace) -> int:
     agents = selected_agents(args.agent)
     surfaces = resolve_attach(getattr(args, "attach", None))
     attached = sorted(surfaces - {"capsule"})
+    legacy_retirement_result = run_legacy_retirement(target, args.dry_run)
+    legacy_status = str(legacy_retirement_result.get("status") or "")
+    if not args.dry_run and legacy_status in {"FAIL", "NEEDS_REVIEW"}:
+        result = {
+            "version": VERSION,
+            "status": legacy_status,
+            "target": str(target),
+            "agent": args.agent,
+            "agents": agents,
+            "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
+            "failures": legacy_retirement_result.get("failures", ["legacy retirement failed"]),
+        }
+        print(json.dumps(result, indent=2, sort_keys=True))
+        print("[tes-install] " + legacy_status)
+        return 1 if legacy_status == "FAIL" else 0
     stage: dict[str, Any]
     apply_result: dict[str, Any]
     if args.dry_run:
@@ -1482,6 +1551,7 @@ def install(args: argparse.Namespace) -> int:
                 "version": VERSION,
                 "status": "FAIL",
                 "stage": stage,
+                "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
                 "failures": stage.get("failures", ["bundle stage failed"]),
             }
             print(json.dumps(result, indent=2, sort_keys=True))
@@ -1499,6 +1569,7 @@ def install(args: argparse.Namespace) -> int:
                 "version": VERSION,
                 "status": "FAIL",
                 "stage": stage,
+                "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
                 "apply": apply_result,
                 "failures": apply_result.get("failures", ["bundle apply failed"]),
             }
@@ -1529,6 +1600,7 @@ def install(args: argparse.Namespace) -> int:
             "agents": agents,
             "mode": args.mode,
             "stage": summarize_result(stage),
+            "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
             "apply": summarize_result(apply_result),
             "hooks": hook_actions,
             "mcp": summarize_mcp_result(mcp_result),
@@ -1561,6 +1633,7 @@ def install(args: argparse.Namespace) -> int:
         agents,
         args.mode,
         stage,
+        legacy_retirement_result,
         apply_result,
         hook_actions,
         mcp_result,
@@ -1586,6 +1659,7 @@ def install(args: argparse.Namespace) -> int:
         # of inferring materialization from the docs-mesh postinstall sentinel.
         "attached_surfaces": sorted(surfaces - {"capsule"}),
         "stage": summarize_result(stage),
+        "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
         "mcp": summarize_mcp_result(mcp_result),
@@ -1730,6 +1804,8 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         **sentinel_payload(args.agent, selected_agents(args.agent) if args.agent != "all" else list(AGENTS), args.mode, sentinel),
         "state": "running",
         "updated_at": utc_stamp(),
+        "requested_by": str(sentinel.get("requested_by") or args.agent),
+        "executed_by": args.agent,
     }
     if recover_needs_review:
         running["recovery"] = "needs_review"
@@ -2379,7 +2455,16 @@ def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]
     for record in records:
         event = str(record.get("event_canonical") or canonical_hook_event(str(record.get("event") or "")))
         key = hook_record_dedupe_key({**record, "event_canonical": event})
+        # Repeated audit harnesses may intentionally reuse stable session ids
+        # across separate runs. Only same-timestamp semantic repeats indicate an
+        # exact double append; later replays are history, not hook duplication.
+        ts = str(record.get("ts") or "")
+        exact_key = (*key, ts) if ts else key
         if key in seen:
+            previous_ts = str(seen[key].get("ts") or "")
+            if previous_ts and ts and previous_ts != ts and exact_key not in seen:
+                seen[exact_key] = record
+                continue
             session = str(record.get("invocation") or record.get("session") or "")
             duplicates.append(
                 {
@@ -2392,6 +2477,8 @@ def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]
             )
         else:
             seen[key] = record
+            if exact_key != key:
+                seen[exact_key] = record
     return duplicates
 
 
@@ -2709,6 +2796,8 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         injects the supervision obligation without blocking.
       - Cursor: JSON-permission — {"permission":"deny","agent_message":...} blocks,
         {"continue":true,"user_message":...} / {"permission":"allow"} allows.
+        Deny messages are the reliable visible channel; governed allow messages
+        are best-effort and the runtime ledger is the canonical proof.
     A materializer that assumed exit-2 everywhere would break silently on Cursor.
     """
     target = target_root(args.target)
@@ -3025,6 +3114,36 @@ def self_test() -> int:
             + "\n",
             encoding="utf-8",
         )
+        (target / LEGACY_HOOK_SENTINEL_PATH).parent.mkdir(parents=True)
+        (target / LEGACY_HOOK_SENTINEL_PATH).write_text(
+            json.dumps({"agent": "codex", "event": "PreToolUse", "session": "legacy", "ts": "2026-06-26T00:00:00Z"}) + "\n",
+            encoding="utf-8",
+        )
+        (target / HOOK_SENTINEL_PATH).parent.mkdir(parents=True)
+        seeded_duplicate = {
+            "agent": "codex",
+            "event": "PreToolUse",
+            "event_canonical": "PreToolUse",
+            "mode": "pretooluse",
+            "session": "seeded-duplicate",
+            "tool": "apply_patch",
+            "path": ".tes/runtime/hook-smoke/codex/SKILL.md",
+            "decision": "allow",
+            "permission_decision": "allow",
+            "marker_emitted": True,
+            "ts": "2026-06-27T00:00:00Z",
+        }
+        (target / HOOK_SENTINEL_PATH).write_text(
+            json.dumps(seeded_duplicate, sort_keys=True)
+            + "\n"
+            + json.dumps(seeded_duplicate, sort_keys=True)
+            + "\n",
+            encoding="utf-8",
+        )
+        (target / ".tes/runtime/hook-smoke/codex").mkdir(parents=True)
+        (target / ".tes/runtime/hook-smoke/codex/SKILL.md").write_text("# Codex Smoke\n", encoding="utf-8")
+        (target / ".tes/runtime/hook-smoke/run_sim.py").write_text("print('audit residue')\n", encoding="utf-8")
+        (target / ".tes/runtime/hook-smoke/forbidden-executed.txt").write_text("EXECUTED\n", encoding="utf-8")
         run(["git", "init"], cwd=target)
         install_result = run(
             [
@@ -3047,6 +3166,25 @@ def self_test() -> int:
             failures.extend(install_result.stderr.splitlines())
         install_payload = parse_json_output(install_result.stdout)
         install_mcp = install_payload.get("mcp") if isinstance(install_payload.get("mcp"), dict) else {}
+        install_legacy = install_payload.get("legacy_retirement") if isinstance(install_payload.get("legacy_retirement"), dict) else {}
+        if install_legacy.get("status") != "PASS":
+            failures.append("thin install must run legacy retirement before bundle apply")
+        if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
+            failures.append("thin install must archive legacy hook ledger before certification")
+        if not (target / ".tes/legacy-retirement/hooks/executed.jsonl").exists():
+            failures.append("thin install must preserve archived legacy hook ledger")
+        if (target / ".tes/runtime/hook-smoke/run_sim.py").exists():
+            failures.append("thin install must remove legacy hook audit harness scripts")
+        if (target / ".tes/runtime/hook-smoke/forbidden-executed.txt").exists():
+            failures.append("thin install must remove forbidden-shell audit residue")
+        if not (target / ".tes/runtime/hook-smoke/codex/SKILL.md").exists():
+            failures.append("thin install must preserve hook smoke evidence files")
+        seeded_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("session") == "seeded-duplicate"
+        ]
+        if len(seeded_records) != 1:
+            failures.append("thin install must compact exact duplicate hook ledger rows")
         if install_mcp.get("status") != "INSTALLED":
             failures.append("thin install must report MCP status INSTALLED")
         install_certification = install_payload.get("certification") if isinstance(install_payload.get("certification"), dict) else {}
@@ -3178,8 +3316,14 @@ def self_test() -> int:
         )
         if partial_mcp.get("status") != "INSTALLED":
             failures.append("partial install fixture must still install MCP")
-        if partial_payload.get("status") == "INSTALLED" or partial_certification.get("status") == "PASS":
-            failures.append("installer must not claim clean INSTALLED/PASS from MCP success when installed certification fails")
+        partial_legacy = partial_payload.get("legacy_retirement") if isinstance(partial_payload.get("legacy_retirement"), dict) else {}
+        if partial_legacy.get("status") != "PASS":
+            failures.append("partial install fixture must retire legacy quality-gate residue before certification")
+        partial_quality = read_text(partial_target / "docs/agents/QUALITY-GATES.md")
+        if STALE_DISCIPLINE_PATH in partial_quality or CANONICAL_DISCIPLINE_PATH not in partial_quality:
+            failures.append("partial install fixture must migrate stale quality-gate discipline path")
+        if partial_payload.get("status") != "INSTALLED" or partial_certification.get("status") != "PASS":
+            failures.append("installer must allow clean PASS after legacy retirement repairs stale certification residue")
         sentinel = read_json(target / POSTINSTALL_PATH)
         if sentinel.get("state") != "pending":
             failures.append("postinstall sentinel must be pending after install")
@@ -3288,6 +3432,12 @@ def self_test() -> int:
             failures.append("postinstall sentinel must be complete after hook")
         if sentinel.get("last_status") != "PASS":
             failures.append("postinstall sentinel must record PASS after hook")
+        if sentinel.get("agents") != list(AGENTS):
+            failures.append("postinstall sentinel must preserve the installed multi-agent scope after host-specific execution")
+        if sentinel.get("requested_by") != "all":
+            failures.append("postinstall sentinel must preserve the original install request scope")
+        if sentinel.get("executed_by") != "codex":
+            failures.append("postinstall sentinel must record the host that executed postinstall separately")
         last_run = sentinel.get("last_run")
         if isinstance(last_run, str) and (target / last_run).exists():
             run_record = read_json(target / last_run)
@@ -3643,6 +3793,42 @@ def self_test() -> int:
             for finding in duplicate_findings
         ):
             failures.append("hook-health duplicate fixture must report duplicate_runtime_hook_records finding")
+        replay_health_target = target / "replay-health"
+        replay_health_target.mkdir()
+        run(["git", "init"], cwd=replay_health_target)
+        (replay_health_target / ".codex").mkdir()
+        (replay_health_target / ".codex/config.toml").write_text(
+            '[features]\nhooks = true\n\n[[hooks.SessionStart]]\ncommand = "python3 .tes/bin/tes_install.py hook --agent codex --target ."\n',
+            encoding="utf-8",
+        )
+        replay_sentinel = replay_health_target / HOOK_SENTINEL_PATH
+        replay_sentinel.parent.mkdir(parents=True)
+        replay_first = {**duplicate_record, "session": "replay", "ts": "2026-06-27T00:00:00Z"}
+        replay_second = {**duplicate_record, "session": "replay", "ts": "2026-06-27T00:05:00Z"}
+        replay_sentinel.write_text(
+            json.dumps(replay_first, sort_keys=True) + "\n" + json.dumps(replay_second, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        replay_health = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(replay_health_target),
+                "--json-only",
+            ],
+            cwd=source_root(),
+        )
+        replay_payload = parse_json_output(replay_health.stdout)
+        replay_findings = replay_payload.get("findings") if isinstance(replay_payload.get("findings"), list) else []
+        if replay_health.returncode != 0 or replay_payload.get("status") != "PASS":
+            failures.append("hook-health must treat same semantic record with different timestamps as replay history")
+        if any(
+            isinstance(finding, dict) and finding.get("type") == "duplicate_runtime_hook_records"
+            for finding in replay_findings
+        ):
+            failures.append("hook-health must not report replayed historical records as duplicate runtime hooks")
         unexpected_health_target = target / "unexpected-health"
         unexpected_health_target.mkdir()
         run(["git", "init"], cwd=unexpected_health_target)

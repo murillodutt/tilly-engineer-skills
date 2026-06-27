@@ -24,7 +24,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -357,6 +357,8 @@ def package_contract_failures() -> list[str]:
     if not bin_path.exists():
         failures.append("bin/tes.js must exist")
     else:
+        if not os.access(bin_path, os.X_OK):
+            failures.append("bin/tes.js must be executable so npx can run package bin shims")
         first_line = bin_path.read_text(encoding="utf-8").splitlines()[0]
         if first_line != "#!/usr/bin/env node":
             failures.append("bin/tes.js must start with #!/usr/bin/env node")
@@ -1400,7 +1402,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.211 or main.",
+        help="Git ref to test, e.g. v0.3.216 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

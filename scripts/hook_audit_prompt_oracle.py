@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 
 
 REQUIRED_TERMS = (
@@ -23,11 +23,17 @@ REQUIRED_TERMS = (
     "Edit/MultiEdit/StrReplace coverage is optional",
     "marker_emitted: true",
     "Before any native forbidden-shell test",
+    "Do\nnot write helper scripts, audit harnesses, or payload files inside the target\nproject",
     "verify `apply_patch`, `Bash`,\n  `Shell`, and `shell`",
     "Codex `tool_input.command` is the canonical patch-body field",
     "defensive aliases `input`, `patch`, and `arguments.*`",
     "alias-key failures are findings",
-    "parallel host projections unless the same agent/event/invocation/decision is\n  repeated identically",
+    "Cursor `preToolUse` deny messages are\nagent-visible, but governed allow messages may be ledger-only in the native UI",
+    "do not classify ledger-proven Cursor allow supervision as a finding solely\nbecause no visible allow banner was shown",
+    "Do not place the forbidden token\nsequence in the outer shell command, heredoc, comment, label, or inline script",
+    "construct it from fragments inside the payload\ngenerator or use a temp file created without contiguous forbidden text on the\ncommand line",
+    "Treat repeated stable simulation ids with different\n  timestamps as replay history, not duplicate hook execution.",
+    "duplicate\n  runtime hooks only when the same agent/event/invocation/decision/timestamp is\n  repeated identically",
     "CONTRACT_SIMULATED: host-specific contract was proven",
     "PASS_WITH_FINDINGS allowance is closed and narrow",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
@@ -87,14 +93,44 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "marker_emitted",
         ),
         Mutation(
+            "without_no_target_harness_rule",
+            _remove(text, "Do\nnot write helper scripts, audit harnesses, or payload files inside the target\nproject"),
+            "helper scripts",
+        ),
+        Mutation(
             "without_codex_patch_alias_contract",
             _remove(text, "defensive aliases `input`, `patch`, and `arguments.*`"),
             "defensive aliases",
         ),
         Mutation(
-            "without_dual_projection_contract",
-            _remove(text, "parallel host projections unless the same agent/event/invocation/decision is\n  repeated identically"),
-            "parallel host projections",
+            "without_cursor_allow_ledger_only_contract",
+            _remove(text, "Cursor `preToolUse` deny messages are\nagent-visible, but governed allow messages may be ledger-only in the native UI"),
+            "Cursor",
+        ),
+        Mutation(
+            "without_cursor_allow_not_finding_contract",
+            _remove(text, "do not classify ledger-proven Cursor allow supervision as a finding solely\nbecause no visible allow banner was shown"),
+            "visible allow banner",
+        ),
+        Mutation(
+            "without_forbidden_outer_command_guard",
+            _remove(text, "Do not place the forbidden token\nsequence in the outer shell command, heredoc, comment, label, or inline script"),
+            "forbidden token",
+        ),
+        Mutation(
+            "without_forbidden_fragment_payload_guard",
+            _remove(text, "construct it from fragments inside the payload\ngenerator or use a temp file created without contiguous forbidden text on the\ncommand line"),
+            "fragments",
+        ),
+        Mutation(
+            "without_replay_history_contract",
+            _remove(text, "Treat repeated stable simulation ids with different\n  timestamps as replay history, not duplicate hook execution."),
+            "replay history",
+        ),
+        Mutation(
+            "without_duplicate_timestamp_contract",
+            _remove(text, "duplicate\n  runtime hooks only when the same agent/event/invocation/decision/timestamp is\n  repeated identically"),
+            "duplicate",
         ),
         Mutation(
             "cursor_edit_made_mandatory",

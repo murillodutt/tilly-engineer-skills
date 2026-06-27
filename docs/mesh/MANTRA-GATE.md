@@ -74,7 +74,7 @@ Installed hooks are projections of the contract, not a flattened cross-host prot
 |------|-------------------|
 | Claude | `SessionStart` handles first-session setup context. `PreToolUse` blocks forbidden actions with exit `2` plus `stderr`; governed material edits are allowed with `additionalContext`; surfaced Mantra Gate messages render `🍳 Flash-Fry`; benign work is silent. |
 | Codex | `SessionStart` and `PreToolUse` are installed through TOML hook blocks with hook feature activation. Forbidden actions block with exit `2` plus `stderr`; governed material edits are supervised through `stderr`; surfaced Mantra Gate messages render `🍳 Flash-Fry`; benign work is silent. |
-| Cursor | `preToolUse` uses the host JSON permission contract. Forbidden actions return JSON permission deny with process exit `0`; governed material edits are allowed with a JSON `user_message`; surfaced Mantra Gate messages render `🍳 Flash-Fry`; benign work is silent. |
+| Cursor | `preToolUse` uses the host JSON permission contract. Forbidden actions return JSON permission deny with process exit `0`; governed material edits are allowed and may include JSON `user_message`, but native allow-path visibility can be ledger-only; the runtime ledger/sentinel is the canonical proof for first governed allow supervision. Benign work is silent. |
 
 Install and uninstall are ownership-marker based and preserve foreign hooks. Reinstalling must be idempotent across Claude, Codex, and Cursor.
 

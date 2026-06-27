@@ -20,7 +20,7 @@ import event_ledger
 import field_reports
 
 
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 PROTOCOL_VERSION = "2025-06-18"
 WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}

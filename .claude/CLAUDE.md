@@ -31,6 +31,8 @@ Success is zero if assumptions are hidden, scope is inflated, changes are not su
 - Maintainer gate (validators, self-tests) → maintainer-only; not delivered.
 - Installer, Cortex, MCP, Field Reports, runtime, or adapter script that an adopter receives, invokes, or certifies → delivered behavior (see `<release_identity>`). </scripts_classification>
 
+<code_documentation> Every code file changed or added must carry maintenance documentation either directly or through an associated Markdown reference. Direct documentation means a module docstring, top-level file comment, or narrowly placed inline comment for non-obvious logic; associated documentation means an indexed Markdown surface that names the code path and explains the contract. Do not leave behavior encoded only in code shape, test names, or commit history. The staged code documentation oracle enforces this for local commits. </code_documentation>
+
 <layer_boundary> TES has two repository layers:
 - Maintainer/development layer: root bootloaders (`AGENTS.md`, `.claude/CLAUDE.md`), local development skills (`.agents/skills/**`, `.claude/skills/**`), `docs/governance/**`, maintainer gates, and repository-only validation. This layer teaches agents how to develop TES and is not delivered to target projects by default.
 - Product/source layer: `src/**` adapter source plus adopter-facing docs, delivered runtime/helper scripts, plugin manifests, public docs, bundles, and generated or installed target surfaces. This layer is the source of truth for behavior adopters receive.

@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.211"
+VERSION = "0.3.216"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -741,6 +741,21 @@ def legacy_retirement_probe() -> dict[str, Any]:
         (target / ".tilly/field-reports/outbox.jsonl").write_text('{"event":"legacy","status":"PASS"}\n', encoding="utf-8")
         (target / ".codex").mkdir()
         (target / ".codex/config.toml").write_text("[mcp_servers.tilly-cortex]\ncommand = \"python3\"\n", encoding="utf-8")
+        (target / ".tes/hooks").mkdir(parents=True)
+        (target / ".tes/hooks/executed.jsonl").write_text(
+            '{"agent":"codex","event":"PreToolUse","session":"legacy","ts":"2026-06-26T00:00:00Z"}\n',
+            encoding="utf-8",
+        )
+        (target / ".tes/runtime/hooks").mkdir(parents=True)
+        duplicate_record = '{"agent":"codex","decision":"allow","event":"PreToolUse","mode":"pretooluse","session":"smoke-duplicate","ts":"2026-06-27T00:00:00Z"}'
+        (target / ".tes/runtime/hooks/executed.jsonl").write_text(
+            duplicate_record + "\n" + duplicate_record + "\n",
+            encoding="utf-8",
+        )
+        (target / ".tes/runtime/hook-smoke/cursor").mkdir(parents=True)
+        (target / ".tes/runtime/hook-smoke/cursor/SKILL.md").write_text("# Cursor Smoke\n", encoding="utf-8")
+        (target / ".tes/runtime/hook-smoke/run_contract_sim.py").write_text("print('residue')\n", encoding="utf-8")
+        (target / ".tes/runtime/hook-smoke/forbidden-executed.txt").write_text("EXECUTED\n", encoding="utf-8")
 
         code, stdout, stderr = run(
             [sys.executable, str(ROOT / "scripts/tes_legacy_retirement.py"), "audit", "--target", str(target)]
@@ -762,6 +777,19 @@ def legacy_retirement_probe() -> dict[str, Any]:
                 failures.append(f"legacy path still active after retirement: {relpath}")
         if not (target / ".tes/field-reports/outbox.jsonl").exists():
             failures.append("legacy Field Reports outbox was not migrated")
+        if (target / ".tes/hooks/executed.jsonl").exists():
+            failures.append("legacy hook ledger was not archived")
+        if not (target / ".tes/legacy-retirement/hooks/executed.jsonl").exists():
+            failures.append("legacy hook ledger archive is missing")
+        hook_rows = (target / ".tes/runtime/hooks/executed.jsonl").read_text(encoding="utf-8").splitlines()
+        if len(hook_rows) != 1:
+            failures.append("runtime hook ledger exact duplicates were not compacted")
+        if (target / ".tes/runtime/hook-smoke/run_contract_sim.py").exists():
+            failures.append("legacy hook audit harness script was not removed")
+        if (target / ".tes/runtime/hook-smoke/forbidden-executed.txt").exists():
+            failures.append("legacy forbidden shell residue was not removed")
+        if not (target / ".tes/runtime/hook-smoke/cursor/SKILL.md").exists():
+            failures.append("hook smoke evidence file must be preserved")
         return {"route": "legacy-retirement", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
