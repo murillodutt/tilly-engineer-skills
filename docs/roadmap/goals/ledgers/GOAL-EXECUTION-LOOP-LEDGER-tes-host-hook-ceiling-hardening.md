@@ -126,3 +126,39 @@ audit_remutation: `PASS (hook_audit_prompt_oracle mutants_checked=9; host-runtim
 distinct_refuters: `commit:check, host-runtime:matrix, tes_install self-test, hook_audit_prompt_oracle`
 stop_state: `SPEC-004_READY`
 next_allowed_action: `run full release identity sync for 0.3.211`
+
+## Release Identity Sync
+
+spec_ids: `SPEC-004`, `SPEC-005`
+spec_version: `0.1.0`
+attempt: `1`
+repair_count: `0`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `none`
+failed_attempt_recovery_decision: `not_applicable`
+release_version: `0.3.211`
+release_bundle: `docs/dist/0.3.211/tilly-engineer-skills-0.3.211.zip`
+release_bundle_sha256: `3839842d26c474815f9b401971f9b70d300583fcfd9597d6ea0fca963687f85e`
+oracle_status: `PASS (validate_reference_package, host-runtime:matrix, tes_install self-test, hook_audit_prompt_oracle, validate_tds, tds_surface_oracle, public-docs check, doc-size, public_bundle_oracle, tes_bump governance-check, git diff --check)`
+structural_method_id: `release-identity-sync`
+topology_decision: `patch release identity and public bundle surfaces for delivered runtime behavior`
+topology_decision_artifact: `package.json; docs/dist/0.3.211; docs/i18n/tes-public.structure.yml; public docs; VERSION constants`
+structural_debt: `none`
+next_structural_constraint: `commit release identity, run commit:closure, push main, tag v0.3.211, release:check, public_pages_oracle`
+topology_probe_result: `PASS (public_bundle_oracle and tes_bump governance-check agree on 0.3.211)`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS (host-runtime:matrix includes Codex patch alias fixture coverage)`
+adversary_objection: `RESOLVED: release identity now binds source fix, public prompt, and bundle SHA`
+shared_contract_extended: `yes (next prompt is docs/install/HOOK-AUDIT-PROMPT.md)`
+extension_point_proven: `yes (prompt oracle mutants checked alias and dual-projection language)`
+contract_handoff_artifact: `docs/install/HOOK-AUDIT-PROMPT.md`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `commit gates and bundle/governance oracles`
+auditor_rewrote_no_oracle: `no`
+audit_remutation: `PASS (hook_audit_prompt_oracle mutants_checked=9)`
+distinct_refuters: `validate_reference_package, host-runtime:matrix, tes_install self-test, hook_audit_prompt_oracle, validate_tds, tds_surface_oracle, public_bundle_oracle`
+stop_state: `RELEASE_COMMIT_READY`
+next_allowed_action: `stage, commit, commit:closure, push, tag, release checks`
