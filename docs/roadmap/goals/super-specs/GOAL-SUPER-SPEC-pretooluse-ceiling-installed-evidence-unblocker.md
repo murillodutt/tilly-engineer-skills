@@ -19,7 +19,8 @@ or treating a noisy aggregate ledger as a runtime failure.
 This Super SPEC is a follow-on execution router, not a replacement for ADR 0009
 or its linear slice plan. ADR 0009 remains the canonical architecture; this
 document targets the four senior recommendations from the first installed
-ceiling audit after `0.3.220`.
+ceiling audit after `0.3.220`, anchored below by tracked evidence and by the
+owner-provided review that authorized this repair.
 
 Central rule:
 
@@ -30,6 +31,7 @@ Current v2 evidence decides ceiling readiness; historical rows explain history.
 ## Anchor Artifacts
 
 ```text
+hash_algorithm=sha256
 architecture_anchor=docs/adr/0009-pretooluse-ceiling-contract-and-hook-topology.md
 contract_anchor=docs/architecture/PRETOOLUSE-CONTRACT.md
 contract_hash=5218b57ba81fee0614eff3308d78c6d14a0377d0f8783132f77fd38b682c2a71
@@ -37,6 +39,9 @@ execution_plan_anchor=docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0009-pr
 execution_plan_hash=53d10883f0054c11e76c3c3b2ccec7cccefca8fdc5e5bc063e13cf64bd9ca780
 closure_report_anchor=docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-closure-audit/REPORT.md
 closure_report_hash=214b39a3931eefb3c7ce53416f12078b8c06782d91c030b1c11b859707f732d7
+installed_evidence_anchor=docs/evidence/reports/2026/06/27/hooks/pretooluse-ceiling-installed-evidence/REPORT.md
+installed_evidence_hash=7e6314c35ad286ddcdb5368c789bf1f587fb03dd7686770f6fb65f171e4715ae
+owner_review_source=owner-provided installed audit review, untracked by design
 ```
 
 If any anchor changes before execution, the executor must re-read the changed
@@ -74,6 +79,14 @@ or private target evidence is authorized by this Super SPEC. Installed-target
 tests may be run only on an authorized target or canary. Any delivered package
 behavior change requires an explicit release identity decision before closure.
 
+## Unit Commit Contract
+
+`SPEC-000` may close as preflight with no commit. Each material unit from
+`SPEC-001` through `SPEC-006` must close with one local commit for that unit, or
+with a named no-op/blocked state explaining why no commit exists. Do not batch
+multiple material units into one commit unless the owner explicitly authorizes
+the batch and the closeout maps the combined commit back to each unit.
+
 ## Non-Objectives
 
 - Do not rewrite the PreToolUse kernel unless a fixture proves current v2
@@ -95,10 +108,19 @@ behavior change requires an explicit release identity decision before closure.
 ```text
 ceiling_evidence_scope:
   schema_version: pretooluse_decision@2
-  considered_records: <count>
-  ignored_legacy_records: <count>
-  oldest_considered_ts: <timestamp or null>
-  newest_considered_ts: <timestamp or null>
+  claim_scope: current_host | all_configured_hosts
+  aggregation_policy: per_host_no_cross_fill
+  current_host: <host or null>
+  required_hosts: [claude, codex, cursor] | [<current-host>]
+  per_host:
+    <host>:
+      agent: <agent>
+      native_evidence: observed | not_available | contract_simulated_only
+      considered_records: <count>
+      ignored_legacy_records: <count>
+      oldest_considered_ts: <timestamp or null>
+      newest_considered_ts: <timestamp or null>
+      status: PASS_CEILING | PASS_BASIC_WITH_CEILING_GAPS | NEEDS_EVIDENCE
   legacy_policy: historical_context_only
 ```
 
@@ -106,8 +128,14 @@ Legacy rows may produce informational migration context, but they must not
 produce current `missing_reason_codes`, `missing_classifier_trace`,
 `missing_renderer_trace`, `missing_command_category`, `missing_payload_source`,
 `missing_decision_projection`, `raw_command_not_redacted`, or
-`missing_pretooluse_decision_v2_schema` gaps when enough v2 current-host
-evidence exists.
+`missing_pretooluse_decision_v2_schema` gaps inside a host scope when enough v2
+evidence exists for that same host.
+
+`PASS_CEILING` must never be derived by pooling fields across hosts. Each host
+must independently satisfy the full v2 evidence checklist for its declared
+scope. A current-host audit may claim only the current-host scope. A package or
+all-host claim requires each configured host to have its own complete scoped
+evidence, or it must close as `NEEDS_EVIDENCE` for the missing host.
 
 ### Installed Health Fields
 
@@ -126,6 +154,20 @@ ceiling_evidence_scope
 The source matrix may still compute these fields for source-side checks, but
 installed audit should not depend on source-only summaries to answer installed
 readiness.
+
+Installed `hook-health` owns these installed field sources:
+
+- `helper_contract_status`: computed from the installed `.tes/bin`
+  `pretooluse_kernel.py` and `pretooluse_session.py` imports plus their expected
+  schema/contract constants or lock-recorded fingerprints. Source-only imports
+  cannot fill this field for an installed target.
+- `discoverability_status`: computed from installed evidence only. Acceptable
+  sources are scoped v2 ledger rows with `outcome=needs_discoverability`,
+  `risk=needs-discoverability`, the
+  `needs_discoverability_unknown_mutation` reason code, and renderer trace, or a
+  hook-health-owned installed fixture/probe that uses the installed helpers. The
+  source matrix may verify this field, but must not synthesize it after reading
+  `hook-health`.
 
 ### Installed Contract Reference
 
@@ -184,15 +226,19 @@ Territory:
 Required behavior:
 
 - mixed ledgers with complete v2 rows and older pre-v2 rows do not produce v2
-  missing-field gaps from the legacy rows;
+  missing-field gaps from the legacy rows inside the same host scope;
 - mixed ledgers still report ignored legacy counts and preserve duplicate
   warnings when exact duplicates are real;
-- v2 rows that actually miss required fields still fail ceiling evidence.
+- v2 rows that actually miss required fields still fail ceiling evidence;
+- a ledger where Claude supplies `reason_codes`, Codex supplies
+  `renderer_trace`, and Cursor supplies redaction must still fail all-host
+  `PASS_CEILING`; no host can borrow fields from another host.
 
 Required oracle:
 
 - a red-capable fixture that fails before the scoped evaluation and passes
   after repair;
+- a red-capable fixture proving cross-host field pooling cannot pass;
 - `python3 scripts/tes_install.py --self-test`;
 - `python3 scripts/host_runtime_matrix_oracle.py --self-test`;
 - `git diff --check`.
@@ -213,6 +259,9 @@ Required behavior:
 
 - installed `hook-health --json-only` contains `helper_contract_status`;
 - installed `hook-health --json-only` contains `discoverability_status`;
+- both fields are computed by installed `hook-health` from installed helpers,
+  scoped ledger rows, or installed fixture/probe evidence, not injected by
+  `host_runtime_matrix_oracle.py`;
 - absent helper/discoverability evidence returns explicit `NEEDS_EVIDENCE` or
   `MISSING`, not silent omission;
 - audit prompt requires these fields before `PASS_CEILING`.
@@ -287,6 +336,7 @@ Territory:
 
 - authorized installed target or canary only;
 - `docs/install/HOOK-AUDIT-PROMPT.md`;
+- `scripts/pretooluse_evidence_oracle.py`;
 - sanitized evidence packet under `docs/evidence/reports/hooks/**` or dated
   equivalent.
 
@@ -297,12 +347,18 @@ Required behavior:
 - `hook-health` reports `floor_status=PASS_BASIC`;
 - `hook-health` reports `ceiling_status=PASS_CEILING` only if v2 current-host
   evidence is complete and no ceiling gaps remain;
-- if native evidence is unavailable, close as `NEEDS_EVIDENCE`.
+- if native evidence is unavailable, close as `NEEDS_EVIDENCE`;
+- `pretooluse_evidence_oracle.py` supports the existing needs-evidence packet
+  contract and a ceiling-validation mode for sanitized `PASS_CEILING` packets;
+- the ceiling-validation mode fails simulated-only packets, packets missing
+  host attribution, packets without scoped native evidence for the claimed host,
+  and packets where `ceiling_status` is cross-filled across hosts.
 
 Required oracle:
 
 - installed `HOOK-AUDIT-PROMPT.md` report;
-- `python3 scripts/pretooluse_evidence_oracle.py --packet <packet>`;
+- `python3 scripts/pretooluse_evidence_oracle.py --packet <packet> --expect needs-evidence`;
+- `python3 scripts/pretooluse_evidence_oracle.py --packet <packet> --expect pass-ceiling`;
 - `python3 scripts/private_vocabulary_oracle.py --paths <packet-files>`.
 
 ### SPEC-006 Release Identity And Closure
@@ -354,12 +410,13 @@ Closeout must report:
 - whether the installed contract reference is present and hash-matched;
 - duplicate/noise status and whether it affected ceiling;
 - installed native evidence packet path or `NEEDS_EVIDENCE`;
-- commit hash for each material unit;
+- commit hash for each material unit, mapped to `SPEC-001` through `SPEC-006`;
 - sync status.
 
 ## Prompt Status
 
 ```text
 PROMPT_STATUS=SUPER_SPEC_MATERIALIZED
+REPAIR_STATUS=OBJECTIONS_REPAIRED_FOR_EXECUTION
 NEXT_ALLOWED_ACTION=execute SPEC-000 preflight before runtime edits
 ```
