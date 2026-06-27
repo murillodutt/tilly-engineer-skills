@@ -66,5 +66,39 @@ auditor_distinct_from_operator: `not_applicable`
 auditor_rewrote_no_oracle: `not_applicable`
 audit_remutation: `not_applicable`
 distinct_refuters: `not_applicable`
-stop_state: `active`
-next_allowed_action: `run SPEC-000 focused oracles, then local commit`
+stop_state: `source_local_committed`
+next_allowed_action: `advance SPEC-005 release identity only after explicit sync/release authorization`
+
+## Source-Local Material Commit
+
+spec_ids: `SPEC-001`, `SPEC-002`, `SPEC-003`, `SPEC-004`
+spec_version: `0.1.2`
+attempt: `1`
+repair_count: `2`
+audit_repair_cycle: `0`
+first_unexecuted_unit: `SPEC-005`
+failed_attempt_recovery_decision: `not_applicable`
+commit: 54c6f74f
+oracle_status: `PASS (commit:check, host-runtime matrix, tes_install self-test, hook audit prompt oracle, mantra pretooluse, mantra gate, tds, tds surface, reference package, public-docs check, diff-check)`
+structural_method_id: `platform-runtime-script-and-doc-contract`
+topology_decision: `extend existing installer, matrix, prompt, and commit-gate surfaces; no new runtime package boundary`
+topology_decision_artifact: `ledger-section`
+structural_debt: `compacted source-local commit covers four declared implementation units because the continuation inherited an already edited worktree; no remote sync or release closure claimed`
+next_structural_constraint: `do not claim execution-loop complete until SPEC-005 release identity and SPEC-006 per-host native reruns are completed`
+topology_probe_result: `PASS (commit:check staged-surface and host-runtime matrix)`
+browser_metrics_contract: `not_applicable`
+visual_spatial_oracle: `not_applicable`
+browser_attempt: `not_applicable`
+visual_evidence: `not_applicable`
+runtime_smoke_oracle: `PASS (npm run host-runtime:matrix)`
+adversary_objection: `RESOLVED before commit`
+shared_contract_extended: `yes (PreToolUse ledger decision fields)`
+extension_point_proven: `yes (record_hook_execution optional pretooluse_decision)`
+contract_handoff_artifact: `scripts/tes_install.py record_hook_execution and scripts/host_runtime_matrix_oracle.py assertions`
+api_lint_status: `not_applicable`
+auditor_distinct_from_operator: `tree-adversary subagent closed after objections were folded into source`
+auditor_rewrote_no_oracle: `no`
+audit_remutation: `PASS (hook_audit_prompt_oracle in-memory mutants; host_runtime_matrix negative fixtures)`
+distinct_refuters: `tree-adversary subagent plus commit:check gates`
+stop_state: `NEEDS_OWNER_DECISION`
+next_allowed_action: `SPEC-005 release identity: patch bump, bundle/public docs, full closure, push/tag/release only after explicit authorization`
