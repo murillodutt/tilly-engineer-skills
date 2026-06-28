@@ -383,7 +383,7 @@
               },
               {
                 "title": "Three agents, one contract",
-                "body": "Codex, Claude Code, and Cursor share the same rules. Codex and Claude have retained behavior evidence; Cursor matches the contract structurally."
+                "body": "Codex, Claude Code, and Cursor share the same rules, but each host keeps its own hook evidence. One host never proves another host by accident."
               }
             ]
           },
@@ -415,7 +415,7 @@
               },
               {
                 "title": "Tres agentes, un contrato",
-                "body": "Codex, Claude Code y Cursor comparten las mismas reglas. Codex y Claude tienen evidencia retenida de comportamiento; Cursor coincide con el contrato a nivel estructural."
+                "body": "Codex, Claude Code y Cursor comparten las mismas reglas, pero cada host conserva su propia evidencia de hooks. Un host nunca prueba otro por accidente."
               }
             ]
           },
@@ -447,7 +447,7 @@
               },
               {
                 "title": "Três agentes, um contrato",
-                "body": "Codex, Claude Code e Cursor compartilham as mesmas regras. Codex e Claude têm evidência comportamental retida; o Cursor casa com o contrato no nível estrutural."
+                "body": "Codex, Claude Code e Cursor compartilham as mesmas regras, mas cada host mantém sua própria evidência de hooks. Um host nunca prova outro por acidente."
               }
             ]
           },
@@ -1963,6 +1963,10 @@
               {
                 "title": "MCP or hooks won't connect",
                 "body": "Run `/tes-mcp` to register or repair MCP, or `/tes-doctor` for a full health-check and repair. If a status says the host needs a restart or trust, do that in your editor first, then re-run."
+              },
+              {
+                "title": "Codex reports two hook configs",
+                "body": "Keep `.codex/config.toml` as the Codex hook source. If Codex also loads `.codex/hooks.json`, treat that file as stale residue, remove it, then run `/tes-doctor` or reinstall."
               }
             ]
           },
@@ -1995,6 +1999,10 @@
               {
                 "title": "MCP o hooks no conectan",
                 "body": "Corre `/tes-mcp` para registrar o reparar MCP, o `/tes-doctor` para un health-check completo y reparacion. Si un estado dice que el host necesita reinicio o trust, hazlo en tu editor primero y vuelve a correr."
+              },
+              {
+                "title": "Codex reporta dos configs de hooks",
+                "body": "Mantén `.codex/config.toml` como fuente de hooks de Codex. Si Codex tambien carga `.codex/hooks.json`, trata ese archivo como residuo viejo, elimínalo y ejecuta `/tes-doctor` o reinstala."
               }
             ]
           },
@@ -2027,6 +2035,10 @@
               {
                 "title": "MCP ou hooks não conectam",
                 "body": "Rode `/tes-mcp` para registrar ou reparar o MCP, ou `/tes-doctor` para um health-check completo e reparo. Se um estado disser que o host precisa reiniciar ou dar trust, faça isso no seu editor primeiro e rode de novo."
+              },
+              {
+                "title": "Codex reporta dois configs de hook",
+                "body": "Mantenha `.codex/config.toml` como fonte de hooks do Codex. Se o Codex também carregar `.codex/hooks.json`, trate esse arquivo como resíduo antigo, remova-o e rode `/tes-doctor` ou reinstale."
               }
             ]
           },
