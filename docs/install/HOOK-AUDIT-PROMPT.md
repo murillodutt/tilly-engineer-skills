@@ -54,9 +54,15 @@ Run only commands that exist in installed targets:
 - python3 .tes/bin/installed_certification_oracle.py --target . --json-only
 - python3 .tes/bin/mantra_gate_adoption_oracle.py --target .
 - python3 .tes/bin/tes_install.py status --target .
-- python3 .tes/bin/tes_install.py hook-health --target . --json-only
+- python3 .tes/bin/tes_install.py hook-health --target . --json-only --agent <current-host>
 - python3 -c 'import sys; sys.path.insert(0, ".tes/bin"); import pretooluse_kernel; print("PRETOOLUSE_KERNEL_IMPORT_OK")'
 - python3 -c 'import sys; sys.path.insert(0, ".tes/bin"); import pretooluse_session; print("PRETOOLUSE_SESSION_IMPORT_OK")'
+
+Use `--agent <current-host>` for the final per-host hook-health run. Omit it
+only when intentionally auditing the all-configured-host aggregate. A per-host
+native audit must report `ceiling_evidence_scope.claim_scope=current_host`,
+`ceiling_evidence_scope.current_host=<current-host>`, and
+`ceiling_evidence_scope.required_hosts` containing only that host.
 
 If this is the TES source repository, run `npm run host-runtime:matrix` before
 the installed-target checks. If this is an adopter target, mark that source gate
@@ -166,11 +172,13 @@ command line. The simulation must cover:
   parallel host projections. Treat repeated stable simulation ids with different
   timestamps as replay history, not duplicate hook execution. Report duplicate
   runtime hooks only when the same agent/event/invocation/decision/timestamp is
-  repeated identically. For external dedup or analytics, do not key only on
-  invocation and timestamp; include at least tool, risk, path or command, and
-  session/mode when present. Cursor may batch multiple native tool projections
-  under the same invocation/timestamp, and those rows are not duplicates when
-  tool, path, risk, marker, or mode differ.
+  repeated identically. Current v2 PreToolUse rows must carry a non-empty
+  `invocation`; when a host or simulation payload omits a tool id, TES should
+  stamp a stable synthetic invocation. For external dedup or analytics, do not
+  key only on invocation and timestamp; include at least tool, risk, path or
+  command, and session/mode when present. Cursor may batch multiple native tool
+  projections under the same invocation/timestamp, and those rows are not
+  duplicates when tool, path, risk, marker, or mode differ.
   Duplicate history, replay residue, and Cursor batch rows are warning/info
   hygiene only; they must not block `PASS_CEILING` by themselves. They block
   ceiling only when current `pretooluse_decision@2` rows for the same host/scope
@@ -252,9 +260,10 @@ Ceiling evidence checklist: before reporting `PASS_CEILING`, verify installed
 evidence names `reason_codes`, `classifier_trace`, `renderer_trace`,
 `command_redacted=true` or `command_category`, `dedupe_contract`,
 top-level hook-health `helper_contract_status=PASS`, `floor_status`,
-`ceiling_status`, `ceiling_gaps`, and top-level hook-health
-`discoverability_status=NEEDS_DISCOVERABILITY` or native equivalent. Missing
-checklist item is a ceiling gap, not a floor failure.
+`ceiling_status`, `ceiling_gaps`, per-host
+`ceiling_evidence_scope.current_host`, non-empty PreToolUse `invocation`, and
+top-level hook-health `discoverability_status=NEEDS_DISCOVERABILITY` or native
+equivalent. Missing checklist item is a ceiling gap, not a floor failure.
 
 Do not collapse `PASS` into `PASS_CEILING`. If only the floor is proven, say the
 hooks are operational at `PASS_BASIC` and list ceiling gaps separately.

@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
-VERSION = "0.3.222"
+VERSION = "0.3.223"
 
 
 REQUIRED_TERMS = (
@@ -25,6 +25,11 @@ REQUIRED_TERMS = (
     "Do not fail the current run only because\nanother platform's native tool is unavailable",
     "CONFIGURED, OBSERVED from prior ledger records, CONTRACT_SIMULATED, or",
     "If this is an adopter target, mark that source gate\nN/A",
+    "python3 .tes/bin/tes_install.py hook-health --target . --json-only --agent <current-host>",
+    "Use `--agent <current-host>` for the final per-host hook-health run",
+    "`ceiling_evidence_scope.claim_scope=current_host`",
+    "`ceiling_evidence_scope.current_host=<current-host>`",
+    "`ceiling_evidence_scope.required_hosts` containing only that host",
     "If the current Cursor host exposes StrReplace",
     "use\n  StrReplace for the second same-path mutation",
     "marker_emitted: true",
@@ -52,10 +57,12 @@ REQUIRED_TERMS = (
     "construct it from fragments inside the payload\ngenerator or use a temp file created without contiguous forbidden text on the\ncommand line",
     "Treat repeated stable simulation ids with different\n  timestamps as replay history, not duplicate hook execution.",
     "duplicate\n  runtime hooks only when the same agent/event/invocation/decision/timestamp is\n  repeated identically",
-    "For external dedup or analytics, do not key only on\n  invocation and timestamp",
-    "include at least tool, risk, path or command, and\n  session/mode when present",
-    "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp",
-    "not duplicates when\n  tool, path, risk, marker, or mode differ",
+    "Current v2 PreToolUse rows must carry a non-empty\n  `invocation`",
+    "stamp a stable synthetic invocation",
+    "For external dedup or analytics, do not\n  key only on invocation and timestamp",
+    "include at least tool, risk, path or\n  command, and session/mode when present",
+    "Cursor may batch multiple native tool\n  projections under the same invocation/timestamp",
+    "not\n  duplicates when tool, path, risk, marker, or mode differ",
     "Duplicate history, replay residue, and Cursor batch rows are warning/info\n  hygiene only; they must not block `PASS_CEILING` by themselves",
     "ceiling only when current `pretooluse_decision@2` rows for the same host/scope\n  contradict decision, risk, renderer trace, redaction, or marker state",
     "Hook-health split: JSON schema `tes-hook-health@2` keeps `status` as the\n  legacy functional field",
@@ -87,8 +94,8 @@ REQUIRED_TERMS = (
     "evidence names `reason_codes`, `classifier_trace`, `renderer_trace`",
     "`command_redacted=true` or `command_category`, `dedupe_contract`",
     "top-level hook-health `helper_contract_status=PASS`, `floor_status`",
-    "`ceiling_status`, `ceiling_gaps`, and top-level hook-health\n`discoverability_status=NEEDS_DISCOVERABILITY` or native equivalent",
-    "Missing\nchecklist item is a ceiling gap, not a floor failure.",
+    "`ceiling_status`, `ceiling_gaps`, per-host\n`ceiling_evidence_scope.current_host`, non-empty PreToolUse `invocation`, and\ntop-level hook-health `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
+    "Missing checklist item is a ceiling gap, not a floor failure.",
     "Missing current-host native\nPreToolUse, matcher gaps, or execution of a forbidden command is FAIL",
 )
 
@@ -156,6 +163,16 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "Ceiling Assessment",
         ),
         Mutation(
+            "without_per_host_hook_health_command",
+            _remove(text, "python3 .tes/bin/tes_install.py hook-health --target . --json-only --agent <current-host>"),
+            "hook-health",
+        ),
+        Mutation(
+            "without_current_host_scope_requirement",
+            _remove(text, "`ceiling_evidence_scope.current_host=<current-host>`"),
+            "current_host",
+        ),
+        Mutation(
             "without_contract_simulated_evidence_class",
             _remove(text, "CONTRACT_SIMULATED: host-specific contract was proven"),
             "CONTRACT_SIMULATED",
@@ -211,24 +228,34 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "duplicate",
         ),
         Mutation(
+            "without_non_empty_invocation_contract",
+            _remove(text, "Current v2 PreToolUse rows must carry a non-empty\n  `invocation`"),
+            "invocation",
+        ),
+        Mutation(
+            "without_synthetic_invocation_contract",
+            _remove(text, "stamp a stable synthetic invocation"),
+            "synthetic invocation",
+        ),
+        Mutation(
             "without_external_dedup_key_warning",
-            _remove(text, "For external dedup or analytics, do not key only on\n  invocation and timestamp"),
+            _remove(text, "For external dedup or analytics, do not\n  key only on invocation and timestamp"),
             "external dedup",
         ),
         Mutation(
             "without_external_dedup_fields",
-            _remove(text, "include at least tool, risk, path or command, and\n  session/mode when present"),
+            _remove(text, "include at least tool, risk, path or\n  command, and session/mode when present"),
             "tool, risk",
         ),
         Mutation(
             "without_cursor_batched_projection_note",
-            _remove(text, "Cursor may batch multiple native tool projections\n  under the same invocation/timestamp"),
+            _remove(text, "Cursor may batch multiple native tool\n  projections under the same invocation/timestamp"),
             "Cursor",
         ),
         Mutation(
             "without_non_duplicate_differing_fields",
-            _remove(text, "not duplicates when\n  tool, path, risk, marker, or mode differ"),
-            "not duplicates",
+            _remove(text, "not\n  duplicates when tool, path, risk, marker, or mode differ"),
+            "tool, path",
         ),
         Mutation(
             "without_historical_noise_non_blocking_ceiling_rule",
@@ -449,13 +476,13 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             "without_ceiling_checklist_discoverability",
             _remove(
                 text,
-                "`ceiling_status`, `ceiling_gaps`, and top-level hook-health\n`discoverability_status=NEEDS_DISCOVERABILITY` or native equivalent",
+                "`ceiling_status`, `ceiling_gaps`, per-host\n`ceiling_evidence_scope.current_host`, non-empty PreToolUse `invocation`, and\ntop-level hook-health `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
             ),
             "discoverability_status",
         ),
         Mutation(
             "without_ceiling_gap_not_floor_failure",
-            _remove(text, "Missing\nchecklist item is a ceiling gap, not a floor failure."),
+            _remove(text, "Missing checklist item is a ceiling gap, not a floor failure."),
             "ceiling gap",
         ),
         Mutation(

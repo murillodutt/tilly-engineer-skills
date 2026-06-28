@@ -51,7 +51,8 @@ PreToolUse reaches `PASS_CEILING` only when it proves the floor contract and add
 - patch-body evidence: Codex `apply_patch` path extraction treats `tool_input.command` as canonical and accepts defensive aliases `input`, `patch`, flat string `arguments`, and `arguments.command`/`arguments.input`/`arguments.patch`;
 - discoverability gate: observed or exposed host tool names that look mutating must not be silently classified as routine; ambiguous host semantics produce `NEEDS_DISCOVERABILITY` until fixture or native evidence resolves them;
 - renderer parity: host-specific renderers are certified by fixtures that prove Claude Code, Codex, and Cursor contracts without flattening them into one protocol;
-- ledger analytics contract: external dedup and analytics use tool, risk, path or command, session/mode, and marker state, not only invocation plus timestamp; anti-cry-wolf renderer transitions from first marker to silent repeat are expected, not current v2 contradictions;
+- ledger analytics contract: current v2 PreToolUse rows carry a non-empty invocation, using a stable synthetic invocation when a host or simulation payload omits a tool id; external dedup and analytics use tool, risk, path or command, session/mode, and marker state, not only invocation plus timestamp; anti-cry-wolf renderer transitions from first marker to silent repeat are expected, not current v2 contradictions;
+- current-host provenance: per-host native audits expose `ceiling_evidence_scope.claim_scope=current_host`, `ceiling_evidence_scope.current_host=<host>`, and required host evidence limited to that host;
 - drift detection: the next audit can identify whether a regression came from host payload shape, kernel classification, session suppression, renderer output, or ledger write;
 - red-capable oracle coverage: the source package has an oracle that fails when the canonical contract loses the floor/ceiling distinction, reason-code requirement, discoverability gate, or host-payload evidence rule.
 
@@ -59,12 +60,12 @@ If a run proves the floor but not these ceiling guarantees, report `PASS_BASIC` 
 
 ## Current Runtime Slice
 
-The source kernel currently implements the first ceiling substrate slice: every
-kernel decision carries stable `reason_codes`, and an unknown mutating-looking
-tool on a governed path returns `NEEDS_DISCOVERABILITY` instead of routine
-allow. This is not yet `PASS_CEILING`: classifier trace, host payload evidence,
-renderer trace, ledger trace, hook-health floor/ceiling split, and installed
-per-host ceiling evidence remain required.
+The source runtime now implements the ceiling substrate: every kernel decision
+carries stable `reason_codes`, unknown mutating-looking tools on governed paths
+return `NEEDS_DISCOVERABILITY` instead of routine allow, host renderers preserve
+their native contracts, and hook-health separates floor from ceiling evidence.
+`PASS_CEILING` still requires installed per-host runtime evidence; source
+capability alone is not enough.
 
 ## Status Vocabulary
 

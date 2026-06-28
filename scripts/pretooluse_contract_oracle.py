@@ -20,7 +20,7 @@ PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
 FRAMEWORK_PATH = ROOT / "docs/architecture/INSTALLATION-FRAMEWORK.md"
 DOCS_INDEX_PATH = ROOT / "docs/INDEX.md"
 TDS_INDEX_PATH = ROOT / "docs/tds/DOCS-INDEX.yml"
-VERSION = "0.3.222"
+VERSION = "0.3.223"
 
 
 CONTRACT_TERMS = (
@@ -38,6 +38,9 @@ CONTRACT_TERMS = (
     "discoverability gate",
     "renderer parity",
     "ledger analytics contract",
+    "stable synthetic invocation",
+    "current-host provenance",
+    "ceiling_evidence_scope.current_host",
     "drift detection",
     "red-capable oracle coverage",
     "Do not call it `PASS_CEILING`.",

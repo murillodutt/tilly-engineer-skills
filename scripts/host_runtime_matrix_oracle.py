@@ -807,6 +807,8 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             failures.append(f"ledger: unexpected runtime record shape {item!r}")
         if item.get("schema_version") != "pretooluse_decision@2":
             failures.append(f"ledger: PreToolUse record must use pretooluse_decision@2 schema {item!r}")
+        if not item.get("invocation"):
+            failures.append(f"ledger: PreToolUse record must persist explicit or synthetic invocation {item!r}")
         if "command" in item:
             failures.append(f"ledger: PreToolUse record must not persist raw command text {item!r}")
         if item.get("command_category") not in {
@@ -842,6 +844,31 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         if _event_state(health, agent, event) != "OBSERVED":
             failures.append(f"hook-health: {agent} {event} must be OBSERVED after matrix")
     _assert_hook_health_contract(health, failures)
+
+    agent_health_proc = _run(
+        [
+            sys.executable,
+            str(target / ".tes/bin/tes_install.py"),
+            "hook-health",
+            "--target",
+            str(target),
+            "--json-only",
+            "--agent",
+            "codex",
+        ]
+    )
+    agent_health = _parse_first_json(agent_health_proc.stdout)
+    if agent_health_proc.returncode != 0:
+        failures.append(f"hook-health --agent codex: expected rc=0, got {agent_health_proc.returncode}")
+    agent_scope = _as_dict(agent_health.get("ceiling_evidence_scope"))
+    if agent_scope.get("claim_scope") != "current_host":
+        failures.append("hook-health --agent codex: ceiling_evidence_scope must use current_host claim scope")
+    if agent_scope.get("current_host") != "codex":
+        failures.append("hook-health --agent codex: current_host must be codex")
+    if agent_scope.get("required_hosts") != ["codex"]:
+        failures.append(f"hook-health --agent codex: required_hosts must be ['codex'], got {agent_scope.get('required_hosts')!r}")
+    if sorted(_as_dict(agent_scope.get("per_host"))) != ["codex"]:
+        failures.append("hook-health --agent codex: per_host must contain only codex evidence")
     return health
 
 

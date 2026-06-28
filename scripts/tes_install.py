@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.222"
+VERSION = "0.3.223"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -2371,11 +2371,37 @@ def record_hook_execution(
                 ):
                     if key in pretooluse_decision:
                         record[key] = pretooluse_decision[key]
+            if not record.get("invocation"):
+                record["invocation"] = pretooluse_synthetic_invocation(record)
         if not hook_record_already_written(sentinel, record):
             with sentinel.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(record, sort_keys=True) + "\n")
     except OSError:
         pass
+
+
+def pretooluse_synthetic_invocation(record: dict[str, Any]) -> str:
+    """Create a privacy-preserving invocation id when a host omits tool ids."""
+    parts = {
+        "agent": record.get("agent"),
+        "event": record.get("event_canonical"),
+        "mode": record.get("mode"),
+        "session": record.get("session"),
+        "tool": record.get("tool"),
+        "path": record.get("path"),
+        "command_category": record.get("command_category"),
+        "risk": record.get("risk"),
+        "outcome": record.get("outcome"),
+        "decision": record.get("decision"),
+        "permission_decision": record.get("permission_decision"),
+        "marker_emitted": record.get("marker_emitted"),
+        "context_suppressed": record.get("context_suppressed"),
+    }
+    digest = hashlib.sha256(json.dumps(parts, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
+    agent = str(record.get("agent") or "agent")
+    session = str(record.get("session") or "session")
+    tool = str(record.get("tool") or "tool")
+    return f"synthetic:{agent}:{session}:{tool}:{digest}"
 
 
 HOOK_RECORD_DEDUPE_FIELDS = (
@@ -2953,7 +2979,7 @@ def pretooluse_discoverability_status(records: list[dict[str, Any]]) -> str:
     return "NEEDS_EVIDENCE" if has_v2_pretooluse else "MISSING"
 
 
-def hook_health_payload(target: Path) -> dict[str, Any]:
+def hook_health_payload(target: Path, *, current_host: str | None = None) -> dict[str, Any]:
     target = target_root(target)
     configured = configured_hook_events(target)
     current_records = read_hook_execution_records(target, HOOK_SENTINEL_PATH)
@@ -3056,7 +3082,11 @@ def hook_health_payload(target: Path) -> dict[str, Any]:
         status_value = "PASS_WITH_FINDINGS"
 
     floor_status_value = hook_floor_status(status_value, current_records)
-    ceiling_evidence_scope, ceiling_gaps = pretooluse_ceiling_evidence(current_records, configured=configured)
+    ceiling_evidence_scope, ceiling_gaps = pretooluse_ceiling_evidence(
+        current_records,
+        configured=configured,
+        current_host=current_host if current_host in AGENTS else None,
+    )
     ceiling_status_value = hook_ceiling_status(floor_status_value, ceiling_gaps)
     helper_contract_status = installed_pretooluse_helper_contract_status(target)
     discoverability_status = pretooluse_discoverability_status(current_records)
@@ -3381,7 +3411,7 @@ def status(args: argparse.Namespace) -> int:
 
 
 def hook_health(args: argparse.Namespace) -> int:
-    result = hook_health_payload(args.target)
+    result = hook_health_payload(args.target, current_host=getattr(args, "agent", None))
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["status"] in {"PASS", "PASS_WITH_FINDINGS", "NEEDS_EVIDENCE"} else 1
 
@@ -4262,6 +4292,30 @@ def self_test() -> int:
         if len(dedupe_records) != 1:
             failures.append("runtime hook ledger must skip exact duplicate PreToolUse records")
 
+        synthetic_invocation_input = {
+            "hook_event_name": "PreToolUse",
+            "session_id": "synthetic-invocation",
+            "tool_name": "Read",
+            "tool_input": {"file_path": "src/app.py"},
+        }
+        record_hook_execution(
+            target,
+            "codex",
+            synthetic_invocation_input,
+            mode="pretooluse",
+            pretooluse_decision=dedupe_decision,
+        )
+        synthetic_invocation_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("agent") == "codex" and record.get("session") == "synthetic-invocation"
+        ]
+        if len(synthetic_invocation_records) != 1:
+            failures.append("runtime hook ledger must record the synthetic invocation fixture")
+        elif not str(synthetic_invocation_records[0].get("invocation") or "").startswith(
+            "synthetic:codex:synthetic-invocation:Read:"
+        ):
+            failures.append("runtime hook ledger must stamp a stable synthetic invocation when hosts omit tool ids")
+
         anti_input = {
             "hook_event_name": "PreToolUse",
             "session_id": "dedupe-anti-cry-wolf",
@@ -4434,6 +4488,37 @@ def self_test() -> int:
             ):
                 if field not in entry:
                     failures.append(f"hook-health ceiling evidence scope must expose {agent}.{field}")
+        hook_health_claude_result = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook-health",
+                "--target",
+                str(target),
+                "--json-only",
+                "--agent",
+                "claude",
+            ],
+            cwd=target,
+        )
+        if hook_health_claude_result.returncode != 0:
+            failures.append("hook-health --agent claude must pass when current-host evidence exists")
+            failures.extend(hook_health_claude_result.stdout.splitlines())
+            failures.extend(hook_health_claude_result.stderr.splitlines())
+        hook_health_claude_payload = parse_json_output(hook_health_claude_result.stdout)
+        claude_scope = hook_health_claude_payload.get("ceiling_evidence_scope")
+        claude_scope = claude_scope if isinstance(claude_scope, dict) else {}
+        if claude_scope.get("claim_scope") != "current_host":
+            failures.append("hook-health --agent must scope ceiling_evidence_scope.claim_scope=current_host")
+        if claude_scope.get("current_host") != "claude":
+            failures.append("hook-health --agent claude must expose ceiling_evidence_scope.current_host=claude")
+        if claude_scope.get("required_hosts") != ["claude"]:
+            failures.append(
+                f"hook-health --agent claude must require only claude evidence, got {claude_scope.get('required_hosts')!r}"
+            )
+        claude_per_host = claude_scope.get("per_host") if isinstance(claude_scope.get("per_host"), dict) else {}
+        if sorted(claude_per_host) != ["claude"]:
+            failures.append("hook-health --agent claude must expose only claude per-host ceiling evidence")
         dedupe_contract = hook_health_payload_result.get("dedupe_contract")
         dedupe_contract = dedupe_contract if isinstance(dedupe_contract, dict) else {}
         dedupe_fields = dedupe_contract.get("fields") if isinstance(dedupe_contract.get("fields"), list) else []
@@ -5210,6 +5295,7 @@ def main() -> int:
 
     hook_health_parser = subparsers.add_parser("hook-health")
     hook_health_parser.add_argument("--target", type=Path, default=Path.cwd())
+    hook_health_parser.add_argument("--agent", choices=AGENTS)
     hook_health_parser.add_argument("--json-only", action="store_true")
 
     # ADR 0004 SPEC-003: reverse a TES installation and prove zero active residue.
