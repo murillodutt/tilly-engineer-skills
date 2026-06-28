@@ -188,7 +188,7 @@ baseline:
   collisions need dedup keys that include tool/risk/path/session/mode.
 - Cortex advisory behavior is no-write: recall, capture, and alignment may be
   proposed, but PreToolUse must not commit durable Cortex writes.
-- Recent 0.3.223 canary evidence shows current-host `PASS_CEILING` for the
+- Recent canary evidence shows current-host `PASS_CEILING` for the
   exercised host when hook-health scopes evidence by `--agent`, synthetic
   invocations are non-empty, discoverability stays explicit, and host renderer
   contracts remain distinct.
