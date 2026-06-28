@@ -161,6 +161,14 @@ Installed host configs are projections, not the semantic source:
    dedup guidance must include tool, risk, path or command, session or mode, and
    marker state. Invocation plus timestamp is insufficient for Cursor batched
    projections and parallel host projections.
+8. **No new PreToolUse filters today.** Anti-cry-wolf, discoverability, and
+   renderer parity are already represented as distinct dimensions in the
+   current runtime path, not as missing filter abstractions. Anti-cry-wolf is
+   session suppression plus ledger-health interpretation; discoverability is an
+   explicit unknown-state outcome; renderer parity and aliases are extraction
+   and host projection obligations. Implementing separate filters now would
+   duplicate the session coordinator, create another classifier surface, or
+   flatten host renderers before evidence proves a second runtime consumer.
 
 ## What Is Already Proven
 
@@ -180,19 +188,37 @@ baseline:
   collisions need dedup keys that include tool/risk/path/session/mode.
 - Cortex advisory behavior is no-write: recall, capture, and alignment may be
   proposed, but PreToolUse must not commit durable Cortex writes.
+- Recent 0.3.223 canary evidence shows current-host `PASS_CEILING` for the
+  exercised host when hook-health scopes evidence by `--agent`, synthetic
+  invocations are non-empty, discoverability stays explicit, and host renderer
+  contracts remain distinct.
 
-This evidence supports `PASS_BASIC`. It does not by itself support
-`PASS_CEILING`.
+This evidence supports `PASS_BASIC` generally and `PASS_CEILING` only for the
+current host whose native installed evidence was exercised. It does not support
+all-host native parity unless each host has its own native smoke or explicit
+`NEEDS_EVIDENCE` status.
 
-## What Must Be Implemented To Pierce The Ceiling
+## What Must Stay Out Of Scope Today
 
-The next wave must add diagnostic structure without increasing marker noise:
-reason codes, classifier trace, host payload evidence, discoverability,
-renderer parity, ledger analytics schema, drift attribution, audit-prompt
-enforcement, and installed-target canaries. P0/P1 below make those requirements
-executable.
+The next wave must not add new filter layers only because anti-cry-wolf,
+discoverability, and renderer parity are different analytical lenses. The
+current contract already gives each lens a place:
 
-## Ceiling Runtime Contract Shape
+- anti-cry-wolf belongs to `scripts/pretooluse_session.py`, reason code
+  `anti_crywolf_suppressed`, and hook-health noise rules;
+- discoverability belongs to the classifier result
+  `outcome=needs_discoverability`, `risk=needs-discoverability`, and reason code
+  `needs_discoverability_unknown_mutation`;
+- renderer parity belongs to host-specific renderers, `renderer_trace`, and
+  alias/path extraction evidence such as `patch_body_path_extracted`.
+
+A new filter is justified only if current evidence exposes a second consumer or
+a contradiction that cannot be represented by `classifier_trace`,
+`session_trace`, `renderer_trace`, `ledger_trace`, reason codes, or
+`NEEDS_DISCOVERABILITY`. Until then, the work is observability, canary replay,
+and targeted source fixes, not a new PreToolUse filter architecture.
+
+## Historical Ceiling Runtime Contract Shape
 
 P0 must introduce a versioned, redaction-safe runtime record testable before
 installed-target claims. Python shape may differ; semantic fields are frozen:

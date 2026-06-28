@@ -67,6 +67,58 @@ their native contracts, and hook-health separates floor from ceiling evidence.
 `PASS_CEILING` still requires installed per-host runtime evidence; source
 capability alone is not enough.
 
+## No New Filter Split Today
+
+The current runtime does not need additional PreToolUse filter layers for
+anti-cry-wolf, discoverability, or renderer parity. They are already distinct
+decision dimensions in the existing path:
+
+```text
+payload/path extraction
+-> classifier decision
+-> session suppression
+-> host renderer projection
+-> ledger/health interpretation
+```
+
+Anti-cry-wolf is a session-suppression dimension, not a second classifier. Its
+job is to suppress only the repeated marker for the same governed
+session/context while preserving `risk=material`, `outcome=supervise`, and the
+`governed_surface_mutation` evidence. Historical duplicate rows, replay
+residue, Cursor batch projections, and first-marker to silent-repeat renderer
+transitions are ledger-health noise unless current `pretooluse_decision@2`
+rows contradict decision, risk, redaction, or marker state outside the documented
+suppression path. Adding a separate anti-cry-wolf filter now would duplicate the
+session coordinator and increase the chance that suppression accidentally hides
+classification evidence.
+
+Discoverability is an honest unknown-state dimension, not a new block policy.
+When a tool name, payload shape, or host semantic looks mutating but lacks
+fixture or native evidence, the correct result is `NEEDS_DISCOVERABILITY` with
+`outcome=needs_discoverability`, `risk=needs-discoverability`, and
+`needs_discoverability_unknown_mutation`. It must not be downgraded to routine
+silence, and it must not become a generic hard block. Adding a separate
+discoverability filter now would create another classification surface before a
+new host/tool contract actually exists.
+
+Renderer parity and alias handling are projection and extraction obligations,
+not independent filters. The kernel records a host-neutral decision; Claude
+Code, Codex, and Cursor render that decision through different native output
+contracts. Codex patch-body aliases are accepted as payload/path extraction
+evidence; Cursor host payload labeling is treated as host evidence when the TES
+classification remains material. Adding a renderer-parity filter now would risk
+flattening host protocols or letting one host's evidence prove another host's
+native behavior.
+
+The next implementation must stay in the existing path unless evidence shows a
+real second consumer or contradiction that cannot be represented by the current
+record: a host-native payload shape that cannot be expressed through
+`classifier_trace`, a renderer output that cannot be represented through
+`renderer_trace`, a suppression state that cannot be represented through
+`anti_crywolf_suppressed`, or a discoverability case that cannot be represented
+through `NEEDS_DISCOVERABILITY`. Without that evidence, the right action is to
+document, test, and canary the current dimensions, not add new filters.
+
 ## Status Vocabulary
 
 - `PASS_BASIC`: the current installed host satisfies the floor contract.
