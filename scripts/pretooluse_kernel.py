@@ -103,6 +103,8 @@ def _tool_command_from_payload(payload: dict[str, Any]) -> str:
     if command:
         return command
     arguments = payload.get("arguments")
+    if isinstance(arguments, str) and arguments:
+        return arguments
     if isinstance(arguments, dict):
         return _first_string_value(
             arguments.get("command"),
@@ -121,6 +123,8 @@ def _tool_command_from_payload_with_source(prefix: str, payload: dict[str, Any])
     if command:
         return command, source
     arguments = payload.get("arguments")
+    if isinstance(arguments, str) and arguments:
+        return arguments, f"{prefix}.arguments"
     if isinstance(arguments, dict):
         return _first_string_value_with_source(
             (f"{prefix}.arguments.command", arguments.get("command")),

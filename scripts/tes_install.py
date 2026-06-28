@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.221"
+VERSION = "0.3.222"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -2435,7 +2435,7 @@ def hook_dedupe_contract() -> dict[str, Any]:
         "timestamp_rule": "same_semantic_different_timestamp_is_replay_history",
         "cursor_batch_rule": "same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate",
         "ceiling_noise_rule": "historical_duplicate_replay_and_cursor_batch_noise_is_non_blocking_without_current_v2_contradiction",
-        "current_v2_contradiction_rule": "same_host_scope_decision_risk_renderer_redaction_marker_contradiction_blocks_ceiling",
+        "current_v2_contradiction_rule": "same_host_scope_unexplained_decision_risk_renderer_redaction_marker_contradiction_blocks_ceiling",
     }
 
 
@@ -2634,6 +2634,20 @@ def pretooluse_contradiction_signature(record: dict[str, Any]) -> dict[str, Any]
     }
 
 
+def pretooluse_expected_anti_crywolf_renderer_transition(
+    fields: list[str], previous_record: dict[str, Any], current_record: dict[str, Any]
+) -> bool:
+    """Allow the documented first-marker to suppressed-repeat renderer transition."""
+    if fields != ["renderer_output_contract"]:
+        return False
+    records = (previous_record, current_record)
+    return any(record.get("marker_emitted") is True for record in records) and any(
+        record.get("context_suppressed") is True
+        and "anti_crywolf_suppressed" in hook_reason_codes(record.get("reason_codes"))
+        for record in records
+    )
+
+
 def pretooluse_current_v2_contradictions(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Find same-host current v2 contradictions while allowing stable replay noise."""
     seen: dict[tuple[Any, ...], tuple[dict[str, Any], dict[str, Any]]] = {}
@@ -2655,6 +2669,8 @@ def pretooluse_current_v2_contradictions(records: list[dict[str, Any]]) -> list[
             for field in PRETOOLUSE_CONTRADICTION_FIELDS
             if previous_signature.get(field) != signature.get(field)
         ]
+        if pretooluse_expected_anti_crywolf_renderer_transition(fields, previous_record, record):
+            continue
         contradictions.append(
             {
                 "fields": fields,
@@ -3534,6 +3550,34 @@ def self_test() -> int:
     if current_host_gaps or current_host_claude.get("status") != "PASS_CEILING":
         failures.append("PreToolUse current-host ceiling scope must ignore other-host v2 contradictions")
 
+    anti_crywolf_first = ceiling_record(
+        "claude",
+        "anti-crywolf-renderer",
+        reason_codes=["governed_surface_mutation", "renderer_contract_projected"],
+        outcome="allow",
+        risk="material",
+        tool="Edit",
+        path=".tes/runtime/hook-smoke/claude/SKILL.md",
+        invocation="anti-crywolf-renderer",
+        marker_emitted=True,
+        context_suppressed=False,
+    )
+    anti_crywolf_first["renderer_trace"] = {"renderer": "claude_pretooluse", "output_contract": "json_hookSpecificOutput_allow"}
+    anti_crywolf_repeat = {
+        **anti_crywolf_first,
+        "reason_codes": ["governed_surface_mutation", "anti_crywolf_suppressed", "renderer_contract_projected"],
+        "marker_emitted": False,
+        "context_suppressed": True,
+        "renderer_trace": {"renderer": "claude_pretooluse", "output_contract": "silent_allow"},
+    }
+    anti_crywolf_scope, anti_crywolf_gaps = pretooluse_ceiling_evidence(
+        [complete_claude, anti_crywolf_first, anti_crywolf_repeat],
+        required_hosts=["claude"],
+    )
+    anti_crywolf_claude = anti_crywolf_scope.get("per_host", {}).get("claude", {})
+    if anti_crywolf_gaps or anti_crywolf_claude.get("status") != "PASS_CEILING":
+        failures.append("PreToolUse ceiling contradiction must ignore anti-cry-wolf renderer suppression transitions")
+
     claude_discoverability = ceiling_record(
         "claude",
         "claude-discoverability-only",
@@ -4402,7 +4446,7 @@ def self_test() -> int:
             failures.append("hook-health dedupe contract must expose the non-blocking ceiling noise rule")
         if (
             dedupe_contract.get("current_v2_contradiction_rule")
-            != "same_host_scope_decision_risk_renderer_redaction_marker_contradiction_blocks_ceiling"
+            != "same_host_scope_unexplained_decision_risk_renderer_redaction_marker_contradiction_blocks_ceiling"
         ):
             failures.append("hook-health dedupe contract must expose the scoped current v2 contradiction rule")
         for field in ("agent", "tool", "risk", "path", "command_category", "session", "mode", "marker_emitted"):

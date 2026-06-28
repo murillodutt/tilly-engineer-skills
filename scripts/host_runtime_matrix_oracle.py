@@ -472,6 +472,7 @@ def _assert_hook_contracts(target: Path, failures: list[str]) -> None:
         ("arguments-command", {"arguments": {"command": patch_body(".tes/runtime/hook-smoke/codex/arguments-command/SKILL.md")}}),
         ("arguments-input", {"arguments": {"input": patch_body(".tes/runtime/hook-smoke/codex/arguments-input/SKILL.md")}}),
         ("arguments-patch", {"arguments": {"patch": patch_body(".tes/runtime/hook-smoke/codex/arguments-patch/SKILL.md")}}),
+        ("arguments-flat", {"arguments": patch_body(".tes/runtime/hook-smoke/codex/arguments-flat/SKILL.md")}),
     )
     for name, tool_input in alias_cases:
         expected_path = f".tes/runtime/hook-smoke/codex/{name}/SKILL.md"
@@ -625,6 +626,12 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         {
             "agent": "codex",
             "tool": "apply_patch",
+            "session": "matrix-codex-apply-arguments-flat",
+            "path": ".tes/runtime/hook-smoke/codex/arguments-flat/SKILL.md",
+        },
+        {
+            "agent": "codex",
+            "tool": "apply_patch",
             "session": "matrix-codex-apply-top-level-input",
             "path": ".tes/runtime/hook-smoke/codex/top-level-input/SKILL.md",
         },
@@ -688,6 +695,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
         "arguments-command",
         "arguments-input",
         "arguments-patch",
+        "arguments-flat",
         "top-level-input",
     ):
         expected_source = {
@@ -696,6 +704,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
             "arguments-command": "tool_input.arguments.command",
             "arguments-input": "tool_input.arguments.input",
             "arguments-patch": "tool_input.arguments.patch",
+            "arguments-flat": "tool_input.arguments",
             "top-level-input": "hook_input.input",
         }[name]
         codex_alias = _matching_records(

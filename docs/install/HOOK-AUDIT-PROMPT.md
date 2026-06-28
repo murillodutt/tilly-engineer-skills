@@ -131,10 +131,11 @@ command line. The simulation must cover:
   tools for the host under test. In Codex, verify `apply_patch`, `Bash`,
   `Shell`, and `shell` are covered and the hook can extract the path from the
   patch body. Codex `tool_input.command` is the canonical patch-body field, and
-  defensive aliases `input`, `patch`, and `arguments.*` should also be tested by
-  safe hook-entrypoint simulation; alias-key failures are findings even when the
-  canonical native path passes. A Codex config with only `Write|Edit|MultiEdit`
-  is FAIL for Codex native coverage until the target is updated.
+  defensive aliases `input`, `patch`, flat string `arguments`, and
+  `arguments.*` should also be tested by safe hook-entrypoint simulation;
+  alias-key failures are findings even when the canonical native path passes. A
+  Codex config with only `Write|Edit|MultiEdit` is FAIL for Codex native
+  coverage until the target is updated.
   In Cursor, if native `StrReplace` is observed or exposed, governed
   `StrReplace` on `/SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `docs/adr/`,
   `docs/governance/`, or `.cursor/rules/` must classify as material/supervised
@@ -227,7 +228,9 @@ It must document `same_semantic_different_timestamp_is_replay_history` and
 `same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`.
 If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor
 batch noise non-blocking without a current v2 contradiction, and
-`current_v2_contradiction_rule` must scope the blocker to the same host/scope.
+`current_v2_contradiction_rule` must scope the blocker to the same host/scope
+and not count anti-cry-wolf first-marker to silent-repeat renderer transitions
+as contradictions.
 
 Also classify PreToolUse maturity against the canonical contract:
 - `PASS_BASIC`: routine silence, governed supervision, forbidden block,

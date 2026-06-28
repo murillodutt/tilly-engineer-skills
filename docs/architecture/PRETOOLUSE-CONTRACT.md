@@ -48,9 +48,10 @@ PreToolUse reaches `PASS_CEILING` only when it proves the floor contract and add
 - decision reason codes: every decision records at least one stable reason code. Canonical codes are `routine_non_mutating`, `routine_non_governed`, `governed_surface_mutation`, `forbidden_class`, `anti_crywolf_suppressed`, `host_payload_labeling`, `patch_body_path_extracted`, `needs_discoverability_unknown_mutation`, `renderer_contract_projected`, and `cortex_advisory_no_write`;
 - classifier trace: material and forbidden outcomes name the evidence used, including path, command fragment category, payload field source, and renderer path, without leaking secrets or file content;
 - host payload evidence: audits distinguish host payload labeling from TES classification, especially Cursor cases where a native UI action may arrive as `tool: "Write"`;
+- patch-body evidence: Codex `apply_patch` path extraction treats `tool_input.command` as canonical and accepts defensive aliases `input`, `patch`, flat string `arguments`, and `arguments.command`/`arguments.input`/`arguments.patch`;
 - discoverability gate: observed or exposed host tool names that look mutating must not be silently classified as routine; ambiguous host semantics produce `NEEDS_DISCOVERABILITY` until fixture or native evidence resolves them;
 - renderer parity: host-specific renderers are certified by fixtures that prove Claude Code, Codex, and Cursor contracts without flattening them into one protocol;
-- ledger analytics contract: external dedup and analytics use tool, risk, path or command, session/mode, and marker state, not only invocation plus timestamp;
+- ledger analytics contract: external dedup and analytics use tool, risk, path or command, session/mode, and marker state, not only invocation plus timestamp; anti-cry-wolf renderer transitions from first marker to silent repeat are expected, not current v2 contradictions;
 - drift detection: the next audit can identify whether a regression came from host payload shape, kernel classification, session suppression, renderer output, or ledger write;
 - red-capable oracle coverage: the source package has an oracle that fails when the canonical contract loses the floor/ceiling distinction, reason-code requirement, discoverability gate, or host-payload evidence rule.
 

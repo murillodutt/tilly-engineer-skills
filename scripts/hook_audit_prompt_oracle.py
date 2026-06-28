@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
-VERSION = "0.3.221"
+VERSION = "0.3.222"
 
 
 REQUIRED_TERMS = (
@@ -32,7 +32,7 @@ REQUIRED_TERMS = (
     "Do\nnot write helper scripts, audit harnesses, or payload files inside the target\nproject",
     "verify `apply_patch`, `Bash`,\n  `Shell`, and `shell`",
     "Codex `tool_input.command` is the canonical patch-body field",
-    "defensive aliases `input`, `patch`, and `arguments.*`",
+    "defensive aliases `input`, `patch`, flat string `arguments`, and\n  `arguments.*`",
     "alias-key failures are findings",
     "if native `StrReplace` is observed or exposed",
     "governed\n  `StrReplace`",
@@ -75,7 +75,7 @@ REQUIRED_TERMS = (
     "`same_semantic_different_timestamp_is_replay_history`",
     "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`",
     "If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor\nbatch noise non-blocking without a current v2 contradiction",
-    "`current_v2_contradiction_rule` must scope the blocker to the same host/scope",
+    "`current_v2_contradiction_rule` must scope the blocker to the same host/scope\nand not count anti-cry-wolf first-marker to silent-repeat renderer transitions\nas contradictions",
     "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
     "Runtime\n  output must include `outcome=needs_discoverability`",
     "`risk=needs-discoverability`; the final hook-health JSON must expose top-level\n  `discoverability_status=NEEDS_DISCOVERABILITY` from installed evidence",
@@ -177,7 +177,7 @@ def red_capability_mutations(text: str) -> list[Mutation]:
         ),
         Mutation(
             "without_codex_patch_alias_contract",
-            _remove(text, "defensive aliases `input`, `patch`, and `arguments.*`"),
+            _remove(text, "defensive aliases `input`, `patch`, flat string `arguments`, and\n  `arguments.*`"),
             "defensive aliases",
         ),
         Mutation(
@@ -379,7 +379,12 @@ def red_capability_mutations(text: str) -> list[Mutation]:
         ),
         Mutation(
             "without_dedupe_current_v2_contradiction_rule",
-            _remove(text, "`current_v2_contradiction_rule` must scope the blocker to the same host/scope"),
+            _remove(
+                text,
+                "`current_v2_contradiction_rule` must scope the blocker to the same host/scope\n"
+                "and not count anti-cry-wolf first-marker to silent-repeat renderer transitions\n"
+                "as contradictions",
+            ),
             "current_v2_contradiction_rule",
         ),
         Mutation(
