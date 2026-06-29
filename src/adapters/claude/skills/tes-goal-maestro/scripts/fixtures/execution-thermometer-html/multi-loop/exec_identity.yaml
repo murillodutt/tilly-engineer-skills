@@ -1,0 +1,45 @@
+schema_version: 1
+report_id: "report-run-html-001"
+project_id: "target-project"
+series_id: "series-goal-maestro-001"
+run_id: "run-html-001"
+generated_at_utc: "2026-06-29T00:00:00Z"
+timezone: "UTC"
+report_class: "execution_thermometer"
+report_status: "local_package_ready"
+harness:
+  name: "tes-goal-maestro"
+  version: "0.1.0"
+  adapter: "other"
+  command: "--execute-loop"
+  schema_version: "1"
+model:
+  provider: "operator"
+  identity: "model-under-test"
+  reasoning_profile: "standard"
+  effort_multiplier: "1"
+  metadata_source: "operator_declared"
+anchor:
+  path: "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execution-thermometer-and-gold-sharing.md"
+  hash: "d44a14474decfcdb08d7c43f7fbf7afe464e05f0"
+  class: "Super-SPEC"
+ledger:
+  path: "fixtures/execution-thermometer-html/multi-loop"
+  hash: "unproven"
+  read_mode: "read_only"
+  extraction_hash: "unproven"
+git:
+  repo_state: "dirty"
+  head: "unproven"
+privacy:
+  sanitizer_version: "0.1.0"
+  private_vocabulary_status: "pass"
+share:
+  status: "not_requested"
+  approval:
+    approved_at_utc: "unproven"
+    run_id: "unproven"
+    destination_repository: "unproven"
+    destination_branch: "unproven"
+    payload_hash: "unproven"
+    manifest_hash: "unproven"

@@ -166,6 +166,19 @@ const WALLS = [
       join(tmp, 'gm3-context-receipt.md'),
     ],
   },
+  // GM4 — static HTML report (runtime fetch fixture fails; multi-loop #loop-L4 renders).
+  {
+    id: 'GM4 execution-thermometer-html',
+    harness: 'execution-thermometer-html.mjs',
+    violate: () => ['--check-only', join(here, 'fixtures/execution-thermometer-html/invalid-runtime-read/execution-thermometer.html'), '--expect-loop', 'L4'],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      join(tmp, 'gm4-execution-thermometer.html'),
+      '--expect-loop',
+      'L4',
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

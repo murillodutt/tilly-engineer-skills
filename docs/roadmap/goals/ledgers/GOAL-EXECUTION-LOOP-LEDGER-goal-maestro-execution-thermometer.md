@@ -187,3 +187,37 @@ audit_remutation: GM3 wall rejects inline HTML and accepts schema-backed Markdow
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-003_then_open_SPEC-004
+
+### SPEC-004 - Static HTML Report Renderer
+
+spec_id: SPEC-004
+spec_version: static-html-loop-selection
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-005
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-004 material commit)
+oracle_status: PASS pending material commit (multi-loop schema fixture passes, generated HTML passes `--check-only --expect-loop L4`, invalid runtime `fetch('exec_metrics.json')` fixture exits 1, file URL anchor resolves as `file:///tmp/tes-gm4.html#loop-L4`, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: node-pure-static-html-renderer
+topology_decision: one delivered static HTML renderer script plus multi-loop and invalid-runtime-read fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-005 Gold Analysis must consume schema/report facts without reclassifying Goal Maestro execution stop states
+topology_probe_result: not_applicable
+browser_metrics_contract: no browser dependency added; static file URL and anchor contract checked from generated artifact
+visual_spatial_oracle: not_applicable
+browser_attempt: Playwright unavailable; no dependency added; file URL anchor static check passed
+visual_evidence: generated `/tmp/tes-gm4.html` contains `href="#loop-L4"`, `id="loop-L4"`, and embedded `normalized-snapshot`
+runtime_smoke_oracle: HTML checker rejects script/fetch/runtime read patterns and accepts a multi-loop offline report
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: `execution-thermometer.html`
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM4 wall rejects runtime fetch fixture and accepts multi-loop `#loop-L4` rendering
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-004_then_open_SPEC-005
