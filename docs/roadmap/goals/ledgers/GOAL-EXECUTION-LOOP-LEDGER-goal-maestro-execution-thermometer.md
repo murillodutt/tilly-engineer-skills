@@ -289,3 +289,37 @@ audit_remutation: GM6 wall rejects unsafe private-path input and accepts safe pa
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-006_then_open_SPEC-007
+
+### SPEC-007 - Share Gate Prompt And Owner Consent
+
+spec_id: SPEC-007
+spec_version: local-owner-consent-gate
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-008
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-007 material commit)
+oracle_status: PASS pending material commit (ordinary fixture returns `not_gold` and no prompt; unsafe gold fixture returns `blocked_by_sanitization` and no prompt; sanitized gold fixture returns `proposed_gold` with `NEEDS_OWNER_SHARE_DECISION`; declined fixture keeps local package intact; valid local approval returns `approved_local_export`; tuple mismatch returns `blocked_by_owner_decision`; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: node-pure-share-gate-consent-state-machine
+topology_decision: one delivered Share Gate script plus ordinary, gold-shareable, gold-unsafe, declined, approved-local, and tuple-mismatch fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-008 may create only dry-run GitHub export evidence and must still block remote write without tuple-bound per-run approval
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: Share Gate emits local-only consent summaries and never performs remote action
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: Share Gate decision JSON
+api_lint_status: local grep found no fetch, beacon, curl, wget, GitHub CLI, or push lane in the Share Gate script or fixtures
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM7 wall rejects tuple-drift approval reuse and accepts sanitized gold prompt generation
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-007_then_open_SPEC-008

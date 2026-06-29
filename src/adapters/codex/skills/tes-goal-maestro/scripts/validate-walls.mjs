@@ -201,6 +201,25 @@ const WALLS = [
       join(tmp, 'gm6-safe'),
     ],
   },
+  // GM7 — Share Gate (tuple drift cannot reuse approval; gold sanitized report prompts).
+  {
+    id: 'GM7 execution-thermometer-share-gate',
+    harness: 'execution-thermometer-share-gate.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-share-gate/tuple-mismatch/candidate.json'),
+      '--expect-status',
+      'approved_local_export',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-share-gate/gold-shareable/candidate.json'),
+      '--expect-status',
+      'proposed_gold',
+      '--expect-prompt',
+      'true',
+      '--expect-remote-action',
+      'false',
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

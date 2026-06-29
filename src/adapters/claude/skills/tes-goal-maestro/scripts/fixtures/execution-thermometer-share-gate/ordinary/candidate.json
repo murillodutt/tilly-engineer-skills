@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "run_id": "run-share-ordinary",
+  "harness": {
+    "version": "0.1.0"
+  },
+  "model": {
+    "identity": "model-under-test",
+    "reasoning_profile": "standard"
+  },
+  "goal_maestro_execution_state": "PASS",
+  "gold_result": {
+    "classification": "ordinary",
+    "reason_codes": [],
+    "evidence_refs": [],
+    "sanitizer_status": "pass",
+    "private_vocabulary_status": "pass",
+    "package_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "learning_summary": "Ordinary report."
+  },
+  "package_manifest": {
+    "included_files": ["exec_identity.yaml", "exec_metrics.json", "checksums.sha256"],
+    "excluded_files": ["context-receipt.md", "execution-thermometer.html"],
+    "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "manifest_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "sanitizer_status": "pass",
+    "private_vocabulary_status": "pass"
+  }
+}
