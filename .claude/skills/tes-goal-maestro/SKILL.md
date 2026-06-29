@@ -35,6 +35,8 @@ When a Super SPEC must be produced or expanded, write it as `GOAL-SUPER-SPEC-<sl
 
 Next Prompt Handoff is opt-in only. Activate it only when the user explicitly requests `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct trigger. Outside `--execute-loop`, it is chat-only, post-certification, non-executing, and must never write the next prompt to disk without an explicit save request.
 
+Adversarial Audit Heartbeat Prompt is opt-in only. Activate it only when the active request, active structured control block, or active source artifact contains `--audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested`, or a direct request to generate or create an adversarial audit heartbeat prompt. When activated, load `references/adversarial-audit-heartbeat.md` and `templates/adversarial-audit-heartbeat.template.md`; emit only the copy-ready English heartbeat prompt. It is read-only auditor guidance, not execution, scheduling, sharing, or Goal Maestro stop-state authority.
+
 Execution Loop is opt-in only. Activate it only when the user explicitly requests `--execute-loop`. When enabled, produce `READY_GOAL_PROMPT`, then the parent runner creates an `Execution Cost Draft`, opens a mandatory Pre-Edit Gate, creates the loop ledger, opens one `ACTIVE_SPEC` at a time, requires strict sequential replay, validates local commit evidence, and closes only after Executive Stop Audit.
 
 Parent-side execution fallback requires the exact `--execute-loop-parent-fallback` flag. No equivalent wording is valid.
@@ -57,6 +59,7 @@ Load only what the run needs, but do not execute from memory when a route is req
 | Readiness score, stop states, weak-prompt rejection, closeout checks | `references/quality-gates.md` |
 | Final `/goal` construction rules and hardening checklist | `references/maestral-goal-prompt.md` |
 | Full literal `/goal` prompt body and evidence shape | `templates/maestral-goal-prompt.template.md` |
+| Optional Adversarial Audit Heartbeat Prompt behavior and shape | `references/adversarial-audit-heartbeat.md` and `templates/adversarial-audit-heartbeat.template.md`, only after exact heartbeat prompt opt-in |
 | Engineering method profile, topology budget, structural source probes and structural repair | `references/structural-method.md` |
 | Role ownership, reviewer duties and reusable oracle patterns | `references/subagents-and-oracles.md` |
 | Anchor artifact, quality ceiling, ambition directive and shared-contract extension rules | `references/ambition-and-anchor.md` |
@@ -184,6 +187,7 @@ Default sync is local Git commit certification. Remote sync, push, tag, publicat
 - Do not execute implementation unless the user separately asks for execution or explicitly enables `--execute-loop`.
 - Do not write files except the required Super SPEC artifact, explicit save requests, or required execution-loop ledger.
 - Do not include Next Prompt Handoff without an explicit handoff trigger.
+- Do not include Adversarial Audit Heartbeat Prompt behavior without exact heartbeat prompt opt-in, and never let it execute, schedule, share, mutate files, or claim Goal Maestro stop-state authority.
 - Do not run Execution Loop without explicit `--execute-loop` and an `Execution Cost Draft`, Pre-Edit Gate and `GOAL-EXECUTION-LOOP-LEDGER`.
 - Do not run Execution Loop unless the Tree Adversary is cleared or its objections are repaired.
 - Do not allow parent fallback without the exact `--execute-loop-parent-fallback` flag.

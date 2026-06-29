@@ -1,0 +1,8 @@
+{
+  "name": "invalid product-specific drift",
+  "mutations": {
+    "append": {
+      "heartbeatTemplate": "\nUse Execution Thermometer PASS_CEILING as the audit subject.\n"
+    }
+  }
+}

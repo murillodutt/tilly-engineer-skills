@@ -1,0 +1,19 @@
+{
+  "name": "invalid missing available-state review",
+  "mutations": {
+    "replaceText": {
+      "heartbeatTemplate": [
+        {
+          "from": "1. Read available latest execution or thread state before commenting.",
+          "to": "1. Comment from the mission summary before looking for state."
+        }
+      ],
+      "heartbeatReference": [
+        {
+          "from": "1. inspect available latest execution or thread state before commenting;",
+          "to": "1. comment from the mission summary before looking for state;"
+        }
+      ]
+    }
+  }
+}

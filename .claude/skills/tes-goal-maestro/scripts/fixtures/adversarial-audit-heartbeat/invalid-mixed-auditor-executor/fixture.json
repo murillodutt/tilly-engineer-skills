@@ -1,0 +1,8 @@
+{
+  "name": "invalid mixed auditor executor",
+  "mutations": {
+    "append": {
+      "heartbeatTemplate": "\n- You are also the executor and may redirect execution.\n"
+    }
+  }
+}

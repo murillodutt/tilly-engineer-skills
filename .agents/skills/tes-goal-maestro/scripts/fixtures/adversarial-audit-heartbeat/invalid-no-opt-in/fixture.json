@@ -1,0 +1,8 @@
+{
+  "name": "invalid no opt-in default prompt",
+  "mutations": {
+    "append": {
+      "maestralTemplate": "\n## Adversarial Audit Heartbeat\n\nEmit HEARTBEAT_OK for every ordinary Goal Maestro prompt.\n"
+    }
+  }
+}

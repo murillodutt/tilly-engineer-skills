@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "run_id": "run-share-mismatch",
+  "owner_decision": "approve_local",
+  "harness": {
+    "version": "0.1.0"
+  },
+  "model": {
+    "identity": "model-under-test",
+    "reasoning_profile": "standard"
+  },
+  "goal_maestro_execution_state": "PASS",
+  "gold_result": {
+    "classification": "gold",
+    "reason_codes": ["oracle_facade_detected"],
+    "evidence_refs": ["EV-GOLD"],
+    "sanitizer_status": "pass",
+    "private_vocabulary_status": "pass",
+    "package_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "learning_summary": "Tuple drift invalidates prior owner approval."
+  },
+  "package_manifest": {
+    "included_files": ["exec_identity.yaml", "exec_metrics.json", "checksums.sha256"],
+    "excluded_files": ["context-receipt.md", "execution-thermometer.html"],
+    "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "manifest_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "sanitizer_status": "pass",
+    "private_vocabulary_status": "pass"
+  },
+  "destination": {
+    "repository": "private-owner/execution-thermometer-reports",
+    "branch": "goal-maestro/run-share-mismatch"
+  },
+  "approval": {
+    "approved_at_utc": "2026-06-29T00:00:00Z",
+    "run_id": "run-share-mismatch",
+    "destination_repository": "private-owner/execution-thermometer-reports",
+    "destination_branch": "goal-maestro/run-share-mismatch",
+    "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "manifest_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  }
+}

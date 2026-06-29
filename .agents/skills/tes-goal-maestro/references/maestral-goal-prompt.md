@@ -26,6 +26,25 @@ If the source artifact declares a materialization queue, the prompt must preserv
 
 A commit message is not execution evidence. The prompt must require material diff proof, focused oracles, reviewer result, post-commit status and sync status for every material unit.
 
+## Optional Adversarial Audit Heartbeat Prompt
+
+Adversarial Audit Heartbeat Prompt is a separate opt-in prompt-generation mode.
+It activates only from `--audit-heartbeat-prompt`, `audit_heartbeat=true`,
+`adversarial_audit_heartbeat: requested`, or a direct request to generate or
+create an adversarial audit heartbeat prompt in the active request, active
+structured control block, or active source artifact.
+
+When activated, load `references/adversarial-audit-heartbeat.md` and
+`templates/adversarial-audit-heartbeat.template.md`, then emit only the
+copy-ready English heartbeat prompt. Do not embed a heartbeat section in an
+ordinary maestral `/goal` prompt, and do not alter Goal Maestro stop-state
+semantics. Do not embed a heartbeat section in an ordinary maestral /goal prompt.
+
+Do not activate from broad words such as heartbeat, monitor, audit, mentorship,
+watch this, keep an eye on it, or translated equivalents. Documentation
+examples, historical ledgers, or inactive artifacts do not activate the feature
+by containing the opt-in text.
+
 ## Required Output Shape
 
 The final prompt must include:
@@ -60,6 +79,7 @@ The final prompt must include:
 28. Tree Adversary status when `--execute-loop` or high-risk execution is in scope.
 29. Optional Next Prompt Handoff clause only when explicitly requested by `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct trigger.
 30. Optional Execution Loop boundary only when explicitly requested by `--execute-loop`.
+31. Optional Adversarial Audit Heartbeat Prompt output only when exact heartbeat prompt opt-in is present; this output uses the separate heartbeat template and is not added to ordinary `/goal` prompts.
 
 ## Template Load Contract
 
@@ -121,6 +141,7 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 26. defines final delivery;
 27. includes a Next Prompt Handoff clause only when explicitly requested, and that clause is chat-only, post-certification, non-executing, and does not write prompt/tree files without an explicit save request;
 28. includes an Execution Loop boundary only when `--execute-loop` is explicitly requested, and that boundary preserves parent authority, Pre-Edit Gate, `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence, failed-attempt recovery, mandatory persistent ledger, local-only commit sync, baseline-only comparison for reference implementations, no Super SPEC materialization as unit credit, strict sequential replay, bounded repair/audit behavior, explicit parent-fallback authorization, `bug_vs_architecture` recovery classification, structural decision ledger fields and Executive Stop Audit.
+29. emits Adversarial Audit Heartbeat Prompt content only when exact heartbeat prompt opt-in is present, and then uses the separate heartbeat template instead of altering ordinary `/goal` prompt shape.
 
 ## Stop If Missing
 
@@ -140,7 +161,8 @@ Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`, `NEEDS_EXECUTION_UNIT_FIDE
 12. fresh-worker loops would depend on parent memory instead of source-derived handoff;
 13. Tree Adversary is required but absent or uncleared;
 14. `templates/maestral-goal-prompt.template.md` was not loaded before prompt construction;
-15. any anchor-traceable axis would reach a worker without resolved context — `runtime_target`, an `oracle_runner_contract` with a regression target, or (under isolation) `forbidden-write`/`forbidden-import` constraints — in which case stop with `NEEDS_CONTEXT` and do not emit the prompt. This gate runs at prompt generation, not only inside `--execute-loop`: a holed envelope must be caught before the worker, not after.
+15. Adversarial Audit Heartbeat Prompt activation would depend on broad wording instead of exact opt-in, in which case stop with `NEEDS_OPT_IN_CONTRACT`;
+16. any anchor-traceable axis would reach a worker without resolved context — `runtime_target`, an `oracle_runner_contract` with a regression target, or (under isolation) `forbidden-write`/`forbidden-import` constraints — in which case stop with `NEEDS_CONTEXT` and do not emit the prompt. This gate runs at prompt generation, not only inside `--execute-loop`: a holed envelope must be caught before the worker, not after.
 
 Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract requires owner acceptance or the user explicitly asked for staged review.
 
@@ -165,7 +187,8 @@ Reject prompts that:
 15. let prior commits satisfy a new materialization run by default;
 16. use broad lexical greps that fail valid blocked-state vocabulary instead of targeting forbidden behavior;
 17. include Next Prompt Handoff without an explicit parameter/trigger or allow it to execute the next prompt automatically;
-18. include Execution Loop without explicit `--execute-loop` or let a worker execute outside `ACTIVE_SPEC`, push remotely, or bypass Executive Stop Audit;
+18. include Adversarial Audit Heartbeat Prompt behavior without exact heartbeat prompt opt-in or add it into ordinary `/goal` prompts;
+19. include Execution Loop without explicit `--execute-loop` or let a worker execute outside `ACTIVE_SPEC`, push remotely, or bypass Executive Stop Audit;
 19. let a reference implementation, prior manual build, browser smoke result, run record or post-facto audit satisfy `--execute-loop` without strict sequential replay;
 20. accept a behavior-green implementation that collapsed into a god file, duplicated domain logic, bypassed framework topology or misused a single-file exception to mix unrelated layers;
 21. retry a failed coding SPEC without classifying `bug_vs_architecture` and deciding whether the next action is bug repair, `structural_repair`, SPEC repair, escalation or stop;

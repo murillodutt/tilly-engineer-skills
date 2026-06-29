@@ -1,0 +1,8 @@
+{
+  "name": "invalid absent Cursor coverage",
+  "mutations": {
+    "replace": {
+      "cursorRule": "Cursor has no Goal Maestro audit heartbeat capability detail.\n"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "status": "proposed_gold",
+  "prompt_required": false,
+  "approval_valid": true,
+  "remote_action_performed": false,
+  "run_id": "run-github-export",
+  "destination_repository": "private-owner/execution-thermometer-reports",
+  "destination_branch": "goal-maestro/run-github-export",
+  "payload_hash": "c8f389efaecfd66e0227f9d6fce6a6a2b90c1f8446b34bcb47bbae609509f0b2",
+  "manifest_hash": "bf6afaeaa1e12f7e29cf07eabe75e4042c3cfe1050d5b7d9e35d2c360c1b754e",
+  "owner_decision": "approve_remote",
+  "goal_maestro_execution_state": "PASS",
+  "goal_maestro_execution_state_changed": false
+}

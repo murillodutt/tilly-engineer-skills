@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "repository": "public-owner/execution-thermometer-reports",
+  "branch": "goal-maestro/run-github-export",
+  "base_branch": "main",
+  "path_prefix": "reports/run-github-export",
+  "visibility": "public",
+  "include_readme": true,
+  "include_markdown": false,
+  "include_html": false
+}

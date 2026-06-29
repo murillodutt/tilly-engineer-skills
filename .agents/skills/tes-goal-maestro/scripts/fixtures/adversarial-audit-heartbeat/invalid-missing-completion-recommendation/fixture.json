@@ -1,0 +1,13 @@
+{
+  "name": "invalid missing completion recommendation",
+  "mutations": {
+    "replaceText": {
+      "heartbeatTemplate": [
+        {
+          "from": "recommend\n  pausing or deleting the external heartbeat, and summarize residual risk.",
+          "to": "recommend continuing the external heartbeat indefinitely."
+        }
+      ]
+    }
+  }
+}

@@ -9,7 +9,7 @@
 // Exit≠0 se QUALQUER parede falhar o par (não-disparo sob violação, ou não-passe ao reverter).
 
 import { execFileSync, execSync } from 'node:child_process';
-import { writeFileSync, mkdtempSync } from 'node:fs';
+import { mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,6 +30,30 @@ function fixture(name, content) {
   const p = join(tmp, name);
   writeFileSync(p, content);
   return p;
+}
+
+function outputRootWithUnownedPackage(name) {
+  const root = join(tmp, name);
+  const packageDir = join(root, 'execution-thermometer-run-html-001');
+  mkdirSync(packageDir, { recursive: true });
+  writeFileSync(join(packageDir, 'foreign.txt'), 'not owned by TES\n');
+  return root;
+}
+
+function outputRootWithOwnedPackage(name) {
+  const root = join(tmp, name);
+  const packageDir = join(root, 'execution-thermometer-run-html-001');
+  mkdirSync(packageDir, { recursive: true });
+  writeFileSync(join(packageDir, '.tes-execution-thermometer-package.json'), JSON.stringify({
+    schema_version: 1,
+    owner: 'tes-goal-maestro-execution-thermometer',
+    package_contract: 'execution-thermometer-package@1',
+    run_id: 'run-html-001',
+    package_name: 'execution-thermometer-run-html-001',
+    files: ['README.md', 'context-receipt.md', 'exec_identity.yaml', 'exec_metrics.json', 'execution-thermometer.html', 'checksums.sha256'],
+  }));
+  writeFileSync(join(packageDir, 'stale.txt'), 'old generated content\n');
+  return root;
 }
 
 // Cada parede: {id, harness, violate→args (deve dar exit≠0), revert→args (deve dar exit 0)}.
@@ -124,6 +148,201 @@ const WALLS = [
     harness: 'anchor-rehash.mjs',
     violate: () => [join(here, 'validate-walls.mjs'), 'deadbeefdeadbeef'],
     revert: () => [join(here, 'validate-walls.mjs'), gitHash(join(here, 'validate-walls.mjs'))],
+  },
+  // GM1 — execution thermometer schema validator (valid fixture passes; invalid metric ref fires).
+  {
+    id: 'GM1 execution-thermometer-schema',
+    harness: 'execution-thermometer-schema.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer/valid/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer/invalid-unreferenced-metric/exec_metrics.json'),
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer/valid/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer/valid/exec_metrics.json'),
+    ],
+  },
+  // GM2 — execution thermometer extractor (hash mismatch blocks; valid ledger extracts and validates).
+  {
+    id: 'GM2 execution-thermometer-extract',
+    harness: 'execution-thermometer-extract.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-extract/valid/ledger.md'),
+      join(tmp, 'gm2-hash-mismatch'),
+      '--expected-ledger-sha256',
+      'deadbeef',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-extract/valid/ledger.md'),
+      join(tmp, 'gm2-valid'),
+      '--generated-at',
+      '2026-06-29T00:00:00Z',
+    ],
+  },
+  // GM3 — Markdown context receipt (inline HTML fails; valid schema renders Markdown-only).
+  {
+    id: 'GM3 execution-thermometer-receipt',
+    harness: 'execution-thermometer-receipt.mjs',
+    violate: () => ['--check-only', join(here, 'fixtures/execution-thermometer-receipt/invalid-inline-html/context-receipt.md')],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer/valid/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer/valid/exec_metrics.json'),
+      join(tmp, 'gm3-context-receipt.md'),
+    ],
+  },
+  // GM4 — static HTML report (runtime fetch fixture fails; multi-loop #loop-L4 renders).
+  {
+    id: 'GM4 execution-thermometer-html',
+    harness: 'execution-thermometer-html.mjs',
+    violate: () => ['--check-only', join(here, 'fixtures/execution-thermometer-html/invalid-runtime-read/execution-thermometer.html'), '--expect-loop', 'L4'],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      join(tmp, 'gm4-execution-thermometer.html'),
+      '--expect-loop',
+      'L4',
+    ],
+  },
+  // GM5 — Gold Analysis Gate (gold missing evidence fails; complete gold fixture passes).
+  {
+    id: 'GM5 execution-thermometer-gold',
+    harness: 'execution-thermometer-gold.mjs',
+    violate: () => [join(here, 'fixtures/execution-thermometer-gold/invalid-missing-evidence/candidate.json'), '--expect', 'gold'],
+    revert: () => [join(here, 'fixtures/execution-thermometer-gold/gold/candidate.json'), '--expect', 'gold'],
+  },
+  // GM6 — sanitized package builder (private path blocks; safe fixture emits local package).
+  {
+    id: 'GM6 execution-thermometer-package',
+    harness: 'execution-thermometer-package.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-package/unsafe-private-path/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      join(tmp, 'gm6-unsafe'),
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      join(tmp, 'gm6-safe'),
+    ],
+  },
+  // GM6O — package overwrite requires a TES ownership marker for the same run/package contract.
+  {
+    id: 'GM6O execution-thermometer-package-overwrite-guard',
+    harness: 'execution-thermometer-package.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      outputRootWithUnownedPackage('gm6-unowned'),
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      outputRootWithOwnedPackage('gm6-owned'),
+    ],
+  },
+  // GM7 — Share Gate (tuple drift cannot reuse approval; gold sanitized report prompts).
+  {
+    id: 'GM7 execution-thermometer-share-gate',
+    harness: 'execution-thermometer-share-gate.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-share-gate/tuple-mismatch/candidate.json'),
+      '--expect-status',
+      'approved_local_export',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-share-gate/gold-shareable/candidate.json'),
+      '--expect-status',
+      'proposed_gold',
+      '--expect-prompt',
+      'true',
+      '--expect-remote-action',
+      'false',
+    ],
+  },
+  // GM8 — GitHub export stays dry-run/local unless tuple-bound approval and remote lane exist.
+  {
+    id: 'GM8 execution-thermometer-github-export',
+    harness: 'execution-thermometer-github-export.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/destination.json'),
+      '--mode',
+      'execute',
+      '--expect-status',
+      'draft_pr_opened',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/destination.json'),
+      '--approval-record',
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/approval.json'),
+      '--expect-status',
+      'dry_run_ready',
+      '--expect-remote-action',
+      'false',
+    ],
+  },
+  // GM8P — public GitHub destinations are mechanically blocked before payload planning.
+  {
+    id: 'GM8P execution-thermometer-github-export-public-destination',
+    harness: 'execution-thermometer-github-export.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/public-destination/destination.json'),
+      '--expect-status',
+      'dry_run_ready',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/public-destination/destination.json'),
+      '--expect-status',
+      'blocked_by_public_destination',
+      '--expect-remote-action',
+      'false',
+    ],
+  },
+  // GM9 — Thermometer integration cannot rewrite Goal Maestro execution stop states.
+  {
+    id: 'GM9 execution-thermometer-integration',
+    harness: 'execution-thermometer-integration.mjs',
+    violate: () => [
+      join(here, '../references/execution-loop-runner.md'),
+      join(here, '../templates/maestral-goal-prompt.template.md'),
+      join(here, 'fixtures/execution-thermometer-integration/state-namespace-invalid.json'),
+    ],
+    revert: () => [
+      join(here, '../references/execution-loop-runner.md'),
+      join(here, '../templates/maestral-goal-prompt.template.md'),
+      join(here, 'fixtures/execution-thermometer-integration/state-namespace-valid.json'),
+    ],
+  },
+  // GM10 — User docs describe local report, UNPROVEN, opt-in sharing and fields.
+  {
+    id: 'GM10 execution-thermometer-docs',
+    harness: 'execution-thermometer-docs.mjs',
+    violate: () => [
+      fixture('gm10-bad-content.json', JSON.stringify({ sections: { report: { en: { blocks: [] }, es: { blocks: [] }, pt: { blocks: [] } } } })),
+      fixture('gm10-bad-agent.md', 'Execution Thermometer without fields.\n'),
+    ],
+    revert: () => [
+      join(here, '../../../../../../docs/i18n/tes-public.content.json'),
+      join(here, '../../../../../../docs/install/AGENT-MANUAL.md'),
+    ],
+  },
+  // GM11 — Adversarial Audit Heartbeat remains exact opt-in and read-only.
+  {
+    id: 'GM11 adversarial-audit-heartbeat-contract',
+    harness: 'adversarial-audit-heartbeat-contract.mjs',
+    violate: () => [join(here, 'fixtures/adversarial-audit-heartbeat/invalid-no-opt-in/fixture.json')],
+    revert: () => [join(here, 'fixtures/adversarial-audit-heartbeat/valid/source/fixture.json')],
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
