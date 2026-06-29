@@ -169,8 +169,18 @@ stop_state: ready_for_material_commit
 spec_id: SPEC-011
 attempt: 1
 repair_count: 0
-commit: no-commit (active ledger entry opened before the SPEC-011 material commit)
+commit: a9a7fa3c
 oracle_status: PASS (fresh installed target certification; installed extraction and package generation; receipt and HTML checks; checksum verification; Quick Look HTML thumbnail)
 runtime_smoke_oracle: installed Codex Goal Maestro scripts generated a local Execution Thermometer package from a target-local ledger under ~/Dev/tes-canaries
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-011_then_open_SPEC-012
+
+### SPEC-012 - Release Identity Decision
+
+spec_id: SPEC-012
+attempt: 1
+repair_count: 0
+commit: no-commit (active ledger entry opened before the SPEC-012 material commit)
+oracle_status: PASS (patch bump to 0.3.225; public bundle oracle; public docs check; TDS; doc-size; reference package; bundle self-test; Goal Maestro walls)
+runtime_smoke_oracle: docs/dist/0.3.225 zip, sha256 sidecar, and index.json validate as a local public bundle; npm release:check intentionally not run because no authorized tag or push exists
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-012_then_close_goal_loop_without_remote_release_claim

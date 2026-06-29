@@ -22,7 +22,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.224"
+VERSION = "0.3.225"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
