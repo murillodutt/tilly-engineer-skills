@@ -1443,6 +1443,13 @@ documents:
     consumer: TES maintainers, hook authors, installer authors, oracle authors, release reviewers, and audit agents
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/2026/06/29/goal-maestro/execution-thermometer-installed-canary/REPORT.md
+    id: evidence.goal_maestro.execution_thermometer_installed_canary_2026_06_29
+    class: evidence
+    status: active
+    consumer: maintainers, Goal Maestro authors, report renderer authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L3
   - path: docs/evidence/reports/context-mesh/project-alignment-oracle-false-positive-2026-05-13/JOURNAL.md
     id: evidence.context_mesh.project_alignment_oracle_false_positive_2026_05_13_journal
     class: evidence

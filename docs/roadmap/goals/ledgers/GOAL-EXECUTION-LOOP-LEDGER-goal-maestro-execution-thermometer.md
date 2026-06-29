@@ -159,8 +159,18 @@ stop_state: ready_for_material_commit
 spec_id: SPEC-010
 attempt: 1
 repair_count: 0
-commit: no-commit (active ledger entry opened before the SPEC-010 material commit)
+commit: 7672c44f
 oracle_status: PASS (execution-thermometer-docs on both adapters; adapter walls converged; npm run public-docs:check; python3 scripts/validate_reference_package.py; npm run docs:size)
 runtime_smoke_oracle: GM10 rejects missing local/offline, UNPROVEN, opt-in sharing, package-file, or field-reference documentation and accepts the rebuilt public manual source plus agent field reference
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-010_then_open_SPEC-011
+
+### SPEC-011 - Installed-Target Canary
+
+spec_id: SPEC-011
+attempt: 1
+repair_count: 0
+commit: no-commit (active ledger entry opened before the SPEC-011 material commit)
+oracle_status: PASS (fresh installed target certification; installed extraction and package generation; receipt and HTML checks; checksum verification; Quick Look HTML thumbnail)
+runtime_smoke_oracle: installed Codex Goal Maestro scripts generated a local Execution Thermometer package from a target-local ledger under ~/Dev/tes-canaries
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-011_then_open_SPEC-012

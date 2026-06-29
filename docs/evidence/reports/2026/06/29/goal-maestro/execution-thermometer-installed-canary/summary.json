@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "schema": "tes-evidence-summary@1",
+  "run_id": "goal-maestro-thermometer-20260629T185504Z",
+  "target": "~/Dev/tes-canaries/goal-maestro-thermometer-20260629T185504Z",
+  "source_commit": "7672c44feb8b3e7598476a13c674ab1971d6ee1b",
+  "installed_version": "0.3.224",
+  "bundle_sha256": "8dfe577a7d7efe62963843dfac916e9d2263cb89cec63421afcf6a9681682d36",
+  "canary_ledger_sha256": "b8b73e3f00aed5c693f639e384cb08fb0bad2ca92e0e84e06dbc936b8db12b66",
+  "extraction_manifest_hash": "357ad104699cac8367281c2d093b441caa4931723b7dddd77080032872ffe773",
+  "package_manifest_hash": "f9a7dbb484f69f68d2875cf9687250bdcfda2beeba0dc30868b77256d7014f2b",
+  "receipt_sha256": "4a1cbd63908e7bf972c1c0c6e190f24f5a97ee7d9825f6ab7e140fa67d05770f",
+  "html_sha256": "db4d74272fc17c439a937fb1cf6b43341fbf3df1d5a05f7ad065d6a80f2c78ed",
+  "html_open_png_sha256": "54c03dadb8bf2773bc48842bc48547a75f006e4ce69d69ab6694a43ccaece89f",
+  "remote_action_performed": false
+}
