@@ -227,5 +227,31 @@ installed_canary_0_3_225: PASS (`~/Dev/tes-canaries/goal-maestro-thermometer-202
 ledger_truth: PASS (historical `PASS_LOCAL_NO_REMOTE_RELEASE` preserved as superseded; audit downgrade and repair commits recorded; no stronger claim than executed evidence remains)
 remote_actions_performed: none
 release_identity_boundary: local 0.3.225 package and public bundle are sealed locally; no push, tag, publish, GitHub write, or remote release was performed or claimed
+post_commit_required_oracle: superseded by SPEC-AUDIT-001 after the rendered public HTML SHA exposure gap was found
+current_goal_maestro_stop_state: SUPERSEDED_BY_SPEC_AUDIT_001
+
+## SPEC-AUDIT-001 - Rendered Public Docs Bundle SHA Identity
+
+spec_id: SPEC-AUDIT-001
+attempt: 1
+repair_count: 0
+audit_trigger: final SHA sweep proved the 0.3.225 SHA was consistent in structure, index, sidecar, and ZIP, but not directly rendered in the public HTML
+commit: bc64c15c
+oracle_status: PASS (`python3 scripts/build_public_docs.py --check`; `python3 scripts/tds_surface_oracle.py`; `python3 scripts/public_bundle_oracle.py`; `python3 scripts/validate_reference_package.py`; `python3 scripts/private_vocabulary_oracle.py`; `git diff --check`; staged commit gate)
+runtime_smoke_oracle: `docs/index.html` and `docs/install/USER-MANUAL.html` expose `tes:bundle-sha256` and footer SHA from `docs/i18n/tes-public.structure.yml`, matching `0e824e25c1b606ba440d583699843c653623b1ee243daf0962500a68348a20b7`
+remote_actions_performed: none
+stop_state: ready_for_final_audit
+
+## Final Executive Stop Audit After SPEC-AUDIT-001 - 2026-06-29
+
+pre_close_commit: bc64c15c
+pre_close_worktree: clean, `main...origin/main [ahead 22]`
+public_bundle_identity: PASS (`docs/i18n/tes-public.structure.yml`, `docs/dist/0.3.225/index.json`, `.zip.sha256`, rendered public HTML, and ZIP sha match `0e824e25c1b606ba440d583699843c653623b1ee243daf0962500a68348a20b7`)
+github_public_destination_gate: PASS (`blocked_by_public_destination` before payload or remote action planning)
+package_overwrite_guard: PASS (`blocked_by_unowned_package_dir` protects unmarked directories; TES-owned marker overwrite passes)
+installed_canary_0_3_225: PASS (`~/Dev/tes-canaries/goal-maestro-thermometer-20260629T225000Z`; installed version `0.3.225`; bundle sha256 `17333efd292b85889842984d478d9940302c35b60fdadc22ab43053d3aaba2d1`)
+ledger_truth: PASS (historical overclaim preserved as superseded, audit downgrade recorded, repair commits recorded, audit repair recorded)
+remote_actions_performed: none
+release_identity_boundary: local 0.3.225 package and public bundle remain local-only; no push, tag, publish, GitHub write, or remote release was performed or claimed
 post_commit_required_oracle: `npm run commit:closure` from clean worktree after this ledger closeout commit
 current_goal_maestro_stop_state: PASS_CEILING if post-commit closure remains PASS; otherwise downgrade to the exact failing axis
