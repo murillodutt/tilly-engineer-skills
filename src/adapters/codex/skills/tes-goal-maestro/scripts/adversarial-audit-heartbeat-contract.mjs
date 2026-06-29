@@ -8,7 +8,9 @@ import { readText } from './lib/harness.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const skillRoot = dirname(here);
-const repoRoot = findRepoRoot(here);
+const sourceRepoRoot = findSourceRepoRoot(here);
+const targetRoot = sourceRepoRoot ?? findInstalledTargetRoot(skillRoot);
+const displayRoot = sourceRepoRoot ?? targetRoot ?? skillRoot;
 const fixtureRoot = join(here, 'fixtures/adversarial-audit-heartbeat');
 const placeholders = [
   '{audit_subject}',
@@ -114,7 +116,7 @@ function requiredValue(argv, index, option) {
   return value;
 }
 
-function findRepoRoot(start) {
+function findSourceRepoRoot(start) {
   let current = start;
   while (current !== dirname(current)) {
     if (existsSync(join(current, 'AGENTS.md')) && existsSync(join(current, 'src/adapters'))) {
@@ -122,13 +124,30 @@ function findRepoRoot(start) {
     }
     current = dirname(current);
   }
-  console.error('could not locate repository root');
-  process.exit(2);
+  return null;
+}
+
+function findInstalledTargetRoot(start) {
+  let current = start;
+  while (current !== dirname(current)) {
+    if (
+      existsSync(join(current, '.agents/skills/tes-goal-maestro')) ||
+      existsSync(join(current, '.claude/skills/tes-goal-maestro')) ||
+      existsSync(join(current, '.cursor/rules/tes-runtime-capabilities.mdc'))
+    ) {
+      return current;
+    }
+    current = dirname(current);
+  }
+  return null;
 }
 
 function loadSourceCandidate() {
-  const codexRoot = join(repoRoot, 'src/adapters/codex/skills/tes-goal-maestro');
-  const claudeRoot = join(repoRoot, 'src/adapters/claude/skills/tes-goal-maestro');
+  if (!sourceRepoRoot) {
+    return loadInstalledCandidate();
+  }
+  const codexRoot = join(sourceRepoRoot, 'src/adapters/codex/skills/tes-goal-maestro');
+  const claudeRoot = join(sourceRepoRoot, 'src/adapters/claude/skills/tes-goal-maestro');
   return {
     name: 'source surfaces',
     surfaces: {
@@ -137,11 +156,48 @@ function loadSourceCandidate() {
       maestralTemplate: readText(join(skillRoot, 'templates/maestral-goal-prompt.template.md')),
       heartbeatReference: readText(join(skillRoot, 'references/adversarial-audit-heartbeat.md')),
       heartbeatTemplate: readText(join(skillRoot, 'templates/adversarial-audit-heartbeat.template.md')),
-      cursorRule: readText(join(repoRoot, 'src/adapters/cursor/rules/tes-runtime-capabilities.mdc')),
+      cursorRule: readText(join(sourceRepoRoot, 'src/adapters/cursor/rules/tes-runtime-capabilities.mdc')),
       codexHeartbeatReference: readText(join(codexRoot, 'references/adversarial-audit-heartbeat.md')),
       codexHeartbeatTemplate: readText(join(codexRoot, 'templates/adversarial-audit-heartbeat.template.md')),
       claudeHeartbeatReference: readText(join(claudeRoot, 'references/adversarial-audit-heartbeat.md')),
       claudeHeartbeatTemplate: readText(join(claudeRoot, 'templates/adversarial-audit-heartbeat.template.md')),
+    },
+  };
+}
+
+function loadInstalledCandidate() {
+  if (!targetRoot) {
+    console.error('could not locate source repository or installed TES target root');
+    process.exit(2);
+  }
+  const codexRoot = join(targetRoot, '.agents/skills/tes-goal-maestro');
+  const claudeRoot = join(targetRoot, '.claude/skills/tes-goal-maestro');
+  const cursorRulePath = join(targetRoot, '.cursor/rules/tes-runtime-capabilities.mdc');
+  const codexReference = existsSync(codexRoot)
+    ? readText(join(codexRoot, 'references/adversarial-audit-heartbeat.md'))
+    : readText(join(skillRoot, 'references/adversarial-audit-heartbeat.md'));
+  const codexTemplate = existsSync(codexRoot)
+    ? readText(join(codexRoot, 'templates/adversarial-audit-heartbeat.template.md'))
+    : readText(join(skillRoot, 'templates/adversarial-audit-heartbeat.template.md'));
+  const claudeReference = existsSync(claudeRoot)
+    ? readText(join(claudeRoot, 'references/adversarial-audit-heartbeat.md'))
+    : readText(join(skillRoot, 'references/adversarial-audit-heartbeat.md'));
+  const claudeTemplate = existsSync(claudeRoot)
+    ? readText(join(claudeRoot, 'templates/adversarial-audit-heartbeat.template.md'))
+    : readText(join(skillRoot, 'templates/adversarial-audit-heartbeat.template.md'));
+  return {
+    name: 'installed surfaces',
+    surfaces: {
+      rootSkill: readText(join(skillRoot, 'SKILL.md')),
+      maestralReference: readText(join(skillRoot, 'references/maestral-goal-prompt.md')),
+      maestralTemplate: readText(join(skillRoot, 'templates/maestral-goal-prompt.template.md')),
+      heartbeatReference: readText(join(skillRoot, 'references/adversarial-audit-heartbeat.md')),
+      heartbeatTemplate: readText(join(skillRoot, 'templates/adversarial-audit-heartbeat.template.md')),
+      cursorRule: existsSync(cursorRulePath) ? readText(cursorRulePath) : '',
+      codexHeartbeatReference: codexReference,
+      codexHeartbeatTemplate: codexTemplate,
+      claudeHeartbeatReference: claudeReference,
+      claudeHeartbeatTemplate: claudeTemplate,
     },
   };
 }
@@ -156,7 +212,7 @@ function loadCandidateFromFixture(path) {
     process.exit(2);
   }
   const candidate = loadSourceCandidate();
-  candidate.name = fixture.name ?? relative(repoRoot, fullPath);
+  candidate.name = fixture.name ?? relative(displayRoot, fullPath);
   applyFixtureMutations(candidate.surfaces, fixture);
   return candidate;
 }
@@ -339,7 +395,7 @@ function printCandidateResult(name, result) {
 function runFixtureSuite(root) {
   const files = listJsonFiles(root);
   let failed = 0;
-  console.log(`# adversarial-audit-heartbeat-contract fixtures — ${relative(repoRoot, root)}`);
+  console.log(`# adversarial-audit-heartbeat-contract fixtures — ${relative(displayRoot, root)}`);
   for (const file of files) {
     const rel = relative(root, file);
     const expectInvalid = rel.split('/').some((part) => part.startsWith('invalid-'));

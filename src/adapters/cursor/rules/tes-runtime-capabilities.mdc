@@ -181,6 +181,20 @@ state cannot be read, the heartbeat prompt must report
 `HEARTBEAT_BLOCKED_CONTEXT` and request the smallest missing visible state
 instead of pretending state was observed.
 
+### Goal Maestro Execution Thermometer
+
+The Execution Thermometer is a Cursor lazy capability detail, not a Cursor skill package. Cursor parity for this feature means structural and materialization coverage of the Goal Maestro sidecar contract, not script or skill parity.
+
+When an explicit Goal Maestro `--execute-loop` closes or honestly stops, the
+installed Codex or Claude skill surfaces may generate a local static
+report/package from the persistent loop ledger. Cursor must treat that package
+as local evidence only: no telemetry, not a dashboard, not a server, no hidden
+network behavior, and no runtime YAML/JSON reads from the HTML report.
+
+The sidecar must not rewrite Goal Maestro execution stop states. It may report
+only Thermometer report/share fields, and GitHub sharing remains opt-in through
+the separate Share Gate and export contract.
+
 ## tes-init Gate Flow
 
 Route `/tes-init` through the Install/Update Gate, Project Context Gate, and

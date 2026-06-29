@@ -40,7 +40,7 @@ from typing import Any
 
 import yaml
 
-VERSION = "0.3.225"
+VERSION = "0.3.226"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INVENTORY_REL = (

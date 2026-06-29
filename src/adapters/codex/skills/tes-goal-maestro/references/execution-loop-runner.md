@@ -264,6 +264,8 @@ fetch, push, publish, start a server, read runtime YAML/JSON from HTML, or open 
 remote share lane. GitHub sharing remains opt-in and belongs to the Share Gate
 and GitHub export dry-run contracts.
 
+The report is local evidence, not telemetry, not a dashboard, and not a server.
+
 A report generation failure, sanitizer block, missing destination, declined
 share, or GitHub auth block must not rewrite Goal Maestro execution stop states.
 It may set only Thermometer report/share fields unless the user explicitly made

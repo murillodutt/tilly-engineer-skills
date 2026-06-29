@@ -3,14 +3,14 @@
 // close or honest stop while keeping Thermometer/report/share states separate
 // from Goal Maestro execution stop states.
 //
-//   node scripts/execution-thermometer-integration.mjs references/execution-loop-runner.md templates/maestral-goal-prompt.template.md fixture.json
+//   node scripts/execution-thermometer-integration.mjs references/execution-loop-runner.md templates/maestral-goal-prompt.template.md fixture.json [cursor-runtime-rule.mdc]
 
 import { runChecks, readText } from './lib/harness.mjs';
 
-const [runnerPath, templatePath, fixturePath] = process.argv.slice(2);
+const [runnerPath, templatePath, fixturePath, cursorRulePath] = process.argv.slice(2);
 
-if (!runnerPath || !templatePath || !fixturePath || process.argv.length !== 5) {
-  console.error('usage: node scripts/execution-thermometer-integration.mjs <execution-loop-runner.md> <maestral-goal-prompt.template.md> <state-fixture.json>');
+if (!runnerPath || !templatePath || !fixturePath || ![5, 6].includes(process.argv.length)) {
+  console.error('usage: node scripts/execution-thermometer-integration.mjs <execution-loop-runner.md> <maestral-goal-prompt.template.md> <state-fixture.json> [cursor-runtime-rule.mdc]');
   process.exit(2);
 }
 
@@ -24,6 +24,7 @@ try {
 
 const runner = readText(runnerPath);
 const template = readText(templatePath);
+const cursorRule = cursorRulePath ? readText(cursorRulePath) : '';
 const lifecycleBlock = extractBetween(runner, 'Use these states:', 'Stop or branch with:');
 const before = fixture.before ?? {};
 const after = fixture.after ?? {};
@@ -49,7 +50,7 @@ const SHARE_STATUS = new Set([
   'blocked_by_github_auth',
 ]);
 
-runChecks('SPEC-009 execution-thermometer-integration', [
+const checks = [
   {
     name: 'runner declares Execution Thermometer Hook',
     pass: runner.includes('## Execution Thermometer Hook'),
@@ -95,7 +96,36 @@ runChecks('SPEC-009 execution-thermometer-integration', [
     name: 'optional report failure remains sidecar unless reporting is required',
     pass: report.required === true || report.status === 'pass' || before.goal_maestro_execution_state === after.goal_maestro_execution_state,
   },
-]);
+];
+
+if (cursorRulePath) {
+  checks.push(
+    {
+      name: 'Cursor lazy rule covers Execution Thermometer without fake skill parity',
+      pass: cursorRule.includes('Goal Maestro Execution Thermometer') &&
+        cursorRule.includes('Cursor lazy capability detail') &&
+        cursorRule.includes('not a Cursor skill package') &&
+        cursorRule.includes('local static') &&
+        cursorRule.includes('report/package') &&
+        cursorRule.includes('structural and materialization coverage'),
+    },
+    {
+      name: 'Cursor lazy rule preserves local-only and no-dashboard boundary',
+      pass: cursorRule.includes('no telemetry') &&
+        cursorRule.includes('not a dashboard') &&
+        cursorRule.includes('not a server') &&
+        cursorRule.includes('no hidden') &&
+        cursorRule.includes('network behavior'),
+    },
+    {
+      name: 'Cursor lazy rule keeps Thermometer separate from Goal Maestro stop states',
+      pass: cursorRule.includes('must not rewrite Goal Maestro execution stop states') &&
+        cursorRule.includes('Thermometer report/share fields'),
+    },
+  );
+}
+
+runChecks('SPEC-009 execution-thermometer-integration', checks);
 
 function extractBetween(text, start, end) {
   const startIndex = text.indexOf(start);

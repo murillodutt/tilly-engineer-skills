@@ -9,13 +9,19 @@
 // Exit≠0 se QUALQUER parede falhar o par (não-disparo sob violação, ou não-passe ao reverter).
 
 import { execFileSync, execSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const tmp = mkdtempSync(join(tmpdir(), 'walls-'));
+const skillRoot = dirname(here);
+const sourceRoot = join(here, '../../../../../../');
+const sourcePublicContent = join(sourceRoot, 'docs/i18n/tes-public.content.json');
+const sourceAgentManual = join(sourceRoot, 'docs/install/AGENT-MANUAL.md');
+const sourceCursorRuntimeRule = join(sourceRoot, 'src/adapters/cursor/rules/tes-runtime-capabilities.mdc');
+const installedCursorRuntimeRule = join(skillRoot, '../../../.cursor/rules/tes-runtime-capabilities.mdc');
 
 function runHarness(script, args) {
   try {
@@ -54,6 +60,52 @@ function outputRootWithOwnedPackage(name) {
   }));
   writeFileSync(join(packageDir, 'stale.txt'), 'old generated content\n');
   return root;
+}
+
+function hasSourceDocs() {
+  return existsSync(sourcePublicContent) && existsSync(sourceAgentManual);
+}
+
+function gm10ViolateArgs() {
+  if (hasSourceDocs()) {
+    return [
+      fixture('gm10-bad-content.json', JSON.stringify({ sections: { report: { en: { blocks: [] }, es: { blocks: [] }, pt: { blocks: [] } } } })),
+      fixture('gm10-bad-agent.md', 'Execution Thermometer without fields.\n'),
+    ];
+  }
+  return ['--installed-skill-root', badInstalledThermometerSkillRoot('gm10-bad-installed-skill')];
+}
+
+function gm10RevertArgs() {
+  if (hasSourceDocs()) {
+    return [sourcePublicContent, sourceAgentManual];
+  }
+  return ['--installed-skill-root', skillRoot];
+}
+
+function badInstalledThermometerSkillRoot(name) {
+  const root = join(tmp, name);
+  mkdirSync(join(root, 'references'), { recursive: true });
+  mkdirSync(join(root, 'templates'), { recursive: true });
+  mkdirSync(join(root, 'scripts'), { recursive: true });
+  writeFileSync(join(root, 'SKILL.md'), '# Bad Goal Maestro\n');
+  writeFileSync(join(root, 'references/execution-loop-runner.md'), 'Execution Thermometer without installed contract.\n');
+  writeFileSync(join(root, 'templates/maestral-goal-prompt.template.md'), 'No thermometer hook.\n');
+  writeFileSync(join(root, 'scripts/execution-thermometer-package.mjs'), 'console.log("bad package");\n');
+  writeFileSync(join(root, 'scripts/execution-thermometer-html.mjs'), 'console.log("bad html");\n');
+  writeFileSync(join(root, 'scripts/execution-thermometer-schema.mjs'), 'console.log("bad schema");\n');
+  writeFileSync(join(root, 'scripts/execution-thermometer-extract.mjs'), 'console.log("bad extract");\n');
+  return root;
+}
+
+function cursorRuntimeRuleArg() {
+  if (existsSync(sourceCursorRuntimeRule)) {
+    return sourceCursorRuntimeRule;
+  }
+  if (existsSync(installedCursorRuntimeRule)) {
+    return installedCursorRuntimeRule;
+  }
+  return fixture('missing-cursor-runtime-capabilities.mdc', '');
 }
 
 // Cada parede: {id, harness, violate→args (deve dar exit≠0), revert→args (deve dar exit 0)}.
@@ -317,25 +369,38 @@ const WALLS = [
       join(here, '../references/execution-loop-runner.md'),
       join(here, '../templates/maestral-goal-prompt.template.md'),
       join(here, 'fixtures/execution-thermometer-integration/state-namespace-invalid.json'),
+      cursorRuntimeRuleArg(),
     ],
     revert: () => [
       join(here, '../references/execution-loop-runner.md'),
       join(here, '../templates/maestral-goal-prompt.template.md'),
       join(here, 'fixtures/execution-thermometer-integration/state-namespace-valid.json'),
+      cursorRuntimeRuleArg(),
+    ],
+  },
+  // GM9C — Cursor lazy runtime rule covers Thermometer without claiming fake skill parity.
+  {
+    id: 'GM9C execution-thermometer-cursor-lazy',
+    harness: 'execution-thermometer-integration.mjs',
+    violate: () => [
+      join(here, '../references/execution-loop-runner.md'),
+      join(here, '../templates/maestral-goal-prompt.template.md'),
+      join(here, 'fixtures/execution-thermometer-integration/state-namespace-valid.json'),
+      fixture('gm9c-bad-cursor.mdc', 'Cursor runtime capability without Execution Thermometer coverage.\n'),
+    ],
+    revert: () => [
+      join(here, '../references/execution-loop-runner.md'),
+      join(here, '../templates/maestral-goal-prompt.template.md'),
+      join(here, 'fixtures/execution-thermometer-integration/state-namespace-valid.json'),
+      cursorRuntimeRuleArg(),
     ],
   },
   // GM10 — User docs describe local report, UNPROVEN, opt-in sharing and fields.
   {
     id: 'GM10 execution-thermometer-docs',
     harness: 'execution-thermometer-docs.mjs',
-    violate: () => [
-      fixture('gm10-bad-content.json', JSON.stringify({ sections: { report: { en: { blocks: [] }, es: { blocks: [] }, pt: { blocks: [] } } } })),
-      fixture('gm10-bad-agent.md', 'Execution Thermometer without fields.\n'),
-    ],
-    revert: () => [
-      join(here, '../../../../../../docs/i18n/tes-public.content.json'),
-      join(here, '../../../../../../docs/install/AGENT-MANUAL.md'),
-    ],
+    violate: gm10ViolateArgs,
+    revert: gm10RevertArgs,
   },
   // GM11 — Adversarial Audit Heartbeat remains exact opt-in and read-only.
   {
