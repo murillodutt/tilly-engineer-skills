@@ -164,6 +164,23 @@ auto-activate its read-only `--governance-check`. It must dry-run target
 discovery before any write and must not commit, tag, push, publish, or edit
 remotes.
 
+### Goal Maestro Audit Heartbeat Prompt
+
+The Adversarial Audit Heartbeat Prompt is a Cursor lazy capability detail, not a Cursor skill package. Cursor parity for this feature means structural and materialization coverage of the prompt-generation contract, not skill parity.
+
+Activate it only from exact opt-in in the active request or active source
+artifact: `--audit-heartbeat-prompt`, `audit_heartbeat=true`,
+`adversarial_audit_heartbeat: requested`, or a direct request to generate or
+create an adversarial audit heartbeat prompt. The output is a copy-ready English
+auditor prompt. It is read-only, may recommend risk and checkpoints, and must
+never execute the loop, mutate files, manage host jobs, share artifacts, or
+claim the authoritative Goal Maestro stop state.
+
+Cursor host-state access may be unavailable. When latest thread or execution
+state cannot be read, the heartbeat prompt must report
+`HEARTBEAT_BLOCKED_CONTEXT` and request the smallest missing visible state
+instead of pretending state was observed.
+
 ## tes-init Gate Flow
 
 Route `/tes-init` through the Install/Update Gate, Project Context Gate, and
