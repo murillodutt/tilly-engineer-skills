@@ -12,16 +12,17 @@ tver: 0.1.0
 
 ## Decision
 
-PASS. A fresh installed target generated the Execution Thermometer package from
-installed Codex skill scripts, not from this repository root.
+PASS. A fresh installed target generated the Execution Thermometer package for
+package version `0.3.225` from installed Codex skill scripts, not from this
+repository root.
 
 ## Scope
 
-- Target: `~/Dev/tes-canaries/goal-maestro-thermometer-20260629T185504Z`.
-- Bundle: `~/Dev/tes-canaries/runs/goal-maestro-thermometer-20260629T185504Z/tes-0.3.224-current.tar.gz`.
-- Bundle sha256: `8dfe577a7d7efe62963843dfac916e9d2263cb89cec63421afcf6a9681682d36`.
-- Source commit: `7672c44feb8b3e7598476a13c674ab1971d6ee1b`.
-- Installed version: `0.3.224`.
+- Target: `~/Dev/tes-canaries/goal-maestro-thermometer-20260629T225000Z`.
+- Bundle: `~/Dev/tes-canaries/runs/goal-maestro-thermometer-20260629T225000Z/tes-0.3.225-current.tar.gz`.
+- Bundle sha256: `17333efd292b85889842984d478d9940302c35b60fdadc22ab43053d3aaba2d1`.
+- Source commit: `f1b5dc99084bf51bfa840cce50c9d8c577e48337`.
+- Installed version: `0.3.225`.
 
 ## Evidence
 
@@ -31,6 +32,7 @@ installed Codex skill scripts, not from this repository root.
 | `tes_install.py install --agent codex --attach all --bundle ...` | PASS, installed certification PASS |
 | Installed `execution-thermometer-extract.mjs` | PASS, `unproven_metrics=0` |
 | Installed `execution-thermometer-package.mjs` | PASS, local package generated |
+| Package ownership marker | PASS, `.tes-execution-thermometer-package.json` proves TES ownership for the same run/package contract |
 | Installed receipt `--check-only` | PASS |
 | Installed HTML `--check-only --expect-loop L1` | PASS |
 | `shasum -a 256 -c checksums.sha256` | PASS |
@@ -38,13 +40,13 @@ installed Codex skill scripts, not from this repository root.
 
 ## Artifacts
 
-- Local package: `.tes/execution-thermometer/packages/execution-thermometer-canary-20260629T185504Z/`.
-- Markdown receipt hash: `4a1cbd63908e7bf972c1c0c6e190f24f5a97ee7d9825f6ab7e140fa67d05770f`.
-- HTML report hash: `db4d74272fc17c439a937fb1cf6b43341fbf3df1d5a05f7ad065d6a80f2c78ed`.
-- HTML open PNG hash: `54c03dadb8bf2773bc48842bc48547a75f006e4ce69d69ab6694a43ccaece89f`.
-- Package manifest hash: `f9a7dbb484f69f68d2875cf9687250bdcfda2beeba0dc30868b77256d7014f2b`.
-- Canary ledger hash: `b8b73e3f00aed5c693f639e384cb08fb0bad2ca92e0e84e06dbc936b8db12b66`.
-- Extraction manifest hash: `357ad104699cac8367281c2d093b441caa4931723b7dddd77080032872ffe773`.
+- Local package: `.tes/execution-thermometer/packages/execution-thermometer-canary-20260629T225000Z/`.
+- Markdown receipt hash: `7d370e6613fbbaed80912dae57e24b733c57ff96421559b2e5d0f3e89fec3259`.
+- HTML report hash: `567513b8071db4f0f4a7ebcfc82e0007e5453bdf13c4e82b77e9f4ca83dd0373`.
+- HTML open PNG hash: `9ad5ac34539214bc66a68639d91dc28ec7e744f1d3bd04d255d05db8a146ac3f`.
+- Package manifest hash: `f836902e9ff74bff7d221fc95e72c73d026fbfa1a3a5eff65f7e45c435765c1b`.
+- Canary ledger hash: `8e02c6a581d06a0498f9b2fd65ba9f61bcc368546ca663ed25df822c5d4f4fc3`.
+- Extraction manifest hash: `52249380da92b496b10ccdc4e043c283050c5ebc5777b57b161e8c97869a8d26`.
 
 ## Boundaries
 
