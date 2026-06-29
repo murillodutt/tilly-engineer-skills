@@ -1,0 +1,15 @@
+{
+  "sources": [],
+  "privacy": {
+    "private_vocabulary_status": "pass",
+    "sanitizer_status": "pass"
+  },
+  "gold_analysis": {
+    "classification": "ordinary",
+    "reason_codes": [],
+    "evidence_refs": [],
+    "sanitizer_status": "pass",
+    "learning_summary": "",
+    "package_checksum": "unproven"
+  }
+}

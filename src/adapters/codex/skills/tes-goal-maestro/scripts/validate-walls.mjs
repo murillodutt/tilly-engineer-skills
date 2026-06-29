@@ -179,6 +179,13 @@ const WALLS = [
       'L4',
     ],
   },
+  // GM5 — Gold Analysis Gate (gold missing evidence fails; complete gold fixture passes).
+  {
+    id: 'GM5 execution-thermometer-gold',
+    harness: 'execution-thermometer-gold.mjs',
+    violate: () => [join(here, 'fixtures/execution-thermometer-gold/invalid-missing-evidence/candidate.json'), '--expect', 'gold'],
+    revert: () => [join(here, 'fixtures/execution-thermometer-gold/gold/candidate.json'), '--expect', 'gold'],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

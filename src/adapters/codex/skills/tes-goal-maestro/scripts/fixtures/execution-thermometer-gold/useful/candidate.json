@@ -1,0 +1,25 @@
+{
+  "sources": [
+    {
+      "ref": "EV-USEFUL",
+      "type": "oracle",
+      "description": "Useful but not share-ready learning signal.",
+      "source": "generated",
+      "path": "fixtures/execution-thermometer-gold/useful",
+      "hash": "unproven",
+      "sanitized": true
+    }
+  ],
+  "privacy": {
+    "private_vocabulary_status": "pass",
+    "sanitizer_status": "pass"
+  },
+  "gold_analysis": {
+    "classification": "useful",
+    "reason_codes": ["integration_oracle_missing"],
+    "evidence_refs": ["EV-USEFUL"],
+    "sanitizer_status": "pass",
+    "learning_summary": "Integration evidence exists but the local package checksum is not ready.",
+    "package_checksum": "unproven"
+  }
+}

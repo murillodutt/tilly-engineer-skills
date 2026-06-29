@@ -1,0 +1,25 @@
+{
+  "sources": [
+    {
+      "ref": "EV-GOLD",
+      "type": "oracle",
+      "description": "Gold learning evidence fixture.",
+      "source": "generated",
+      "path": "fixtures/execution-thermometer-gold/gold",
+      "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "sanitized": true
+    }
+  ],
+  "privacy": {
+    "private_vocabulary_status": "pass",
+    "sanitizer_status": "pass"
+  },
+  "gold_analysis": {
+    "classification": "gold",
+    "reason_codes": ["oracle_facade_detected"],
+    "evidence_refs": ["EV-GOLD"],
+    "sanitizer_status": "pass",
+    "learning_summary": "A red-capable oracle prevented a false green report.",
+    "package_checksum": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
+}
