@@ -554,6 +554,13 @@ documents:
     consumer: maintainers, Goal Maestro authors, report renderer authors, oracle authors, GitHub workflow reviewers, and execution agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-adversarial-audit-heartbeat.md
+    id: roadmap.goal_super_spec.goal_maestro_adversarial_audit_heartbeat
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, Cursor rule reviewers, and execution agents
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/EXPERIENCE-AND-DATA-CONTRACT.md
     id: roadmap.goal_super_spec.goal_maestro_execution_thermometer.experience_data_contract
     class: roadmap
@@ -923,6 +930,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Goal Maestro authors, report renderer authors, oracle authors, GitHub workflow reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-adversarial-audit-heartbeat.md
+    id: roadmap.goal_execution_loop_ledger_goal_maestro_adversarial_audit_heartbeat
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents reviewing the adversarial audit heartbeat loop record
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/goals/SPEC-CONVERGENCE-CERTIFICATION-mantra-senior-manager-birth.md

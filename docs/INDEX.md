@@ -103,6 +103,7 @@ This documentation layer explains the method behind the source package without t
 | ADR 0005 asset transfer realignment Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md` |
 | Goal Maestro Progressive Disclosure Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-progressive-disclosure.md` |
 | Goal Maestro Execution Thermometer And Gold Sharing Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execution-thermometer-and-gold-sharing.md` |
+| Goal Maestro Adversarial Audit Heartbeat Prompt Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-adversarial-audit-heartbeat.md` |
 | Inherited Context line dashboard | `roadmap/inherited-context/DASHBOARD.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
