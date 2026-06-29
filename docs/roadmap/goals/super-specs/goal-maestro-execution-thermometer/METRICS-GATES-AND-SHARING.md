@@ -137,8 +137,9 @@ to represent these measurement families:
 19. release identity pressure;
 20. final stop-state quality.
 
-The report may add fields, but it must preserve evidence references and
-`UNPROVEN` semantics for every measurement.
+Future schema versions may add fields, but schema v1 renderer-facing fields are
+closed. V1 reports must preserve evidence references and `UNPROVEN` semantics for
+every measurement.
 
 ## Lens Contribution
 
@@ -257,8 +258,51 @@ The owner prompt must include:
 - included files;
 - excluded files;
 - sanitizer result;
-- destination repository/branch;
+- destination repository;
+- destination branch;
+- payload hash;
+- manifest hash;
 - clear statement that a draft PR will be opened.
+
+Owner approval is valid only for the exact tuple:
+
+```text
+run_id + destination_repository + destination_branch + payload_hash + manifest_hash
+```
+
+Changing any tuple value invalidates the approval and returns the Share Gate to
+`proposed_gold` or the relevant blocked state.
+
+## Gold, Sanitizer, And Share State Machine
+
+The share path is an append-only state machine:
+
+```text
+ordinary|useful -> not_gold
+gold -> sanitizer
+sanitizer:pass -> proposed_gold
+sanitizer:fail|unproven -> blocked_by_sanitization
+proposed_gold + owner_declines -> declined
+proposed_gold + owner_approves_local_only -> approved_local_export
+proposed_gold + owner_approves_remote + destination_missing -> blocked_by_missing_destination
+proposed_gold + owner_approves_remote + auth_missing -> blocked_by_github_auth
+proposed_gold + bound_owner_approval + dry_run_pass -> draft_pr_opened
+```
+
+Prohibited transitions:
+
+- `ordinary` or `useful` to `proposed_gold`, `approved_local_export`, or
+  `draft_pr_opened`;
+- `gold` to any share state before sanitizer status is `pass`;
+- `proposed_gold` to `draft_pr_opened` without tuple-bound owner approval;
+- any blocked state to `draft_pr_opened` without regenerating or revalidating the
+  package and obtaining fresh tuple-bound owner approval;
+- any state to remote side effects without dry-run evidence;
+- any thermometer share state to a Goal Maestro execution stop state.
+
+The state machine describes report and sharing status only. It must not rewrite
+Goal Maestro execution stop states or convert a blocked share into a failed
+product execution.
 
 ## GitHub Sharing Policy
 
@@ -276,7 +320,7 @@ Forbidden lanes:
 - automatic push after gold classification;
 - sharing raw prompts, diffs, logs, private paths, or secrets.
 
-Remote operations require a fresh owner approval for each run.
+Remote operations require a fresh tuple-bound owner approval for each run.
 
 ## Anti-Gaming Rules
 

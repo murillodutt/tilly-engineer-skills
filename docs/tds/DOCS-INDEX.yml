@@ -918,6 +918,13 @@ documents:
     consumer: maintainers, hook authors, installer authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-execution-thermometer.md
+    id: roadmap.goal_execution_loop_ledger_goal_maestro_execution_thermometer
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, report renderer authors, oracle authors, GitHub workflow reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/SPEC-CONVERGENCE-CERTIFICATION-mantra-senior-manager-birth.md
     id: roadmap.spec_convergence_mantra_senior_manager_birth
     class: roadmap

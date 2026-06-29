@@ -13,7 +13,8 @@ tver: 0.1.0
 This implementation is `Platform` work because it touches delivered Goal Maestro
 behavior, report artifacts, helper scripts, adapters, oracles, and release
 identity. The runtime path must be added around the existing loop, not inside it
-as a second execution engine.
+as a second execution engine. Runtime implementation cannot begin until SPEC-000
+closes the contract hardening blockers in this plan.
 
 ## Boundaries
 
@@ -28,6 +29,8 @@ Preserve:
 - material diff and sync discipline;
 - final audit;
 - existing stop states;
+- separation between Goal Maestro execution stop states and thermometer
+  report/share states;
 - adapter parity.
 
 Do not introduce:
@@ -35,7 +38,11 @@ Do not introduce:
 - telemetry;
 - dashboard server;
 - database;
+- external CSS or JavaScript;
+- CDN;
+- tracking pixel;
 - hidden network access;
+- runtime YAML/JSON/file reads by generated HTML;
 - alternate ledger format;
 - automatic GitHub upload;
 - remote write without owner approval.
@@ -67,9 +74,9 @@ scripts/**/fixtures/execution-thermometer/**
 Expected delivered behavior:
 
 - schema validation;
-- local package generation;
+- default/always-on local package generation after loop close or honest stop;
 - Markdown renderer;
-- HTML renderer;
+- static HTML renderer with an embedded generation-time snapshot;
 - Gold Analysis Gate;
 - sanitizer;
 - GitHub dry-run and draft PR export path if approved.
@@ -81,9 +88,10 @@ Every changed `scripts/**` path must be classified before closure:
 - installed-target canary helper;
 - release/package helper.
 
-## SPEC-000: Preflight And Baseline
+## SPEC-000: Contract Hardening And Baseline Protection
 
-Objective: capture the protected Goal Maestro baseline before any runtime edit.
+Objective: resolve the Tree Adversary contract blockers and capture the
+protected Goal Maestro baseline before any runtime edit.
 
 Inputs:
 
@@ -94,13 +102,31 @@ Inputs:
 
 Deliverables:
 
-- baseline note in execution ledger;
+- baseline note for the execution ledger, without writing runtime ledger code;
 - list of protected invariants;
-- smallest red-capable oracle selected.
+- smallest red-capable oracle selected;
+- contract note that local Markdown/HTML/YAML/JSON/checksum package generation is
+  default/always-on after loop close or honest stop;
+- contract note that only GitHub sharing is opt-in;
+- static HTML generation boundary that forbids runtime fetch, YAML/JSON reads,
+  CDN, tracking, telemetry, dashboard server, and hidden network paths;
+- project/series/run/loop accumulation model;
+- canonical schema v1 enum table and closed renderer-facing fields;
+- Share Gate statuses aligned across YAML, JSON, metrics, and validation docs;
+- Gold -> Sanitizer -> Share state machine with allowed and prohibited
+  transitions;
+- share approval binding to `run_id`, destination repository, branch, payload
+  hash, and manifest hash;
+- read-only, hash-proven ledger extraction contract;
+- state-boundary rule proving thermometer report/share states do not pollute Goal
+  Maestro execution stop states.
 
 Gate:
 
-- current focused Goal Maestro validation passes before edits.
+- all SPEC-000 blockers above are documented in the allowed docs;
+- declared SPEC order remains unchanged;
+- current focused Goal Maestro validation is selected for SPEC-001+ runtime work,
+  but no runtime implementation starts in SPEC-000.
 
 Stop state:
 
@@ -137,11 +163,15 @@ Deliverables:
 - extractor;
 - evidence reference mapping;
 - `UNPROVEN` handling for missing fields;
+- read-only ledger access;
+- source ledger hash and extraction manifest hash;
 - fixture from a small synthetic loop.
 
 Gate:
 
 - missing metric fixture renders `UNPROVEN`;
+- extractor cannot append to or rewrite the source ledger;
+- extracted claims cite source hash or manifest hash;
 - existing loop semantics remain unchanged.
 
 Stop state:
@@ -178,13 +208,16 @@ Deliverables:
 - HTML renderer;
 - multi-loop fixture;
 - selected-loop anchor behavior;
+- embedded normalized snapshot generated from YAML plus JSON at generation time;
 - print-friendly all-loop evidence behavior.
 
 Gate:
 
 - `file://` open works;
 - clicking `#loop-L4` loads Loop L4 detail;
-- report works without network access.
+- report works without network access;
+- HTML contains no runtime YAML/JSON/file reads, `fetch`, CDN, tracking, or
+  telemetry path.
 
 Stop state:
 
@@ -240,12 +273,16 @@ Deliverables:
 - consent summary;
 - dry-run mode;
 - explicit approval boundary;
+- approval record bound to `run_id`, destination repository, branch, payload
+  hash, and manifest hash;
 - decline path.
 
 Gate:
 
 - ordinary report never prompts;
 - gold but unsafe report never prompts for remote sharing;
+- changed destination, branch, payload hash, or manifest hash invalidates prior
+  approval;
 - decline leaves local package intact.
 
 Stop state:
@@ -267,7 +304,7 @@ Deliverables:
 Gate:
 
 - dry-run shows exact files and destination;
-- remote action is blocked without explicit per-run approval.
+- remote action is blocked without explicit tuple-bound per-run approval.
 
 Stop state:
 
@@ -281,13 +318,15 @@ changing execution order.
 Deliverables:
 
 - integration hook;
-- config flag/default behavior;
+- default/always-on local generation after loop close or honest stop;
 - ledger reference;
 - backwards compatibility fixture.
 
 Gate:
 
 - existing execute-loop fixture still passes;
+- blocked report/share states stay in thermometer state fields and do not rewrite
+  Goal Maestro execution stop states;
 - report generation failure does not falsely mark product execution failed unless
   reporting was explicitly required.
 

@@ -12,12 +12,12 @@ tver: 0.1.0
 
 Status: active pre-implementation project SPEC.
 
-Purpose: add an opt-in post-execution reporting layer to
+Purpose: add a default local post-execution reporting layer to
 `tes-goal-maestro --execute-loop` without changing the loop semantics that make
-Goal Maestro valuable. The project turns loop evidence into a concise Markdown
-context receipt, a static offline HTML report, and a sanitized YAML plus JSON
-evidence package that can be shared through an explicit GitHub draft PR only
-after a local gold gate and owner approval.
+Goal Maestro valuable. After every loop close or honest stop, the project always
+generates a local Markdown, static HTML, YAML, JSON, and checksum package from
+local evidence. Only GitHub sharing is opt-in, and it is allowed solely through
+an explicit GitHub draft PR after a local gold gate and owner approval.
 
 This is not a prompt-vs-prompt benchmark. It is an execution thermometer: it
 shows whether the harness executed well, where proof was strong or weak, what
@@ -50,7 +50,8 @@ Every metric is either backed by a cited artifact or marked UNPROVEN.
 
 This Super SPEC is intentionally thin. The complete project contract is split
 across governed references so implementation can advance SPEC by SPEC without a
-large roadmap document becoming the operational surface.
+large roadmap document becoming the operational surface. SPEC-000 is a mandatory
+contract-hardening gate before any runtime implementation.
 
 | Surface | Authority |
 |---------|-----------|
@@ -61,18 +62,22 @@ large roadmap document becoming the operational surface.
 
 ## Product Shape
 
-The project delivers two user-facing reports and one optional evidence package:
+The project delivers two user-facing reports and one default local evidence
+package. Sharing that package is optional.
 
 1. `context-receipt.md` appears in the chat context window and shows only the
    five most important execution signals.
 2. `execution-thermometer.html` is a static render-only report. It opens offline,
-   reads normalized data generated from YAML plus JSON, and lets the user click a
-   loop row such as `#loop-L4` to load that loop's detail area.
+   embeds a normalized snapshot generated from YAML plus JSON at generation time,
+   and lets the user click a loop row such as `#loop-L4` to load that loop's
+   detail area.
 3. `execution-thermometer-<run-id>/` packages the Markdown, HTML, YAML, JSON,
-   README, and checksums for local review or opt-in sharing.
+   README, and checksums by default for local review after loop close or honest
+   stop.
 
 The HTML report is not a dashboard. There is no server, database, background
-collector, telemetry stream, or live analytics surface. The report is an
+collector, telemetry stream, runtime YAML/JSON read, network fetch, CDN,
+tracking path, hidden network path, or live analytics surface. The report is an
 artifact, not an application.
 
 ## Five User Signals
@@ -97,6 +102,9 @@ context, next actions, and source package references.
 - Do not create a dashboard, hosted collector, SaaS integration, or telemetry
   pathway.
 - Do not send data automatically.
+- Do not make the local Markdown/HTML/YAML/JSON/checksum package opt-in; it is
+  the default post-loop artifact.
+- Do not let static HTML fetch, import, or read YAML/JSON at runtime.
 - Do not include raw prompts, raw diffs, secrets, private paths, private project
   names, or unreviewed logs in a shareable package.
 - Do not paste the package into GitHub issue bodies, comments, or public Gists.
@@ -118,6 +126,8 @@ The implementation protects the current Goal Maestro harness:
 - decision lens and structural-method enforcement;
 - material diff and sync discipline;
 - honest stop states;
+- separation between Goal Maestro execution stop states and thermometer
+  report/share states;
 - adapter parity across delivered hosts;
 - no remote action without explicit owner approval.
 
@@ -129,7 +139,7 @@ oracles, package identity, and possibly GitHub export flow.
 
 ```text
 Goal Maestro loop evidence
-  -> extractor
+  -> read-only hash-proven extractor
   -> exec_identity.yaml + exec_metrics.json
   -> Markdown context receipt
   -> static HTML report
@@ -144,6 +154,10 @@ If any required evidence is missing, the report still renders, but the affected
 metric is marked `UNPROVEN`. Missing evidence is not hidden and does not silently
 become a zero, pass, or inferred estimate.
 
+The extractor may read existing ledgers and evidence only in read-only mode. It
+must record source hashes and package manifest hashes so every rendered claim can
+be traced back to the local evidence snapshot used for generation.
+
 ## GitHub Sharing Decision
 
 GitHub is the preferred sharing lane because it preserves review, branch,
@@ -154,7 +168,8 @@ The share flow is allowed only when all are true:
 1. local Gold Analysis Gate returns `gold`;
 2. sanitizer passes;
 3. the owner sees the package summary and destination;
-4. the owner explicitly approves the remote action for that run;
+4. the owner explicitly approves the remote action for the exact `run_id`,
+   destination repository, branch, payload hash, and manifest hash;
 5. the export opens a draft PR, not a direct merge.
 
 The default shared payload is sanitized `exec_identity.yaml`,
@@ -172,7 +187,7 @@ parallel execution engine, a second ledger format, or a broad analytics runtime.
 
 | SPEC | Scope | Gate |
 |------|-------|------|
-| SPEC-000 | Baseline and host contract capture | Current Goal Maestro checks pass before edits |
+| SPEC-000 | Contract Hardening And Baseline Protection | Contract blockers resolved before runtime implementation |
 | SPEC-001 | YAML/JSON schema and fixtures | Schema fixtures validate, bad fixtures fail |
 | SPEC-002 | Ledger extractor | Missing evidence becomes `UNPROVEN` |
 | SPEC-003 | Markdown receipt renderer | Five-signal receipt renders in Markdown only |

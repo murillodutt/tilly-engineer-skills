@@ -42,6 +42,19 @@ Stop states must be visible in the report package and final closeout. A blocked
 share path must not mark the core local report as failed if local reporting
 completed correctly.
 
+## State Boundary
+
+Goal Maestro execution stop states and thermometer report/share states are
+separate namespaces:
+
+- Goal Maestro execution state remains sourced from the execution ledger and
+  final audit;
+- thermometer report state is recorded as `report_status`;
+- sharing state is recorded as `share_gate.status`;
+- a blocked report or share state must not rewrite, upgrade, downgrade, or replace
+  the Goal Maestro execution stop state;
+- final closeout may display the states together only as separate fields.
+
 ## Privacy And Sanitization
 
 Sanitization must run before a report is proposed for sharing.
@@ -81,9 +94,11 @@ Required remote preconditions:
 1. report classified `gold`;
 2. package generated locally;
 3. sanitizer passed;
-4. owner approved sharing;
+4. owner approved sharing for the exact `run_id`, destination repository,
+   destination branch, payload hash, and manifest hash;
 5. destination configured;
-6. dry-run showed files, branch, and draft PR summary;
+6. dry-run showed files, branch, payload hash, manifest hash, and draft PR
+   summary;
 7. authentication available.
 
 Failure to satisfy a remote precondition results in a blocked share state, not an
@@ -97,15 +112,20 @@ Focused validation must include:
 schema valid fixture -> pass
 schema invalid fixture -> fail
 extractor missing evidence fixture -> UNPROVEN
+extractor source ledger mutation fixture -> blocked
+extractor hash mismatch fixture -> blocked
 Markdown receipt fixture -> five signals present
 HTML multi-loop fixture -> #loop-L4 loads selected loop
+HTML runtime fetch/YAML/JSON read fixture -> fail
 Gold gate ordinary fixture -> ordinary
 Gold gate useful fixture -> useful
 Gold gate gold fixture -> gold
 sanitizer unsafe fixture -> blocked
 share ordinary fixture -> no prompt
 share gold unsafe fixture -> blocked
+share approval tuple mismatch fixture -> blocked
 GitHub dry-run fixture -> no remote write
+state namespace fixture -> Goal Maestro stop state unchanged
 existing Goal Maestro execute-loop fixture -> unchanged behavior
 installed-target canary -> local package generated
 ```
@@ -124,17 +144,29 @@ The project is complete only when:
 1. a Goal Maestro loop can generate the Markdown context receipt from local
    evidence;
 2. a local package can be generated with README, Markdown, YAML, JSON, HTML, and
-   checksums;
+   checksums by default after loop close or honest stop;
 3. the HTML opens offline and loop links load the selected loop detail;
-4. metrics without evidence are marked `UNPROVEN`;
-5. the Gold Analysis Gate classifies ordinary/useful/gold fixtures correctly;
-6. the Share Gate asks only for gold reports and only after sanitization passes;
-7. GitHub sharing remains explicit, dry-run capable, and remote-action gated;
-8. sanitizer blocks secrets, private paths, and private vocabulary fixtures;
-9. Goal Maestro execution semantics remain unchanged;
-10. adapter parity remains intact;
-11. installed-target canary proves the local package path;
-12. release identity is decided before any delivered-behavior closeout.
+4. the HTML embeds a generation-time normalized snapshot and performs no runtime
+   YAML/JSON/file read, network fetch, CDN load, tracking, telemetry, or dashboard
+   call;
+5. metrics without evidence are marked `UNPROVEN`;
+6. the project/series/run/loop accumulation model is present in YAML/JSON;
+7. canonical schema v1 enums and closed renderer-facing fields validate;
+8. ledger extraction is read-only and hash-proven;
+9. the Gold Analysis Gate classifies ordinary/useful/gold fixtures correctly;
+10. Gold -> Sanitizer -> Share transitions accept only allowed paths and reject
+    prohibited transitions;
+11. the Share Gate asks only for gold reports and only after sanitization passes;
+12. GitHub sharing remains explicit, dry-run capable, and remote-action gated;
+13. owner approval is bound to `run_id`, destination repository, branch, payload
+    hash, and manifest hash;
+14. sanitizer blocks secrets, private paths, and private vocabulary fixtures;
+15. thermometer report/share states do not pollute Goal Maestro execution stop
+    states;
+16. Goal Maestro execution semantics remain unchanged;
+17. adapter parity remains intact;
+18. installed-target canary proves the local package path;
+19. release identity is decided before any delivered-behavior closeout.
 
 ## Final Delivery Contract
 
@@ -151,7 +183,10 @@ Final closeout must include:
 - sanitizer result;
 - gold gate result;
 - share status;
+- approval tuple if sharing was approved;
 - GitHub remote status;
+- Goal Maestro execution stop state;
+- thermometer report state;
 - installed canary result;
 - release identity decision;
 - stop state.
