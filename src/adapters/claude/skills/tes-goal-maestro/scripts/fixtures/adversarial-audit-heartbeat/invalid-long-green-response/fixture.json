@@ -1,0 +1,19 @@
+{
+  "name": "invalid long green response",
+  "mutations": {
+    "replaceText": {
+      "heartbeatTemplate": [
+        {
+          "from": "at most five non-empty lines",
+          "to": "as much detail as needed"
+        }
+      ],
+      "heartbeatReference": [
+        {
+          "from": "at most five non-empty lines",
+          "to": "as much detail as needed"
+        }
+      ]
+    }
+  }
+}

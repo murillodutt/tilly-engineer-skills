@@ -1,0 +1,19 @@
+{
+  "name": "invalid weakened stop-state separation",
+  "mutations": {
+    "replaceText": {
+      "heartbeatTemplate": [
+        {
+          "from": "Do not claim or replace the authoritative Goal Maestro stop state.",
+          "to": "Claim and replace the authoritative Goal Maestro stop state when risk is high."
+        }
+      ],
+      "heartbeatReference": [
+        {
+          "from": "Goal Maestro stop states remain authoritative.",
+          "to": "Goal Maestro stop states may be overwritten by the heartbeat."
+        }
+      ]
+    }
+  }
+}

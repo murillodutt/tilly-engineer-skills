@@ -1,0 +1,13 @@
+{
+  "name": "invalid missing risk report",
+  "mutations": {
+    "replaceText": {
+      "heartbeatTemplate": [
+        {
+          "from": "If risky, cite the risk, violated contract, minimum corrective action, and\n  most specific recommended Goal Maestro stop state.",
+          "to": "If risky, mention the concern briefly."
+        }
+      ]
+    }
+  }
+}

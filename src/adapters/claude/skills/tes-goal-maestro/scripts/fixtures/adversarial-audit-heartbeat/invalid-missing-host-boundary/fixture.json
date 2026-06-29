@@ -1,0 +1,27 @@
+{
+  "name": "invalid missing host-state boundary",
+  "mutations": {
+    "replaceText": {
+      "heartbeatTemplate": [
+        {
+          "from": "- You may inspect only state the host makes visible to you.",
+          "to": "- You may infer thread state when it is useful."
+        },
+        {
+          "from": "HEARTBEAT_BLOCKED_CONTEXT",
+          "to": "CONTEXT_UNAVAILABLE"
+        },
+        {
+          "from": "smallest missing visible state",
+          "to": "missing state"
+        }
+      ],
+      "heartbeatReference": [
+        {
+          "from": "The heartbeat must not infer unavailable state, claim to have inspected a\nthread it cannot access, or turn a missing host capability into loop evidence.",
+          "to": "The heartbeat may infer unavailable state when the loop appears obvious."
+        }
+      ]
+    }
+  }
+}

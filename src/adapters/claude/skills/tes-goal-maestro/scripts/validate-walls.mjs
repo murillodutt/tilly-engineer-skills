@@ -337,6 +337,13 @@ const WALLS = [
       join(here, '../../../../../../docs/install/AGENT-MANUAL.md'),
     ],
   },
+  // GM11 — Adversarial Audit Heartbeat remains exact opt-in and read-only.
+  {
+    id: 'GM11 adversarial-audit-heartbeat-contract',
+    harness: 'adversarial-audit-heartbeat-contract.mjs',
+    violate: () => [join(here, 'fixtures/adversarial-audit-heartbeat/invalid-no-opt-in/fixture.json')],
+    revert: () => [join(here, 'fixtures/adversarial-audit-heartbeat/valid/source/fixture.json')],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

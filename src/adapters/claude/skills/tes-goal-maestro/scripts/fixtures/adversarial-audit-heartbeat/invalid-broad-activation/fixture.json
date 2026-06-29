@@ -1,0 +1,13 @@
+{
+  "name": "invalid broad activation",
+  "mutations": {
+    "replaceText": {
+      "heartbeatReference": [
+        {
+          "from": "Do not activate from broad words such as heartbeat, monitor, audit, mentorship,\nwatch this, keep an eye on it, or translated equivalents unless the request\nexplicitly asks for this heartbeat prompt capability.",
+          "to": "Activate from broad words such as heartbeat, monitor, audit, mentorship,\nwatch this, keep an eye on it, or translated equivalents."
+        }
+      ]
+    }
+  }
+}
