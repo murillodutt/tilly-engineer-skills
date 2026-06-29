@@ -52,342 +52,115 @@ MAY_EDIT=yes
 
 ## Ledger Entries
 
+Closed entry detail was compacted during SPEC-010 after npm run docs:size reached the partition warning zone. Each SPEC keeps the renderer/extractor-facing fields consumed by execution-thermometer-extract.mjs: heading, spec_id, attempt, repair_count, oracle_status, runtime_smoke_oracle, and stop_state. Full material evidence remains in the named local commits and the focused oracles listed per entry.
+
 ### SPEC-000 - Contract Hardening And Baseline Protection
 
 spec_id: SPEC-000
-spec_version: contract-hardening-baseline
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-002
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-000 material commit)
-oracle_status: PASS pending material commit (`python3 scripts/validate_tds.py`, `python3 scripts/validate_doc_size.py`, `git diff --check`)
-structural_method_id: docs-contract-surface-edit
-topology_decision: not_applicable
-topology_decision_artifact: not_applicable
-structural_debt: none
-next_structural_constraint: SPEC-001 may start only from the hardened schema contract and the repaired anchor hash d44a14474decfcdb08d7c43f7fbf7afe464e05f0
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
+commit: 85dda749
+oracle_status: PASS (python3 scripts/validate_tds.py; python3 scripts/validate_doc_size.py; git diff --check)
 runtime_smoke_oracle: not_applicable
-adversary_objection: repaired
-shared_contract_extended: yes
-extension_point_proven: not_applicable
-contract_handoff_artifact: Project Pack docs
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: not_applicable
-distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-000_then_open_SPEC-001
 
 ### SPEC-001 - Data Contract And Schema
 
 spec_id: SPEC-001
-spec_version: schema-v1-fixtures
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-001
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-001 material commit)
-oracle_status: PASS pending material commit (`node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/execution-thermometer-schema.mjs .../valid`, invalid fixtures exit 1, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`, `python3 scripts/validate_reference_package.py --staged-ready`)
-structural_method_id: node-pure-mjs-schema-validator
-topology_decision: one delivered validator script plus schema fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-002 extractor must emit data accepted by the SPEC-001 validator and must not widen schema v1 renderer-facing fields without contract repair
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: schema validator valid fixture returns exit 0 and invalid fixtures return exit 1 across Codex and Claude source adapters
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/EXPERIENCE-AND-DATA-CONTRACT.md
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: not_applicable
-distinct_refuters: not_applicable
+commit: 226f7c6c
+oracle_status: PASS (schema valid fixture accepted; invalid fixtures rejected; adapter walls converged; reference package validation passed)
+runtime_smoke_oracle: schema gate validates closed v1 renderer-facing YAML and JSON fields
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-001_then_open_SPEC-002
 
 ### SPEC-002 - Ledger Extractor
 
 spec_id: SPEC-002
-spec_version: read-only-hash-proven-extractor
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-003
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-002 material commit)
-oracle_status: PASS pending material commit (valid synthetic ledger extraction, missing-evidence ledger extraction, hash-mismatch fixture exit 1, real ledger before/after sha256 unchanged, schema validation on generated YAML/JSON, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-read-only-ledger-extractor
-topology_decision: one delivered extractor script plus synthetic extraction fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-003 Markdown renderer must consume generated `exec_identity.yaml` and `exec_metrics.json` without widening schema v1 fields
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: extractor writes `exec_identity.yaml`, `exec_metrics.json`, and `extraction_manifest.json`; valid and missing-evidence outputs pass SPEC-001 schema validation
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: generated schema files and extraction manifest
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM2 wall rejects hash mismatch and accepts a valid ledger extraction
-distinct_refuters: not_applicable
+commit: 4ef702a1
+oracle_status: PASS (read-only extraction fixtures; source hash proof; adapter walls converged; reference package validation passed)
+runtime_smoke_oracle: extractor emits exec_identity.yaml, exec_metrics.json, and extraction_manifest.json without mutating the source ledger
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-002_then_open_SPEC-003
 
-### SPEC-003 - Markdown Context Receipt Renderer
+### SPEC-003 - Markdown Context Receipt
 
 spec_id: SPEC-003
-spec_version: markdown-context-receipt
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-004
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-003 material commit)
-oracle_status: PASS pending material commit (valid fixture render equals tracked receipt fixture, `--check-only` accepts valid Markdown, inline HTML fixture exits 1, missing-evidence extractor output renders `UNPROVEN`, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-markdown-receipt-renderer
-topology_decision: one delivered Markdown renderer script plus valid and invalid receipt fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-004 static HTML renderer must consume schema data at generation time and must not treat Markdown receipt as source data
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: renderer writes `context-receipt.md` from schema-valid YAML/JSON and self-checks five signals, objective feedback, next actions, source references, Markdown-only content, and line width
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: `context-receipt.md`
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM3 wall rejects inline HTML and accepts schema-backed Markdown rendering
-distinct_refuters: not_applicable
+commit: 519a8c6b
+oracle_status: PASS (Markdown receipt fixture; unsafe inline HTML and visual markup rejected; adapter walls converged)
+runtime_smoke_oracle: receipt renderer emits Markdown-only local context receipt from schema-valid inputs
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-003_then_open_SPEC-004
 
-### SPEC-004 - Static HTML Report Renderer
+### SPEC-004 - Static HTML Report
 
 spec_id: SPEC-004
-spec_version: static-html-loop-selection
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-005
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-004 material commit)
-oracle_status: PASS pending material commit (multi-loop schema fixture passes, generated HTML passes `--check-only --expect-loop L4`, invalid runtime `fetch('exec_metrics.json')` fixture exits 1, file URL anchor resolves as `file:///tmp/tes-gm4.html#loop-L4`, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-static-html-renderer
-topology_decision: one delivered static HTML renderer script plus multi-loop and invalid-runtime-read fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-005 Gold Analysis must consume schema/report facts without reclassifying Goal Maestro execution stop states
-topology_probe_result: not_applicable
-browser_metrics_contract: no browser dependency added; static file URL and anchor contract checked from generated artifact
-visual_spatial_oracle: not_applicable
-browser_attempt: Playwright unavailable; no dependency added; file URL anchor static check passed
-visual_evidence: generated `/tmp/tes-gm4.html` contains `href="#loop-L4"`, `id="loop-L4"`, and embedded `normalized-snapshot`
-runtime_smoke_oracle: HTML checker rejects script/fetch/runtime read patterns and accepts a multi-loop offline report
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: `execution-thermometer.html`
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM4 wall rejects runtime fetch fixture and accepts multi-loop `#loop-L4` rendering
-distinct_refuters: not_applicable
+commit: 2e2680b7
+oracle_status: PASS (static HTML fixture; no JavaScript/network/runtime read; adapter walls converged)
+runtime_smoke_oracle: static HTML renderer embeds the normalized generation-time snapshot and uses no fetch, CDN, tracking, telemetry, or server path
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-004_then_open_SPEC-005
 
 ### SPEC-005 - Gold Analysis Gate
 
 spec_id: SPEC-005
-spec_version: conservative-gold-classifier
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-006
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-005 material commit)
-oracle_status: PASS pending material commit (ordinary/useful/gold fixtures classify correctly, invalid gold missing evidence exits 1, invalid reason code exits 1, missing checksum exits 1, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-gold-analysis-gate
-topology_decision: one delivered Gold Gate classifier script plus ordinary/useful/gold and invalid evidence fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-006 package builder must provide the checksum required for any future `gold` classification
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: Gold Gate classifies local JSON candidates without network or share prompts
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: Gold Gate result JSON
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM5 wall rejects gold without declared evidence and accepts complete gold fixture
-distinct_refuters: not_applicable
+commit: 77ed8c7d
+oracle_status: PASS (ordinary/useful/gold classification fixtures; unsafe evidence rejected; adapter walls converged)
+runtime_smoke_oracle: Gold Gate classifies only schema-valid local evidence and never initiates sharing
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-005_then_open_SPEC-006
 
 ### SPEC-006 - Sanitized Package Builder
 
 spec_id: SPEC-006
-spec_version: local-package-builder-checksums
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-007
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-006 material commit)
-oracle_status: PASS pending material commit (safe fixture generates README, Markdown, YAML, JSON, HTML, and `checksums.sha256`; `shasum -a 256 -c checksums.sha256` passes; unsafe private-path fixture exits 1 with `BLOCKED_BY_SANITIZATION`; private vocabulary oracle passes; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-sanitized-local-package-builder
-topology_decision: one delivered package builder script plus unsafe private-path fixture mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-007 Share Gate may prompt only after Gold Gate and sanitizer/package builder pass
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: package contains generated `execution-thermometer.html`
-runtime_smoke_oracle: local package builder emits default local package and checksum manifest without remote operations
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: `execution-thermometer-<run-id>/` local package
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM6 wall rejects unsafe private-path input and accepts safe package generation
-distinct_refuters: not_applicable
+commit: 939ac714
+oracle_status: PASS (safe package fixture; unsafe path, secret, and private-vocabulary fixtures rejected; adapter walls converged)
+runtime_smoke_oracle: package builder emits README, Markdown, YAML, JSON, HTML, and checksums in a local-only package
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-006_then_open_SPEC-007
 
 ### SPEC-007 - Share Gate Prompt And Owner Consent
 
 spec_id: SPEC-007
-spec_version: local-owner-consent-gate
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-008
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-007 material commit)
-oracle_status: PASS pending material commit (ordinary fixture returns `not_gold` and no prompt; unsafe gold fixture returns `blocked_by_sanitization` and no prompt; sanitized gold fixture returns `proposed_gold` with `NEEDS_OWNER_SHARE_DECISION`; declined fixture keeps local package intact; valid local approval returns `approved_local_export`; tuple mismatch returns `blocked_by_owner_decision`; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-share-gate-consent-state-machine
-topology_decision: one delivered Share Gate script plus ordinary, gold-shareable, gold-unsafe, declined, approved-local, and tuple-mismatch fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-008 may create only dry-run GitHub export evidence and must still block remote write without tuple-bound per-run approval
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: Share Gate emits local-only consent summaries and never performs remote action
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: Share Gate decision JSON
-api_lint_status: local grep found no fetch, beacon, curl, wget, GitHub CLI, or push lane in the Share Gate script or fixtures
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM7 wall rejects tuple-drift approval reuse and accepts sanitized gold prompt generation
-distinct_refuters: not_applicable
+commit: 0840227b
+oracle_status: PASS (ordinary, unsafe-gold, proposed-gold, declined, approved-local, and tuple-mismatch fixtures; adapter walls converged)
+runtime_smoke_oracle: Share Gate emits local-only consent summaries with remote_action_performed=false
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-007_then_open_SPEC-008
 
 ### SPEC-008 - GitHub Draft PR Export
 
 spec_id: SPEC-008
-spec_version: local-github-dry-run-export-planner
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-009
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-008 material commit)
-oracle_status: PASS pending material commit (dry-run fixture emits exact branch layout and destination with `remote_action_performed: false`; default payload includes README, YAML, JSON, and checksums while excluding Markdown and HTML; execute mode without approval returns `NEEDS_OWNER_SHARE_DECISION`; missing destination returns `NEEDS_GITHUB_DESTINATION`; fixture checksums verify; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: node-pure-github-export-dry-run-planner
-topology_decision: one delivered GitHub export planner plus dry-run package, destination, approval, and missing-destination fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: no remote GitHub operation is implemented or authorized in this SPEC; only dry-run evidence is materialized
-next_structural_constraint: SPEC-009 must wire local report/package generation after loop close without changing Goal Maestro execution semantics
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
+commit: 6f26b3d1
+oracle_status: PASS (dry-run export plan fixtures; destination and approval gates; adapter walls converged)
 runtime_smoke_oracle: GitHub export planner reports exact local file-to-branch layout and performs no remote action
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: GitHub export dry-run plan JSON
-api_lint_status: local grep found no fetch, beacon, curl, wget, GitHub CLI, push lane, telemetry, tracking, CDN, or HTTP URL in the GitHub export script or fixtures
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM8 wall rejects pretend draft PR opening from execute mode and accepts dry-run evidence with no remote action
-distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-008_then_open_SPEC-009
 
 ### SPEC-009 - Goal Maestro Integration
 
 spec_id: SPEC-009
-spec_version: execution-loop-sidecar-hook
 attempt: 1
 repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-010
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit (active ledger entry opened before the SPEC-009 material commit)
-oracle_status: PASS pending material commit (runner and prompt template declare default/always-on local report/package generation after loop close or honest stop; lifecycle block remains free of Thermometer states; namespace fixture preserves `SPEC_BLOCKED` while report/share states record local package block and sanitizer block; invalid fixture that rewrites execution state exits 1; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
-structural_method_id: instruction-contract-sidecar-integration
-topology_decision: delivered runner reference, prompt template, contract history, integration harness, and namespace fixtures mirrored byte-identically across Codex and Claude source adapters
-topology_decision_artifact: this ledger
-structural_debt: none
-next_structural_constraint: SPEC-010 must document the report as local evidence, not a dashboard, telemetry product, or remote lane
-topology_probe_result: not_applicable
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: GM9 validates the execute-loop integration contract and state namespace separation
-adversary_objection: not_applicable
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: `execution-loop-runner.md` Execution Thermometer Hook section
-api_lint_status: not_applicable
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: GM9 wall rejects Thermometer state pollution and accepts unchanged Goal Maestro execution state
-distinct_refuters: not_applicable
+commit: bbb96126
+oracle_status: PASS (execution-loop sidecar hook and state namespace fixtures; adapter walls converged)
+runtime_smoke_oracle: integration gate proves default local report/package generation after loop close while preserving Goal Maestro execution stop states
 stop_state: ready_for_material_commit
-next_allowed_action: commit_SPEC-009_then_open_SPEC-010
+
+### SPEC-010 - User Documentation And Manual Boundary
+
+spec_id: SPEC-010
+attempt: 1
+repair_count: 0
+commit: no-commit (active ledger entry opened before the SPEC-010 material commit)
+oracle_status: PASS (execution-thermometer-docs on both adapters; adapter walls converged; npm run public-docs:check; python3 scripts/validate_reference_package.py; npm run docs:size)
+runtime_smoke_oracle: GM10 rejects missing local/offline, UNPROVEN, opt-in sharing, package-file, or field-reference documentation and accepts the rebuilt public manual source plus agent field reference
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-010_then_open_SPEC-011

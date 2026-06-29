@@ -1322,6 +1322,9 @@
             <p class="lede">When a run finishes, the agent shows a report. It is your contract — read it before you approve a commit or push.</p>
             <p>Look at three things: the overall status, which files changed, and how to undo it. <code>PASS</code> means everything checked out. If you see <code>NEEDS_REVIEW</code> or <code>BLOCKED</code>, do not approve the commit — ask the agent to explain why first.</p>
 <p>Other statuses you may see: <code>RECOVERED</code> (TES recovered context it found), <code>DEGRADED</code> (it ran, but something was limited), and <code>STALE_SOURCE</code> (your install is behind — run <code>/tes-update</code>). A backup folder under <code>.tes/bk/</code> is your safety copy, kept so a rollback is always possible.</p>
+<p>When <code>/tes-goal-maestro --execute-loop</code> closes, TES also writes a local Execution Thermometer package. It is a report you can open offline, not telemetry, not a dashboard, and not a server. The package contains <code>README.md</code>, <code>context-receipt.md</code>, <code>exec_identity.yaml</code>, <code>exec_metrics.json</code>, <code>execution-thermometer.html</code>, and <code>checksums.sha256</code>.</p>
+<p><code>UNPROVEN</code> means the metric had no local evidence. Treat it as a question to resolve, not as zero and not as success.</p>
+<p>GitHub sharing is opt-in. The agent must ask before sharing a gold report, and the approval is valid only for that run id, destination repository, branch, payload hash, and manifest hash.</p>
           </div>
         </section>
 
@@ -1471,6 +1474,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <p class="lede">Cuando una ejecucion termina, el agente muestra un reporte. Es tu contrato — leelo antes de aprobar un commit o push.</p>
             <p>Mira tres cosas: el estado general, que archivos cambiaron y como deshacerlo. <code>PASS</code> significa que todo salio bien. Si ves <code>NEEDS_REVIEW</code> o <code>BLOCKED</code>, no apruebes el commit — pide al agente que explique por que primero.</p>
 <p>Otros estados que puedes ver: <code>RECOVERED</code> (TES recupero contexto que encontro), <code>DEGRADED</code> (corrio, pero algo quedo limitado) y <code>STALE_SOURCE</code> (tu instalacion esta atrasada — corre <code>/tes-update</code>). Una carpeta de backup en <code>.tes/bk/</code> es tu copia de seguridad, guardada para que un rollback siempre sea posible.</p>
+<p>Cuando <code>/tes-goal-maestro --execute-loop</code> termina, TES tambien escribe un paquete local Execution Thermometer. Es un reporte que puedes abrir offline, no telemetria, no dashboard y no servidor. El paquete contiene <code>README.md</code>, <code>context-receipt.md</code>, <code>exec_identity.yaml</code>, <code>exec_metrics.json</code>, <code>execution-thermometer.html</code> y <code>checksums.sha256</code>.</p>
+<p><code>UNPROVEN</code> significa que la metrica no tenia evidencia local. Tratala como una pregunta por resolver, no como cero y no como exito.</p>
+<p>Compartir en GitHub es opt-in. El agente debe pedir permiso antes de compartir un reporte gold, y la aprobacion vale solo para ese run id, repositorio destino, branch, payload hash y manifest hash.</p>
           </div>
         </section>
 
@@ -1620,6 +1626,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <p class="lede">Quando uma execução termina, o agente mostra um relatório. Ele é o seu contrato — leia antes de aprovar um commit ou push.</p>
             <p>Olhe três coisas: o status geral, quais arquivos mudaram e como desfazer. <code>PASS</code> significa que tudo passou. Se aparecer <code>NEEDS_REVIEW</code> ou <code>BLOCKED</code>, não aprove o commit — peça ao agente para explicar o porquê primeiro.</p>
 <p>Outros estados que você pode ver: <code>RECOVERED</code> (o TES recuperou contexto que encontrou), <code>DEGRADED</code> (rodou, mas algo ficou limitado) e <code>STALE_SOURCE</code> (sua instalação está atrasada — rode <code>/tes-update</code>). Uma pasta de backup em <code>.tes/bk/</code> é a sua cópia de segurança, guardada para que um rollback seja sempre possível.</p>
+<p>Quando <code>/tes-goal-maestro --execute-loop</code> fecha, o TES também escreve um pacote local Execution Thermometer. É um relatório que você abre offline, não telemetria, não dashboard e não servidor. O pacote contém <code>README.md</code>, <code>context-receipt.md</code>, <code>exec_identity.yaml</code>, <code>exec_metrics.json</code>, <code>execution-thermometer.html</code> e <code>checksums.sha256</code>.</p>
+<p><code>UNPROVEN</code> significa que a métrica não tinha evidência local. Trate como uma pergunta a resolver, não como zero e não como sucesso.</p>
+<p>Compartilhamento no GitHub é opt-in. O agente precisa pedir antes de compartilhar um relatório gold, e a aprovação vale só para aquele run id, repositório de destino, branch, payload hash e manifest hash.</p>
           </div>
         </section>
 

@@ -262,6 +262,19 @@ const WALLS = [
       join(here, 'fixtures/execution-thermometer-integration/state-namespace-valid.json'),
     ],
   },
+  // GM10 — User docs describe local report, UNPROVEN, opt-in sharing and fields.
+  {
+    id: 'GM10 execution-thermometer-docs',
+    harness: 'execution-thermometer-docs.mjs',
+    violate: () => [
+      fixture('gm10-bad-content.json', JSON.stringify({ sections: { report: { en: { blocks: [] }, es: { blocks: [] }, pt: { blocks: [] } } } })),
+      fixture('gm10-bad-agent.md', 'Execution Thermometer without fields.\n'),
+    ],
+    revert: () => [
+      join(here, '../../../../../../docs/i18n/tes-public.content.json'),
+      join(here, '../../../../../../docs/install/AGENT-MANUAL.md'),
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

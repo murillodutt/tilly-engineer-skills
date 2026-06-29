@@ -1713,6 +1713,18 @@
           {
             "type": "p",
             "text": "Other statuses you may see: `RECOVERED` (TES recovered context it found), `DEGRADED` (it ran, but something was limited), and `STALE_SOURCE` (your install is behind — run `/tes-update`). A backup folder under `.tes/bk/` is your safety copy, kept so a rollback is always possible."
+          },
+          {
+            "type": "p",
+            "text": "When `/tes-goal-maestro --execute-loop` closes, TES also writes a local Execution Thermometer package. It is a report you can open offline, not telemetry, not a dashboard, and not a server. The package contains `README.md`, `context-receipt.md`, `exec_identity.yaml`, `exec_metrics.json`, `execution-thermometer.html`, and `checksums.sha256`."
+          },
+          {
+            "type": "p",
+            "text": "`UNPROVEN` means the metric had no local evidence. Treat it as a question to resolve, not as zero and not as success."
+          },
+          {
+            "type": "p",
+            "text": "GitHub sharing is opt-in. The agent must ask before sharing a gold report, and the approval is valid only for that run id, destination repository, branch, payload hash, and manifest hash."
           }
         ]
       },
@@ -1728,6 +1740,18 @@
           {
             "type": "p",
             "text": "Otros estados que puedes ver: `RECOVERED` (TES recupero contexto que encontro), `DEGRADED` (corrio, pero algo quedo limitado) y `STALE_SOURCE` (tu instalacion esta atrasada — corre `/tes-update`). Una carpeta de backup en `.tes/bk/` es tu copia de seguridad, guardada para que un rollback siempre sea posible."
+          },
+          {
+            "type": "p",
+            "text": "Cuando `/tes-goal-maestro --execute-loop` termina, TES tambien escribe un paquete local Execution Thermometer. Es un reporte que puedes abrir offline, no telemetria, no dashboard y no servidor. El paquete contiene `README.md`, `context-receipt.md`, `exec_identity.yaml`, `exec_metrics.json`, `execution-thermometer.html` y `checksums.sha256`."
+          },
+          {
+            "type": "p",
+            "text": "`UNPROVEN` significa que la metrica no tenia evidencia local. Tratala como una pregunta por resolver, no como cero y no como exito."
+          },
+          {
+            "type": "p",
+            "text": "Compartir en GitHub es opt-in. El agente debe pedir permiso antes de compartir un reporte gold, y la aprobacion vale solo para ese run id, repositorio destino, branch, payload hash y manifest hash."
           }
         ]
       },
@@ -1743,6 +1767,18 @@
           {
             "type": "p",
             "text": "Outros estados que você pode ver: `RECOVERED` (o TES recuperou contexto que encontrou), `DEGRADED` (rodou, mas algo ficou limitado) e `STALE_SOURCE` (sua instalação está atrasada — rode `/tes-update`). Uma pasta de backup em `.tes/bk/` é a sua cópia de segurança, guardada para que um rollback seja sempre possível."
+          },
+          {
+            "type": "p",
+            "text": "Quando `/tes-goal-maestro --execute-loop` fecha, o TES também escreve um pacote local Execution Thermometer. É um relatório que você abre offline, não telemetria, não dashboard e não servidor. O pacote contém `README.md`, `context-receipt.md`, `exec_identity.yaml`, `exec_metrics.json`, `execution-thermometer.html` e `checksums.sha256`."
+          },
+          {
+            "type": "p",
+            "text": "`UNPROVEN` significa que a métrica não tinha evidência local. Trate como uma pergunta a resolver, não como zero e não como sucesso."
+          },
+          {
+            "type": "p",
+            "text": "Compartilhamento no GitHub é opt-in. O agente precisa pedir antes de compartilhar um relatório gold, e a aprovação vale só para aquele run id, repositório de destino, branch, payload hash e manifest hash."
           }
         ]
       }
