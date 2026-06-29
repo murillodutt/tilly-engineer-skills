@@ -275,6 +275,31 @@ and sync status. Remote sync is not authorized.
 - Materialized/installed-like surfaces prove prompt availability without
   scheduling a real heartbeat.
 
+## Documentation Contract
+
+The smallest governed documentation surface for this feature is this Super SPEC
+plus `tes-goal-maestro/docs/CONTRACT-HISTORY.md` in Codex and Claude source.
+
+Those surfaces must preserve:
+
+- purpose: an optional copy-ready mentor/auditor prompt for active Goal Maestro
+  execution loops;
+- authority: read-only prompt generation, never execution, repository mutation,
+  host job management, network behavior, sharing, or stop-state ownership;
+- activation: exact opt-in grammar only, with broad wording and inactive
+  examples rejected;
+- shape: the universal placeholder contract and heartbeat report status
+  vocabulary;
+- context boundary: unavailable host/thread state reports
+  `HEARTBEAT_BLOCKED_CONTEXT`;
+- adapter placement: Codex/Claude references and templates, with Cursor lazy
+  capability coverage only;
+- oracle: `adversarial-audit-heartbeat-contract.mjs` and GM11 in
+  `validate-walls.mjs` guard opt-in, read-only authority, universal wording,
+  host-state honesty, Cursor coverage, and stop-state separation;
+- canary handoff: the later combined feedback-system plus heartbeat canary is
+  separate owner-authorized work after both systems are locally certified.
+
 ## Negative Grep
 
 Semantic negative grep must forbid executable behavior, not policy vocabulary.
