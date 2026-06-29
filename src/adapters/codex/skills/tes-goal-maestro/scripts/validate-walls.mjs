@@ -138,6 +138,23 @@ const WALLS = [
       join(here, 'fixtures/execution-thermometer/valid/exec_metrics.json'),
     ],
   },
+  // GM2 — execution thermometer extractor (hash mismatch blocks; valid ledger extracts and validates).
+  {
+    id: 'GM2 execution-thermometer-extract',
+    harness: 'execution-thermometer-extract.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-extract/valid/ledger.md'),
+      join(tmp, 'gm2-hash-mismatch'),
+      '--expected-ledger-sha256',
+      'deadbeef',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-extract/valid/ledger.md'),
+      join(tmp, 'gm2-valid'),
+      '--generated-at',
+      '2026-06-29T00:00:00Z',
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

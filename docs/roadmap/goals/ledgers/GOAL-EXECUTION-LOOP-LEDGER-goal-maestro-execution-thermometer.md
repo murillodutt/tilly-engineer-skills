@@ -119,3 +119,37 @@ audit_remutation: not_applicable
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-001_then_open_SPEC-002
+
+### SPEC-002 - Ledger Extractor
+
+spec_id: SPEC-002
+spec_version: read-only-hash-proven-extractor
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-003
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-002 material commit)
+oracle_status: PASS pending material commit (valid synthetic ledger extraction, missing-evidence ledger extraction, hash-mismatch fixture exit 1, real ledger before/after sha256 unchanged, schema validation on generated YAML/JSON, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: node-pure-read-only-ledger-extractor
+topology_decision: one delivered extractor script plus synthetic extraction fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-003 Markdown renderer must consume generated `exec_identity.yaml` and `exec_metrics.json` without widening schema v1 fields
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: extractor writes `exec_identity.yaml`, `exec_metrics.json`, and `extraction_manifest.json`; valid and missing-evidence outputs pass SPEC-001 schema validation
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: generated schema files and extraction manifest
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM2 wall rejects hash mismatch and accepts a valid ledger extraction
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-002_then_open_SPEC-003
