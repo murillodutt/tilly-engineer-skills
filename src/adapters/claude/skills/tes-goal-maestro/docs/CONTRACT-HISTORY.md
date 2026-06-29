@@ -55,6 +55,7 @@ The skill preserves that portable pattern without baking in project-specific exa
 - Include Next Prompt Handoff only when explicitly requested by `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct trigger; when active, it is chat-only, post-`GO`, post-certification, non-writing by default and non-executing.
 - Run Execution Loop only when explicitly requested by `--execute-loop`; when active, the parent runner owns the loop, drafts expected cost from material sources, opens one `ACTIVE_SPEC` per fresh worker subagent, validates local commit evidence before advancing, and runs Executive Stop Audit before final closure.
 - Execution Loop requires a Pre-Edit Gate before any edit, worker spawn or parent fallback: `EXECUTE_LOOP_REQUESTED=yes`, `READY_GOAL_PROMPT=present`, exact `DECLARED_UNITS`, `FIRST_UNEXECUTED_UNIT`, matching `ACTIVE_SPEC`, `BASELINE_ONLY_COMMITS`, `LEDGER`, and `MAY_EDIT=yes`. A mismatch stops with `NEEDS_EXECUTION_UNIT_FIDELITY`.
+- Execution Loop runs the Execution Thermometer as a default/always-on local report/package sidecar after loop close or honest stop; Thermometer report/share states must not rewrite Goal Maestro execution stop states unless report generation was explicitly the active product requirement.
 - When Next Prompt Handoff and Execution Loop are both requested, `--execute-loop` owns internal next-prompt continuation; ordinary chat-only handoff semantics apply only after the loop stops or completes.
 - Execution Loop exposes `NEEDS_MORE_LOOPS`, `NEEDS_OWNER_DECISION`, and `SAFETY_BLOCKED` as branch states, carries loop-state evidence per attempt, requires canonical material SPEC repair targets, and stops before cloud escalation unless the owner approves the exact sanitized payload.
 - Execution Loop requires failed-attempt recovery before retry, creates a persistent `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` before the first `ACTIVE_SPEC` for every `--execute-loop`, and treats parent-side worker fallback as disabled unless explicitly requested by the exact `--execute-loop-parent-fallback` flag.
@@ -98,6 +99,7 @@ The skill preserves that portable pattern without baking in project-specific exa
 - Losing structural state between units because the next prompt, active-SPEC envelope or loop ledger omitted `STRUCTURAL_METHOD`, changed topology, accepted debt or next-unit constraints.
 - Advancing to a later unit because Super SPEC materialization or baseline commits were mistaken for execution of the first unexecuted unit.
 - Starting edits without `FIRST_UNEXECUTED_UNIT` matching `ACTIVE_SPEC`.
+- Letting local report, sanitizer, share, destination or GitHub auth states overwrite the underlying Goal Maestro execution stop state.
 - Retrying a coding SPEC as an ordinary bug fix when the failure is actually structural collapse.
 - Letting topology inference happen implicitly in the worker without a recorded structural decision artifact.
 - Trusting browser globals or worker prose instead of a stable metrics artifact for app, UI, game or rendered-canvas certification.
@@ -135,6 +137,7 @@ The skill preserves that portable pattern without baking in project-specific exa
 | 2026-06-23 | Hardened structural canary certification: topology inference now needs a structural decision artifact, browser work needs stable metrics plus visual-spatial evidence, and certification repairs must be bounded audit repairs with local commit evidence. | Voxel World 3D structural-method canary; parent audit recorded stable multi-file topology, browser metrics, screenshot evidence and certification repair commits. | high |
 | 2026-06-23 | Added execute-loop Pre-Edit Gate and mandatory start-of-loop ledger so a Super SPEC artifact or baseline commit cannot advance the declared unit counter. | Maintainer recurring-failure audit after a declared first unit was skipped and a later unit opened. | high |
 | 2026-06-24 | Added Anchor Artifact Gate, quality-ceiling capture, shared-contract extension rules, runtime certification hard gates, integration runtime-smoke, Tree Adversary, executable topology probes and source-derived worker handoff. | `tmp/analytics/FIELD-REPORT-tes-goal-maestro-20260624.md`; `tmp/analytics/FORENSE-EXECUCAO-tes-goal-maestro-20260624.md`; source references updated. | high |
+| 2026-06-29 | Added Execution Thermometer sidecar integration after loop close or honest stop, with local package generation by default and separate Thermometer report/share state namespace. | `execution-thermometer-integration.mjs`; GM9 wall; source runner and prompt template updated. | high |
 
 ## Do Not Lose
 

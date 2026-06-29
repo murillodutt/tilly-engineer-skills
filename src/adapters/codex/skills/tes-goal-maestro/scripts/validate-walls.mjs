@@ -247,6 +247,21 @@ const WALLS = [
       'false',
     ],
   },
+  // GM9 — Thermometer integration cannot rewrite Goal Maestro execution stop states.
+  {
+    id: 'GM9 execution-thermometer-integration',
+    harness: 'execution-thermometer-integration.mjs',
+    violate: () => [
+      join(here, '../references/execution-loop-runner.md'),
+      join(here, '../templates/maestral-goal-prompt.template.md'),
+      join(here, 'fixtures/execution-thermometer-integration/state-namespace-invalid.json'),
+    ],
+    revert: () => [
+      join(here, '../references/execution-loop-runner.md'),
+      join(here, '../templates/maestral-goal-prompt.template.md'),
+      join(here, 'fixtures/execution-thermometer-integration/state-namespace-valid.json'),
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

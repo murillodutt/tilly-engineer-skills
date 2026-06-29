@@ -357,3 +357,37 @@ audit_remutation: GM8 wall rejects pretend draft PR opening from execute mode an
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-008_then_open_SPEC-009
+
+### SPEC-009 - Goal Maestro Integration
+
+spec_id: SPEC-009
+spec_version: execution-loop-sidecar-hook
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-010
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-009 material commit)
+oracle_status: PASS pending material commit (runner and prompt template declare default/always-on local report/package generation after loop close or honest stop; lifecycle block remains free of Thermometer states; namespace fixture preserves `SPEC_BLOCKED` while report/share states record local package block and sanitizer block; invalid fixture that rewrites execution state exits 1; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: instruction-contract-sidecar-integration
+topology_decision: delivered runner reference, prompt template, contract history, integration harness, and namespace fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-010 must document the report as local evidence, not a dashboard, telemetry product, or remote lane
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: GM9 validates the execute-loop integration contract and state namespace separation
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: `execution-loop-runner.md` Execution Thermometer Hook section
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM9 wall rejects Thermometer state pollution and accepts unchanged Goal Maestro execution state
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-009_then_open_SPEC-010

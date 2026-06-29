@@ -244,6 +244,32 @@ When `RUNTIME_TARGET=browser`, the negative checks must include a runtime-import
 
 Remote push is forbidden unless separately authorized by the user.
 
+## Execution Thermometer Hook
+
+After `executive_stop_audit`, and also after any honest loop stop, the parent
+runner must run default/always-on local report/package generation after loop
+close or honest stop. This hook is a sidecar evidence step, not a new execution
+lifecycle state.
+
+The local path is:
+
+1. read the persistent loop ledger in read-only mode;
+2. extract normalized YAML/JSON evidence with `execution-thermometer-extract.mjs`;
+3. build the local package with `execution-thermometer-package.mjs`;
+4. record the package path, manifest hash, report status, and share gate status
+   in Thermometer fields.
+
+The hook must use the current loop ledger as its ledger reference. It must not
+fetch, push, publish, start a server, read runtime YAML/JSON from HTML, or open a
+remote share lane. GitHub sharing remains opt-in and belongs to the Share Gate
+and GitHub export dry-run contracts.
+
+A report generation failure, sanitizer block, missing destination, declined
+share, or GitHub auth block must not rewrite Goal Maestro execution stop states.
+It may set only Thermometer report/share fields unless the user explicitly made
+report generation itself the active product requirement. The parent reports both
+namespaces separately in closeout evidence.
+
 ## Certification Repair Rule
 
 The final certification SPEC may perform bounded code repairs only when the repair is discovered by certification evidence and remains inside the active SPEC contract.

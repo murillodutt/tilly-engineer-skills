@@ -132,6 +132,7 @@ Execution Loop:
 - For browser, UI, game or rendered-canvas work, the ledger or closeout must carry the browser metrics contract and visual-spatial oracle result.
 - Certification repairs are allowed only as bounded `audit_repair` work inside the active final/audit SPEC, with local commit evidence and rerun oracles.
 - Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without new material evidence stops for owner decision or contract instability.
+- Execution Thermometer Hook: after loop close or honest stop, run default/always-on local report/package generation from the persistent ledger, record Thermometer report/share fields separately, and do not rewrite Goal Maestro execution stop states unless report generation was explicitly the active product requirement.
 - Final stop requires Executive Stop Audit.
 
 Negative grep semantics:

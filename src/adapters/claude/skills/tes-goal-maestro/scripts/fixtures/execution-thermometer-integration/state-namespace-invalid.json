@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "before": {
+    "goal_maestro_execution_state": "SPEC_BLOCKED"
+  },
+  "after": {
+    "goal_maestro_execution_state": "blocked_by_sanitization",
+    "thermometer_report_status": "local_package_blocked",
+    "share_gate_status": "blocked_by_sanitization",
+    "report_generation": {
+      "status": "fail",
+      "required": false,
+      "notes": "This fixture intentionally pollutes the execution stop state."
+    }
+  }
+}
