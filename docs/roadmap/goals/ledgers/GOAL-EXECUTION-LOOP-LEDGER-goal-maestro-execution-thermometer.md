@@ -59,7 +59,7 @@ spec_version: contract-hardening-baseline
 attempt: 1
 repair_count: 0
 audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-001
+first_unexecuted_unit: SPEC-002
 failed_attempt_recovery_decision: not_applicable
 commit: no-commit (active ledger entry opened before the SPEC-000 material commit)
 oracle_status: PASS pending material commit (`python3 scripts/validate_tds.py`, `python3 scripts/validate_doc_size.py`, `git diff --check`)
@@ -85,3 +85,37 @@ audit_remutation: not_applicable
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-000_then_open_SPEC-001
+
+### SPEC-001 - Data Contract And Schema
+
+spec_id: SPEC-001
+spec_version: schema-v1-fixtures
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-001
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-001 material commit)
+oracle_status: PASS pending material commit (`node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/execution-thermometer-schema.mjs .../valid`, invalid fixtures exit 1, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`, `python3 scripts/validate_reference_package.py --staged-ready`)
+structural_method_id: node-pure-mjs-schema-validator
+topology_decision: one delivered validator script plus schema fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-002 extractor must emit data accepted by the SPEC-001 validator and must not widen schema v1 renderer-facing fields without contract repair
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: schema validator valid fixture returns exit 0 and invalid fixtures return exit 1 across Codex and Claude source adapters
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/EXPERIENCE-AND-DATA-CONTRACT.md
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-001_then_open_SPEC-002

@@ -125,6 +125,19 @@ const WALLS = [
     violate: () => [join(here, 'validate-walls.mjs'), 'deadbeefdeadbeef'],
     revert: () => [join(here, 'validate-walls.mjs'), gitHash(join(here, 'validate-walls.mjs'))],
   },
+  // GM1 — execution thermometer schema validator (valid fixture passes; invalid metric ref fires).
+  {
+    id: 'GM1 execution-thermometer-schema',
+    harness: 'execution-thermometer-schema.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer/valid/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer/invalid-unreferenced-metric/exec_metrics.json'),
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer/valid/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer/valid/exec_metrics.json'),
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.
