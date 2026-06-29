@@ -1251,6 +1251,12 @@ CSS = r"""
       letter-spacing: .06em;
       text-transform: uppercase;
     }
+    .footer-meta code {
+      font-size: 10px;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+      text-transform: none;
+    }
 
     .public-index .layout {
       display: block;
@@ -1961,6 +1967,9 @@ def render_page(page_key: str, structure: dict, content: dict) -> str:
     sections = "\n".join(render_lang_section(page_key, structure, content, item["code"]) for item in structure["languages"])
     ui = content["ui"]["en"]
     brand_meta = ui["manual_meta"] if page_key == "manual" else ui["release_meta"]
+    bundle_sha = str(structure.get("evidence", {}).get("bundle_sha256", ""))
+    bundle_sha_meta = f'  <meta name="tes:bundle-sha256" content="{esc(bundle_sha)}">\n' if bundle_sha else ""
+    bundle_sha_footer = f"<span>bundle sha256 <code>{esc(bundle_sha)}</code></span>" if bundle_sha else ""
     ui_labels = {
         lang: {
             "brand": values["brand"],
@@ -2010,6 +2019,7 @@ def render_page(page_key: str, structure: dict, content: dict) -> str:
   <meta name="color-scheme" content="light">
   <title>{esc(meta["title"])}</title>
   <meta name="description" content="{esc(meta["description"])}">
+{bundle_sha_meta.rstrip()}
   <link rel="canonical" href="{esc(page["canonical"])}">
   <meta property="og:title" content="{esc(meta["title"])}">
   <meta property="og:description" content="{esc(meta["og_description"])}">
@@ -2057,6 +2067,7 @@ def render_page(page_key: str, structure: dict, content: dict) -> str:
         {footer_copy}
         <div class="footer-meta">
           <span>{esc(ui["version"])} - {esc(ui["source_note"])}</span>
+          {bundle_sha_footer}
           <span><a href="https://github.com/murillodutt/tilly-engineer-skills">{esc(ui["github"])}</a></span>
         </div>
       </footer>
