@@ -31,8 +31,11 @@ Projects need a deterministic installer that backs up governance, applies thin r
 
 ## Changelog
 
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
+
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-05-09 | Created installer skill contract. | Assisted Context Installer spec. | high |
 | 2026-06-08 | `PROJECT-CONTEXT` demoted to Tier 3 inventory; handoff to align for Tier 2. | Consumer pilot `DOCUMENTATION-AUTHORITY.md`; documentation authority ADR. | high |
 

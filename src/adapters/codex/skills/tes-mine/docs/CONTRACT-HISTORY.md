@@ -23,6 +23,7 @@ DUTT use showed that valuable project knowledge is often present but buried: ter
 
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-05-13 | `tes-mine` | `tmp/tes-mine/SKILL.md` only before migration | Incubated source promoted to canonical adapter source. |
 | 2026-05-13 | `CONTEXT-FORMAT.md` | `tmp/tes-mine/CONTEXT-FORMAT.md` only before migration | Supporting format moved with the skill. |
 | 2026-05-13 | `ADR-FORMAT.md` | `tmp/tes-mine/ADR-FORMAT.md` only before migration | Supporting format moved with the skill. |
@@ -56,6 +57,8 @@ DUTT use showed that valuable project knowledge is often present but buried: ter
 `tes-mine` is the mining pass for durable project knowledge. `tes-prospect` is the read-only project-stress pressure pass. Tilly Engineering Discipline remains the general engineering overlay.
 
 ## Changelog
+
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
 
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|

@@ -23,6 +23,7 @@ A prior latency and audio-quality work line exposed the immediate failure mode, 
 
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | Creation | runtime support line review | Specific lists and heuristics found in runtime path. | Example-bound fixes can become future regressions. |
 | Creation | `result.json` from live latency test | Prosody `none` for all chunks. | Same route can still regress quality if recipe invariants are lost. |
 | Generalization | Project-surface review from maintainer directive | Applies to source, docs, adapters, installer, runtime, roadmap, release identity, and generated outputs. | Regression guard must protect TES as a product, not one code path. |
@@ -52,6 +53,8 @@ A prior latency and audio-quality work line exposed the immediate failure mode, 
 - `tes-predictive-operations`: decides when to prospect, mine, alternate, or package; this skill protects baseline behavior during execution.
 
 ## Changelog
+
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
 
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|

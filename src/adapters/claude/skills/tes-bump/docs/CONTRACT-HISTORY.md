@@ -21,6 +21,7 @@ Version bumps are small but fragile: agents can skip the source of truth, forget
 
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-05-21 | `bump/SKILL.md` source read | one prior source skill | Logic source identified; caller-specific behavior excluded. |
 | 2026-05-21 | `tes-prospect`, `tes-mine`, `tes-bench` | existing adapter skills and command routes | TES skill shape, agents metadata, contract history, and router surfaces identified. |
 
@@ -54,6 +55,8 @@ Version bumps are small but fragile: agents can skip the source of truth, forget
 `tes-bump` is narrower than `tes-update` and `tes-doctor`: it changes version surfaces only. `tes-doctor` owns health and commit readiness. TES package release closure remains governed by maintainer correlation, public bundle oracles, and `npm run commit:closure`.
 
 ## Changelog
+
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
 
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|

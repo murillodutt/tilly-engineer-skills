@@ -20,6 +20,7 @@ Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too sha
 
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-05-09 | `/tes-align` | 0 before creation | New trigger surface. |
 | 2026-05-09 | `PROJECT-ROADMAP.md` | contract source only | Needed as target-project operating mesh output. |
 
@@ -53,6 +54,8 @@ Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too sha
 `tes-init` creates the initial map. `tes-align` deepens it. `tes-doctor` certifies health. `tes-cortex` recalls and curates continuity. Build-Test-Fail-Fix loops prove product changes after alignment selects the lane.
 
 ## Changelog
+
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
 
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|

@@ -28,6 +28,7 @@ Two release cycles in a row (0.3.124 and 0.3.125) surfaced the same class of pai
 
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-05-25 | `/tes-sync` | 0 before creation | New local development surface. |
 | 2026-05-25 | `SYNC-AUDIT-CHECKLIST` | governance only | Skill condenses the checklist for agent use. |
 
@@ -54,6 +55,8 @@ Two release cycles in a row (0.3.124 and 0.3.125) surfaced the same class of pai
 `tes-predictive-operations` decides which reasoning mode to use. `tes-high-agency-pattern` designs the operating pattern of a single local skill. `tes-sync` is execution-time guidance for one specific routine — the complete sync — and pairs with the human checklist at `docs/governance/SYNC-AUDIT-CHECKLIST.md`.
 
 ## Changelog
+
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
 
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|

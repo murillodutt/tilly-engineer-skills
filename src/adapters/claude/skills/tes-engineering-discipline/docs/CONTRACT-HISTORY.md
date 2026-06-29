@@ -38,8 +38,11 @@ Loaded by all TES work. `tes-engineering-discipline` is the Codex mirror. Produc
 
 ## Changelog
 
+`Version` records a skill operational contract version only when the skill declares one, followed by the containing TES package version when known. If no operational contract stamp exists, the TES package version is the shipped identity. `tver: 0.1.0` in roadmap, Super SPEC, ledger, or TDS frontmatter is document-template metadata, not a skill runtime or harness version. Patch-level changes can remain inside the same skill contract boundary; in that case the TES package version carries release identity until a future change alters the skill contract boundary itself.
+
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
+| 2026-06-29 | Documented universal Contract History version semantics so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-04-01 | Created guidelines skill as discipline anchor. | TES core bootloader split. | high |
 | 2026-06-08 | Added contract history per Tilly skill standard. | Documentation authority tiers program. | high |
 | 2026-06-15 | Added Gate Zero (Declared-Contract Arbiter) and the sixth Effort Gate; reframed maturity as classificatory; gave the oracle Stage A teeth. | Lived gate-conflict evidence from real protocol use; adversarially verified. | high |
