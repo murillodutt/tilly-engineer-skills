@@ -247,6 +247,29 @@ const WALLS = [
       'false',
     ],
   },
+  // GM8P — public GitHub destinations are mechanically blocked before payload planning.
+  {
+    id: 'GM8P execution-thermometer-github-export-public-destination',
+    harness: 'execution-thermometer-github-export.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/public-destination/destination.json'),
+      '--expect-status',
+      'dry_run_ready',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/public-destination/destination.json'),
+      '--expect-status',
+      'blocked_by_public_destination',
+      '--expect-remote-action',
+      'false',
+    ],
+  },
   // GM9 — Thermometer integration cannot rewrite Goal Maestro execution stop states.
   {
     id: 'GM9 execution-thermometer-integration',

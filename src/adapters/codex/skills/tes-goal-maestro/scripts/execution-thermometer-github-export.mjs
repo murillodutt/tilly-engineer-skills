@@ -14,6 +14,7 @@ const STATUSES = new Set([
   'dry_run_ready',
   'draft_pr_opened',
   'blocked_by_owner_decision',
+  'blocked_by_public_destination',
   'blocked_by_github_auth',
   'needs_github_destination',
   'blocked_by_payload_mismatch',
@@ -158,13 +159,20 @@ function parseBoolean(value, option) {
 function planExport(decision, packageDir, options) {
   const destination = lookupDestination(decision, options.destinationConfig);
   const issues = [];
-  const packageState = loadPackage(packageDir);
+  const unloadedPackageState = unloadedPackage(packageDir);
 
   if (!destination.repository || !destination.branch) {
-    return blocked('needs_github_destination', 'NEEDS_GITHUB_DESTINATION', decision, destination, packageState, [
+    return blocked('needs_github_destination', 'NEEDS_GITHUB_DESTINATION', decision, destination, unloadedPackageState, [
       'destination repository and branch are required',
     ]);
   }
+  if (destination.visibility !== 'private') {
+    return blocked('blocked_by_public_destination', 'BLOCKED_BY_PUBLIC_DESTINATION', decision, destination, unloadedPackageState, [
+      `destination visibility must be private, got ${destination.visibility || 'unproven'}`,
+    ]);
+  }
+
+  const packageState = loadPackage(packageDir);
   if (!packageState.exists || packageState.files.length === 0) {
     return blocked('blocked_by_missing_package', 'BLOCKED_BY_MISSING_PACKAGE', decision, destination, packageState, [
       'local package directory is missing or empty',
@@ -253,8 +261,12 @@ function lookupDestination(decision, config) {
     branch,
     base_branch: baseBranch,
     path_prefix: normalizePosixPath(prefix),
-    visibility: stringValue(config?.visibility ?? 'private'),
+    visibility: stringValue(config?.visibility ?? 'private').toLowerCase() || 'unproven',
   };
+}
+
+function unloadedPackage(packageDir) {
+  return { exists: false, files: [], manifest_hash: 'unproven', package_dir: safePackageLabel(packageDir) };
 }
 
 function loadPackage(packageDir) {
