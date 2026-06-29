@@ -7,12 +7,22 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readText } from './lib/harness.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const PACKAGE_CONTRACT = 'execution-thermometer-package@1';
+const PACKAGE_OWNER = 'tes-goal-maestro-execution-thermometer';
+const PACKAGE_MARKER = '.tes-execution-thermometer-package.json';
+const packageFiles = [
+  'README.md',
+  'context-receipt.md',
+  'exec_identity.yaml',
+  'exec_metrics.json',
+  'execution-thermometer.html',
+];
 const [identityPath, metricsPath, outputRoot] = process.argv.slice(2);
 
 if (!identityPath || !metricsPath || !outputRoot || process.argv.length !== 5) {
@@ -46,6 +56,7 @@ const runId = safeSegment(identity.run_id);
 const packageDir = resolve(outputRoot, `execution-thermometer-${runId}`);
 
 try {
+  assertPackageOverwriteAllowed(packageDir, identity);
   rmSync(packageDir, { recursive: true, force: true });
   mkdirSync(packageDir, { recursive: true });
   copyFileSync(identityPath, join(packageDir, 'exec_identity.yaml'));
@@ -70,14 +81,6 @@ try {
   process.exit(1);
 }
 
-const packageFiles = [
-  'README.md',
-  'context-receipt.md',
-  'exec_identity.yaml',
-  'exec_metrics.json',
-  'execution-thermometer.html',
-];
-
 const generatedText = packageFiles.map((file) => readFileSync(join(packageDir, file), 'utf8')).join('\n');
 const generatedFindings = scanUnsafe(generatedText);
 if (generatedFindings.length > 0) {
@@ -90,6 +93,7 @@ if (generatedFindings.length > 0) {
 
 const checksumLines = packageFiles.map((file) => `${sha256(readFileSync(join(packageDir, file)))}  ${file}`);
 writeFileSync(join(packageDir, 'checksums.sha256'), `${checksumLines.join('\n')}\n`);
+writeFileSync(join(packageDir, PACKAGE_MARKER), `${JSON.stringify(packageMarker(identity, packageDir), null, 2)}\n`);
 const manifestHash = sha256(readFileSync(join(packageDir, 'checksums.sha256')));
 
 console.log(JSON.stringify({
@@ -99,6 +103,66 @@ console.log(JSON.stringify({
   files: [...packageFiles, 'checksums.sha256'],
   manifest_hash: manifestHash,
 }, null, 2));
+
+function assertPackageOverwriteAllowed(packageDir, identity) {
+  if (!existsSync(packageDir)) {
+    return;
+  }
+  const entry = lstatSync(packageDir);
+  if (!entry.isDirectory() || entry.isSymbolicLink()) {
+    blockPackage('blocked_by_unowned_package_dir', [
+      'package output path exists but is not a normal TES-owned directory',
+    ]);
+  }
+  const markerPath = join(packageDir, PACKAGE_MARKER);
+  if (!existsSync(markerPath)) {
+    blockPackage('blocked_by_unowned_package_dir', [
+      'existing package directory has no TES ownership marker',
+    ]);
+  }
+  let marker;
+  try {
+    marker = JSON.parse(readFileSync(markerPath, 'utf8'));
+  } catch {
+    blockPackage('blocked_by_unowned_package_dir', [
+      'existing package directory has an unreadable TES ownership marker',
+    ]);
+  }
+  if (!isOwnedMarker(marker, identity, packageDir)) {
+    blockPackage('blocked_by_unowned_package_dir', [
+      'existing package directory marker does not match this run and package contract',
+    ]);
+  }
+}
+
+function isOwnedMarker(marker, identity, packageDir) {
+  return marker?.schema_version === 1
+    && marker.owner === PACKAGE_OWNER
+    && marker.package_contract === PACKAGE_CONTRACT
+    && marker.run_id === identity.run_id
+    && marker.package_name === basename(packageDir);
+}
+
+function packageMarker(identity, packageDir) {
+  return {
+    schema_version: 1,
+    owner: PACKAGE_OWNER,
+    package_contract: PACKAGE_CONTRACT,
+    run_id: identity.run_id,
+    package_name: basename(packageDir),
+    files: [...packageFiles, 'checksums.sha256'],
+  };
+}
+
+function blockPackage(status, issues) {
+  console.error(`${status.toUpperCase()}: ${issues.join('; ')}`);
+  console.log(JSON.stringify({
+    status,
+    stop_state: status.toUpperCase(),
+    issues,
+  }, null, 2));
+  process.exit(1);
+}
 
 function renderReadme(identity) {
   return `# Execution Thermometer Package

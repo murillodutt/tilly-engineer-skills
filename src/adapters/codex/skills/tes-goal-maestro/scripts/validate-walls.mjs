@@ -9,7 +9,7 @@
 // Exit≠0 se QUALQUER parede falhar o par (não-disparo sob violação, ou não-passe ao reverter).
 
 import { execFileSync, execSync } from 'node:child_process';
-import { writeFileSync, mkdtempSync } from 'node:fs';
+import { mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,6 +30,30 @@ function fixture(name, content) {
   const p = join(tmp, name);
   writeFileSync(p, content);
   return p;
+}
+
+function outputRootWithUnownedPackage(name) {
+  const root = join(tmp, name);
+  const packageDir = join(root, 'execution-thermometer-run-html-001');
+  mkdirSync(packageDir, { recursive: true });
+  writeFileSync(join(packageDir, 'foreign.txt'), 'not owned by TES\n');
+  return root;
+}
+
+function outputRootWithOwnedPackage(name) {
+  const root = join(tmp, name);
+  const packageDir = join(root, 'execution-thermometer-run-html-001');
+  mkdirSync(packageDir, { recursive: true });
+  writeFileSync(join(packageDir, '.tes-execution-thermometer-package.json'), JSON.stringify({
+    schema_version: 1,
+    owner: 'tes-goal-maestro-execution-thermometer',
+    package_contract: 'execution-thermometer-package@1',
+    run_id: 'run-html-001',
+    package_name: 'execution-thermometer-run-html-001',
+    files: ['README.md', 'context-receipt.md', 'exec_identity.yaml', 'exec_metrics.json', 'execution-thermometer.html', 'checksums.sha256'],
+  }));
+  writeFileSync(join(packageDir, 'stale.txt'), 'old generated content\n');
+  return root;
 }
 
 // Cada parede: {id, harness, violate→args (deve dar exit≠0), revert→args (deve dar exit 0)}.
@@ -199,6 +223,21 @@ const WALLS = [
       join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
       join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
       join(tmp, 'gm6-safe'),
+    ],
+  },
+  // GM6O — package overwrite requires a TES ownership marker for the same run/package contract.
+  {
+    id: 'GM6O execution-thermometer-package-overwrite-guard',
+    harness: 'execution-thermometer-package.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      outputRootWithUnownedPackage('gm6-unowned'),
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer-html/multi-loop/exec_metrics.json'),
+      outputRootWithOwnedPackage('gm6-owned'),
     ],
   },
   // GM7 — Share Gate (tuple drift cannot reuse approval; gold sanitized report prompts).
