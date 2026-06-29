@@ -19,7 +19,7 @@ Tree adversary:
 
 ## Execution Cost Draft
 
-- Source artifacts: anchor Super SPEC, Project Pack docs, Goal Maestro skill references, current Goal Maestro wall harnesses, package identity 0.3.224.
+- Source artifacts: anchor Super SPEC, Project Pack docs, Goal Maestro skill references, current Goal Maestro wall harnesses, historical package identity 0.3.224, and current repair target 0.3.225.
 - Declared SPEC order: SPEC-000, SPEC-001, SPEC-002, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-011, SPEC-012.
 - Dependency edges: SPEC-000 blocks every runtime unit; SPEC-001 defines schema before extractor/renderers; SPEC-002 feeds SPEC-003 and SPEC-004; SPEC-005 and SPEC-006 precede SPEC-007 and SPEC-008; SPEC-009 integrates only after package/report primitives exist; SPEC-011 and SPEC-012 close installed-target and release identity.
 - Risk: Platform behavior, local report generation, share approval, sanitizer, renderer field closure, no hidden network path, adapter parity, release identity.
@@ -185,14 +185,28 @@ runtime_smoke_oracle: docs/dist/0.3.225 zip, sha256 sidecar, and index.json vali
 stop_state: ready_for_material_commit
 next_allowed_action: close_goal_loop_without_remote_release_claim
 
-## Executive Stop Audit
+## Historical Executive Stop Audit - Superseded By 2026-06-29 Audit
 
 declared_units: SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
 completed_units: SPEC-000,SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012
-final_goal_maestro_stop_state: PASS_LOCAL_NO_REMOTE_RELEASE
+prior_claimed_goal_maestro_stop_state: PASS_LOCAL_NO_REMOTE_RELEASE (historical claim; superseded by audit-corrected NEEDS_REVIEW / BLOCKED_RELEASE_SURFACE)
 remote_actions_performed: none
 release_identity: local package identity advanced to 0.3.225 with docs/dist/0.3.225 bundle, sha256 sidecar, and index.json; no tag, push, publish, or remote release is claimed
-installed_canary: PASS at ~/Dev/tes-canaries/goal-maestro-thermometer-20260629T185504Z with installed Codex scripts, generated local package, Markdown receipt, static HTML, checksum verification, and Quick Look HTML thumbnail
+installed_canary: historical PASS at ~/Dev/tes-canaries/goal-maestro-thermometer-20260629T185504Z proved installed version 0.3.224 only; superseded by the 0.3.225 canary below
 residual_unproven: source-ledger extraction reports one unproven metric from SPEC-000 docs-only runtime_smoke_oracle=not_applicable; installed canary extraction reports zero unproven metrics
 closure_oracles: Goal Maestro walls, reference package validation, public docs check, TDS, doc-size, private vocabulary, public bundle oracle, bundle self-test, staged commit gate
 next_allowed_action: stop locally; owner may separately authorize tag/push/release checks
+
+## Audit Downgrade And Convergence Repair - 2026-06-29
+
+audit_corrected_state: NEEDS_REVIEW / BLOCKED_RELEASE_SURFACE
+audit_reproducer: `python3 scripts/tds_surface_oracle.py` failed with `bundle_sha_mismatch` before repair
+baseline_only_commits: 1961637e,85dda749,226f7c6c,4ef702a1,519a8c6b,2e2680b7,77ed8c7d,939ac714,0840227b,6f26b3d1,bbb96126,7672c44f,a9a7fa3c,5d94052c,587f3607
+repair_commits: 50e3cf11,69864287,f1b5dc99,e0dbc3bc
+remote_actions_performed: none
+public_bundle_identity: PASS (`docs/i18n/tes-public.structure.yml`, `docs/dist/0.3.225/index.json`, `.zip.sha256`, and ZIP sha all match `0e824e25c1b606ba440d583699843c653623b1ee243daf0962500a68348a20b7`)
+github_public_destination_gate: PASS (`blocked_by_public_destination`; GM8P wall added and `validate-walls` passes)
+package_overwrite_guard: PASS (`blocked_by_unowned_package_dir`; GM6O wall proves unmarked directories are blocked and TES-owned overwrite is allowed)
+installed_canary_0_3_225: PASS at `~/Dev/tes-canaries/goal-maestro-thermometer-20260629T225000Z` with bundle sha256 `17333efd292b85889842984d478d9940302c35b60fdadc22ab43053d3aaba2d1`, installed version `0.3.225`, source commit `f1b5dc99084bf51bfa840cce50c9d8c577e48337`, generated package manifest hash `f836902e9ff74bff7d221fc95e72c73d026fbfa1a3a5eff65f7e45c435765c1b`, and Quick Look PNG hash `9ad5ac34539214bc66a68639d91dc28ec7e744f1d3bd04d255d05db8a146ac3f`
+current_goal_maestro_stop_state: NEEDS_EXECUTIVE_STOP_AUDIT
+next_allowed_action: SPEC-006 Executive Stop Audit must rerun focused oracles and may claim PASS_CEILING only if every required axis remains green
