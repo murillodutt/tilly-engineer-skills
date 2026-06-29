@@ -255,3 +255,37 @@ audit_remutation: GM5 wall rejects gold without declared evidence and accepts co
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-005_then_open_SPEC-006
+
+### SPEC-006 - Sanitized Package Builder
+
+spec_id: SPEC-006
+spec_version: local-package-builder-checksums
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-007
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-006 material commit)
+oracle_status: PASS pending material commit (safe fixture generates README, Markdown, YAML, JSON, HTML, and `checksums.sha256`; `shasum -a 256 -c checksums.sha256` passes; unsafe private-path fixture exits 1 with `BLOCKED_BY_SANITIZATION`; private vocabulary oracle passes; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: node-pure-sanitized-local-package-builder
+topology_decision: one delivered package builder script plus unsafe private-path fixture mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-007 Share Gate may prompt only after Gold Gate and sanitizer/package builder pass
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: package contains generated `execution-thermometer.html`
+runtime_smoke_oracle: local package builder emits default local package and checksum manifest without remote operations
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: `execution-thermometer-<run-id>/` local package
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM6 wall rejects unsafe private-path input and accepts safe package generation
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-006_then_open_SPEC-007
