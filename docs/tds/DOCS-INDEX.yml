@@ -1464,6 +1464,13 @@ documents:
     consumer: maintainers, Goal Maestro authors, report renderer authors, and release reviewers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/2026/06/29/goal-maestro/adversarial-audit-heartbeat-canary/REPORT.md
+    id: evidence.goal_maestro.adversarial_audit_heartbeat_canary_2026_06_29
+    class: evidence
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L3
   - path: docs/evidence/reports/context-mesh/project-alignment-oracle-false-positive-2026-05-13/JOURNAL.md
     id: evidence.context_mesh.project_alignment_oracle_false_positive_2026_05_13_journal
     class: evidence
