@@ -53,6 +53,7 @@ This folder preserves roadmap lineage without turning the roadmap into the work.
 | ADR 0005 asset transfer realignment | Active | `goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md` |
 | Goal Maestro progressive disclosure | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-progressive-disclosure.md` |
 | Goal Maestro ceiling (self-falsifying proof generator) | Complete | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-ceiling-self-falsifying.md` (ADR 0006; EXECUTION_LOOP_COMPLETE) |
+| Goal Maestro execution thermometer and gold sharing | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execution-thermometer-and-gold-sharing.md` |
 | Goal Maestro Axis 4: cross-domain wall-compiler | Deferred | `docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md` § Axis 4 (owner-deferred: new codegen surface + release-identity risk; needs own anchor + canary) |
 | Goal Maestro Axis 5: context-economy by structural class | Deferred | `docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md` § Axis 5 (owner-deferred: new ledger fields + sizing reader; ROI depends on Axes 1-2 first) |
 | RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |

@@ -547,6 +547,41 @@ documents:
     consumer: maintainers, Goal Maestro authors, oracle authors, lens authors, and execution agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execution-thermometer-and-gold-sharing.md
+    id: roadmap.goal_super_spec.goal_maestro_execution_thermometer_gold_sharing
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, report renderer authors, oracle authors, GitHub workflow reviewers, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/EXPERIENCE-AND-DATA-CONTRACT.md
+    id: roadmap.goal_super_spec.goal_maestro_execution_thermometer.experience_data_contract
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, report renderer authors, schema authors, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/METRICS-GATES-AND-SHARING.md
+    id: roadmap.goal_super_spec.goal_maestro_execution_thermometer.metrics_gates_sharing
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, oracle authors, GitHub workflow reviewers, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/IMPLEMENTATION-PLAN.md
+    id: roadmap.goal_super_spec.goal_maestro_execution_thermometer.implementation_plan
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/VALIDATION-AND-CLOSEOUT.md
+    id: roadmap.goal_super_spec.goal_maestro_execution_thermometer.validation_closeout
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md
     id: roadmap.goal_super_spec_cortex_mcp_capability_expansion
     class: roadmap
