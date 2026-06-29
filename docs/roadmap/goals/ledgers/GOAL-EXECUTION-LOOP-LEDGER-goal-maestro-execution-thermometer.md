@@ -153,3 +153,37 @@ audit_remutation: GM2 wall rejects hash mismatch and accepts a valid ledger extr
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-002_then_open_SPEC-003
+
+### SPEC-003 - Markdown Context Receipt Renderer
+
+spec_id: SPEC-003
+spec_version: markdown-context-receipt
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-004
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-003 material commit)
+oracle_status: PASS pending material commit (valid fixture render equals tracked receipt fixture, `--check-only` accepts valid Markdown, inline HTML fixture exits 1, missing-evidence extractor output renders `UNPROVEN`, `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: node-pure-markdown-receipt-renderer
+topology_decision: one delivered Markdown renderer script plus valid and invalid receipt fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: none
+next_structural_constraint: SPEC-004 static HTML renderer must consume schema data at generation time and must not treat Markdown receipt as source data
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: renderer writes `context-receipt.md` from schema-valid YAML/JSON and self-checks five signals, objective feedback, next actions, source references, Markdown-only content, and line width
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: `context-receipt.md`
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM3 wall rejects inline HTML and accepts schema-backed Markdown rendering
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-003_then_open_SPEC-004

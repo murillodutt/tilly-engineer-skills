@@ -155,6 +155,17 @@ const WALLS = [
       '2026-06-29T00:00:00Z',
     ],
   },
+  // GM3 — Markdown context receipt (inline HTML fails; valid schema renders Markdown-only).
+  {
+    id: 'GM3 execution-thermometer-receipt',
+    harness: 'execution-thermometer-receipt.mjs',
+    violate: () => ['--check-only', join(here, 'fixtures/execution-thermometer-receipt/invalid-inline-html/context-receipt.md')],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer/valid/exec_identity.yaml'),
+      join(here, 'fixtures/execution-thermometer/valid/exec_metrics.json'),
+      join(tmp, 'gm3-context-receipt.md'),
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.
