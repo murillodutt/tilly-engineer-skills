@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.227"
+VERSION = "0.3.228"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -579,6 +579,12 @@ VISIBLE_SKILL_ROUTES = {
             "--next-prompt-handoff",
             "--execute-loop",
             "--execute-loop-parent-fallback",
+            "--audit-heartbeat-prompt",
+            "audit_heartbeat=true",
+            "adversarial_audit_heartbeat: requested",
+            "direct request to generate or create an adversarial audit heartbeat prompt",
+            "copy-ready English heartbeat prompt",
+            "not execution, scheduling, sharing, or Goal Maestro stop-state authority",
             "Execution Cost Draft",
             "Executive Stop Audit",
             "SPEC_REPAIR_BY_LLM",
@@ -624,6 +630,12 @@ VISIBLE_SKILL_ROUTES = {
             "--next-prompt-handoff",
             "--execute-loop",
             "--execute-loop-parent-fallback",
+            "--audit-heartbeat-prompt",
+            "audit_heartbeat=true",
+            "adversarial_audit_heartbeat: requested",
+            "direct request to generate or create an adversarial audit heartbeat prompt",
+            "copy-ready English heartbeat prompt",
+            "not execution, scheduling, sharing, or Goal Maestro stop-state authority",
             "Execution Cost Draft",
             "Executive Stop Audit",
             "SPEC_REPAIR_BY_LLM",
@@ -695,6 +707,63 @@ ROUTE_CASES = (
         "forbidden_routes": ("/tes-align", "/tes-doctor"),
     },
 )
+
+GOAL_MAESTRO_OPTION_DOC_TERMS = {
+    "docs/install/COMMAND-TRIGGERS.md": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "direct request to generate/create an adversarial audit heartbeat prompt",
+        "Broad words",
+        "Goal Maestro stop states",
+    ),
+    "docs/install/AGENT-MANUAL.md": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "not the execution loop parameter",
+        "Goal Maestro stop states",
+    ),
+    "docs/install/MINI-PROMPT.md": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "Goal Maestro stop states",
+    ),
+    "docs/adapters/CODEX.md": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "broad audit/monitor/heartbeat wording does not activate it",
+        "Goal Maestro stop states",
+    ),
+    "docs/adapters/CLAUDE.md": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "broad audit/monitor/heartbeat wording does not activate it",
+        "Goal Maestro stop states",
+    ),
+    "docs/adapters/PLATFORM-DIFFERENCES.md": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "Goal Maestro stop states",
+    ),
+    "docs/i18n/tes-public.content.json": (
+        "--execute-loop",
+        "--audit-heartbeat-prompt",
+        "audit_heartbeat=true",
+        "adversarial_audit_heartbeat: requested",
+        "broad words",
+    ),
+}
 
 
 def read_group(root: Path, paths: tuple[str, ...]) -> tuple[str, list[str]]:
@@ -908,6 +977,22 @@ def check_skill_route_contracts(root: Path) -> tuple[list[dict[str, Any]], list[
             missing = [term for term in terms if term not in text]
             failures.extend(f"{relpath} missing grouped route term: {term}" for term in missing)
             checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
+
+
+def check_goal_maestro_option_docs(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for relpath, terms in GOAL_MAESTRO_OPTION_DOC_TERMS.items():
+        path = root / relpath
+        if not path.exists():
+            failures.append(f"missing goal-maestro option doc: {relpath}")
+            checked.append({"path": relpath, "status": "MISSING"})
+            continue
+        text = normalized(path.read_text(encoding="utf-8"))
+        missing = [term for term in terms if term not in text]
+        failures.extend(f"{relpath} missing goal-maestro option doc term: {term}" for term in missing)
+        checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
     return checked, failures
 
 
@@ -1374,6 +1459,16 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
             "group": "skill_route_contracts",
             "status": "PASS" if not skill_route_failures else "FAIL",
             "files": skill_route_checked,
+        }
+    )
+
+    goal_maestro_option_docs_checked, goal_maestro_option_docs_failures = check_goal_maestro_option_docs(root)
+    failures.extend(goal_maestro_option_docs_failures)
+    checked.append(
+        {
+            "group": "goal_maestro_option_docs",
+            "status": "PASS" if not goal_maestro_option_docs_failures else "FAIL",
+            "files": goal_maestro_option_docs_checked,
         }
     )
 

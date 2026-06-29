@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.227"
+VERSION = "0.3.228"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
