@@ -323,3 +323,37 @@ audit_remutation: GM7 wall rejects tuple-drift approval reuse and accepts saniti
 distinct_refuters: not_applicable
 stop_state: ready_for_material_commit
 next_allowed_action: commit_SPEC-007_then_open_SPEC-008
+
+### SPEC-008 - GitHub Draft PR Export
+
+spec_id: SPEC-008
+spec_version: local-github-dry-run-export-planner
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-009
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (active ledger entry opened before the SPEC-008 material commit)
+oracle_status: PASS pending material commit (dry-run fixture emits exact branch layout and destination with `remote_action_performed: false`; default payload includes README, YAML, JSON, and checksums while excluding Markdown and HTML; execute mode without approval returns `NEEDS_OWNER_SHARE_DECISION`; missing destination returns `NEEDS_GITHUB_DESTINATION`; fixture checksums verify; `node src/adapters/{claude,codex}/skills/tes-goal-maestro/scripts/validate-walls.mjs`)
+structural_method_id: node-pure-github-export-dry-run-planner
+topology_decision: one delivered GitHub export planner plus dry-run package, destination, approval, and missing-destination fixtures mirrored byte-identically across Codex and Claude source adapters
+topology_decision_artifact: this ledger
+structural_debt: no remote GitHub operation is implemented or authorized in this SPEC; only dry-run evidence is materialized
+next_structural_constraint: SPEC-009 must wire local report/package generation after loop close without changing Goal Maestro execution semantics
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: GitHub export planner reports exact local file-to-branch layout and performs no remote action
+adversary_objection: not_applicable
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: GitHub export dry-run plan JSON
+api_lint_status: local grep found no fetch, beacon, curl, wget, GitHub CLI, push lane, telemetry, tracking, CDN, or HTTP URL in the GitHub export script or fixtures
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: GM8 wall rejects pretend draft PR opening from execute mode and accepts dry-run evidence with no remote action
+distinct_refuters: not_applicable
+stop_state: ready_for_material_commit
+next_allowed_action: commit_SPEC-008_then_open_SPEC-009

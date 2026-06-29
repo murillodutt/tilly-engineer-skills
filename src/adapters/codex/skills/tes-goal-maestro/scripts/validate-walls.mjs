@@ -220,6 +220,33 @@ const WALLS = [
       'false',
     ],
   },
+  // GM8 — GitHub export stays dry-run/local unless tuple-bound approval and remote lane exist.
+  {
+    id: 'GM8 execution-thermometer-github-export',
+    harness: 'execution-thermometer-github-export.mjs',
+    violate: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/destination.json'),
+      '--mode',
+      'execute',
+      '--expect-status',
+      'draft_pr_opened',
+    ],
+    revert: () => [
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/share-decision.json'),
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/package'),
+      '--destination-config',
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/destination.json'),
+      '--approval-record',
+      join(here, 'fixtures/execution-thermometer-github-export/dry-run/approval.json'),
+      '--expect-status',
+      'dry_run_ready',
+      '--expect-remote-action',
+      'false',
+    ],
+  },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
   // revert: refutadores com corpos distintos → exit 0.

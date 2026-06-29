@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "status": "proposed_gold",
+  "prompt_required": false,
+  "approval_valid": true,
+  "remote_action_performed": false,
+  "run_id": "run-github-missing-destination",
+  "destination_repository": "unproven",
+  "destination_branch": "unproven",
+  "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "manifest_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "owner_decision": "approve_remote",
+  "goal_maestro_execution_state": "PASS",
+  "goal_maestro_execution_state_changed": false
+}
