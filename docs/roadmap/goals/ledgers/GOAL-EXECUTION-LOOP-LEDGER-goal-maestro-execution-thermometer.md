@@ -208,5 +208,24 @@ public_bundle_identity: PASS (`docs/i18n/tes-public.structure.yml`, `docs/dist/0
 github_public_destination_gate: PASS (`blocked_by_public_destination`; GM8P wall added and `validate-walls` passes)
 package_overwrite_guard: PASS (`blocked_by_unowned_package_dir`; GM6O wall proves unmarked directories are blocked and TES-owned overwrite is allowed)
 installed_canary_0_3_225: PASS at `~/Dev/tes-canaries/goal-maestro-thermometer-20260629T225000Z` with bundle sha256 `17333efd292b85889842984d478d9940302c35b60fdadc22ab43053d3aaba2d1`, installed version `0.3.225`, source commit `f1b5dc99084bf51bfa840cce50c9d8c577e48337`, generated package manifest hash `f836902e9ff74bff7d221fc95e72c73d026fbfa1a3a5eff65f7e45c435765c1b`, and Quick Look PNG hash `9ad5ac34539214bc66a68639d91dc28ec7e744f1d3bd04d255d05db8a146ac3f`
-current_goal_maestro_stop_state: NEEDS_EXECUTIVE_STOP_AUDIT
+current_goal_maestro_stop_state: NEEDS_EXECUTIVE_STOP_AUDIT (superseded by Executive Stop Audit below)
 next_allowed_action: SPEC-006 Executive Stop Audit must rerun focused oracles and may claim PASS_CEILING only if every required axis remains green
+
+## Executive Stop Audit - 2026-06-29
+
+spec_id: SPEC-006
+attempt: 1
+repair_count: 0
+pre_close_commit: bb599086
+pre_close_worktree: clean, `main...origin/main [ahead 20]`
+pre_close_oracle_status: PASS (`npm run commit:closure`)
+focused_oracles: PASS (`python3 scripts/validate_tds.py`; `python3 scripts/validate_doc_size.py`; `python3 scripts/validate_reference_package.py`; `python3 scripts/validate_reference_graph.py`; `python3 scripts/materialize_adapter.py all --check`; `python3 scripts/adapter_parity_readiness.py --self-test && python3 scripts/adapter_parity_readiness.py`; `python3 scripts/private_vocabulary_oracle.py --self-test && python3 scripts/private_vocabulary_oracle.py`; `node src/adapters/codex/skills/tes-goal-maestro/scripts/validate-walls.mjs`; `python3 scripts/tds_surface_oracle.py`; `python3 scripts/public_bundle_oracle.py`)
+public_bundle_identity: PASS (`docs/i18n/tes-public.structure.yml`, `docs/dist/0.3.225/index.json`, `.zip.sha256`, rendered public docs, and ZIP sha match `0e824e25c1b606ba440d583699843c653623b1ee243daf0962500a68348a20b7`)
+github_public_destination_gate: PASS (`visibility != private` blocks with `blocked_by_public_destination` before payload or remote action planning)
+package_overwrite_guard: PASS (unmarked preexisting package directory blocks with `blocked_by_unowned_package_dir`; TES-owned marker overwrite passes)
+installed_canary_0_3_225: PASS (`~/Dev/tes-canaries/goal-maestro-thermometer-20260629T225000Z`; installed version `0.3.225`; bundle sha256 `17333efd292b85889842984d478d9940302c35b60fdadc22ab43053d3aaba2d1`)
+ledger_truth: PASS (historical `PASS_LOCAL_NO_REMOTE_RELEASE` preserved as superseded; audit downgrade and repair commits recorded; no stronger claim than executed evidence remains)
+remote_actions_performed: none
+release_identity_boundary: local 0.3.225 package and public bundle are sealed locally; no push, tag, publish, GitHub write, or remote release was performed or claimed
+post_commit_required_oracle: `npm run commit:closure` from clean worktree after this ledger closeout commit
+current_goal_maestro_stop_state: PASS_CEILING if post-commit closure remains PASS; otherwise downgrade to the exact failing axis
