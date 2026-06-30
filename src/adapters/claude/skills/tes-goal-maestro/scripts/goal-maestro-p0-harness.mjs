@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021/SPEC-022/SPEC-023 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021/SPEC-022/SPEC-023/SPEC-024 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -43,6 +43,8 @@
 // closeout_consistency_gate_required:true.
 // SPEC-023 fixtures opt into heartbeat sidecar validation with
 // heartbeat_sidecar_required:true.
+// SPEC-024 fixtures opt into no-automation boundary validation with
+// no_automation_boundary_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -71,6 +73,7 @@ const CLOUD_SEARCH_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
 const LLM_CACHE_COST_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
 const CLOSEOUT_CONSISTENCY_STOP_STATE = 'NEEDS_CLOSEOUT_CONSISTENCY';
 const HEARTBEAT_SIDECAR_STOP_STATE = 'NEEDS_HEARTBEAT_SIDECAR';
+const NO_AUTOMATION_STOP_STATE = 'NEEDS_NO_AUTOMATION_BOUNDARY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -93,6 +96,7 @@ const CLOUD_SEARCH_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
 const LLM_CACHE_COST_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
 const CLOSEOUT_CONSISTENCY_CONTRACT = 'goal-maestro-p0-closeout-consistency';
 const HEARTBEAT_SIDECAR_CONTRACT = 'goal-maestro-p0-heartbeat-sidecar';
+const NO_AUTOMATION_CONTRACT = 'goal-maestro-p0-no-automation-boundary';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -200,6 +204,7 @@ const cloudSearchRequired = requiresCloudSearchClassification(fixture);
 const llmCacheCostRequired = requiresLLMCacheCostTelemetry(fixture);
 const closeoutConsistencyRequired = requiresCloseoutConsistencyGate(fixture);
 const heartbeatSidecarRequired = requiresHeartbeatSidecar(fixture);
+const noAutomationBoundaryRequired = requiresNoAutomationBoundary(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -383,8 +388,13 @@ if (closeoutConsistencyRequired) {
 if (heartbeatSidecarRequired) {
   addHeartbeatSidecarChecks();
 }
+if (noAutomationBoundaryRequired) {
+  addNoAutomationBoundaryChecks();
+}
 
-const harnessTitle = heartbeatSidecarRequired
+const harnessTitle = noAutomationBoundaryRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021+SPEC-022+SPEC-023+SPEC-024 goal-maestro-p0-no-automation-boundary (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE}/${CLOSEOUT_CONSISTENCY_STOP_STATE}/${HEARTBEAT_SIDECAR_STOP_STATE}/${NO_AUTOMATION_STOP_STATE})`
+  : heartbeatSidecarRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021+SPEC-022+SPEC-023 goal-maestro-p0-heartbeat-sidecar (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE}/${CLOSEOUT_CONSISTENCY_STOP_STATE}/${HEARTBEAT_SIDECAR_STOP_STATE})`
   : closeoutConsistencyRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021+SPEC-022 goal-maestro-p0-closeout-consistency (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE}/${CLOSEOUT_CONSISTENCY_STOP_STATE})`
@@ -1949,6 +1959,38 @@ function addHeartbeatSidecarChecks() {
   );
 }
 
+function addNoAutomationBoundaryChecks() {
+  const boundary = noAutomationBoundaryFromFixture(fixture);
+  const automationEvents = noAutomationEvents(boundary);
+  const ownerAuthorized = noAutomationHasOwnerAuthorization(boundary);
+  const sidecar = heartbeatSidecarFromFixture(fixture);
+
+  noAutomationCheck(
+    'no-automation boundary evidence is present',
+    hasNonEmptyObject(boundary),
+    'Goal Maestro and heartbeat must record host automation boundary status',
+  );
+  noAutomationCheck(
+    'host automation is absent unless separately owner-authorized',
+    automationEvents.length === 0 || ownerAuthorized,
+    `host automation requires separate explicit owner authorization: ${formatValues(automationEvents)}`,
+  );
+  if (automationEvents.length > 0 && !ownerAuthorized) {
+    noAutomationCheck(
+      'accidental automation is classified as boundary violation',
+      noAutomationBoundaryViolationClassified(boundary),
+      'accidental host automation must be reported as a boundary violation',
+    );
+  }
+  if (automationEvents.length === 0) {
+    noAutomationCheck(
+      'no automation closeout preserves explicit heartbeat sidecar prompt',
+      noAutomationBoundaryCitesSidecar(boundary, sidecar),
+      'no-automation PASS must cite the explicit heartbeat sidecar prompt evidence',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -2138,6 +2180,10 @@ function closeoutConsistencyCheck(name, pass, detail) {
 
 function heartbeatSidecarCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${HEARTBEAT_SIDECAR_STOP_STATE}: ${detail}` });
+}
+
+function noAutomationCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${NO_AUTOMATION_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -2388,6 +2434,13 @@ function requiresHeartbeatSidecar(value) {
     || value.audit_heartbeat_prompt_required === true
     || value.harness_contract === HEARTBEAT_SIDECAR_CONTRACT
     || value.contract === HEARTBEAT_SIDECAR_CONTRACT;
+}
+
+function requiresNoAutomationBoundary(value) {
+  return value.no_automation_boundary_required === true
+    || value.automation_boundary_required === true
+    || value.harness_contract === NO_AUTOMATION_CONTRACT
+    || value.contract === NO_AUTOMATION_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -4182,6 +4235,75 @@ function heartbeatSidecarCreatesSecondCommand(sidecar) {
   if (sidecar.second_goal_maestro_command_created === true || sidecar.created_second_command === true) return true;
   const command = firstNonEmptyString(sidecar.command, sidecar.goal_maestro_command, sidecar.second_command);
   return nonEmptyString(command) && normalizeSemanticValue(command).includes('tes goal maestro');
+}
+
+function noAutomationBoundaryFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.no_automation_boundary,
+    value.automation_boundary,
+    value.host_automation,
+    metrics.no_automation_boundary,
+    metrics.automation_boundary,
+    value.closeout?.no_automation_boundary,
+    value.closeout?.automation_boundary,
+  ];
+  return candidates.find(isPlainObject) ?? {};
+}
+
+function noAutomationEvents(boundary) {
+  const events = [];
+  const status = normalizeSemanticValue(firstNonEmptyString(
+    boundary.status,
+    boundary.automation_status,
+    boundary.host_automation_status,
+  ));
+  if (['created', 'scheduled', 'wakeup scheduled', 'automation created', 'job created'].includes(status)) {
+    events.push(status);
+  }
+  if (boundary.created === true) events.push('created');
+  if (boundary.scheduled === true) events.push('scheduled');
+  if (boundary.scheduled_wakeup === true || boundary.wakeup_scheduled === true) events.push('scheduled_wakeup');
+  if (Array.isArray(boundary.jobs) && boundary.jobs.length > 0) events.push('jobs');
+  if (Array.isArray(boundary.schedules) && boundary.schedules.length > 0) events.push('schedules');
+  if (Array.isArray(boundary.automations) && boundary.automations.length > 0) events.push('automations');
+  return uniqueStrings(events);
+}
+
+function noAutomationHasOwnerAuthorization(boundary) {
+  const status = normalizeSemanticValue(firstNonEmptyString(
+    boundary.authorization_status,
+    boundary.owner_authorization_status,
+    boundary.owner_authorization?.status,
+  ));
+  const scope = normalizeSemanticValue(firstNonEmptyString(
+    boundary.authorization_scope,
+    boundary.owner_authorization_scope,
+    boundary.owner_authorization?.scope,
+  ));
+  return status === 'owner authorized'
+    && (!nonEmptyString(scope) || scope.includes('host automation') || scope.includes('automation'));
+}
+
+function noAutomationBoundaryViolationClassified(boundary) {
+  const status = normalizeSemanticValue(firstNonEmptyString(boundary.violation_status, boundary.classification, boundary.status));
+  if (boundary.boundary_violation === true || boundary.automation_boundary_violation === true) return true;
+  if (status === 'boundary violation' || status === 'automation boundary violation') return true;
+  if (boundary.stop_state === NO_AUTOMATION_STOP_STATE) return true;
+  return collectStrings(boundary).some((value) => normalizeSemanticValue(value)?.includes('boundary violation'));
+}
+
+function noAutomationBoundaryCitesSidecar(boundary, sidecar) {
+  if (!heartbeatSidecarPresent(sidecar)) return false;
+  if (boundary.sidecar_prompt_status === 'present' || boundary.heartbeat_sidecar_present === true) return true;
+  const refs = [
+    sidecar.prompt_ref,
+    sidecar.artifact_ref,
+    sidecar.path,
+    sidecar.ref,
+  ].filter(nonEmptyString);
+  const boundaryStrings = collectStrings(boundary);
+  return refs.length > 0 && refs.some((ref) => boundaryStrings.includes(ref));
 }
 
 function ledgerTextFromFixture(value) {

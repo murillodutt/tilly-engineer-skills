@@ -1,4 +1,4 @@
-// SPEC-023 — Mutation suite for executable wall fixtures.
+// SPEC-024 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -90,6 +90,8 @@ const GM12_SPEC22_CONTRACT = 'goal-maestro-p0-closeout-consistency';
 const GM12_SPEC22_STOP_STATE = 'NEEDS_CLOSEOUT_CONSISTENCY';
 const GM12_SPEC23_CONTRACT = 'goal-maestro-p0-heartbeat-sidecar';
 const GM12_SPEC23_STOP_STATE = 'NEEDS_HEARTBEAT_SIDECAR';
+const GM12_SPEC24_CONTRACT = 'goal-maestro-p0-no-automation-boundary';
+const GM12_SPEC24_STOP_STATE = 'NEEDS_NO_AUTOMATION_BOUNDARY';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -697,6 +699,30 @@ function gm12Spec23SecondCommandArgs() {
 
 function gm12Spec23RevertArgs() {
   return [fixture('gm12-spec23-heartbeat-sidecar-ok.json', JSON.stringify(gm12Spec23Fixture('valid')))];
+}
+
+function gm12Spec24MissingBoundaryArgs() {
+  return [fixture('gm12-spec24-no-automation-missing-boundary.json', JSON.stringify(gm12Spec24Fixture('missing_boundary')))];
+}
+
+function gm12Spec24UnauthorizedWakeupArgs() {
+  return [fixture('gm12-spec24-no-automation-unauthorized-wakeup.json', JSON.stringify(gm12Spec24Fixture('unauthorized_wakeup')))];
+}
+
+function gm12Spec24AuthorizedWakeupArgs() {
+  return [fixture('gm12-spec24-no-automation-authorized-wakeup.json', JSON.stringify(gm12Spec24Fixture('authorized_wakeup')))];
+}
+
+function gm12Spec24UnclassifiedAccidentalArgs() {
+  return [fixture('gm12-spec24-no-automation-unclassified-accidental.json', JSON.stringify(gm12Spec24Fixture('unclassified_accidental')))];
+}
+
+function gm12Spec24MissingSidecarPromptArgs() {
+  return [fixture('gm12-spec24-no-automation-missing-sidecar-prompt.json', JSON.stringify(gm12Spec24Fixture('missing_sidecar_prompt')))];
+}
+
+function gm12Spec24RevertArgs() {
+  return [fixture('gm12-spec24-no-automation-ok.json', JSON.stringify(gm12Spec24Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -2234,6 +2260,73 @@ function gm12Spec23Closeout(closeout, mode, sidecar) {
   return result;
 }
 
+function gm12Spec24Fixture(mode) {
+  const base = gm12Spec23Fixture('valid');
+  const boundary = gm12Spec24Boundary(mode, base.heartbeat_sidecar);
+  const result = {
+    ...base,
+    harness_contract: GM12_SPEC24_CONTRACT,
+    no_automation_boundary_required: true,
+    no_automation_boundary: boundary,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+    },
+    closeout: gm12Spec24Closeout(base.closeout, mode, boundary),
+  };
+  if (mode === 'missing_boundary') {
+    delete result.no_automation_boundary;
+    delete result.closeout.no_automation_boundary;
+  }
+  return result;
+}
+
+function gm12Spec24Boundary(mode, sidecar) {
+  const boundary = {
+    status: 'not_created',
+    automation_status: 'none',
+    authorization_status: 'not_required',
+    sidecar_prompt_status: 'present',
+    heartbeat_sidecar_ref: sidecar.prompt_ref,
+    boundary_violation: false,
+    report_text: 'No host jobs, wakeups, schedules, or automations were created.',
+  };
+  if (mode === 'unauthorized_wakeup' || mode === 'unclassified_accidental') {
+    boundary.status = 'scheduled';
+    boundary.automation_status = 'scheduled';
+    boundary.scheduled_wakeup = true;
+    boundary.authorization_status = 'not_authorized';
+    boundary.boundary_violation = mode !== 'unclassified_accidental';
+    boundary.violation_status = mode === 'unclassified_accidental' ? 'missing' : 'boundary_violation';
+    boundary.report_text = mode === 'unclassified_accidental'
+      ? 'scheduled wakeup was recorded without classification'
+      : 'scheduled wakeup was classified as an automation boundary violation';
+    boundary.stop_state = mode === 'unclassified_accidental' ? undefined : GM12_SPEC24_STOP_STATE;
+  }
+  if (mode === 'authorized_wakeup') {
+    boundary.status = 'scheduled';
+    boundary.automation_status = 'scheduled';
+    boundary.scheduled_wakeup = true;
+    boundary.authorization_status = 'owner_authorized';
+    boundary.authorization_scope = 'host_automation';
+    boundary.report_text = 'scheduled wakeup was separately owner-authorized for host automation';
+  }
+  if (mode === 'missing_sidecar_prompt') {
+    delete boundary.sidecar_prompt_status;
+    delete boundary.heartbeat_sidecar_ref;
+  }
+  return boundary;
+}
+
+function gm12Spec24Closeout(closeout, mode, boundary) {
+  return {
+    ...closeout,
+    no_automation_boundary: {
+      ...boundary,
+      stop_state: mode === 'valid' || mode === 'authorized_wakeup' ? 'ready_for_loop' : GM12_SPEC24_STOP_STATE,
+    },
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -3232,6 +3325,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec23SecondCommandArgs,
     revert: gm12Spec23RevertArgs,
+  },
+  // GM12S24 — SPEC-024 forbids unsanctioned host jobs, wakeups, schedules, and automations.
+  {
+    id: 'GM12S24 goal-maestro-p0-no-automation-boundary-present',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec24MissingBoundaryArgs,
+    revert: gm12Spec24RevertArgs,
+  },
+  {
+    id: 'GM12S24 goal-maestro-p0-no-automation-authorization',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec24UnauthorizedWakeupArgs,
+    revert: gm12Spec24AuthorizedWakeupArgs,
+  },
+  {
+    id: 'GM12S24 goal-maestro-p0-no-automation-boundary-violation',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec24UnclassifiedAccidentalArgs,
+    revert: gm12Spec24RevertArgs,
+  },
+  {
+    id: 'GM12S24 goal-maestro-p0-no-automation-sidecar-evidence',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec24MissingSidecarPromptArgs,
+    revert: gm12Spec24RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
