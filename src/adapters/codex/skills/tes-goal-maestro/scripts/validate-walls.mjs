@@ -22,6 +22,39 @@ const sourcePublicContent = join(sourceRoot, 'docs/i18n/tes-public.content.json'
 const sourceAgentManual = join(sourceRoot, 'docs/install/AGENT-MANUAL.md');
 const sourceCursorRuntimeRule = join(sourceRoot, 'src/adapters/cursor/rules/tes-runtime-capabilities.mdc');
 const installedCursorRuntimeRule = join(skillRoot, '../../../.cursor/rules/tes-runtime-capabilities.mdc');
+const GM12_SPEC2_PRE_EDIT_REF = 'pre_edit_gate.json';
+const GM12_SPEC2_ANCHOR_HASH = '1f99741c919726b2d088e038078e7931ab9c2a70';
+const GM12_SPEC2_ALLOWED_FILES = [
+  'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
+  'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
+  'src/adapters/codex/skills/tes-goal-maestro/scripts/validate-walls.mjs',
+  'src/adapters/claude/skills/tes-goal-maestro/scripts/validate-walls.mjs',
+];
+const GM12_SPEC2_FORBIDDEN_FILES = [
+  'docs/**',
+  'package.json',
+  'docs/dist/**',
+  '.agents/**',
+  '.claude/**',
+  'src/adapters/cursor/**',
+];
+const GM12_SPEC2_FORBIDDEN_ACTIONS = [
+  'docs claims',
+  'package version bump',
+  'remote sync',
+  'cloud share',
+  'automation',
+  'local mirror edit',
+  'Cursor fake skill parity',
+  'SPEC-003 execution',
+];
+const GM12_SPEC2_REQUIRED_GATES = [
+  'direct positive fixture through goal-maestro-p0-harness.mjs',
+  'direct negative missing-or-late fixture through goal-maestro-p0-harness.mjs',
+  'node src/adapters/codex/skills/tes-goal-maestro/scripts/validate-walls.mjs',
+  'git diff --check',
+  'cmp Codex/Claude harness and validate-walls',
+];
 
 function runHarness(script, args) {
   try {
@@ -101,6 +134,18 @@ function gm12RevertArgs() {
   return [fixture('gm12-linear-pipeline-ok.json', JSON.stringify(gm12ValidFixture()))];
 }
 
+function gm12Spec2MissingPreEditArgs() {
+  return [fixture('gm12-spec2-pre-edit-missing.json', JSON.stringify(gm12Spec2Fixture('missing')))];
+}
+
+function gm12Spec2LatePreEditArgs() {
+  return [fixture('gm12-spec2-pre-edit-late.json', JSON.stringify(gm12Spec2Fixture('late')))];
+}
+
+function gm12Spec2RevertArgs() {
+  return [fixture('gm12-spec2-pre-edit-ok.json', JSON.stringify(gm12Spec2Fixture('valid')))];
+}
+
 function gm12ValidFixture() {
   const declared_specs = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
   const events = [];
@@ -116,6 +161,90 @@ function gm12ValidFixture() {
     );
   }
   return { schema_version: 1, declared_specs, events };
+}
+
+function gm12Spec2Fixture(mode) {
+  const spec_id = 'SPEC-002';
+  const events = [];
+  let second = 0;
+  if (mode === 'valid') {
+    events.push(gm12Spec2PreEditEvent(spec_id, gm12Time(second++)));
+  }
+  events.push(
+    { type: 'open_spec', spec_id, at: gm12Time(second++) },
+    { type: 'implement', spec_id, at: gm12Time(second++) },
+  );
+  if (mode === 'late') {
+    events.push(gm12Spec2PreEditEvent(spec_id, gm12Time(second++)));
+  }
+  events.push(
+    { type: 'evidence', spec_id, evidence_ref: 'EV-SPEC-002-PRE-EDIT-GATE', at: gm12Time(second++) },
+    { type: 'oracle_result', spec_id, status: 'pass', at: gm12Time(second++) },
+    { type: 'local_commit_status', spec_id, status: 'LOCAL_COMMITTED', at: gm12Time(second++) },
+    { type: 'parent_validation', spec_id, status: 'pass', at: gm12Time(second++) },
+  );
+
+  return {
+    schema_version: 1,
+    harness_contract: 'goal-maestro-p0-pre-edit-gate',
+    pre_edit_gate_required: true,
+    active_spec: spec_id,
+    first_unexecuted_spec: spec_id,
+    anchor_hash: GM12_SPEC2_ANCHOR_HASH,
+    allowed_files: GM12_SPEC2_ALLOWED_FILES,
+    forbidden_files: GM12_SPEC2_FORBIDDEN_FILES,
+    forbidden_actions: GM12_SPEC2_FORBIDDEN_ACTIONS,
+    required_gates: GM12_SPEC2_REQUIRED_GATES,
+    commit_mode: 'no-commit',
+    pre_edit_gate_expectations: {
+      active_spec: spec_id,
+      first_unexecuted_spec: spec_id,
+      anchor_hash: GM12_SPEC2_ANCHOR_HASH,
+      allowed_files: GM12_SPEC2_ALLOWED_FILES,
+      forbidden_files: GM12_SPEC2_FORBIDDEN_FILES,
+      forbidden_actions: GM12_SPEC2_FORBIDDEN_ACTIONS,
+      required_gates: GM12_SPEC2_REQUIRED_GATES,
+      commit_mode: 'no-commit',
+    },
+    ledger: {
+      pre_edit_gate_ref: GM12_SPEC2_PRE_EDIT_REF,
+      active_spec: spec_id,
+    },
+    thermometer_metrics: {
+      sources: [{ ref: GM12_SPEC2_PRE_EDIT_REF, type: 'pre_edit_gate' }],
+      pre_edit_gate_ref: GM12_SPEC2_PRE_EDIT_REF,
+    },
+    closeout: {
+      evidence_refs: [GM12_SPEC2_PRE_EDIT_REF],
+      status: 'pass',
+    },
+    declared_specs: [spec_id],
+    events,
+  };
+}
+
+function gm12Spec2PreEditEvent(spec_id, at) {
+  return {
+    type: 'pre_edit_gate_artifact',
+    spec_id,
+    at,
+    artifact: {
+      path: GM12_SPEC2_PRE_EDIT_REF,
+      active_spec: spec_id,
+      first_unexecuted_spec: spec_id,
+      anchor_hash: GM12_SPEC2_ANCHOR_HASH,
+      baseline_state: {
+        spec_001_commit: '74c4bfc2',
+        worktree: 'unrelated-change-present',
+      },
+      allowed_files: GM12_SPEC2_ALLOWED_FILES,
+      forbidden_files: GM12_SPEC2_FORBIDDEN_FILES,
+      forbidden_actions: GM12_SPEC2_FORBIDDEN_ACTIONS,
+      required_gates: GM12_SPEC2_REQUIRED_GATES,
+      installed_tes_version: '0.3.230',
+      commit_mode: 'no-commit',
+    },
+  };
 }
 
 function gm12Time(second) {
@@ -454,6 +583,19 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12ViolateArgs,
     revert: gm12RevertArgs,
+  },
+  // GM12S2 — SPEC-002 pre-edit gate requires a durable artifact before loop/edit.
+  {
+    id: 'GM12S2 goal-maestro-p0-pre-edit-gate-missing',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec2MissingPreEditArgs,
+    revert: gm12Spec2RevertArgs,
+  },
+  {
+    id: 'GM12S2 goal-maestro-p0-pre-edit-gate-chronology',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec2LatePreEditArgs,
+    revert: gm12Spec2RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

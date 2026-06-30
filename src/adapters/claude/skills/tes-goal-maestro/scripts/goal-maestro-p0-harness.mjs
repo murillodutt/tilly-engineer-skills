@@ -1,14 +1,19 @@
-// SPEC-001 Goal Maestro P0 linear pipeline harness.
+// SPEC-001/SPEC-002 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
-// before the next SPEC can open.
+// before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
+// artifact validation with pre_edit_gate_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
 import { readText, runChecks } from './lib/harness.mjs';
 
-const STOP_STATE = 'NEEDS_LINEAR_SPEC_PIPELINE';
+const LINEAR_STOP_STATE = 'NEEDS_LINEAR_SPEC_PIPELINE';
+const PRE_EDIT_STOP_STATE = 'NEEDS_PRE_EDIT_GATE_ARTIFACT';
+const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
+const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const EVENT_TYPES = new Set([
+  PRE_EDIT_EVENT_TYPE,
   'open_spec',
   'implement',
   'evidence',
@@ -45,6 +50,10 @@ if (!isPlainObject(fixture) || !Array.isArray(fixture.declared_specs) || !Array.
 
 const declaredSpecs = fixture.declared_specs;
 const events = fixture.events;
+const preEditGateRequired = requiresPreEditGate(fixture);
+const preEditGateEvents = [];
+let firstLoopStartIndex = null;
+let firstMaterialEditIndex = null;
 const specStates = new Map();
 for (const specId of declaredSpecs) {
   specStates.set(specId, {
@@ -64,17 +73,17 @@ const checks = [
   {
     name: 'declared SPEC queue is unique',
     pass: new Set(declaredSpecs).size === declaredSpecs.length,
-    detail: new Set(declaredSpecs).size === declaredSpecs.length ? undefined : `${STOP_STATE}: duplicate SPEC id in declared_specs`,
+    detail: new Set(declaredSpecs).size === declaredSpecs.length ? undefined : `${LINEAR_STOP_STATE}: duplicate SPEC id in declared_specs`,
   },
   {
     name: 'declared SPEC queue is strict and consecutive',
     pass: isStrictConsecutiveSpecQueue(declaredSpecs),
-    detail: isStrictConsecutiveSpecQueue(declaredSpecs) ? undefined : `${STOP_STATE}: declared_specs must be SPEC-NNN in consecutive order`,
+    detail: isStrictConsecutiveSpecQueue(declaredSpecs) ? undefined : `${LINEAR_STOP_STATE}: declared_specs must be SPEC-NNN in consecutive order`,
   },
   {
     name: 'event stream is present',
     pass: events.length > 0,
-    detail: events.length > 0 ? undefined : `${STOP_STATE}: no pipeline events were provided`,
+    detail: events.length > 0 ? undefined : `${LINEAR_STOP_STATE}: no pipeline events were provided`,
   },
 ];
 
@@ -100,11 +109,20 @@ for (const [eventIndex, event] of events.entries()) {
     continue;
   }
 
+  if (eventType === PRE_EDIT_EVENT_TYPE) {
+    observePreEditGate(eventIndex, event);
+    continue;
+  }
+
   if (eventType === 'open_spec') {
+    if (firstLoopStartIndex === null) firstLoopStartIndex = eventIndex;
     openSpec(eventIndex, event);
     continue;
   }
 
+  if (eventType === 'implement' && firstMaterialEditIndex === null) {
+    firstMaterialEditIndex = eventIndex;
+  }
   applySpecEvent(eventIndex, event);
 }
 
@@ -125,7 +143,182 @@ for (const specId of declaredSpecs) {
   }
 }
 
-runChecks(`SPEC-001 goal-maestro-p0-linear-pipeline (${STOP_STATE})`, checks);
+if (preEditGateRequired) {
+  addPreEditGateChecks();
+}
+
+const harnessTitle = preEditGateRequired
+  ? `SPEC-001+SPEC-002 goal-maestro-p0-pre-edit-gate (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE})`
+  : `SPEC-001 goal-maestro-p0-linear-pipeline (${LINEAR_STOP_STATE})`;
+runChecks(harnessTitle, checks);
+
+function observePreEditGate(eventIndex, event) {
+  const artifact = isPlainObject(event.artifact) ? event.artifact : event;
+  preEditGateEvents.push({ eventIndex, event, artifact });
+}
+
+function addPreEditGateChecks() {
+  const gateEvent = preEditGateEvents[0] ?? null;
+  const artifact = gateEvent?.artifact ?? {};
+  const artifactRef = preEditArtifactRef(gateEvent?.event, artifact);
+  const expected = isPlainObject(fixture.pre_edit_gate_expectations) ? fixture.pre_edit_gate_expectations : {};
+  const expectedActiveSpec = expected.active_spec ?? fixture.active_spec;
+  const expectedFirstUnexecutedSpec = expected.first_unexecuted_spec ?? expected.first_unexecuted_unit ?? fixture.first_unexecuted_spec ?? fixture.first_unexecuted_unit;
+  const expectedAnchorHash = expected.anchor_hash ?? fixture.anchor_hash;
+  const expectedAllowedFiles = expected.allowed_files ?? fixture.allowed_files;
+  const expectedForbiddenFiles = expected.forbidden_files ?? fixture.forbidden_files;
+  const expectedForbiddenActions = expected.forbidden_actions ?? fixture.forbidden_actions;
+  const expectedRequiredGates = expected.required_gates ?? fixture.required_gates;
+  const expectedCommitMode = expected.commit_mode ?? fixture.commit_mode;
+
+  preEditCheck(
+    'pre-edit artifact event exists',
+    preEditGateEvents.length > 0,
+    'loop start requires a durable pre-edit artifact event',
+  );
+  preEditCheck(
+    'pre-edit artifact event is unique',
+    preEditGateEvents.length === 1,
+    'exactly one durable pre-edit artifact event must be emitted',
+  );
+
+  if (!gateEvent) return;
+
+  preEditCheck(
+    'pre-edit artifact precedes loop start',
+    firstLoopStartIndex === null || gateEvent.eventIndex < firstLoopStartIndex,
+    'pre-edit artifact was not emitted before loop start',
+  );
+  preEditCheck(
+    'pre-edit artifact precedes first material edit',
+    firstMaterialEditIndex === null || gateEvent.eventIndex < firstMaterialEditIndex,
+    'pre-edit artifact was emitted after the first material edit',
+  );
+  preEditCheck(
+    'pre-edit artifact ref is package-local',
+    isPackageLocalArtifactRef(artifactRef),
+    'artifact ref must be a non-absolute package-local path',
+  );
+  preEditCheck(
+    'pre-edit artifact active SPEC is present',
+    nonEmptyString(artifact.active_spec),
+    'artifact lacks active_spec',
+  );
+  preEditCheck(
+    'pre-edit artifact first unexecuted SPEC is present',
+    nonEmptyString(artifact.first_unexecuted_spec ?? artifact.first_unexecuted_unit),
+    'artifact lacks first_unexecuted_spec',
+  );
+  preEditCheck(
+    'pre-edit artifact anchor hash is present',
+    nonEmptyString(artifact.anchor_hash),
+    'artifact lacks anchor_hash',
+  );
+  preEditCheck(
+    'pre-edit artifact baseline state is present',
+    hasBaselineState(artifact.baseline_state),
+    'artifact lacks baseline_state',
+  );
+  preEditCheck(
+    'pre-edit artifact allowed files are present',
+    hasNonEmptyStringArray(artifact.allowed_files),
+    'artifact lacks allowed_files',
+  );
+  preEditCheck(
+    'pre-edit artifact forbidden files are present',
+    hasNonEmptyStringArray(artifact.forbidden_files),
+    'artifact lacks forbidden_files',
+  );
+  preEditCheck(
+    'pre-edit artifact forbidden actions are present',
+    hasNonEmptyStringArray(artifact.forbidden_actions),
+    'artifact lacks forbidden_actions',
+  );
+  preEditCheck(
+    'pre-edit artifact required gates are present',
+    hasNonEmptyStringArray(artifact.required_gates),
+    'artifact lacks required_gates',
+  );
+  preEditCheck(
+    'pre-edit artifact installed TES version is present',
+    nonEmptyString(artifact.installed_tes_version),
+    'artifact lacks installed_tes_version',
+  );
+  preEditCheck(
+    'pre-edit artifact commit mode is present',
+    nonEmptyString(artifact.commit_mode),
+    'artifact lacks commit_mode',
+  );
+
+  if (nonEmptyString(expectedActiveSpec)) {
+    preEditCheck(
+      'pre-edit artifact active SPEC matches expectation',
+      artifact.active_spec === expectedActiveSpec,
+      `artifact active_spec must be ${expectedActiveSpec}`,
+    );
+  }
+  if (nonEmptyString(expectedFirstUnexecutedSpec)) {
+    preEditCheck(
+      'pre-edit artifact first unexecuted SPEC matches expectation',
+      (artifact.first_unexecuted_spec ?? artifact.first_unexecuted_unit) === expectedFirstUnexecutedSpec,
+      `artifact first_unexecuted_spec must be ${expectedFirstUnexecutedSpec}`,
+    );
+  }
+  if (nonEmptyString(expectedAnchorHash)) {
+    preEditCheck(
+      'pre-edit artifact anchor hash matches expectation',
+      artifact.anchor_hash === expectedAnchorHash,
+      `artifact anchor_hash must be ${expectedAnchorHash}`,
+    );
+  }
+  if (hasNonEmptyStringArray(expectedAllowedFiles)) {
+    preEditCheck(
+      'pre-edit artifact allowed files match expectation',
+      sameStringArray(artifact.allowed_files, expectedAllowedFiles),
+      'artifact allowed_files drifted from the execution contract',
+    );
+  }
+  if (hasNonEmptyStringArray(expectedForbiddenFiles)) {
+    preEditCheck(
+      'pre-edit artifact forbidden files match expectation',
+      sameStringArray(artifact.forbidden_files, expectedForbiddenFiles),
+      'artifact forbidden_files drifted from the execution contract',
+    );
+  }
+  if (hasNonEmptyStringArray(expectedForbiddenActions)) {
+    preEditCheck(
+      'pre-edit artifact forbidden actions match expectation',
+      sameStringArray(artifact.forbidden_actions, expectedForbiddenActions),
+      'artifact forbidden_actions drifted from the execution contract',
+    );
+  }
+  if (hasNonEmptyStringArray(expectedRequiredGates)) {
+    preEditCheck(
+      'pre-edit artifact required gates match expectation',
+      sameStringArray(artifact.required_gates, expectedRequiredGates),
+      'artifact required_gates drifted from the execution contract',
+    );
+  }
+  if (nonEmptyString(expectedCommitMode)) {
+    preEditCheck(
+      'pre-edit artifact commit mode matches expectation',
+      artifact.commit_mode === expectedCommitMode,
+      `artifact commit_mode must be ${expectedCommitMode}`,
+    );
+  }
+
+  for (const [surfaceName, surface] of [
+    ['ledger', fixture.ledger],
+    ['thermometer metrics', fixture.thermometer_metrics],
+    ['closeout', fixture.closeout],
+  ]) {
+    preEditCheck(
+      `pre-edit artifact cited by ${surfaceName}`,
+      surfaceCitesRef(surface, artifactRef),
+      `${surfaceName} must cite ${artifactRef || 'the pre-edit artifact'}`,
+    );
+  }
+}
 
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
@@ -226,7 +419,11 @@ function applySpecEvent(eventIndex, event) {
 }
 
 function fail(name, detail) {
-  checks.push({ name, pass: false, detail: `${STOP_STATE}: ${detail}` });
+  checks.push({ name, pass: false, detail: `${LINEAR_STOP_STATE}: ${detail}` });
+}
+
+function preEditCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${PRE_EDIT_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -235,6 +432,48 @@ function isPlainObject(value) {
 
 function nonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function hasBaselineState(value) {
+  if (nonEmptyString(value)) return true;
+  return isPlainObject(value) && Object.keys(value).length > 0;
+}
+
+function hasNonEmptyStringArray(value) {
+  return Array.isArray(value) && value.length > 0 && value.every(nonEmptyString);
+}
+
+function sameStringArray(left, right) {
+  if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+  return left.every((value, index) => value === right[index]);
+}
+
+function preEditArtifactRef(event, artifact) {
+  return artifact?.path ?? artifact?.artifact_ref ?? artifact?.ref ?? event?.path ?? event?.artifact_ref ?? event?.ref ?? null;
+}
+
+function isPackageLocalArtifactRef(value) {
+  if (!nonEmptyString(value)) return false;
+  if (value.startsWith('/') || /^[A-Za-z]:[\\/]/.test(value)) return false;
+  return !value.split(/[\\/]+/).includes('..');
+}
+
+function surfaceCitesRef(surface, artifactRef) {
+  if (!isPackageLocalArtifactRef(artifactRef)) return false;
+  return collectStrings(surface).includes(artifactRef);
+}
+
+function collectStrings(value) {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap(collectStrings);
+  if (isPlainObject(value)) return Object.values(value).flatMap(collectStrings);
+  return [];
+}
+
+function requiresPreEditGate(value) {
+  return value.pre_edit_gate_required === true
+    || value.harness_contract === PRE_EDIT_CONTRACT
+    || value.contract === PRE_EDIT_CONTRACT;
 }
 
 function isPassStatus(value) {
