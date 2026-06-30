@@ -160,19 +160,19 @@ repair_count: 0
 audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-011
 failed_attempt_recovery_decision: not_applicable
-commit: no-commit-pre-edit-gate
-oracle_status: active
+commit: a8734f14
+oracle_status: PASS (visual evidence contract blocked unsupported artifact class, initial-only evidence, terminal-only evidence, unmapped screenshot state, active state without domain objects, and missing responsive evidence with NEEDS_VISUAL_EVIDENCE_CONTRACT; validate-walls GM12S11 fixtures fired and reverted)
 structural_method_id: gm-p0-harness-platform
 topology_decision: extend-source-wall-harness
 topology_decision_artifact: this-ledger
 structural_debt: none
 next_structural_constraint: preserve-visual-evidence-scene-coverage-contract
-topology_probe_result: pending
+topology_probe_result: PASS
 browser_metrics_contract: not_applicable
 visual_spatial_oracle: source-fixture-contract
 browser_attempt: not_applicable
-visual_evidence: pending
-runtime_smoke_oracle: pending
+visual_evidence: source-fixture-contract
+runtime_smoke_oracle: node src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs validates visual scene coverage contract
 adversary_objection: repaired
 shared_contract_extended: yes
 extension_point_proven: yes
@@ -182,5 +182,54 @@ auditor_distinct_from_operator: not_applicable
 auditor_rewrote_no_oracle: not_applicable
 audit_remutation: not_applicable
 distinct_refuters: not_applicable
-stop_state: active
-next_allowed_action: worker_attempt
+stop_state: ready_for_next_spec
+next_allowed_action: open_SPEC-012
+
+## Pre-Edit Gate - SPEC-012
+
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=Super-SPEC
+ANCHOR_PATH=docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p0-harness-orchestration-feedback-fidelity.md
+ANCHOR_HASH=1f99741c919726b2d088e038078e7931ab9c2a70
+TREE_ADVERSARY_STATUS=OBJECTIONS_REPAIRED
+DECLARED_UNITS=SPEC-001,SPEC-002,SPEC-003,SPEC-004,SPEC-005,SPEC-006,SPEC-007,SPEC-008,SPEC-009,SPEC-010,SPEC-011,SPEC-012,SPEC-013,SPEC-014,SPEC-015,SPEC-016,SPEC-017,SPEC-018,SPEC-019,SPEC-020,SPEC-021,SPEC-022,SPEC-023,SPEC-024
+FIRST_UNEXECUTED_UNIT=SPEC-012
+ACTIVE_SPEC=SPEC-012
+BASELINE_ONLY_COMMITS=cc4a8bbe,74c4bfc2,6d3862e8,78e4b64b,bbdac904,6de00ad6,f6a780f6,8aca2269,f4bfe82b,4370f155,f44df0cc,a8734f14
+LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-p0-harness-orchestration-feedback-fidelity-part-2.md
+MAY_EDIT=yes
+
+### SPEC-012 - Visual Semantic Gate
+
+spec_id: SPEC-012
+spec_version: source-anchor-1f99741c
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-012
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit-pre-edit-gate
+oracle_status: PASS (visual semantic gate blocked missing pixel floor, missing state metadata, missing expected objects, missing score/status, missing layout area, and missing interaction result with NEEDS_VISUAL_SEMANTIC_GATE; validate-walls GM12S12 fixtures fired and reverted)
+structural_method_id: gm-p0-harness-platform
+topology_decision: extend-source-wall-harness
+topology_decision_artifact: this-ledger
+structural_debt: none
+next_structural_constraint: preserve-visual-semantic-assertion-contract
+topology_probe_result: PASS
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: source-fixture-contract
+browser_attempt: not_applicable
+visual_evidence: source-fixture-contract
+runtime_smoke_oracle: node src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs validates visual semantic assertions
+adversary_objection: repaired
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: this-ledger
+api_lint_status: PASS
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: ready_for_next_spec
+next_allowed_action: open_SPEC-013

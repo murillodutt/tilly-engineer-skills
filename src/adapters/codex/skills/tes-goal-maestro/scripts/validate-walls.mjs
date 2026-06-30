@@ -58,6 +58,12 @@ const GM12_SPEC10_SOURCE_HASH = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 const GM12_SPEC11_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
 const GM12_SPEC11_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
 const GM12_SPEC11_DOMAIN_OBJECTS = ['board', 'score', 'selected card'];
+const GM12_SPEC12_CONTRACT = 'goal-maestro-p0-visual-semantic-gate';
+const GM12_SPEC12_STOP_STATE = 'NEEDS_VISUAL_SEMANTIC_GATE';
+const GM12_SPEC12_EXPECTED_OBJECTS = ['board', 'score', 'selected card'];
+const GM12_SPEC12_SCORE_STATUS = ['score 12', 'active'];
+const GM12_SPEC12_LAYOUT_AREAS = ['game board area', 'score panel'];
+const GM12_SPEC12_INTERACTION_RESULTS = ['card selected'];
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -377,6 +383,34 @@ function gm12Spec11MissingResponsiveArgs() {
 
 function gm12Spec11RevertArgs() {
   return [fixture('gm12-spec11-visual-evidence-ok.json', JSON.stringify(gm12Spec11Fixture('valid')))];
+}
+
+function gm12Spec12MissingPixelFloorArgs() {
+  return [fixture('gm12-spec12-visual-semantic-missing-pixel-floor.json', JSON.stringify(gm12Spec12Fixture('missing_pixel_floor')))];
+}
+
+function gm12Spec12MissingStateMetadataArgs() {
+  return [fixture('gm12-spec12-visual-semantic-missing-state-metadata.json', JSON.stringify(gm12Spec12Fixture('missing_state_metadata')))];
+}
+
+function gm12Spec12MissingObjectsArgs() {
+  return [fixture('gm12-spec12-visual-semantic-missing-objects.json', JSON.stringify(gm12Spec12Fixture('missing_objects')))];
+}
+
+function gm12Spec12MissingScoreStatusArgs() {
+  return [fixture('gm12-spec12-visual-semantic-missing-score-status.json', JSON.stringify(gm12Spec12Fixture('missing_score_status')))];
+}
+
+function gm12Spec12MissingLayoutAreaArgs() {
+  return [fixture('gm12-spec12-visual-semantic-missing-layout-area.json', JSON.stringify(gm12Spec12Fixture('missing_layout_area')))];
+}
+
+function gm12Spec12MissingInteractionResultArgs() {
+  return [fixture('gm12-spec12-visual-semantic-missing-interaction-result.json', JSON.stringify(gm12Spec12Fixture('missing_interaction_result')))];
+}
+
+function gm12Spec12RevertArgs() {
+  return [fixture('gm12-spec12-visual-semantic-ok.json', JSON.stringify(gm12Spec12Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1060,6 +1094,86 @@ function gm12Spec11VisualEvidence(mode) {
   return [initial, active, terminal, mobileActive];
 }
 
+function gm12Spec12Fixture(mode) {
+  const base = gm12Spec11Fixture('valid');
+  const visual_evidence = gm12Spec12VisualEvidence(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC12_CONTRACT,
+    visual_semantic_gate_required: true,
+    visual_semantic_expectations: {
+      stop_state: GM12_SPEC12_STOP_STATE,
+      artifact_class: 'rendered_app',
+      expected_state: 'active',
+      expected_objects: GM12_SPEC12_EXPECTED_OBJECTS,
+      expected_score_status: GM12_SPEC12_SCORE_STATUS,
+      expected_layout_area: GM12_SPEC12_LAYOUT_AREAS,
+      expected_interaction_result: GM12_SPEC12_INTERACTION_RESULTS,
+    },
+    source_artifact: {
+      artifact_class: 'rendered_app',
+      asks_for_responsive_behavior: true,
+    },
+    visual_evidence,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      visual_evidence,
+    },
+    closeout: {
+      ...base.closeout,
+      visual_evidence: {
+        status: mode === 'valid' ? 'complete' : 'claimed_complete_by_mutation',
+        screenshot_refs: visual_evidence.map((item) => item.ref),
+      },
+    },
+  };
+}
+
+function gm12Spec12VisualEvidence(mode) {
+  const [initial, spec11Active, terminal, mobileActive] = gm12Spec11VisualEvidence('valid');
+  const active = {
+    ...spec11Active,
+    ref: 'screenshots/spec-012-active.png',
+    artifact_class: 'rendered_app',
+    pixel_non_degenerate: true,
+    state_metadata: ['active'],
+    visible_object_classes: GM12_SPEC12_EXPECTED_OBJECTS,
+    score_status: GM12_SPEC12_SCORE_STATUS,
+    layout_areas: GM12_SPEC12_LAYOUT_AREAS,
+    interaction_results: GM12_SPEC12_INTERACTION_RESULTS,
+    semantic_assertions: {
+      pixel_non_degenerate: true,
+      state_label: 'active',
+      visible_object_classes: GM12_SPEC12_EXPECTED_OBJECTS,
+      score_status: GM12_SPEC12_SCORE_STATUS,
+      layout_area: GM12_SPEC12_LAYOUT_AREAS,
+      interaction_result: GM12_SPEC12_INTERACTION_RESULTS,
+    },
+  };
+  const responsive = { ...mobileActive, ref: 'screenshots/spec-012-mobile-active.png' };
+
+  if (mode === 'missing_pixel_floor') {
+    return [initial, { ...active, pixel_non_degenerate: false, semantic_assertions: { ...active.semantic_assertions, pixel_non_degenerate: false } }, terminal, responsive];
+  }
+  if (mode === 'missing_state_metadata') {
+    const { state_metadata, semantic_assertions, ...withoutStateMetadata } = active;
+    return [initial, { ...withoutStateMetadata, semantic_assertions: { ...semantic_assertions, state_label: 'idle' } }, terminal, responsive];
+  }
+  if (mode === 'missing_objects') {
+    return [initial, { ...active, visible_object_classes: ['background'], semantic_assertions: { ...active.semantic_assertions, visible_object_classes: ['background'] } }, terminal, responsive];
+  }
+  if (mode === 'missing_score_status') {
+    return [initial, { ...active, score_status: ['pending'], semantic_assertions: { ...active.semantic_assertions, score_status: ['pending'] } }, terminal, responsive];
+  }
+  if (mode === 'missing_layout_area') {
+    return [initial, { ...active, layout_areas: ['footer'], semantic_assertions: { ...active.semantic_assertions, layout_area: ['footer'] } }, terminal, responsive];
+  }
+  if (mode === 'missing_interaction_result') {
+    return [initial, { ...active, interaction_results: ['no interaction'], semantic_assertions: { ...active.semantic_assertions, interaction_result: ['no interaction'] } }, terminal, responsive];
+  }
+  return [initial, active, terminal, responsive];
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -1734,6 +1848,43 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec11MissingResponsiveArgs,
     revert: gm12Spec11RevertArgs,
+  },
+  // GM12S12 — SPEC-012 requires semantic proof, not only non-blank screenshots.
+  {
+    id: 'GM12S12 goal-maestro-p0-visual-semantic-pixel-floor',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec12MissingPixelFloorArgs,
+    revert: gm12Spec12RevertArgs,
+  },
+  {
+    id: 'GM12S12 goal-maestro-p0-visual-semantic-state-metadata',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec12MissingStateMetadataArgs,
+    revert: gm12Spec12RevertArgs,
+  },
+  {
+    id: 'GM12S12 goal-maestro-p0-visual-semantic-objects',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec12MissingObjectsArgs,
+    revert: gm12Spec12RevertArgs,
+  },
+  {
+    id: 'GM12S12 goal-maestro-p0-visual-semantic-score-status',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec12MissingScoreStatusArgs,
+    revert: gm12Spec12RevertArgs,
+  },
+  {
+    id: 'GM12S12 goal-maestro-p0-visual-semantic-layout-area',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec12MissingLayoutAreaArgs,
+    revert: gm12Spec12RevertArgs,
+  },
+  {
+    id: 'GM12S12 goal-maestro-p0-visual-semantic-interaction-result',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec12MissingInteractionResultArgs,
+    revert: gm12Spec12RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

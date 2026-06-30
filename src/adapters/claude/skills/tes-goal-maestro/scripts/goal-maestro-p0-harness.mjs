@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -19,6 +19,8 @@
 // with report_identity_required:true.
 // SPEC-011 fixtures opt into visual evidence scene coverage validation with
 // visual_evidence_contract_required:true.
+// SPEC-012 fixtures opt into semantic visual proof validation with
+// visual_semantic_gate_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -35,6 +37,7 @@ const REPORT_COHERENCE_STOP_STATE = 'NEEDS_REPORT_COHERENCE';
 const PACKAGE_HIERARCHY_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
 const REPORT_IDENTITY_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
 const VISUAL_EVIDENCE_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
+const VISUAL_SEMANTIC_STOP_STATE = 'NEEDS_VISUAL_SEMANTIC_GATE';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -45,6 +48,7 @@ const REPORT_COHERENCE_CONTRACT = 'goal-maestro-p0-report-coherence';
 const PACKAGE_HIERARCHY_CONTRACT = 'goal-maestro-p0-package-hierarchy';
 const REPORT_IDENTITY_CONTRACT = 'goal-maestro-p0-report-identity';
 const VISUAL_EVIDENCE_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
+const VISUAL_SEMANTIC_CONTRACT = 'goal-maestro-p0-visual-semantic-gate';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -53,6 +57,7 @@ const REPORT_COHERENCE_FIELDS = ['spec_ids', 'final_status', 'report_status', 's
 const PACKAGE_HIERARCHY_STATUSES = new Set(['latest', 'superseded', 'historical']);
 const KNOWN_ADAPTERS = new Set(['codex', 'claude', 'cursor']);
 const VISUAL_ARTIFACT_CLASSES = new Set(['ui', 'browser', 'rendered_app', 'interactive_rendered', 'static_rendered']);
+const RENDERED_VISUAL_ARTIFACT_CLASSES = new Set(['rendered_app', 'interactive_rendered', 'static_rendered']);
 const INTERACTIVE_VISUAL_ARTIFACT_CLASSES = new Set(['browser', 'rendered_app', 'interactive_rendered']);
 const INTERACTIVE_VISUAL_STATES = ['initial', 'active', 'terminal'];
 const EVENT_TYPES = new Set([
@@ -112,6 +117,8 @@ const reportCoherenceRequired = requiresReportCoherenceGate(fixture);
 const packageHierarchyRequired = requiresPackageHierarchyGate(fixture);
 const reportIdentityRequired = requiresReportIdentityGate(fixture);
 const visualEvidenceContractRequired = requiresVisualEvidenceContract(fixture);
+const visualSemanticGateRequired = requiresVisualSemanticGate(fixture);
+const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -255,11 +262,16 @@ if (packageHierarchyRequired) {
 if (reportIdentityRequired) {
   addReportIdentityChecks();
 }
-if (visualEvidenceContractRequired) {
+if (visualEvidenceChecksRequired) {
   addVisualEvidenceContractChecks();
 }
+if (visualSemanticGateRequired) {
+  addVisualSemanticGateChecks();
+}
 
-const harnessTitle = visualEvidenceContractRequired
+const harnessTitle = visualSemanticGateRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012 goal-maestro-p0-visual-semantic-gate (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE})`
+  : visualEvidenceContractRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011 goal-maestro-p0-visual-evidence-contract (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE})`
   : reportIdentityRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010 goal-maestro-p0-report-identity (${LINEAR_STOP_STATE}/${REPORT_IDENTITY_STOP_STATE})`
@@ -1151,6 +1163,97 @@ function addVisualEvidenceContractChecks() {
   }
 }
 
+function addVisualSemanticGateChecks() {
+  const expected = { ...visualEvidenceExpectationsFromFixture(fixture), ...visualSemanticExpectationsFromFixture(fixture) };
+  const artifactClass = visualArtifactClassFromFixture(fixture, expected);
+  const expectedState = visualSemanticExpectedState(expected);
+  const expectedObjects = visualSemanticRequiredObjects(expected);
+  const expectedScoreStatus = visualSemanticScoreStatusExpectations(expected);
+  const expectedLayoutAreas = visualSemanticLayoutAreaExpectations(expected);
+  const expectedInteractionResults = visualSemanticInteractionResultExpectations(expected);
+  const screenshots = visualEvidenceItemsFromFixture(fixture).filter(isVisualScreenshotEvidence);
+  const expectedStateScreenshots = screenshots.filter((item) => visualEvidenceState(item) === expectedState);
+  const pixelFloorProofs = expectedStateScreenshots.filter(isPixelNonDegenerateEvidence);
+  const stateMetadataProofs = expectedStateScreenshots.filter((item) => visualEvidenceHasStateMetadata(item, expectedState));
+  const objectProofs = expectedStateScreenshots.filter((item) => semanticListContainsAll(visualEvidenceVisibleObjects(item), expectedObjects));
+  const scoreStatusProofs = expectedStateScreenshots.filter((item) => semanticListContainsAll(visualEvidenceScoreStatuses(item), expectedScoreStatus));
+  const layoutProofs = expectedStateScreenshots.filter((item) => semanticListContainsAll(visualEvidenceLayoutAreas(item), expectedLayoutAreas));
+  const interactionProofs = expectedStateScreenshots.filter((item) => semanticListContainsAll(visualEvidenceInteractionResults(item), expectedInteractionResults));
+
+  visualSemanticCheck(
+    'visual semantic artifact class is supported',
+    VISUAL_ARTIFACT_CLASSES.has(artifactClass),
+    `unsupported visual semantic artifact_class ${artifactClass ?? 'missing'}`,
+  );
+  visualSemanticCheck(
+    'visual semantic expected state is declared',
+    nonEmptyString(expectedState),
+    'visual semantic gate requires expected_state or required_state',
+  );
+  visualSemanticCheck(
+    'visual semantic expected objects are declared',
+    expectedObjects.length > 0,
+    'visual semantic gate requires expected object classes',
+  );
+  visualSemanticCheck(
+    'visual semantic score/status is declared',
+    expectedScoreStatus.length > 0,
+    'visual semantic gate requires score/status expectation',
+  );
+  visualSemanticCheck(
+    'visual semantic layout area is declared',
+    expectedLayoutAreas.length > 0,
+    'visual semantic gate requires layout area expectation',
+  );
+  visualSemanticCheck(
+    'visual semantic interaction result is declared',
+    expectedInteractionResults.length > 0,
+    'visual semantic gate requires interaction result expectation',
+  );
+  visualSemanticCheck(
+    'expected-state screenshot is present',
+    expectedStateScreenshots.length > 0,
+    `no screenshot proves expected visual state ${expectedState ?? 'missing'}`,
+  );
+  visualSemanticCheck(
+    'pixel non-degeneracy floor passes for expected state',
+    pixelFloorProofs.length > 0,
+    'expected-state screenshot must prove non-blank/non-degenerate pixels before semantic proof counts',
+  );
+  visualSemanticCheck(
+    'expected state metadata is present',
+    stateMetadataProofs.length > 0,
+    'expected-state screenshot lacks matching state metadata',
+  );
+  visualSemanticCheck(
+    'expected objects are visible in expected state',
+    objectProofs.length > 0,
+    `expected object classes not visible in ${expectedState ?? 'expected'} state: ${formatValues(expectedObjects)}`,
+  );
+  if (RENDERED_VISUAL_ARTIFACT_CLASSES.has(artifactClass)) {
+    visualSemanticCheck(
+      'rendered expected object classes are visible in expected state',
+      objectProofs.length > 0,
+      `rendered artifact lacks visible object classes in ${expectedState ?? 'expected'} state`,
+    );
+  }
+  visualSemanticCheck(
+    'score/status matches expected state',
+    scoreStatusProofs.length > 0,
+    `expected score/status not proven in ${expectedState ?? 'expected'} state: ${formatValues(expectedScoreStatus)}`,
+  );
+  visualSemanticCheck(
+    'layout area matches expected state',
+    layoutProofs.length > 0,
+    `expected layout area not proven in ${expectedState ?? 'expected'} state: ${formatValues(expectedLayoutAreas)}`,
+  );
+  visualSemanticCheck(
+    'interaction result matches expected state',
+    interactionProofs.length > 0,
+    `expected interaction result not proven in ${expectedState ?? 'expected'} state: ${formatValues(expectedInteractionResults)}`,
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1292,6 +1395,10 @@ function reportIdentityCheck(name, pass, detail) {
 
 function visualEvidenceCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${VISUAL_EVIDENCE_STOP_STATE}: ${detail}` });
+}
+
+function visualSemanticCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${VISUAL_SEMANTIC_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1458,6 +1565,13 @@ function requiresVisualEvidenceContract(value) {
     || value.contract === VISUAL_EVIDENCE_CONTRACT;
 }
 
+function requiresVisualSemanticGate(value) {
+  return value.visual_semantic_gate_required === true
+    || value.visual_semantic_required === true
+    || value.harness_contract === VISUAL_SEMANTIC_CONTRACT
+    || value.contract === VISUAL_SEMANTIC_CONTRACT;
+}
+
 function acceptedBoundedRepairUnitIds(value) {
   const acceptedUnits = [
     ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
@@ -1536,6 +1650,17 @@ function visualEvidenceExpectationsFromFixture(value) {
   const contract = isPlainObject(value.visual_evidence_contract) ? value.visual_evidence_contract : {};
   const expectations = isPlainObject(value.visual_evidence_expectations) ? value.visual_evidence_expectations : {};
   return { ...contract, ...expectations };
+}
+
+function visualSemanticExpectationsFromFixture(value) {
+  const contract = isPlainObject(value.visual_semantic_contract) ? value.visual_semantic_contract : {};
+  const gate = isPlainObject(value.visual_semantic_gate) ? value.visual_semantic_gate : {};
+  const expectations = isPlainObject(value.visual_semantic_expectations) ? value.visual_semantic_expectations : {};
+  const combined = { ...contract, ...gate, ...expectations };
+  const artifactClass = visualArtifactClassFromFixture(value, combined);
+  const classProfiles = isPlainObject(combined.artifact_classes) ? combined.artifact_classes : {};
+  const classProfile = artifactClass && isPlainObject(classProfiles[artifactClass]) ? classProfiles[artifactClass] : {};
+  return { ...combined, ...classProfile };
 }
 
 function visualEvidenceItemsFromFixture(value) {
@@ -1656,6 +1781,160 @@ function visualEvidenceDomainObjects(item) {
   return [];
 }
 
+function visualSemanticExpectedState(expected) {
+  return normalizeVisualState(firstNonEmptyString(
+    expected.expected_state,
+    expected.required_state,
+    expected.state_label,
+    expected.state,
+  ));
+}
+
+function visualSemanticRequiredObjects(expected) {
+  return semanticStringListFromCandidates(
+    expected.expected_objects,
+    expected.required_objects,
+    expected.expected_object_classes,
+    expected.required_object_classes,
+    expected.object_classes,
+    expected.scene_objects,
+    expected.required_scene_objects,
+  );
+}
+
+function visualSemanticScoreStatusExpectations(expected) {
+  return semanticStringListFromCandidates(
+    expected.expected_score_status,
+    expected.score_status,
+    expected.expected_status,
+    expected.status_label,
+    expected.score_label,
+    expected.status,
+    expected.score,
+  );
+}
+
+function visualSemanticLayoutAreaExpectations(expected) {
+  return semanticStringListFromCandidates(
+    expected.expected_layout_area,
+    expected.layout_area,
+    expected.layout_areas,
+    expected.layout_region,
+    expected.layout_regions,
+  );
+}
+
+function visualSemanticInteractionResultExpectations(expected) {
+  return semanticStringListFromCandidates(
+    expected.expected_interaction_result,
+    expected.interaction_result,
+    expected.interaction_results,
+    expected.result_after_interaction,
+  );
+}
+
+function isPixelNonDegenerateEvidence(item) {
+  const pixelMetrics = isPlainObject(item.pixel_metrics) ? item.pixel_metrics : {};
+  const metrics = isPlainObject(item.metrics) ? item.metrics : {};
+  const assertions = isPlainObject(item.assertions) ? item.assertions : {};
+  const semanticAssertions = isPlainObject(item.semantic_assertions) ? item.semantic_assertions : {};
+  return item.pixel_non_degenerate === true
+    || item.non_blank === true
+    || item.nonblank === true
+    || item.pixel_floor_passed === true
+    || item.non_degenerate_pixels === true
+    || pixelMetrics.non_degenerate === true
+    || pixelMetrics.non_blank === true
+    || metrics.pixel_non_degenerate === true
+    || metrics.non_blank === true
+    || assertions.pixel_non_degenerate === true
+    || semanticAssertions.pixel_non_degenerate === true;
+}
+
+function visualEvidenceHasStateMetadata(item, expectedState) {
+  if (!nonEmptyString(expectedState)) return false;
+  const values = semanticStringListFromCandidates(
+    item.state_metadata,
+    item.semantic_state_metadata,
+    item.state_label,
+    item.semantic_state,
+    item.metadata?.state,
+    item.metadata?.state_label,
+    item.assertions?.state_label,
+    item.assertions?.state_metadata,
+    item.semantic_assertions?.state_label,
+    item.semantic_assertions?.state_metadata,
+  );
+  return values.includes(normalizeSemanticValue(expectedState));
+}
+
+function visualEvidenceVisibleObjects(item) {
+  return semanticStringListFromCandidates(
+    item.visible_objects,
+    item.visible_object_classes,
+    item.detected_objects,
+    item.detected_object_classes,
+    item.object_classes_visible,
+    item.scene_objects_visible,
+    item.assertions?.visible_objects,
+    item.assertions?.visible_object_classes,
+    item.semantic_assertions?.visible_objects,
+    item.semantic_assertions?.visible_object_classes,
+    item.semantic_assertions?.detected_objects,
+    item.proves?.visible_objects,
+    item.proves?.object_classes,
+  );
+}
+
+function visualEvidenceScoreStatuses(item) {
+  return semanticStringListFromCandidates(
+    item.expected_score_status,
+    item.score_status,
+    item.status_label,
+    item.score_label,
+    item.status,
+    item.score,
+    item.metadata?.score_status,
+    item.metadata?.status,
+    item.metadata?.score,
+    item.assertions?.score_status,
+    item.assertions?.status,
+    item.assertions?.score,
+    item.semantic_assertions?.score_status,
+    item.semantic_assertions?.status,
+    item.semantic_assertions?.score,
+  );
+}
+
+function visualEvidenceLayoutAreas(item) {
+  return semanticStringListFromCandidates(
+    item.layout_area,
+    item.layout_areas,
+    item.layout_region,
+    item.layout_regions,
+    item.bounding_area,
+    item.metadata?.layout_area,
+    item.metadata?.layout_region,
+    item.assertions?.layout_area,
+    item.assertions?.layout_region,
+    item.semantic_assertions?.layout_area,
+    item.semantic_assertions?.layout_region,
+  );
+}
+
+function visualEvidenceInteractionResults(item) {
+  return semanticStringListFromCandidates(
+    item.interaction_result,
+    item.interaction_results,
+    item.result_after_interaction,
+    item.metadata?.interaction_result,
+    item.assertions?.interaction_result,
+    item.assertions?.result_after_interaction,
+    item.semantic_assertions?.interaction_result,
+    item.semantic_assertions?.result_after_interaction,
+  );
+}
+
 function isMobileResponsiveEvidence(item) {
   if (!isPlainObject(item)) return false;
   const viewport = firstNonEmptyString(item.viewport, item.viewport_class, item.device, item.breakpoint);
@@ -1670,6 +1949,29 @@ function isMobileResponsiveEvidence(item) {
 function formatVisualEvidenceRefs(items) {
   const refs = items.map((item) => firstNonEmptyString(item.ref, item.path, item.screenshot_ref, item.image_ref, item.id)).filter(nonEmptyString);
   return formatValues(refs);
+}
+
+function semanticListContainsAll(actual, expected) {
+  if (!Array.isArray(expected) || expected.length === 0) return false;
+  const actualSet = new Set((Array.isArray(actual) ? actual : []).map(normalizeSemanticValue).filter(nonEmptyString));
+  return expected.every((value) => actualSet.has(normalizeSemanticValue(value)));
+}
+
+function semanticStringListFromCandidates(...values) {
+  return uniqueStrings(values.flatMap(semanticStringsFromValue).map(normalizeSemanticValue));
+}
+
+function semanticStringsFromValue(value) {
+  if (typeof value === 'string') return [value];
+  if (typeof value === 'number' && Number.isFinite(value)) return [String(value)];
+  if (Array.isArray(value)) return value.flatMap(semanticStringsFromValue);
+  if (isPlainObject(value)) return Object.values(value).flatMap(semanticStringsFromValue);
+  return [];
+}
+
+function normalizeSemanticValue(value) {
+  if (!nonEmptyString(String(value ?? ''))) return null;
+  return String(value).trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
 }
 
 function stringListFromValue(value) {
