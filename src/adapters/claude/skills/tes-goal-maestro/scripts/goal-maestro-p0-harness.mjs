@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -33,6 +33,8 @@
 // evidence_tracking_classification_required:true.
 // SPEC-018 fixtures opt into Flash-Fry operational status validation with
 // flash_fry_operational_status_required:true.
+// SPEC-019 fixtures opt into lens ledger validation with
+// lens_ledger_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -56,6 +58,7 @@ const COMMIT_ENFORCEMENT_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
 const GIT_ADMISSION_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
 const EVIDENCE_TRACKING_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
 const FLASH_FRY_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
+const LENS_LEDGER_STOP_STATE = 'NEEDS_LENS_LEDGER';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -73,6 +76,7 @@ const COMMIT_ENFORCEMENT_CONTRACT = 'goal-maestro-p0-commit-enforcement-classifi
 const GIT_ADMISSION_CONTRACT = 'goal-maestro-p0-git-admission-gate';
 const EVIDENCE_TRACKING_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
 const FLASH_FRY_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
+const LENS_LEDGER_CONTRACT = 'goal-maestro-p0-lens-ledger';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -90,6 +94,8 @@ const REQUIRED_EVIDENCE_TRACKING_CLASSES = ['ledger', 'screenshots', 'metrics', 
 const EVIDENCE_TRACKING_CLASSIFICATIONS = new Set(['tracked', 'runtime_only', 'ignored', 'intentionally_untracked']);
 const UNTRACKED_EVIDENCE_CLASSIFICATIONS = new Set(['runtime_only', 'ignored', 'intentionally_untracked']);
 const FLASH_FRY_STATUSES = new Set(['ran', 'not_required', 'not_configured', 'blocked']);
+const REQUIRED_LENS_LEDGER_LENSES = ['document', 'product', 'architecture', 'runtime', 'visual', 'security', 'performance', 'evidence', 'adversarial', 'cost', 'dx', 'delivery'];
+const LENS_LEDGER_CLASSIFICATIONS = new Set(['applied', 'not_required', 'blocked']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -154,6 +160,7 @@ const commitEnforcementRequired = requiresCommitEnforcementClassification(fixtur
 const gitAdmissionRequired = requiresGitAdmissionGate(fixture);
 const evidenceTrackingRequired = requiresEvidenceTrackingClassification(fixture);
 const flashFryRequired = requiresFlashFryOperationalStatus(fixture);
+const lensLedgerRequired = requiresLensLedger(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -322,8 +329,13 @@ if (evidenceTrackingRequired) {
 if (flashFryRequired) {
   addFlashFryOperationalStatusChecks();
 }
+if (lensLedgerRequired) {
+  addLensLedgerChecks();
+}
 
-const harnessTitle = flashFryRequired
+const harnessTitle = lensLedgerRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019 goal-maestro-p0-lens-ledger (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE})`
+  : flashFryRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018 goal-maestro-p0-flash-fry-operational-status (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE})`
   : evidenceTrackingRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017 goal-maestro-p0-evidence-tracking-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE})`
@@ -1676,6 +1688,52 @@ function addFlashFryOperationalStatusChecks() {
   }
 }
 
+function addLensLedgerChecks() {
+  const lensLedger = lensLedgerFromFixture(fixture);
+  const entries = lensLedgerEntries(lensLedger);
+  const entriesByLens = lensLedgerEntriesByLens(entries);
+  const missingLenses = REQUIRED_LENS_LEDGER_LENSES.filter((lens) => {
+    return !LENS_LEDGER_CLASSIFICATIONS.has(entriesByLens.get(lens)?.classification);
+  });
+  const invalidEntries = entries.filter((entry) => {
+    const classification = normalizeLensLedgerClassification(lensLedgerClassificationFromEntry(entry));
+    return nonEmptyString(classification) && !LENS_LEDGER_CLASSIFICATIONS.has(classification);
+  });
+  const missingImpacts = REQUIRED_LENS_LEDGER_LENSES.filter((lens) => {
+    const impact = entriesByLens.get(lens)?.impact;
+    return !isOneLineImpact(impact);
+  });
+  const reportSurfaces = lensLedgerReportSurfaces(fixture, lensLedger);
+  const scoreCitations = reportSurfaces.flatMap(lensScoreCitationsFromSurface);
+  const evidenceRefs = lensLedgerEvidenceRefs(lensLedger, entries);
+
+  lensLedgerCheck(
+    'lens ledger is present',
+    hasNonEmptyObject(lensLedger),
+    'lens ledger or lens section is required',
+  );
+  lensLedgerCheck(
+    'required lenses are classified',
+    missingLenses.length === 0,
+    `missing lens classifications for ${formatValues(missingLenses)}`,
+  );
+  lensLedgerCheck(
+    'lens classifications are valid',
+    invalidEntries.length === 0,
+    `invalid lens classifications on ${formatLensRefs(invalidEntries)}`,
+  );
+  lensLedgerCheck(
+    'lens impacts are one-line statements',
+    missingImpacts.length === 0,
+    `missing one-line impact for ${formatValues(missingImpacts)}`,
+  );
+  lensLedgerCheck(
+    'proof or protection score lens citations have evidence',
+    scoreCitations.length === 0 || evidenceRefs.length > 0,
+    'proof or protection score cites lenses without lens evidence',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1845,6 +1903,10 @@ function evidenceTrackingCheck(name, pass, detail) {
 
 function flashFryCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${FLASH_FRY_STOP_STATE}: ${detail}` });
+}
+
+function lensLedgerCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${LENS_LEDGER_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -2058,6 +2120,13 @@ function requiresFlashFryOperationalStatus(value) {
     || value.flash_fry_status_required === true
     || value.harness_contract === FLASH_FRY_CONTRACT
     || value.contract === FLASH_FRY_CONTRACT;
+}
+
+function requiresLensLedger(value) {
+  return value.lens_ledger_required === true
+    || value.lenses_required === true
+    || value.harness_contract === LENS_LEDGER_CONTRACT
+    || value.contract === LENS_LEDGER_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -3305,6 +3374,131 @@ function flashFryProtectionScoreAdjusted(value) {
     || value.score_adjusted === true
     || isPlainObject(value.protection_score_adjustment)
     || isPlainObject(value.score_adjustment);
+}
+
+function lensLedgerFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.lens_ledger,
+    value.lenses,
+    value.lens_section,
+    metrics.lens_ledger,
+    metrics.lenses,
+    metrics.lens_section,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return hasLensLedgerShape(value) ? value : {};
+}
+
+function hasLensLedgerShape(value) {
+  return isPlainObject(value) && (
+    Array.isArray(value.lenses)
+    || Array.isArray(value.lens_entries)
+    || isPlainObject(value.classifications)
+  );
+}
+
+function lensLedgerEntries(value) {
+  const entries = [
+    ...arrayOfPlainObjects(value.lenses),
+    ...arrayOfPlainObjects(value.lens_entries),
+    ...arrayOfPlainObjects(value.entries),
+  ];
+  if (isPlainObject(value.classifications)) {
+    for (const [lens, classification] of Object.entries(value.classifications)) {
+      entries.push({ lens, classification, impact: value.impacts?.[lens], evidence_ref: value.evidence_refs?.[lens] });
+    }
+  }
+  return entries;
+}
+
+function lensLedgerEntriesByLens(entries) {
+  const byLens = new Map();
+  for (const entry of entries) {
+    const lens = normalizeLensName(lensNameFromEntry(entry));
+    const classification = normalizeLensLedgerClassification(lensLedgerClassificationFromEntry(entry));
+    const impact = firstNonEmptyString(entry.impact, entry.one_line_impact, entry.effect);
+    if (!nonEmptyString(lens)) continue;
+    if (!byLens.has(lens)) {
+      byLens.set(lens, { entry, classification, impact });
+    }
+  }
+  return byLens;
+}
+
+function lensNameFromEntry(value) {
+  return firstNonEmptyString(value.lens, value.name, value.id, value.axis, value.type);
+}
+
+function normalizeLensName(value) {
+  const lens = normalizeSemanticValue(value);
+  if (lens === 'developer experience') return 'dx';
+  return lens;
+}
+
+function lensLedgerClassificationFromEntry(value) {
+  return firstNonEmptyString(value.classification, value.status, value.state);
+}
+
+function normalizeLensLedgerClassification(value) {
+  const classification = normalizeSemanticValue(value);
+  if (classification === 'applied') return 'applied';
+  if (['not required', 'not applicable', 'not needed'].includes(classification)) return 'not_required';
+  if (classification === 'blocked') return 'blocked';
+  return classification;
+}
+
+function isOneLineImpact(value) {
+  return nonEmptyString(value) && !String(value).includes('\n');
+}
+
+function lensLedgerEvidenceRefs(lensLedger, entries) {
+  const refs = [
+    lensLedger.evidence_ref,
+    lensLedger.artifact_ref,
+    lensLedger.section_ref,
+  ].filter(nonEmptyString);
+  for (const entry of entries) {
+    const ref = firstNonEmptyString(entry.evidence_ref, entry.ref, entry.artifact_ref, entry.section_ref);
+    if (nonEmptyString(ref)) refs.push(ref);
+  }
+  return refs;
+}
+
+function lensLedgerReportSurfaces(value, lensLedger) {
+  const metrics = thermometerMetricsFromFixture(value);
+  return [
+    lensLedger,
+    value.report,
+    value.closeout,
+    value.thermometer_report,
+    metrics.report,
+    metrics.closeout,
+    metrics.lens_ledger,
+  ].filter(isPlainObject);
+}
+
+function lensScoreCitationsFromSurface(surface) {
+  const citations = [];
+  for (const score of [surface.protection_score, surface.proof_score, surface.score].filter(isPlainObject)) {
+    citations.push(...stringListFromValue(score.lenses));
+    citations.push(...stringListFromValue(score.lens_refs));
+  }
+  citations.push(...stringListFromValue(surface.lenses_used));
+  citations.push(...stringListFromValue(surface.lens_refs));
+  for (const value of collectStrings(surface).map(normalizeSemanticValue).filter(nonEmptyString)) {
+    if ((value.includes('proof score') || value.includes('protection score')) && value.includes('lens')) {
+      citations.push(value);
+    }
+  }
+  return citations.filter(nonEmptyString);
+}
+
+function formatLensRefs(items) {
+  const refs = items.map((item) => firstNonEmptyString(item.lens, item.name, item.id, item.axis, item.type)).filter(nonEmptyString);
+  return formatValues(refs);
 }
 
 function isMobileResponsiveEvidence(item) {

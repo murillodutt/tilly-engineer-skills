@@ -1,4 +1,4 @@
-// SPEC-018 — Mutation suite for executable wall fixtures.
+// SPEC-019 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -79,6 +79,9 @@ const GM12_SPEC17_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
 const GM12_SPEC17_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
 const GM12_SPEC18_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
 const GM12_SPEC18_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
+const GM12_SPEC19_CONTRACT = 'goal-maestro-p0-lens-ledger';
+const GM12_SPEC19_STOP_STATE = 'NEEDS_LENS_LEDGER';
+const GM12_SPEC19_LENSES = ['document', 'product', 'architecture', 'runtime', 'visual', 'security', 'performance', 'evidence', 'adversarial', 'cost', 'dx', 'delivery'];
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -574,6 +577,30 @@ function gm12Spec18NotConfiguredAdjustedArgs() {
 
 function gm12Spec18RevertArgs() {
   return [fixture('gm12-spec18-flash-fry-ok.json', JSON.stringify(gm12Spec18Fixture('valid')))];
+}
+
+function gm12Spec19MissingLedgerArgs() {
+  return [fixture('gm12-spec19-lens-ledger-missing.json', JSON.stringify(gm12Spec19Fixture('missing_ledger')))];
+}
+
+function gm12Spec19MissingLensArgs() {
+  return [fixture('gm12-spec19-lens-ledger-missing-lens.json', JSON.stringify(gm12Spec19Fixture('missing_lens')))];
+}
+
+function gm12Spec19MissingImpactArgs() {
+  return [fixture('gm12-spec19-lens-ledger-missing-impact.json', JSON.stringify(gm12Spec19Fixture('missing_impact')))];
+}
+
+function gm12Spec19ScoreWithoutEvidenceArgs() {
+  return [fixture('gm12-spec19-lens-ledger-score-without-evidence.json', JSON.stringify(gm12Spec19Fixture('score_without_evidence')))];
+}
+
+function gm12Spec19ScoreWithEvidenceArgs() {
+  return [fixture('gm12-spec19-lens-ledger-score-with-evidence.json', JSON.stringify(gm12Spec19Fixture('score_with_evidence')))];
+}
+
+function gm12Spec19RevertArgs() {
+  return [fixture('gm12-spec19-lens-ledger-ok.json', JSON.stringify(gm12Spec19Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1783,6 +1810,64 @@ function gm12Spec18Closeout(closeout, mode, flashFry) {
   };
 }
 
+function gm12Spec19Fixture(mode) {
+  const base = gm12Spec18Fixture('valid');
+  const lensLedger = gm12Spec19LensLedger(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC19_CONTRACT,
+    lens_ledger_required: true,
+    lens_ledger: lensLedger,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      lens_ledger: lensLedger,
+    },
+    closeout: gm12Spec19Closeout(base.closeout, mode, lensLedger),
+  };
+}
+
+function gm12Spec19LensLedger(mode) {
+  if (mode === 'missing_ledger') return {};
+  const lenses = GM12_SPEC19_LENSES.map((lens) => ({
+    lens,
+    classification: lens === 'visual' ? 'not_required' : 'applied',
+    impact: `${lens} lens shaped the execution decision`,
+    evidence_ref: `lens-ledger:${lens}`,
+  }));
+  if (mode === 'missing_lens') {
+    return { lenses: lenses.filter((entry) => entry.lens !== 'security') };
+  }
+  if (mode === 'missing_impact') {
+    lenses.find((entry) => entry.lens === 'cost').impact = '';
+  }
+  if (mode === 'score_without_evidence') {
+    for (const entry of lenses) delete entry.evidence_ref;
+  }
+  return {
+    section_ref: mode === 'score_without_evidence' ? '' : 'lens-ledger-section',
+    lenses,
+  };
+}
+
+function gm12Spec19Closeout(closeout, mode, lensLedger) {
+  const result = {
+    ...closeout,
+    lens_ledger: {
+      status: mode === 'missing_ledger' ? 'missing' : 'present',
+      stop_state: mode === 'missing_ledger' ? GM12_SPEC19_STOP_STATE : 'ready_for_loop',
+      lens_count: Array.isArray(lensLedger.lenses) ? lensLedger.lenses.length : 0,
+      report_text: 'lens ledger records applied, not_required, and blocked execution lenses',
+    },
+  };
+  if (mode === 'score_without_evidence' || mode === 'score_with_evidence') {
+    result.proof_score = {
+      value: 0.82,
+      lenses: ['runtime', 'evidence'],
+    };
+  }
+  return result;
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2656,6 +2741,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec18NewCommandArgs,
     revert: gm12Spec18RevertArgs,
+  },
+  // GM12S19 — SPEC-019 records execution lenses and evidence for score citations.
+  {
+    id: 'GM12S19 goal-maestro-p0-lens-ledger-present',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec19MissingLedgerArgs,
+    revert: gm12Spec19RevertArgs,
+  },
+  {
+    id: 'GM12S19 goal-maestro-p0-lens-ledger-coverage',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec19MissingLensArgs,
+    revert: gm12Spec19RevertArgs,
+  },
+  {
+    id: 'GM12S19 goal-maestro-p0-lens-ledger-impact',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec19MissingImpactArgs,
+    revert: gm12Spec19RevertArgs,
+  },
+  {
+    id: 'GM12S19 goal-maestro-p0-lens-ledger-score-evidence',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec19ScoreWithoutEvidenceArgs,
+    revert: gm12Spec19ScoreWithEvidenceArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
