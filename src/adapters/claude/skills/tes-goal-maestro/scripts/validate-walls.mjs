@@ -1,4 +1,4 @@
-// SPEC-014 — Mutation suite for executable wall fixtures.
+// SPEC-015 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -71,6 +71,8 @@ const GM12_SPEC14_CONTRACT = 'goal-maestro-p0-install-chronology';
 const GM12_SPEC14_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
 const GM12_SPEC14_INSTALLED_AT = '2026-06-28T23:55:00Z';
 const GM12_SPEC14_AFTER_MATERIAL_AT = '2026-06-29T00:30:00Z';
+const GM12_SPEC15_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification';
+const GM12_SPEC15_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -474,6 +476,30 @@ function gm12Spec14ClassifiedLaterReinstallArgs() {
 
 function gm12Spec14RevertArgs() {
   return [fixture('gm12-spec14-install-chronology-ok.json', JSON.stringify(gm12Spec14Fixture('valid')))];
+}
+
+function gm12Spec15MissingPrecommitEvidenceArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-missing-precommit-evidence.json', JSON.stringify(gm12Spec15Fixture('missing_precommit_evidence')))];
+}
+
+function gm12Spec15ManualClaimsEnforcedArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-manual-claims-enforced.json', JSON.stringify(gm12Spec15Fixture('manual_claims_enforced')))];
+}
+
+function gm12Spec15MissingCommitModeArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-missing-commit-mode.json', JSON.stringify(gm12Spec15Fixture('missing_commit_mode')))];
+}
+
+function gm12Spec15HonestManualArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-honest-manual.json', JSON.stringify(gm12Spec15Fixture('honest_manual')))];
+}
+
+function gm12Spec15PrecommitEnforcedArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-precommit-enforced.json', JSON.stringify(gm12Spec15Fixture('precommit_enforced')))];
+}
+
+function gm12Spec15RevertArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-ok.json', JSON.stringify(gm12Spec15Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1398,6 +1424,66 @@ function gm12Spec14InstallChronology(mode) {
   return chronology;
 }
 
+function gm12Spec15Fixture(mode) {
+  const base = gm12Spec14Fixture('valid');
+  const commitEnforcement = gm12Spec15CommitEnforcement(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC15_CONTRACT,
+    commit_enforcement_classification_required: true,
+    commit_enforcement_classification: commitEnforcement,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      commit_enforcement: commitEnforcement,
+    },
+    closeout: gm12Spec15Closeout(base.closeout, mode, commitEnforcement),
+  };
+}
+
+function gm12Spec15CommitEnforcement(mode) {
+  const classification = mode === 'precommit_enforced'
+    ? {
+        commit_mode: 'precommit_enforced',
+        tes_recommends_precommit: true,
+        precommit_evidence: {
+          status: 'installed',
+          hook_path: '.githooks/pre-commit',
+        },
+      }
+    : {
+        commit_mode: 'manual',
+        tes_recommends_precommit: true,
+        precommit_evidence: {
+          status: 'PRECOMMIT_NOT_INSTALLED',
+        },
+      };
+  if (mode === 'missing_precommit_evidence') {
+    delete classification.precommit_evidence;
+  }
+  if (mode === 'missing_commit_mode') {
+    delete classification.commit_mode;
+  }
+  return classification;
+}
+
+function gm12Spec15Closeout(closeout, mode, commitEnforcement) {
+  const result = {
+    ...closeout,
+    commit_enforcement: {
+      commit_mode: commitEnforcement.commit_mode,
+      precommit_status: commitEnforcement.precommit_evidence?.status ?? 'missing',
+      report_text: 'manual commit evidence classified honestly',
+    },
+  };
+  if (mode === 'manual_claims_enforced') {
+    result.commit_enforcement.report_text = 'precommit enforced by installed hook';
+  }
+  if (mode === 'precommit_enforced') {
+    result.commit_enforcement.report_text = 'precommit enforced by installed hook evidence';
+  }
+  return result;
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2183,6 +2269,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec14InstallAfterMaterialArgs,
     revert: gm12Spec14ClassifiedLaterReinstallArgs,
+  },
+  // GM12S15 — SPEC-015 separates manual commits from pre-commit enforcement claims.
+  {
+    id: 'GM12S15 goal-maestro-p0-commit-enforcement-precommit-evidence',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec15MissingPrecommitEvidenceArgs,
+    revert: gm12Spec15RevertArgs,
+  },
+  {
+    id: 'GM12S15 goal-maestro-p0-commit-enforcement-manual-claim',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec15ManualClaimsEnforcedArgs,
+    revert: gm12Spec15HonestManualArgs,
+  },
+  {
+    id: 'GM12S15 goal-maestro-p0-commit-enforcement-mode',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec15MissingCommitModeArgs,
+    revert: gm12Spec15RevertArgs,
+  },
+  {
+    id: 'GM12S15 goal-maestro-p0-commit-enforcement-precommit-installed',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec15ManualClaimsEnforcedArgs,
+    revert: gm12Spec15PrecommitEnforcedArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

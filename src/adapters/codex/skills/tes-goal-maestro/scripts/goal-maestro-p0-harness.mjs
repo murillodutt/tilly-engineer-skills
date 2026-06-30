@@ -25,6 +25,8 @@
 // browser_metrics_schema_required:true.
 // SPEC-014 fixtures opt into install chronology validation with
 // install_chronology_required:true.
+// SPEC-015 fixtures opt into commit enforcement classification validation with
+// commit_enforcement_classification_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -44,6 +46,7 @@ const VISUAL_EVIDENCE_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
 const VISUAL_SEMANTIC_STOP_STATE = 'NEEDS_VISUAL_SEMANTIC_GATE';
 const BROWSER_METRICS_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
 const INSTALL_CHRONOLOGY_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
+const COMMIT_ENFORCEMENT_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -57,6 +60,7 @@ const VISUAL_EVIDENCE_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
 const VISUAL_SEMANTIC_CONTRACT = 'goal-maestro-p0-visual-semantic-gate';
 const BROWSER_METRICS_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
 const INSTALL_CHRONOLOGY_CONTRACT = 'goal-maestro-p0-install-chronology';
+const COMMIT_ENFORCEMENT_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -130,6 +134,7 @@ const visualEvidenceContractRequired = requiresVisualEvidenceContract(fixture);
 const visualSemanticGateRequired = requiresVisualSemanticGate(fixture);
 const browserMetricsSchemaRequired = requiresBrowserMetricsSchema(fixture);
 const installChronologyRequired = requiresInstallChronologyGate(fixture);
+const commitEnforcementRequired = requiresCommitEnforcementClassification(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -286,8 +291,13 @@ if (browserMetricsSchemaRequired) {
 if (installChronologyRequired) {
   addInstallChronologyChecks();
 }
+if (commitEnforcementRequired) {
+  addCommitEnforcementClassificationChecks();
+}
 
-const harnessTitle = installChronologyRequired
+const harnessTitle = commitEnforcementRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015 goal-maestro-p0-commit-enforcement-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE})`
+  : installChronologyRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014 goal-maestro-p0-install-chronology (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE})`
   : browserMetricsSchemaRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013 goal-maestro-p0-browser-metrics-schema (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE})`
@@ -1413,6 +1423,47 @@ function addInstallChronologyChecks() {
   );
 }
 
+function addCommitEnforcementClassificationChecks() {
+  const classification = commitEnforcementClassificationFromFixture(fixture);
+  const commitMode = normalizeCommitMode(commitModeFromClassification(classification));
+  const precommitEvidence = precommitEvidenceFromClassification(classification);
+  const precommitStatus = normalizePrecommitEvidenceStatus(precommitEvidence);
+  const reports = commitEnforcementReportSurfaces(fixture);
+  const enforcementClaims = reports.flatMap(commitEnforcementClaimsFromSurface);
+  const tesRecommendsPrecommit = classification.tes_recommends_precommit === true
+    || classification.precommit_recommended === true
+    || classification.recommended_precommit === true
+    || fixture.tes_recommends_precommit === true;
+
+  commitEnforcementCheck(
+    'commit enforcement classification is present',
+    hasNonEmptyObject(classification),
+    'commit enforcement classification is required',
+  );
+  commitEnforcementCheck(
+    'commit mode is classified',
+    ['manual', 'precommit_enforced', 'unknown'].includes(commitMode),
+    'commit_mode must be manual, precommit_enforced, or unknown',
+  );
+  if (tesRecommendsPrecommit) {
+    commitEnforcementCheck(
+      'recommended pre-commit evidence is explicit',
+      precommitStatus === 'installed' || precommitStatus === 'precommit_not_installed',
+      'TES recommends pre-commit, so installed target evidence must show the hook or PRECOMMIT_NOT_INSTALLED',
+    );
+  }
+  commitEnforcementCheck(
+    'pre-commit enforcement claim matches installed evidence',
+    enforcementClaims.length === 0 || precommitStatus === 'installed',
+    'report claims pre-commit enforcement without installed hook evidence',
+  );
+  commitEnforcementCheck(
+    'manual commit mode is reported honestly',
+    commitMode !== 'manual' || enforcementClaims.length === 0,
+    'manual commit evidence must not be reported as hook enforcement',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1566,6 +1617,10 @@ function browserMetricsSchemaCheck(name, pass, detail) {
 
 function installChronologyCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${INSTALL_CHRONOLOGY_STOP_STATE}: ${detail}` });
+}
+
+function commitEnforcementCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${COMMIT_ENFORCEMENT_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1751,6 +1806,13 @@ function requiresInstallChronologyGate(value) {
     || value.installChronologyRequired === true
     || value.harness_contract === INSTALL_CHRONOLOGY_CONTRACT
     || value.contract === INSTALL_CHRONOLOGY_CONTRACT;
+}
+
+function requiresCommitEnforcementClassification(value) {
+  return value.commit_enforcement_classification_required === true
+    || value.commit_enforcement_required === true
+    || value.harness_contract === COMMIT_ENFORCEMENT_CONTRACT
+    || value.contract === COMMIT_ENFORCEMENT_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -2459,6 +2521,107 @@ function installChronologyClassifiesUnrelatedLaterReinstall(value) {
     value.reinstall?.classification,
   ].map(normalizeSemanticValue);
   return classifications.includes('unrelated later reinstall');
+}
+
+function commitEnforcementClassificationFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.commit_enforcement_classification,
+    value.commit_enforcement,
+    value.commitClassification,
+    value.commit_evidence,
+    metrics.commit_enforcement_classification,
+    metrics.commit_enforcement,
+    metrics.commit_evidence,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return hasCommitEnforcementShape(value) ? value : {};
+}
+
+function hasCommitEnforcementShape(value) {
+  return isPlainObject(value) && (
+    nonEmptyString(commitModeFromClassification(value))
+    || isPlainObject(value.precommit)
+    || isPlainObject(value.precommit_evidence)
+    || nonEmptyString(value.precommit_status)
+  );
+}
+
+function commitModeFromClassification(value) {
+  return firstNonEmptyString(
+    value.commit_mode,
+    value.commitMode,
+    value.mode,
+    value.commit?.mode,
+    value.evidence?.commit_mode,
+  );
+}
+
+function normalizeCommitMode(value) {
+  if (!nonEmptyString(value)) return null;
+  const normalized = String(value).trim().toLowerCase().replace(/[-\s]+/g, '_');
+  if (normalized === 'precommit' || normalized === 'pre_commit' || normalized === 'hook_enforced' || normalized === 'precommit_enforced') {
+    return 'precommit_enforced';
+  }
+  if (normalized === 'manual') return 'manual';
+  if (normalized === 'unknown') return 'unknown';
+  return normalized;
+}
+
+function precommitEvidenceFromClassification(value) {
+  const candidate = firstPlainObject(
+    value.precommit_evidence,
+    value.precommit,
+    value.pre_commit,
+    value.installed_precommit,
+    value.hook_evidence,
+  );
+  if (candidate) return candidate;
+  if (nonEmptyString(value.precommit_status) || nonEmptyString(value.precommitStatus)) {
+    return { status: firstNonEmptyString(value.precommit_status, value.precommitStatus) };
+  }
+  return {};
+}
+
+function normalizePrecommitEvidenceStatus(value) {
+  if (!isPlainObject(value)) return null;
+  if (value.installed === true || value.hook_installed === true || value.precommit_installed === true) return 'installed';
+  if (value.precommit_not_installed === true || value.status === 'PRECOMMIT_NOT_INSTALLED') return 'precommit_not_installed';
+  const status = normalizeSemanticValue(firstNonEmptyString(
+    value.status,
+    value.state,
+    value.classification,
+    value.marker,
+  ));
+  if (status === 'installed' || status === 'hook installed' || status === 'precommit installed') return 'installed';
+  if (status === 'precommit not installed' || status === 'not installed' || status === 'missing') return 'precommit_not_installed';
+  return status;
+}
+
+function commitEnforcementReportSurfaces(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  return [
+    value.report,
+    value.closeout,
+    value.thermometer_report,
+    metrics.report,
+    metrics.closeout,
+    metrics.commit_enforcement,
+  ].filter(isPlainObject);
+}
+
+function commitEnforcementClaimsFromSurface(surface) {
+  const strings = collectStrings(surface).map(normalizeSemanticValue).filter(nonEmptyString);
+  return strings.filter((value) => {
+    return value.includes('precommit enforced')
+      || value.includes('pre commit enforced')
+      || value.includes('precommit enforcement')
+      || value.includes('pre commit enforcement')
+      || value.includes('hook enforced')
+      || value.includes('precommit hook enforced');
+  });
 }
 
 function isMobileResponsiveEvidence(item) {
