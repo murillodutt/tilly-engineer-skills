@@ -171,7 +171,7 @@ python3 scripts/canary_admission_oracle.py --target /path/to/canary --json-only 
 python3 scripts/canary_admission_oracle.py --self-test
 ```
 
-`canary_admission_oracle.py` is maintainer/canary-admission infrastructure, not delivered adopter behavior: strict pre-commit is required for a canary to claim `READY_FOR_GOAL_MAESTRO_CANARY`, but TES never auto-installs a strict pre-commit gate for adopters. A configured-but-unobserved host is `CONFIGURED_NOT_OBSERVED`, never native PASS, and one host's runtime records never fill another host's claim.
+`canary_admission_oracle.py` is maintainer/canary-admission infrastructure that verifies delivered adopter behavior: on Git-eligible targets TES installs a strict pre-commit wrapper and admission requires proof that the active hook resolves a real gate (`commit:check` or a materialized TES discipline oracle). A configured-but-unobserved host is `CONFIGURED_NOT_OBSERVED`, never native PASS, and one host's runtime records never fill another host's claim.
 
 ## Validation Gates
 

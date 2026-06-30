@@ -22,7 +22,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.235"
+VERSION = "0.3.236"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
@@ -37,10 +37,11 @@ BIN_HELPER = Path(".tes/bin/field_reports.py")
 SCOPE_HELPER = Path(".tes/bin/scope_contract.py")
 HOOK_MARKER = "TES_FIELD_REPORTS_PRE_PUSH"
 # Strict pre-commit gate marker. The canary_admission_oracle.precommit_evidence
-# contract recognizes a strict TES gate by `commit:check`/`--strict`/oracle
-# invocation; this marker lets install + audit identify a TES-owned pre-commit
-# wrapper idempotently, the same way HOOK_MARKER does for pre-push.
+# contract recognizes this wrapper only when one of its gate commands resolves in
+# the installed target; marker/token presence alone is never enforcement proof.
 PRECOMMIT_MARKER = "TES_STRICT_PRE_COMMIT"
+CANONICAL_DISCIPLINE_ORACLE = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
+CLAUDE_DISCIPLINE_ORACLE = ".claude/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 BACKUP_HOOK_RE = re.compile(r"^BACKUP_HOOK=(?P<value>.+)$", re.MULTILINE)
 BACKUP_PRECOMMIT_RE = re.compile(r"^BACKUP_PRECOMMIT=(?P<value>.+)$", re.MULTILINE)
 
@@ -1270,15 +1271,36 @@ def install_pre_commit_hook(target: Path, git_dir: Path) -> dict[str, Any]:
 # {PRECOMMIT_MARKER}
 set -eu
 {backup_shell}
-# Strict TES pre-commit gate: run the focused commit:check when available.
-if [ -f "package.json" ] && command -v npm >/dev/null 2>&1 && npm run | grep -q "commit:check"; then
-  npm run --silent commit:check
-elif [ -f ".tes/bin/discipline_oracle.py" ]; then
-  python3 ".tes/bin/discipline_oracle.py" --staged-only
-elif [ -f "scripts/discipline_oracle.py" ]; then
-  python3 "scripts/discipline_oracle.py" --staged-only
-fi
-exit 0
+run_tes_strict_pre_commit() {{
+  if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+    if python3 - <<'PY'
+import json
+import sys
+
+try:
+    data = json.load(open("package.json", encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+scripts = data.get("scripts") if isinstance(data, dict) else None
+sys.exit(0 if isinstance(scripts, dict) and "commit:check" in scripts else 1)
+PY
+    then
+      npm run --silent commit:check
+      return $?
+    fi
+  fi
+  if [ -f "{CANONICAL_DISCIPLINE_ORACLE}" ]; then
+    python3 "{CANONICAL_DISCIPLINE_ORACLE}" --self-test
+    return $?
+  fi
+  if [ -f "{CLAUDE_DISCIPLINE_ORACLE}" ]; then
+    python3 "{CLAUDE_DISCIPLINE_ORACLE}" --self-test
+    return $?
+  fi
+  printf '%s\\n' "TES strict pre-commit: no resolvable gate found; expected package.json scripts.commit:check or {CANONICAL_DISCIPLINE_ORACLE}" >&2
+  return 1
+}}
+run_tes_strict_pre_commit
 """
     hook.write_text(hook_text, encoding="utf-8")
     hook.chmod(0o755)
@@ -1567,6 +1589,19 @@ def self_test() -> dict[str, object]:
                 failures.append(f"missing installed path: {relpath}")
         if hook_result["status"] != "PASS":
             failures.append("install-hook did not pass in a Git fixture")
+        pre_commit_hook = target / ".git/hooks/pre-commit"
+        if not pre_commit_hook.exists():
+            failures.append("install-hook must write a strict pre-commit hook")
+        else:
+            pre_commit_run = subprocess.run(
+                [str(pre_commit_hook)],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if pre_commit_run.returncode == 0:
+                failures.append("strict pre-commit must fail closed when no real gate is available")
         installed = target / "installed-helper"
         installed.mkdir()
         subprocess.run(["git", "init"], cwd=installed, text=True, capture_output=True, check=False)

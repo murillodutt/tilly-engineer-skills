@@ -161,6 +161,14 @@ def _init_git(target: Path) -> None:
     subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False)
 
 
+def _write_installed_discipline_oracle(target: Path) -> None:
+    """Materialize the canonical installed TES oracle path for hook fixtures."""
+    oracle = target / field_reports.CANONICAL_DISCIPLINE_ORACLE
+    oracle.parent.mkdir(parents=True, exist_ok=True)
+    oracle.write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+    oracle.chmod(0o755)
+
+
 def validate_selection_and_precommit() -> list[str]:
     """Red-capable proof of deterministic selection + strict pre-commit install.
 
@@ -197,15 +205,36 @@ def validate_selection_and_precommit() -> list[str]:
             if bool(sel.get("deferred")) != expected_deferred:
                 failures.append(f"selection[{label}]: expected deferred={expected_deferred}, got {sel.get('deferred')}")
 
-    # 2. Strict pre-commit installed + recognized on an eligible Git target.
+    # 2. No real gate: TES may install the wrapper, but it must fail closed and
+    #    admission must not recognize enforcement.
+    with tempfile.TemporaryDirectory(prefix="tes-hm-precommit-no-gate-") as d:
+        t = Path(d)
+        _init_git(t)
+        res = field_reports.install_hook(t)
+        if res.get("status") != "PASS":
+            failures.append(f"precommit-no-gate: install_hook status {res.get('status')} on eligible Git target")
+        hp = t / ".git/hooks/pre-commit"
+        run = subprocess.run([str(hp)], cwd=t, text=True, capture_output=True, check=False)
+        if run.returncode == 0:
+            failures.append("precommit-no-gate: installed pre-commit must fail closed without a real gate")
+        pc = cao.precommit_evidence(t)
+        if pc.get("precommit_enforced"):
+            failures.append("precommit-no-gate: canary admission falsely recognized enforcement without a real gate")
+
+    # 3. Strict pre-commit installed + recognized on an eligible Git target with
+    #    the canonical TES oracle materialized.
     with tempfile.TemporaryDirectory(prefix="tes-hm-precommit-") as d:
         t = Path(d)
         _init_git(t)
+        _write_installed_discipline_oracle(t)
         res = field_reports.install_hook(t)
         if res.get("status") != "PASS":
             failures.append(f"precommit: install_hook status {res.get('status')} on eligible Git target")
         if not res.get("pre_commit_installed"):
             failures.append("precommit: pre_commit_installed is falsy after install on eligible Git target")
+        hook_run = subprocess.run([str(t / ".git/hooks/pre-commit")], cwd=t, text=True, capture_output=True, check=False)
+        if hook_run.returncode != 0:
+            failures.append(f"precommit: canonical installed oracle hook returned {hook_run.returncode}")
         pc = cao.precommit_evidence(t)
         if not pc.get("precommit_enforced"):
             failures.append(f"precommit: canary admission does not recognize strict gate: {pc.get('reason')}")
@@ -218,10 +247,11 @@ def validate_selection_and_precommit() -> list[str]:
         if len(backups) > 1:
             failures.append("precommit: reinstall created duplicate pre-commit backups")
 
-    # 3. Foreign pre-commit chained over, backed up exactly once.
+    # 4. Foreign pre-commit chained over, backed up exactly once.
     with tempfile.TemporaryDirectory(prefix="tes-hm-foreign-") as d:
         t = Path(d)
         _init_git(t)
+        _write_installed_discipline_oracle(t)
         hp = t / ".git" / "hooks" / "pre-commit"
         hp.parent.mkdir(parents=True, exist_ok=True)
         hp.write_text("#!/bin/sh\necho FOREIGN > foreign.log\n", encoding="utf-8")
@@ -236,7 +266,7 @@ def validate_selection_and_precommit() -> list[str]:
         if len(backups) != 1:
             failures.append(f"foreign-precommit: expected exactly one backup, got {len(backups)}")
 
-    # 4. No-Git and disabled hooks block (absence never becomes PASS).
+    # 5. No-Git and disabled hooks block (absence never becomes PASS).
     with tempfile.TemporaryDirectory(prefix="tes-hm-nogit-") as d:
         t = Path(d)
         if field_reports.install_hook(t).get("status") != "BLOCKED":

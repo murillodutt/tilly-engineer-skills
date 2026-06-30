@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -51,7 +52,7 @@ import field_reports
 import tes_install
 
 
-VERSION = "0.3.235"
+VERSION = "0.3.236"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
@@ -150,7 +151,15 @@ def prepush_evidence(target: Path) -> dict[str, Any]:
     }
 
 
-STRICT_GATE_TOKENS = ("--strict", "commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
+STRICT_GATE_TOKENS = ("commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
+CANONICAL_DISCIPLINE_ORACLES = (
+    ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
+    ".claude/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
+)
+PROJECT_CONTEXT_ORACLES = (
+    ".tes/bin/project_context_oracle.py",
+    "scripts/project_context_oracle.py",
+)
 
 
 def _strip_shell_comments(text: str) -> str:
@@ -181,36 +190,105 @@ def _strip_shell_comments(text: str) -> str:
     return "\n".join(out)
 
 
-def precommit_evidence(target: Path) -> dict[str, Any]:
-    """Proof of a strict pre-commit gate by EXECUTABILITY, not comment substring.
+def _package_has_commit_check(target: Path) -> bool:
+    try:
+        data = json.loads((target / "package.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    scripts = data.get("scripts") if isinstance(data, dict) else None
+    return isinstance(scripts, dict) and isinstance(scripts.get("commit:check"), str)
 
-    Ceiling F22: a comment containing `commit:check` must never set
-    precommit_enforced=true. The proof is two-part: (1) the resolved hook is
-    runnable (executable bit, mirroring tes_init's hook-runnability check), and
-    (2) a strict gate token appears in the hook's CODE (comments stripped), i.e.
-    it actually invokes a TES gate rather than merely mentioning one.
+
+def _resolve_husky_active_entrypoint(target: Path, hooks_path: object) -> Path | None:
+    if not hooks_path:
+        return None
+    configured = Path(str(hooks_path)).expanduser()
+    hooks_dir = configured if configured.is_absolute() else target / configured
+    if hooks_dir.name == "_" and hooks_dir.parent.name == ".husky":
+        return hooks_dir / "pre-commit"
+    return None
+
+
+def _resolved_precommit_gate_commands(target: Path, code: str) -> tuple[list[dict[str, str]], list[str]]:
+    """Resolve strict-gate commands against files/tools present in this target.
+
+    Token presence is only a hint. Enforcement proof requires the branch's
+    command to be runnable in this installed target: a real package script with
+    npm available, or a materialized TES oracle at the path the hook invokes.
+    """
+    resolved: list[dict[str, str]] = []
+    rejected: list[str] = []
+    if "commit:check" in code:
+        if not _package_has_commit_check(target):
+            rejected.append("package.json scripts.commit:check absent")
+        elif shutil.which("npm") is None:
+            rejected.append("npm unavailable for scripts.commit:check")
+        else:
+            resolved.append({"kind": "npm", "command": "npm run --silent commit:check"})
+    if "discipline_oracle" in code:
+        matched_path = False
+        for relpath in CANONICAL_DISCIPLINE_ORACLES:
+            if relpath in code:
+                matched_path = True
+                oracle = target / relpath
+                if oracle.is_file():
+                    resolved.append({"kind": "tes-discipline", "command": f"python3 {relpath} --self-test"})
+                else:
+                    rejected.append(f"{relpath} absent")
+        if ".tes/bin/discipline_oracle.py" in code or "scripts/discipline_oracle.py" in code:
+            matched_path = True
+            rejected.append("stale/non-delivered discipline_oracle.py path")
+        if not matched_path:
+            rejected.append("discipline_oracle token without canonical path")
+    if "project_context_oracle" in code:
+        matched_path = False
+        for relpath in PROJECT_CONTEXT_ORACLES:
+            if relpath in code:
+                matched_path = True
+                oracle = target / relpath
+                if oracle.is_file():
+                    resolved.append({"kind": "project-context", "command": f"python3 {relpath} --target ."})
+                else:
+                    rejected.append(f"{relpath} absent")
+        if not matched_path:
+            rejected.append("project_context_oracle token without runnable path")
+    return resolved, rejected
+
+
+def precommit_evidence(target: Path) -> dict[str, Any]:
+    """Proof of a strict pre-commit gate by active path and command resolution.
+
+    Ceiling F22/F37: comments, stale fallback paths, or unreachable branches must
+    never set precommit_enforced=true. The proof is: active hook path resolved,
+    active entrypoint executable, hook body contains gate code, and at least one
+    referenced gate command resolves in the installed target.
     """
     git_dir = target / ".git"
     if not git_dir.exists():
         return {"precommit_enforced": False, "reason": "no .git directory"}
-    hooks_dir = git_dir / "hooks"
-    configured = field_reports.git_config_get(target, "core.hooksPath")
-    if configured and configured != "/dev/null":
-        configured_path = Path(configured).expanduser()
-        hooks_dir = configured_path if configured_path.is_absolute() else target / configured_path
-    hook_path = hooks_dir / "pre-commit"
+    hook_info = field_reports.resolve_pre_commit_hook(target, git_dir)
+    if hook_info.get("status") != "PASS":
+        return {"precommit_enforced": False, "reason": str(hook_info.get("reason") or "hook resolution blocked")}
+    hook_path = Path(str(hook_info.get("hook")))
+    active_entrypoint = _resolve_husky_active_entrypoint(target, hook_info.get("hooksPath")) or hook_path
     if not hook_path.is_file():
         return {"precommit_enforced": False, "reason": "pre-commit hook file absent", "hook": str(hook_path)}
-    # (1) Runnability: a strict gate must be executable to actually fire.
-    runnable = os.access(hook_path, os.X_OK)
+    if not active_entrypoint.is_file():
+        return {
+            "precommit_enforced": False,
+            "reason": "active pre-commit entrypoint absent",
+            "hook": str(hook_path),
+            "active_entrypoint": str(active_entrypoint),
+        }
+    runnable = os.access(active_entrypoint, os.X_OK)
     if not runnable:
         return {
             "precommit_enforced": False,
-            "reason": "pre-commit hook present but not executable (cannot fire as a gate)",
+            "reason": "active pre-commit entrypoint present but not executable (cannot fire as a gate)",
             "hook": str(hook_path),
+            "active_entrypoint": str(active_entrypoint),
             "executable": False,
         }
-    # (2) Real invocation: a strict gate token in CODE, not in a comment.
     code = _strip_shell_comments(hook_path.read_text(encoding="utf-8", errors="ignore"))
     matched = [token for token in STRICT_GATE_TOKENS if token in code]
     if not matched:
@@ -218,9 +296,28 @@ def precommit_evidence(target: Path) -> dict[str, Any]:
             "precommit_enforced": False,
             "reason": "pre-commit present and executable but invokes no strict TES gate (token only in comments, or absent)",
             "hook": str(hook_path),
+            "active_entrypoint": str(active_entrypoint),
             "executable": True,
         }
-    return {"precommit_enforced": True, "hook": str(hook_path), "executable": True, "gate_tokens": matched}
+    resolved, rejected = _resolved_precommit_gate_commands(target, code)
+    if not resolved:
+        return {
+            "precommit_enforced": False,
+            "reason": "pre-commit gate tokens present but no referenced gate command resolves in target",
+            "hook": str(hook_path),
+            "active_entrypoint": str(active_entrypoint),
+            "executable": True,
+            "gate_tokens": matched,
+            "unresolved_gates": rejected,
+        }
+    return {
+        "precommit_enforced": True,
+        "hook": str(hook_path),
+        "active_entrypoint": str(active_entrypoint),
+        "executable": True,
+        "gate_tokens": matched,
+        "resolved_gates": resolved,
+    }
 
 
 def git_admission(target: Path) -> dict[str, Any]:
@@ -375,11 +472,16 @@ def _write_prepush(target: Path) -> None:
 
 
 def _write_strict_precommit(target: Path) -> None:
+    oracle = target / ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
+    oracle.parent.mkdir(parents=True, exist_ok=True)
+    oracle.write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+    oracle.chmod(0o755)
     hooks = target / ".git/hooks"
     hooks.mkdir(parents=True, exist_ok=True)
     hook = hooks / "pre-commit"
     hook.write_text(
-        "#!/bin/sh\n# strict TES canary gate\npython3 .tes/bin/project_context_oracle.py --target . --strict\n",
+        "#!/bin/sh\n# strict TES canary gate\n"
+        "python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test\n",
         encoding="utf-8",
     )
     hook.chmod(0o755)
@@ -508,6 +610,8 @@ def self_test() -> dict[str, Any]:
         _init_git(full)
         _write_prepush(full)
         _write_strict_precommit(full)
+        subprocess.run(["git", "add", "."], cwd=full, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "commit", "-m", "fixture gate"], cwd=full, text=True, capture_output=True, check=False)
         full_git = git_admission(full.resolve())
         if full_git["status"] != "PASS":
             failures.append(f"fully-gated Git target must PASS git_admission, got {full_git['status']}: {full_git['blockers']}")
@@ -570,6 +674,29 @@ def self_test() -> dict[str, Any]:
         ne.chmod(0o644)  # real invocation but not executable
         if precommit_evidence(non_exec.resolve()).get("precommit_enforced"):
             failures.append("F22: a non-executable pre-commit must NOT be precommit_enforced (cannot fire)")
+
+        # 3c) F37 — reproduced false green: the TES-installed hook must not exit
+        #     0 or be admitted when no project commit:check and no installed TES
+        #     oracle exists. The fixture is committed with --no-verify only to
+        #     make Git clean; the hook itself must still fail closed.
+        no_real_gate = root / "installed-no-real-gate"
+        no_real_gate.mkdir()
+        _init_git(no_real_gate)
+        install = field_reports.install_hook(no_real_gate)
+        if install.get("status") != "PASS":
+            failures.append(f"F37: install_hook should install the fail-closed hook, got {install.get('status')}")
+        hook = no_real_gate / ".git/hooks/pre-commit"
+        hook_run = subprocess.run([str(hook)], cwd=no_real_gate, text=True, capture_output=True, check=False)
+        if hook_run.returncode == 0:
+            failures.append("F37: TES-installed pre-commit with no real gate must fail closed, not exit 0")
+        subprocess.run(["git", "add", "."], cwd=no_real_gate, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "commit", "--no-verify", "-m", "fixture install"], cwd=no_real_gate, text=True, capture_output=True, check=False)
+        no_gate_precommit = precommit_evidence(no_real_gate.resolve())
+        if no_gate_precommit.get("precommit_enforced"):
+            failures.append("F37: canary admission must not mark a no-real-gate hook as precommit_enforced")
+        no_gate_admission = git_admission(no_real_gate.resolve())
+        if no_gate_admission.get("status") != "BLOCKED":
+            failures.append("F37: clean installed target with no real pre-commit gate must BLOCK git_admission")
 
         # 4) Per-host native hook truthfulness: only Claude has its own runtime
         #    records; Codex+Cursor are configured but unobserved. Claude must be

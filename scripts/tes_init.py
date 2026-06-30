@@ -37,7 +37,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.235"
+VERSION = "0.3.236"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 DOCUMENTATION_AUTHORITY = Path("docs/agents/DOCUMENTATION-AUTHORITY.md")
@@ -1592,8 +1592,8 @@ def initial_alignment_texts(
         persistent_gate_row = (
             f"| Persistent gate | needs_review | ABSENT — necessary for quality; its absence "
             f"compromises the code. Proposed model: `{gate_scan['recommended_model']}` + hooks per "
-            f"file type. Record explicit owner authorization before installing a project pre-commit gate; "
-            f"TES does not auto-install it during `/tes-setup`. |"
+            f"file type. TES installs a strict Git pre-commit wrapper when Git hooks are eligible; "
+            f"owner authorization is still required before adding a project-owned gate beyond TES' wrapper. |"
         )
     anchors = alignment_anchor_paths(scan, target, manifest_rel)
     primary = first_anchor(anchors)

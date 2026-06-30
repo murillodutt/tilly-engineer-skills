@@ -26,7 +26,7 @@ except ModuleNotFoundError:  # pragma: no cover - degraded environment
     _attach_health = None
 
 
-VERSION = "0.3.235"
+VERSION = "0.3.236"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
