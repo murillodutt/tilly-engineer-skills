@@ -3924,6 +3924,40 @@ def hook_health(args: argparse.Namespace) -> int:
 def self_test() -> int:
     failures: list[str] = []
 
+    # Ceiling F27 (attach/detach transact the install lock): a narrow attach or
+    # detach must re-transact lock.attached_surfaces additively (attach merges in,
+    # detach removes but never drops the capsule), bump the lock version, and
+    # honor --dry-run. Red-capable: removing the transact_lock_surface calls or
+    # regressing the merge turns these assertions red.
+    with tempfile.TemporaryDirectory(prefix="tes-f27-lock-") as _f27_dir:
+        _f27_target = Path(_f27_dir)
+        _lock_path = _f27_target / LOCK_PATH
+        _lock_path.parent.mkdir(parents=True, exist_ok=True)
+        _lock_path.write_text(
+            json.dumps({"version": "0.0.0", "attached_surfaces": ["capsule", "mcp"]}, sort_keys=True),
+            encoding="utf-8",
+        )
+        # dry-run must not write the lock.
+        transact_lock_surface(_f27_target, "hooks", attach=True, certification_result=None, dry_run=True)
+        if "hooks" in (read_json(_lock_path).get("attached_surfaces") or []):
+            failures.append("F27: dry-run attach must not write the lock")
+        # attach merges the surface in, keeps existing surfaces, bumps version.
+        transact_lock_surface(_f27_target, "hooks", attach=True, certification_result=None, dry_run=False)
+        _after_attach = read_json(_lock_path)
+        if "hooks" not in (_after_attach.get("attached_surfaces") or []):
+            failures.append("F27: attach must merge the surface into lock.attached_surfaces")
+        if "mcp" not in (_after_attach.get("attached_surfaces") or []):
+            failures.append("F27: attach must be additive (must not drop existing surfaces)")
+        if _after_attach.get("version") != VERSION:
+            failures.append("F27: attach must bump the lock version to the current VERSION")
+        # detach removes the surface but never drops the capsule.
+        transact_lock_surface(_f27_target, "hooks", attach=False, certification_result=None, dry_run=False)
+        _after_detach = read_json(_lock_path)
+        if "hooks" in (_after_detach.get("attached_surfaces") or []):
+            failures.append("F27: detach must remove the surface from lock.attached_surfaces")
+        if "capsule" not in (_after_detach.get("attached_surfaces") or []):
+            failures.append("F27: detach must never drop the capsule from the lock")
+
     # Ceiling F28 (doctor readiness fold): a green capsule with a pending or
     # degraded attachment must NOT read as ready — readiness folds the worst
     # materialized surface. Pure-function red-capable check: collapsing the fold
