@@ -26,7 +26,7 @@ except ModuleNotFoundError:  # pragma: no cover - degraded environment
     _attach_health = None
 
 
-VERSION = "0.3.234"
+VERSION = "0.3.235"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -204,7 +204,7 @@ def quality_gates_path_status(target: Path) -> dict[str, Any]:
 
 
 def target_os_residue_files(target: Path) -> list[str]:
-    """Scan the installed target for OS residue outside Git metadata."""
+    """Scan the installed target for OS residue without hiding Git-scoped residue."""
     found: list[str] = []
     for path in target.rglob("*"):
         if not path.is_file():
@@ -212,8 +212,6 @@ def target_os_residue_files(target: Path) -> list[str]:
         try:
             relpath = path.relative_to(target)
         except ValueError:
-            continue
-        if relpath.parts and relpath.parts[0] == ".git":
             continue
         if is_os_residue(relpath):
             found.append(rel(path, target))
@@ -904,6 +902,25 @@ def self_test() -> dict[str, Any]:
             pass
         if bytecode_result["negative_checks"].get("delivered_bytecode_absent") is not False:
             failures.append("negative_checks must expose delivered_bytecode_absent=False under contamination")
+
+        # Red-capable Ceiling F4 fixture: do not hide the whole .git tree from
+        # artifact hygiene. Normal Git metadata is not residue, but an AppleDouble
+        # file under .git is still residue and must be surfaced.
+        git_residue_target = root / "healthy-with-git-scoped-residue"
+        write_base_fixture(git_residue_target, healthy=True)
+        git_object = git_residue_target / ".git/objects/aa/neutral-object"
+        git_object.parent.mkdir(parents=True, exist_ok=True)
+        git_object.write_text("not an OS residue name\n", encoding="utf-8")
+        git_residue = git_residue_target / ".git/._config"
+        git_residue.write_text("appledouble residue\n", encoding="utf-8")
+        git_residue_result = evaluate(git_residue_target)
+        git_residue_hygiene = git_residue_result["components"]["artifact_hygiene"]
+        if git_residue_hygiene["status"] != "FAIL":
+            failures.append("F4: .git-scoped OS residue must drive artifact_hygiene FAIL")
+        if ".git/._config" not in git_residue_hygiene.get("residue", []):
+            failures.append("F4: artifact_hygiene must surface .git/._config residue")
+        if ".git/objects/aa/neutral-object" in git_residue_hygiene.get("residue", []):
+            failures.append("F4: normal Git metadata must not be treated as OS residue")
 
         # Red-capable Ceiling F6 + F8 fixture: an otherwise-healthy target whose
         # manifest records NO provenance (source_tree_state="unknown") must NOT

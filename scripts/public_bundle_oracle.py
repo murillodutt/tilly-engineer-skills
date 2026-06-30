@@ -16,6 +16,12 @@ import tes_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = tes_bundle.VERSION
+BLOCKER_STATUS = "BLOCKER"
+
+
+def status_for_failures(failures: list[str]) -> str:
+    """Public bundle identity gaps are release blockers, not soft oracle failures."""
+    return BLOCKER_STATUS if failures else "PASS"
 
 
 def certify_public_bundle() -> dict[str, object]:
@@ -28,12 +34,12 @@ def certify_public_bundle() -> dict[str, object]:
         if not path.exists():
             failures.append(f"missing public bundle artifact: {path.relative_to(ROOT)}")
     if failures:
-        return {"version": VERSION, "status": "FAIL", "failures": failures}
+        return {"version": VERSION, "status": BLOCKER_STATUS, "failures": failures}
 
     try:
         expected_sha = tes_bundle.read_sha256_file(sha_path)
     except ValueError as exc:
-        return {"version": VERSION, "status": "FAIL", "failures": [str(exc)]}
+        return {"version": VERSION, "status": BLOCKER_STATUS, "failures": [str(exc)]}
 
     actual_sha = tes_bundle.sha256_file(bundle)
     if actual_sha != expected_sha:
@@ -98,9 +104,9 @@ def certify_public_bundle() -> dict[str, object]:
         structure_index = str(evidence.get("bundle_index") or "")
         # Compare by version/name, not absolute path: structure stores a relative
         # 'dist/<v>/index.json' while the oracle holds an absolute index path.
-        if structure_index and not structure_index.endswith(index_path.name) or (
-            structure_index and VERSION not in structure_index
-        ):
+        if not structure_index:
+            failures.append("tes-public.structure.yml evidence.bundle_index is missing")
+        elif not structure_index.endswith(index_path.name) or VERSION not in structure_index:
             failures.append(
                 f"tes-public.structure.yml evidence.bundle_index ({structure_index}) "
                 f"must point at dist/{VERSION}/{index_path.name}"
@@ -356,7 +362,7 @@ def certify_public_bundle() -> dict[str, object]:
 
     return {
         "version": VERSION,
-        "status": "PASS" if not failures else "FAIL",
+        "status": status_for_failures(failures),
         "bundle": str(bundle.relative_to(ROOT)),
         "sha256": actual_sha,
         "url": tes_bundle.public_bundle_url(VERSION),

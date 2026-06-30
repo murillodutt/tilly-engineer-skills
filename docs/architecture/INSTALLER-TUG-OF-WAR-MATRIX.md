@@ -124,26 +124,26 @@ manager is respected; otherwise husky for Node/TS/npm-first, pre-commit when a
 
 | # | Decision materialized | Where | Oracle |
 |---|-----------------------|-------|--------|
-| 1 | Hooks attached + no Git → headline `NEEDS_GIT` (exit 0, reversible); never a green hiding field-reports BLOCKED | `tes_install.git_readiness` + `aggregate_install_status` | `tes_install.self_test` |
-| 2 | Pre-push installed/verified when Git exists; the gate is a contract field (canary + doctor), not a cosmetic flag | `field_reports.install_hook` / `canary_admission.prepush_evidence` | `canary_admission`, `hook_manager_awareness` |
-| 3 | **Strict pre-commit installed & verified** (manager chosen by project type), overturning the advisory-only contract | `field_reports.select_hook_manager` + `install_pre_commit_hook` | `hook_manager_awareness.validate_selection_and_precommit` |
-| 4 | Artifact hygiene no longer self-blinds wholesale (scoped) | `installed_certification_oracle` hygiene scan | `installed_certification.self_test` |
-| 5 | MCP registration ladder: config written → host recognizes → handshake proves; `host_connected` measured, not hardcoded | `installed_certification.mcp_registration` (real handshake) | `installed_certification.self_test` (server-no-handshake fixture) |
-| 6 | Provenance `unknown` is fail-closed, never folded with `clean` | `installed_certification` hygiene seal | `installed_certification.self_test` (unknown-provenance fixture) |
-| 7 | Dirty source refuses publish (`--allow-dirty` escape) | `tes_bundle.publish_public_bundle` | `tes_bundle.self_test` |
-| 8 | Seal verdict reaches the certification headline (`release_claim_status`) | `installed_certification.evaluate` | `installed_certification.self_test` |
-| 9 | `NEEDS_EVIDENCE` / `PENDING_*` / `HOST_UNOBSERVABLE` gate the aggregate (fold MIN over all signals) | `installed_certification.status_from_findings` | `installed_certification.self_test` |
-| 10 | Scaffold required-surface emits per-surface signal, not umbrella advisory | `project_alignment_oracle.analyze` | `project_alignment_oracle.self_test` |
-| 11 | `all` surfaces VS Code as `NOT_INSTALLED_BY_POLICY` (no auto-install) | `tes_install.mcp_policy_verdicts` | `install_mcp` / `tes_install` self-test |
-| 12 | Per-host ledger: each host passes only on its own evidence (preserved) | `pretooluse_ceiling_evidence` per_host | `canary_admission.self_test` |
-| 13 | `PASS_SCAFFOLD` typed distinct from `PASS_ALIGNED` | `project_alignment_oracle.analyze` | `project_alignment_oracle.self_test` |
-| 14 | Context-demanded mesh absent → `NEEDS_REVIEW` (opt-in only without demand) | `attach_health_oracle` docs-mesh branch | `attach_health_oracle.self_test` |
-| 15 | Freshness `--gate` exits non-zero on `BLOCKED`/`STALE_SOURCE`; `--query` stays 0 | `tes_bundle` freshness CLI | `tes_bundle.self_test` |
-| 16 | `CONFIGURED_NOT_OBSERVED` until native proof (preserved reference shape) | `tes_install` hook health | preserved |
-| 17 | Closeout surfaces `PENDING_TRUST`/`PENDING_HOST_RESTART`; Cursor writes `preToolUse` | `tes_install.attach` + `install_cursor_pretooluse_hook` | `tes_install.self_test` |
-| 18 | Ledger rows tagged `host-real` vs fixture; only host-real authorizes `PASS_CEILING` | `pretooluse_ceiling_evidence` provenance | `tes_install.self_test` |
-| 19 | Helper-drift fails loud RED with closure path (preserved reference shape) | `public_bundle_oracle` | preserved |
-| 20 | Stale-advisory `derived_at` + per-run re-derivation (preserved reference shape) | `tes_install` advisory stamp | preserved |
+| 1 | Hooks attached + no Git → headline `NEEDS_GIT` (exit 0, reversible); never a green hiding field-reports BLOCKED | `tes_install.git_readiness` + `aggregate_install_status` | `python3 scripts/tes_install.py --self-test` |
+| 2 | Pre-push installed/verified when Git exists; the gate is a contract field (canary + doctor), not a cosmetic flag | `field_reports.install_hook` / `canary_admission.prepush_evidence` | `python3 scripts/canary_admission_oracle.py --self-test`; `python3 scripts/hook_manager_awareness_oracle.py --self-test` |
+| 3 | **Strict pre-commit installed & verified** (manager chosen by project type), overturning the advisory-only contract | `field_reports.select_hook_manager` + `install_pre_commit_hook` | `python3 scripts/hook_manager_awareness_oracle.py --self-test` |
+| 4 | Artifact hygiene no longer self-blinds wholesale (scoped) | `installed_certification_oracle` hygiene scan | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 5 | MCP registration ladder: config written → host recognizes → handshake proves; `host_connected` measured, not hardcoded | `installed_certification.mcp_registration` (real handshake) | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 6 | Provenance `unknown` is fail-closed, never folded with `clean` | `installed_certification` hygiene seal | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 7 | Dirty source refuses publish (`--allow-dirty` escape) | `tes_bundle.publish_public_bundle` | `python3 scripts/tes_bundle.py --self-test` |
+| 8 | Seal verdict reaches the certification headline (`release_claim_status`) | `installed_certification.evaluate` | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 9 | `NEEDS_EVIDENCE` / `PENDING_*` / `HOST_UNOBSERVABLE` gate the aggregate (fold MIN over all signals) | `installed_certification.status_from_findings` | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 10 | Scaffold required-surface emits per-surface signal, not umbrella advisory | `project_alignment_oracle.analyze` | `python3 scripts/project_alignment_oracle.py --self-test` |
+| 11 | `all` surfaces VS Code as `NOT_INSTALLED_BY_POLICY` (no auto-install) | `tes_install.mcp_policy_verdicts` | `python3 scripts/install_mcp.py --self-test`; `python3 scripts/tes_install.py --self-test` |
+| 12 | Per-host ledger: each host passes only on its own evidence (preserved) | `pretooluse_ceiling_evidence` per_host | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 13 | `PASS_SCAFFOLD` typed distinct from `PASS_ALIGNED` | `project_alignment_oracle.analyze` | `python3 scripts/project_alignment_oracle.py --self-test` |
+| 14 | Context-demanded mesh absent → `NEEDS_REVIEW` (opt-in only without demand) | `attach_health_oracle` docs-mesh branch | `python3 scripts/attach_health_oracle.py --self-test` |
+| 15 | Freshness `--gate` exits non-zero on `BLOCKED`/`STALE_SOURCE`; `--query` stays 0 | `tes_bundle` freshness CLI | `python3 scripts/tes_bundle.py --self-test` |
+| 16 | `CONFIGURED_NOT_OBSERVED` until native proof (preserved reference shape) | `tes_install` hook health | `python3 scripts/tes_install.py --self-test`; `python3 scripts/canary_admission_oracle.py --self-test` |
+| 17 | Closeout surfaces `PENDING_TRUST`/`PENDING_HOST_RESTART`; Cursor writes `preToolUse` | `tes_install.attach` + `install_cursor_pretooluse_hook` | `python3 scripts/tes_install.py --self-test` |
+| 18 | Ledger rows tagged `host-real` vs fixture; only host-real authorizes `PASS_CEILING` | `pretooluse_ceiling_evidence` provenance | `python3 scripts/tes_install.py --self-test` |
+| 19 | Helper-drift fails loud RED with closure path (preserved reference shape) | `public_bundle_oracle` | `python3 scripts/public_bundle_oracle.py` |
+| 20 | Stale-advisory `derived_at` + per-run re-derivation (preserved reference shape) | `tes_install` advisory stamp | `python3 scripts/tes_install.py --self-test` |
 
 Fresh-install readiness: a clean install whose only open findings are
 host-pending (MCP/host not yet restarted, hooks not yet fired) or a
@@ -168,19 +168,19 @@ ceiling audit confirmed 36/36 findings RESOLVED with a red-capable oracle each.
 
 | # | Decision materialized | Where | Oracle |
 |---|-----------------------|-------|--------|
-| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` (gate-pre-git, blocking); neither marker proves the other | `canary_admission.prepush_evidence` | `canary_admission.self_test` (drain-only / gate-only) |
-| 22 | Strict pre-commit proven by executability (`os.access X_OK`) + a gate token in CODE (comments stripped), never a substring | `canary_admission.precommit_evidence` | `canary_admission.self_test` (comment-stub / non-exec) |
-| 23 | hook-health `--gate` exits non-zero on `NEEDS_EVIDENCE`; `--query` (default) stays 0 | `tes_install` hook-health CLI | `tes_install.self_test` |
-| 24 | `certification_tier` distinguishes `PASS_BASIC` from `PASS_CEILING`; `ceiling_evidence` surfaced (INFO, non-gating on fresh install) | `installed_certification.evaluate` | `installed_certification.self_test` |
-| 25 | Field Reports pre-push is an advisory non-blocking drain; admission gates on the drain, the project gate is observational | `canary_admission.git_admission` | `canary_admission.self_test` (gate-only BLOCKS) |
-| 26 | Expected MCP derived from the install lock — lock attached MCP but no config = FAIL, never silent PASS | `installed_certification.mcp_registration` | `installed_certification.self_test` (attached-but-absent) |
-| 27 | `attach`/`detach` transact the install lock + recertify (honor `--dry-run`, additive merge, capsule preserved) | `tes_install.transact_lock_surface` | `tes_install.self_test` (F27 lock-transaction) |
-| 28 | `doctor` separates `report_status` (capsule) from `readiness_status` (folds worst attachment); `PENDING_*`/`DEGRADED` never hidden | `tes_install.doctor` + `_fold_attachment_readiness` | `tes_install.self_test` (F28 fold) |
-| 29 | `public_bundle_oracle` validates `tes-public.structure.yml` `bundle_sha256`; `tds_surface` dist-missing is a BLOCKER (caught a real stale SHA) | `public_bundle_oracle` + `tds_surface_oracle` | live `public_bundle_oracle` run |
-| 30 | `tes-update --gate`/`status` exits non-zero on drift/`AVAILABLE`; `plan` stays query (exit 0) | `tes_update` CLI | `tes_update.self_test` |
-| 31 | Version gate scans all `scripts/**.py` `VERSION` constants with an independent-version allowlist | `validate_reference_package` | the scan itself (planted-stale RED) |
-| 32 | `tes_bump --governance-check` + `--self-test` sealed into `commit:closure` | `package.json` closure chain | closure chain |
-| 33 | `pretooluse_evidence_oracle --self-test` sealed into `commit:closure` | `package.json` closure chain | closure chain |
-| 34 | `hook_manager_awareness` + `runtime_topology` self-tests sealed into `commit:closure` | `package.json` closure chain | closure chain |
-| 35 | `tes_bundle` per-subcommand `--gate` exits non-zero on `BLOCKED`/`STALE_SOURCE`/`NEEDS_REVIEW`; default query stays 0 | `tes_bundle` shared exit map | `tes_bundle.self_test` |
-| 36 | `context_core_status=UNKNOWN` composes `PENDING`/`NEEDS_EVIDENCE`, never `READY`; ready fixtures prove the core | `tes_update.post_layer_zero_final_probe` | `tes_update.self_test` (UNKNOWN ≠ READY) |
+| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` (gate-pre-git, blocking); neither marker proves the other | `canary_admission.prepush_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 22 | Strict pre-commit proven by executability (`os.access X_OK`) + a gate token in CODE (comments stripped), never a substring | `canary_admission.precommit_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 23 | hook-health `--gate` exits non-zero on `NEEDS_EVIDENCE`; `--query` (default) stays 0 | `tes_install` hook-health CLI | `python3 scripts/tes_install.py --self-test` |
+| 24 | `certification_tier` distinguishes `PASS_BASIC` from `PASS_CEILING`; `ceiling_evidence` surfaced (INFO, non-gating on fresh install) | `installed_certification.evaluate` | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 25 | Field Reports pre-push is an advisory non-blocking drain; admission gates on the drain, the project gate is observational | `canary_admission.git_admission` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 26 | Expected MCP derived from the install lock — lock attached MCP but no config = FAIL, never silent PASS | `installed_certification.mcp_registration` | `python3 scripts/installed_certification_oracle.py --self-test` |
+| 27 | `attach`/`detach` transact the install lock + recertify (honor `--dry-run`, additive merge, capsule preserved) | `tes_install.transact_lock_surface` | `python3 scripts/tes_install.py --self-test` |
+| 28 | `doctor` separates `report_status` (capsule) from `readiness_status` (folds worst attachment); `PENDING_*`/`DEGRADED` never hidden | `tes_install.doctor` + `_fold_attachment_readiness` | `python3 scripts/tes_install.py --self-test` |
+| 29 | `public_bundle_oracle` validates `tes-public.structure.yml` `bundle_sha256`; `tds_surface` dist-missing is a BLOCKER (caught a real stale SHA) | `public_bundle_oracle` + `tds_surface_oracle` | `python3 scripts/public_bundle_oracle.py`; `python3 scripts/tds_surface_oracle.py` |
+| 30 | `tes-update --gate`/`status` exits non-zero on drift/`AVAILABLE`; `plan` stays query (exit 0) | `tes_update` CLI | `python3 scripts/tes_update.py --self-test` |
+| 31 | Version gate scans all `scripts/**.py` `VERSION` constants with an independent-version allowlist | `validate_reference_package` | `python3 scripts/validate_reference_package.py --staged-ready` |
+| 32 | `tes_bump --governance-check` + `--self-test` sealed into `commit:closure` | `package.json` closure chain | `python3 scripts/tes_bump.py --self-test`; `python3 scripts/tes_bump.py --governance-check --staged` |
+| 33 | `pretooluse_evidence_oracle --self-test` sealed into `commit:closure` | `package.json` closure chain | `python3 scripts/pretooluse_evidence_oracle.py --self-test` |
+| 34 | `hook_manager_awareness` + `runtime_topology` self-tests sealed into `commit:closure` | `package.json` closure chain | `python3 scripts/hook_manager_awareness_oracle.py --self-test`; `python3 scripts/runtime_topology_oracle.py --self-test` |
+| 35 | `tes_bundle` per-subcommand `--gate` exits non-zero on `BLOCKED`/`STALE_SOURCE`/`NEEDS_REVIEW`; default query stays 0 | `tes_bundle` shared exit map | `python3 scripts/tes_bundle.py --self-test` |
+| 36 | `context_core_status=UNKNOWN` composes `PENDING`/`NEEDS_EVIDENCE`, never `READY`; ready fixtures prove the core | `tes_update.post_layer_zero_final_probe` | `python3 scripts/tes_update.py --self-test` |

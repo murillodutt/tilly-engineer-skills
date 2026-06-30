@@ -37,7 +37,7 @@ from typing import Any
 import capsule_residue_oracle as residue
 
 
-VERSION = "0.3.234"
+VERSION = "0.3.235"
 
 # Surface set mirrors tes_install ALL_ATTACH_SURFACES.
 SURFACES = ("mcp", "docs-mesh", "root-context", "skills", "hooks", "field-reports", "gps", "goals", "mantra")
@@ -58,6 +58,13 @@ HOOK_AGENT_CONFIGS = {
     "claude": (".claude/settings.json",),
     "cursor": (".cursor/hooks.json",),
 }
+DOCS_MESH_ROOT = "docs/agents"
+DOCS_MESH_DEMAND_FILES = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CURSOR.md",
+    ".cursor/rules/tes-engineering-discipline.mdc",
+)
 
 
 def python_executable() -> str:
@@ -231,6 +238,24 @@ def hook_health(target: Path) -> dict[str, Any]:
     }
 
 
+def docs_mesh_demand(target: Path) -> list[str]:
+    """Root context references that make an absent docs-mesh reviewable.
+
+    docs-mesh is opt-in for a fresh target. Once a root context points agents at
+    `docs/agents/**`, absence is no longer neutral: the configured context asks
+    for a project mesh that is not materialized.
+    """
+    demanded_by: list[str] = []
+    for relpath in DOCS_MESH_DEMAND_FILES:
+        path = target / relpath
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if DOCS_MESH_ROOT in text:
+            demanded_by.append(relpath)
+    return demanded_by
+
+
 def evaluate(target: Path, surface: str, *, mcp_timeout: float = HANDSHAKE_TIMEOUT_S) -> dict[str, Any]:
     """Per-surface attach-health verdict."""
     target = target.resolve()
@@ -249,7 +274,17 @@ def evaluate(target: Path, surface: str, *, mcp_timeout: float = HANDSHAKE_TIMEO
         health = {"status": "PASS" if present else "NOT_APPLIED", "present": present}
     elif surface == "docs-mesh":
         present = (target / "docs/agents").exists()
-        health = {"status": "PASS" if present else "NOT_APPLIED"}
+        demanded_by = docs_mesh_demand(target) if not present else []
+        if present:
+            health = {"status": "PASS"}
+        elif demanded_by:
+            health = {
+                "status": "NEEDS_REVIEW",
+                "reason": "root context references docs/agents but docs-mesh is absent",
+                "demanded_by": demanded_by,
+            }
+        else:
+            health = {"status": "NOT_APPLIED"}
     else:
         # field-reports / gps / goals / mantra: presence-only until their
         # detectors and health probes land in later units.
@@ -370,6 +405,27 @@ def self_test() -> int:
         h = evaluate(legacy, "hooks")
         if h["status"] != "PASS" or h.get("legacy_records") != 1:
             failures.append(f"legacy hook sentinel must remain readable: {h}")
+
+        # Docs-mesh: opt-in absence stays NOT_APPLIED unless root context demands it.
+        docs_opt_in = evaluate(root / "empty", "docs-mesh")
+        if docs_opt_in["status"] != "NOT_APPLIED":
+            failures.append(f"docs-mesh absent with no demand must be NOT_APPLIED: {docs_opt_in}")
+
+        docs_demanded = root / "docs-demanded"
+        docs_demanded.mkdir()
+        (docs_demanded / "AGENTS.md").write_text(
+            "<!-- TES:CORE BEGIN version=0.0.0 sha256=x adapter=codex path=AGENTS.md -->\n"
+            "Route to `docs/agents/**`.\n"
+            "<!-- TES:CORE END -->\n",
+            encoding="utf-8",
+        )
+        h = evaluate(docs_demanded, "docs-mesh")
+        if h["status"] != "NEEDS_REVIEW" or "AGENTS.md" not in h.get("demanded_by", []):
+            failures.append(f"context-demanded docs-mesh absence must be NEEDS_REVIEW: {h}")
+        (docs_demanded / "docs/agents").mkdir(parents=True)
+        h = evaluate(docs_demanded, "docs-mesh")
+        if h["status"] != "PASS":
+            failures.append(f"present docs-mesh must satisfy context demand: {h}")
 
         # Unknown surface -> FAIL.
         if evaluate(root / "empty", "bogus")["status"] != "FAIL":

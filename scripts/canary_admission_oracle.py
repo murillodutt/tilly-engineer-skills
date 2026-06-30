@@ -51,7 +51,7 @@ import field_reports
 import tes_install
 
 
-VERSION = "0.3.234"
+VERSION = "0.3.235"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
@@ -238,6 +238,8 @@ def git_admission(target: Path) -> dict[str, Any]:
         # No Git: every Git claim is false, and admission is BLOCKED, not skipped.
         return {
             "status": "BLOCKED",
+            "readiness": "NEEDS_GIT",
+            "headline": "NEEDS_GIT: target is not a Git work tree; canary admission requires Git",
             "git_work_tree": False,
             "git_clean": False,
             "prepush_installed": False,
@@ -324,11 +326,18 @@ def evaluate(target: Path) -> dict[str, Any]:
         status = "NEEDS_EVIDENCE"
     else:
         status = "PASS"
+    readiness = str(git.get("readiness") or status)
+    headline = str(
+        git.get("headline")
+        or ("PASS: canary admission ready" if status == "PASS" else f"{status}: canary admission not ready")
+    )
     return {
         "schema": SCHEMA,
         "version": VERSION,
         "target": str(target),
         "status": status,
+        "readiness": readiness,
+        "headline": headline,
         "git_admission": git,
         "host_hook_admission": hooks,
         "blockers": blockers,
@@ -474,6 +483,8 @@ def self_test() -> dict[str, Any]:
         result = evaluate(no_git)
         if result["status"] != "BLOCKED":
             failures.append(f"no-Git target must BLOCK admission, got {result['status']}")
+        if result.get("readiness") != "NEEDS_GIT" or "NEEDS_GIT" not in str(result.get("headline")):
+            failures.append("no-Git target must propagate NEEDS_GIT in readiness/headline")
         if result["git_admission"]["git_work_tree"] is not False:
             failures.append("no-Git target must report git_work_tree=False")
         if result["claims"]["prepush_installed"] or result["claims"]["precommit_enforced"] or result["claims"]["git_clean"]:

@@ -31,7 +31,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.234"
+VERSION = "0.3.235"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -182,7 +182,7 @@ RETIRED_RUNTIME_PATHS = {
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "runtime_trigger_status=PASS|NOT_APPLIED",
-    "context_core_status=PASS|NOT_APPLIED|UNKNOWN",
+    "context_core_status=PASS|NOT_APPLIED",
     "project_context_status=PASS|NOT_APPLIED",
     "project_alignment_status=PASS|NOT_APPLIED",
     "project_quality_gates=PASS|BLOCKED_WITH_REASON|NOT_APPLIED",
