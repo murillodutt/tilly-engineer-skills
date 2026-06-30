@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -11,6 +11,8 @@
 // thermometer_fidelity_required:true.
 // SPEC-007 fixtures opt into canonical ledger grammar validation with
 // ledger_grammar_required:true.
+// SPEC-008 fixtures opt into report surface coherence validation with
+// report_coherence_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -23,16 +25,19 @@ const DOCUMENT_ANALYSIS_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
 const SPEC_FIDELITY_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
 const THERMOMETER_FIDELITY_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
 const LEDGER_GRAMMAR_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
+const REPORT_COHERENCE_STOP_STATE = 'NEEDS_REPORT_COHERENCE';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
 const SPEC_FIDELITY_CONTRACT = 'goal-maestro-p0-spec-fidelity';
 const THERMOMETER_FIDELITY_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
 const LEDGER_GRAMMAR_CONTRACT = 'goal-maestro-p0-ledger-grammar';
+const REPORT_COHERENCE_CONTRACT = 'goal-maestro-p0-report-coherence';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
 const MATERIAL_SPEC_HEADING_RE = /^### (SPEC-\d{3}) - (.+\S)$/;
+const REPORT_COHERENCE_FIELDS = ['spec_ids', 'final_status', 'report_status', 'share_status', 'evidence_hashes', 'unproven_count'];
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -86,6 +91,7 @@ const documentAnalysisPacketRequired = requiresDocumentAnalysisPacket(fixture);
 const specFidelityRequired = requiresSpecFidelityGate(fixture);
 const thermometerFidelityRequired = requiresThermometerFidelityGate(fixture);
 const ledgerGrammarRequired = requiresLedgerGrammarGate(fixture);
+const reportCoherenceRequired = requiresReportCoherenceGate(fixture);
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -217,11 +223,16 @@ if (specFidelityRequired) {
 if (ledgerGrammarRequired) {
   addLedgerGrammarChecks();
 }
+if (reportCoherenceRequired) {
+  addReportCoherenceChecks();
+}
 if (thermometerFidelityRequired) {
   addThermometerFidelityChecks();
 }
 
-const harnessTitle = ledgerGrammarRequired
+const harnessTitle = reportCoherenceRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008 goal-maestro-p0-report-coherence (${LINEAR_STOP_STATE}/${REPORT_COHERENCE_STOP_STATE})`
+  : ledgerGrammarRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007 goal-maestro-p0-ledger-grammar (${LINEAR_STOP_STATE}/${LEDGER_GRAMMAR_STOP_STATE})`
   : thermometerFidelityRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006 goal-maestro-p0-thermometer-fidelity (${LINEAR_STOP_STATE}/${THERMOMETER_FIDELITY_STOP_STATE})`
@@ -826,6 +837,52 @@ function addLedgerGrammarChecks() {
   }
 }
 
+function addReportCoherenceChecks() {
+  const metrics = thermometerMetricsFromFixture(fixture);
+  const surfaces = [
+    { name: 'ledger', snapshot: reportSurfaceSnapshot('ledger', reportCoherenceSurfaceFromFixture('ledger')) },
+    { name: 'metrics', snapshot: reportSurfaceSnapshot('metrics', metrics) },
+    { name: 'receipt', snapshot: reportSurfaceSnapshot('receipt', reportCoherenceSurfaceFromFixture('receipt')) },
+    { name: 'html', snapshot: reportSurfaceSnapshot('html', reportCoherenceSurfaceFromFixture('html')) },
+  ];
+  const expected = expectedReportCoherenceSnapshot(surfaces.find((surface) => surface.name === 'metrics')?.snapshot ?? {});
+
+  reportCoherenceCheck(
+    'checksum validation passed before report coherence closeout',
+    checksumValidationPassed(fixture),
+    'report coherence requires a passing checksum validation for the local package',
+  );
+
+  for (const field of REPORT_COHERENCE_FIELDS) {
+    reportCoherenceCheck(
+      `${field} expectation is present`,
+      reportCoherenceFieldPresent(expected, field),
+      `report_coherence_expectations lacks ${field}`,
+    );
+    for (const surface of surfaces) {
+      const surfaceFieldPresent = reportCoherenceFieldPresent(surface.snapshot, field);
+      reportCoherenceCheck(
+        `${surface.name} ${field} is present`,
+        surfaceFieldPresent,
+        `${surface.name} surface lacks ${field}`,
+      );
+      reportCoherenceCheck(
+        `${surface.name} ${field} matches canonical report value`,
+        surfaceFieldPresent && reportCoherenceFieldEqual(surface.snapshot[field], expected[field], field),
+        `${surface.name} ${field} ${formatReportCoherenceField(surface.snapshot[field])} must match ${formatReportCoherenceField(expected[field])}`,
+      );
+    }
+  }
+
+  const metricsSnapshot = surfaces.find((surface) => surface.name === 'metrics')?.snapshot ?? {};
+  const receiptSnapshot = surfaces.find((surface) => surface.name === 'receipt')?.snapshot ?? {};
+  reportCoherenceCheck(
+    'chat closeout does not pass with unproven report surfaces',
+    !(closeoutSaysPass(reportCoherenceSurfaceFromFixture('closeout')) && reportSurfacesAreUnproven(metricsSnapshot, receiptSnapshot)),
+    'chat closeout cannot say pass when metrics or receipt reports unproven counts',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -951,6 +1008,10 @@ function thermometerFidelityCheck(name, pass, detail) {
 
 function ledgerGrammarCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${LEDGER_GRAMMAR_STOP_STATE}: ${detail}` });
+}
+
+function reportCoherenceCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${REPORT_COHERENCE_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1090,6 +1151,12 @@ function requiresLedgerGrammarGate(value) {
     || value.contract === LEDGER_GRAMMAR_CONTRACT;
 }
 
+function requiresReportCoherenceGate(value) {
+  return value.report_coherence_required === true
+    || value.harness_contract === REPORT_COHERENCE_CONTRACT
+    || value.contract === REPORT_COHERENCE_CONTRACT;
+}
+
 function acceptedBoundedRepairUnitIds(value) {
   const acceptedUnits = [
     ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
@@ -1149,6 +1216,18 @@ function thermometerMetricsFromFixture(value) {
   return isPlainObject(metrics) ? metrics : {};
 }
 
+function reportCoherenceSurfaceFromFixture(surfaceName) {
+  const reportSurfaces = isPlainObject(fixture.report_surfaces) ? fixture.report_surfaces : {};
+  if (surfaceName === 'ledger') {
+    const ledgerText = ledgerTextFromFixture(fixture);
+    return reportSurfaces.ledger ?? fixture.ledger_report_coherence ?? (nonEmptyString(ledgerText) ? ledgerText : fixture.ledger ?? {});
+  }
+  if (surfaceName === 'receipt') return reportSurfaces.receipt ?? fixture.receipt_text ?? fixture.context_receipt_text ?? fixture.receipt_markdown ?? fixture.context_receipt ?? fixture.receipt ?? {};
+  if (surfaceName === 'html') return reportSurfaces.html ?? fixture.html_text ?? fixture.execution_thermometer_html ?? fixture.html ?? {};
+  if (surfaceName === 'closeout') return reportSurfaces.closeout ?? fixture.chat_closeout ?? fixture.closeout_text ?? fixture.closeout ?? {};
+  return reportSurfaces[surfaceName] ?? {};
+}
+
 function ledgerTextFromFixture(value) {
   const candidates = [
     value.ledger_text,
@@ -1159,6 +1238,202 @@ function ledgerTextFromFixture(value) {
     value.ledger?.content,
   ];
   return candidates.find(nonEmptyString) ?? '';
+}
+
+function expectedReportCoherenceSnapshot(metricsSnapshot) {
+  const expected = isPlainObject(fixture.report_coherence_expectations) ? fixture.report_coherence_expectations : {};
+  return normalizeReportCoherenceSnapshot({
+    spec_ids: expected.spec_ids ?? expected.reported_specs ?? expected.reported_spec_ids ?? declaredSpecs,
+    final_status: expected.final_status ?? expected.goal_maestro_execution_state ?? metricsSnapshot.final_status,
+    report_status: expected.report_status ?? expected.thermometer_report_status ?? metricsSnapshot.report_status,
+    share_status: expected.share_status ?? expected.share_gate_status ?? metricsSnapshot.share_status,
+    evidence_hashes: expected.evidence_hashes ?? expected.evidence_hash ?? metricsSnapshot.evidence_hashes,
+    unproven_count: expected.unproven_count ?? expected.unproven_metrics_count ?? metricsSnapshot.unproven_count,
+  });
+}
+
+function reportSurfaceSnapshot(surfaceName, surface) {
+  if (typeof surface === 'string') return reportTextSnapshot(surface);
+  if (!isPlainObject(surface)) return {};
+  const direct = isPlainObject(surface.report_coherence)
+    ? surface.report_coherence
+    : isPlainObject(surface.coherence)
+      ? surface.coherence
+      : surface;
+  if (surfaceName === 'metrics') {
+    const surfaceHashes = evidenceHashesFromSurface(surface);
+    return normalizeReportCoherenceSnapshot({
+      spec_ids: surface.latest_loop?.spec_ids ?? surface.loops?.at?.(-1)?.spec_ids ?? surface.spec_results ?? direct.spec_ids,
+      final_status: surface.final_status?.goal_maestro_execution_state ?? direct.final_status ?? direct.goal_maestro_execution_state,
+      report_status: surface.final_status?.thermometer_report_status ?? direct.report_status ?? direct.thermometer_report_status,
+      share_status: surface.final_status?.share_gate_status ?? surface.share_gate?.status ?? direct.share_status ?? direct.share_gate_status,
+      evidence_hashes: surfaceHashes.length > 0 ? surfaceHashes : direct.evidence_hashes ?? direct.evidence_hash,
+      unproven_count: direct.unproven_count ?? direct.unproven_metrics_count ?? countUnprovenMetrics(surface),
+    });
+  }
+  return normalizeReportCoherenceSnapshot({
+    spec_ids: direct.spec_ids ?? direct.reported_specs ?? direct.reported_spec_ids ?? direct.material_spec_ids ?? direct.specs ?? surface.latest_loop?.spec_ids ?? surface.loops?.at?.(-1)?.spec_ids ?? surface.spec_results,
+    final_status: direct.final_status ?? direct.goal_maestro_execution_state ?? surface.final_status?.goal_maestro_execution_state,
+    report_status: direct.report_status ?? direct.thermometer_report_status ?? surface.final_status?.thermometer_report_status,
+    share_status: direct.share_status ?? direct.share_gate_status ?? surface.final_status?.share_gate_status ?? surface.share_gate?.status,
+    evidence_hashes: direct.evidence_hashes ?? direct.evidence_hash ?? evidenceHashesFromSurface(surface),
+    unproven_count: direct.unproven_count ?? direct.unproven_metrics_count ?? countUnprovenMetrics(surface),
+  });
+}
+
+function reportTextSnapshot(text) {
+  const normalizedText = String(text).replace(/<[^>]*>/g, ' ');
+  return normalizeReportCoherenceSnapshot({
+    spec_ids: textSpecIdsFromField(readReportTextField(normalizedText, ['spec_ids', 'reported_specs', 'specs'])),
+    final_status: readReportTextField(normalizedText, ['final_status', 'goal_maestro_execution_state', 'Goal Maestro state']),
+    report_status: readReportTextField(normalizedText, ['report_status', 'thermometer_report_status', 'Thermometer report']),
+    share_status: readReportTextField(normalizedText, ['share_status', 'share_gate_status', 'Share gate']),
+    evidence_hashes: readReportTextField(normalizedText, ['evidence_hashes', 'evidence hashes']),
+    unproven_count: readReportTextField(normalizedText, ['unproven_count', 'unproven metrics', 'Evidence posture']),
+  });
+}
+
+function readReportTextField(text, labels) {
+  for (const label of labels) {
+    const pattern = new RegExp(`${escapeRegExp(label)}\\s*[:=]\\s*([^\\n;<>]+)`, 'i');
+    const match = pattern.exec(text);
+    if (match) return match[1].trim();
+  }
+  return null;
+}
+
+function normalizeReportCoherenceSnapshot(value) {
+  return {
+    spec_ids: normalizeSpecIdArray(value.spec_ids),
+    final_status: normalizeReportScalar(value.final_status),
+    report_status: normalizeReportScalar(value.report_status),
+    share_status: normalizeReportScalar(value.share_status),
+    evidence_hashes: normalizeEvidenceHashArray(value.evidence_hashes),
+    unproven_count: normalizeReportCount(value.unproven_count),
+  };
+}
+
+function normalizeReportScalar(value) {
+  return nonEmptyString(value) ? String(value).trim() : null;
+}
+
+function normalizeReportCount(value) {
+  if (Number.isInteger(value) && value >= 0) return value;
+  if (Array.isArray(value)) return value.length;
+  if (nonEmptyString(value)) {
+    const match = /\d+/.exec(value);
+    return match ? Number.parseInt(match[0], 10) : null;
+  }
+  return null;
+}
+
+function normalizeEvidenceHashArray(value) {
+  if (Array.isArray(value)) {
+    return value.map(evidenceHashFromValue).filter(nonEmptyString);
+  }
+  if (nonEmptyString(value)) {
+    return value
+      .split(/[,;\s]+/)
+      .map((entry) => entry.replace(/^[`'"]|[`'"]$/g, '').trim())
+      .filter(nonEmptyString);
+  }
+  return [];
+}
+
+function evidenceHashFromValue(value) {
+  if (typeof value === 'string') return value.trim();
+  if (!isPlainObject(value)) return null;
+  return value.hash ?? value.evidence_hash ?? value.sha256 ?? value.checksum ?? null;
+}
+
+function evidenceHashesFromSurface(surface) {
+  const candidates = [
+    surface.evidence_hashes,
+    surface.evidence_hash,
+    surface.sources,
+    surface.evidence,
+    surface.evidence_sources,
+  ];
+  for (const candidate of candidates) {
+    const hashes = normalizeEvidenceHashArray(candidate);
+    if (hashes.length > 0) return hashes;
+  }
+  return [];
+}
+
+function countUnprovenMetrics(surface) {
+  if (Number.isInteger(surface.unproven_count)) return surface.unproven_count;
+  if (Array.isArray(surface.unproven_metrics)) return surface.unproven_metrics.length;
+  return null;
+}
+
+function reportCoherenceFieldPresent(snapshot, field) {
+  const value = snapshot[field];
+  if (Array.isArray(value)) return value.length > 0;
+  if (field === 'unproven_count') return Number.isInteger(value) && value >= 0;
+  return nonEmptyString(value);
+}
+
+function reportCoherenceFieldEqual(actual, expected, field) {
+  if (Array.isArray(expected) || Array.isArray(actual)) {
+    return sameStringArray(actual, expected);
+  }
+  if (field === 'unproven_count') return actual === expected;
+  return actual === expected;
+}
+
+function formatReportCoherenceField(value) {
+  if (Array.isArray(value)) return formatValues(value);
+  if (value === null || value === undefined) return 'missing';
+  return String(value);
+}
+
+function reportSurfacesAreUnproven(...snapshots) {
+  return snapshots.some((snapshot) => Number.isInteger(snapshot.unproven_count) && snapshot.unproven_count > 0);
+}
+
+function closeoutSaysPass(closeout) {
+  if (typeof closeout === 'string') {
+    const status = readReportTextField(closeout, ['status', 'closeout_status', 'result']);
+    return isCloseoutPassStatus(status) || /\b(pass|complete|completed)\b/i.test(closeout);
+  }
+  if (!isPlainObject(closeout)) return false;
+  return isCloseoutPassStatus(closeout.status ?? closeout.closeout_status ?? closeout.result ?? closeout.final_status);
+}
+
+function isCloseoutPassStatus(value) {
+  if (!nonEmptyString(value)) return false;
+  return ['pass', 'passed', 'complete', 'completed', 'success'].includes(String(value).trim().toLowerCase());
+}
+
+function checksumValidationPassed(value) {
+  const validation = value.checksum_validation ?? value.package_checksum_validation ?? value.checksums_validation;
+  if (!isPlainObject(validation)) return false;
+  const statusPass = isPassStatus(validation.status ?? validation.result ?? validation.checksum_status) || validation.valid === true;
+  const entries = checksumValidationEntries(validation);
+  const entriesPass = entries.length > 0 && entries.every((entry) => {
+    const expected = entry.expected_hash ?? entry.expected ?? entry.hash;
+    const actual = entry.actual_hash ?? entry.actual ?? entry.computed_hash;
+    return nonEmptyString(expected) && nonEmptyString(actual) && expected === actual;
+  });
+  return statusPass && entriesPass;
+}
+
+function checksumValidationEntries(validation) {
+  if (Array.isArray(validation.files)) return validation.files.filter(isPlainObject);
+  if (Array.isArray(validation.entries)) return validation.entries.filter(isPlainObject);
+  if (isPlainObject(validation.files)) return Object.values(validation.files).filter(isPlainObject);
+  if (isPlainObject(validation.entries)) return Object.values(validation.entries).filter(isPlainObject);
+  return [];
+}
+
+function textSpecIdsFromField(value) {
+  if (!nonEmptyString(value)) return [];
+  return value.split(/[,;\s]+/).filter(nonEmptyString);
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function parseLedgerGrammar(text) {

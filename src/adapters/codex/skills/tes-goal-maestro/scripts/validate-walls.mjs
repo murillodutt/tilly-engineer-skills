@@ -40,6 +40,23 @@ const GM12_SPEC6_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
 const GM12_SPEC7_CONTRACT = 'goal-maestro-p0-ledger-grammar';
 const GM12_SPEC7_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
 const GM12_SPEC7_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
+const GM12_SPEC8_CONTRACT = 'goal-maestro-p0-report-coherence';
+const GM12_SPEC8_STOP_STATE = 'NEEDS_REPORT_COHERENCE';
+const GM12_SPEC8_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
+const GM12_SPEC8_FINAL_STATUS = 'PASS_P0_HARNESS_ORCHESTRATION_FEEDBACK_FIDELITY';
+const GM12_SPEC8_REPORT_STATUS = 'local_package_ready';
+const GM12_SPEC8_SHARE_STATUS = 'not_requested';
+const GM12_SPEC8_EVIDENCE_HASHES = [
+  '1111111111111111111111111111111111111111111111111111111111111111',
+  '2222222222222222222222222222222222222222222222222222222222222222',
+  '3333333333333333333333333333333333333333333333333333333333333333',
+];
+const GM12_SPEC8_CHECKSUM_HASHES = {
+  ledger: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  metrics: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+  receipt: 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  html: 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+};
 const GM12_SPEC2_ALLOWED_FILES = [
   'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
   'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
@@ -252,6 +269,30 @@ function gm12Spec7NestedCloseoutArgs() {
 
 function gm12Spec7RevertArgs() {
   return [fixture('gm12-spec7-ledger-grammar-ok.json', JSON.stringify(gm12Spec7Fixture('valid')))];
+}
+
+function gm12Spec8SpecIdDriftArgs() {
+  return [fixture('gm12-spec8-report-coherence-spec-id-drift.json', JSON.stringify(gm12Spec8Fixture('spec_id_drift')))];
+}
+
+function gm12Spec8StatusDriftArgs() {
+  return [fixture('gm12-spec8-report-coherence-status-drift.json', JSON.stringify(gm12Spec8Fixture('status_drift')))];
+}
+
+function gm12Spec8EvidenceHashDriftArgs() {
+  return [fixture('gm12-spec8-report-coherence-evidence-hash-drift.json', JSON.stringify(gm12Spec8Fixture('evidence_hash_drift')))];
+}
+
+function gm12Spec8UnprovenCloseoutArgs() {
+  return [fixture('gm12-spec8-report-coherence-unproven-closeout.json', JSON.stringify(gm12Spec8Fixture('unproven_closeout_pass')))];
+}
+
+function gm12Spec8ChecksumMismatchArgs() {
+  return [fixture('gm12-spec8-report-coherence-checksum-mismatch.json', JSON.stringify(gm12Spec8Fixture('checksum_mismatch')))];
+}
+
+function gm12Spec8RevertArgs() {
+  return [fixture('gm12-spec8-report-coherence-ok.json', JSON.stringify(gm12Spec8Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -596,6 +637,117 @@ function gm12Spec7LedgerText(mode) {
     ...spec3Lines,
     '',
   ].join('\n');
+}
+
+function gm12Spec8Fixture(mode) {
+  const base = gm12Spec7Fixture('valid');
+  const unproven_count = mode === 'unproven_closeout_pass' ? 1 : 0;
+  const expected = {
+    spec_ids: GM12_SPEC8_DECLARED_SPECS,
+    final_status: GM12_SPEC8_FINAL_STATUS,
+    report_status: GM12_SPEC8_REPORT_STATUS,
+    share_status: GM12_SPEC8_SHARE_STATUS,
+    evidence_hashes: GM12_SPEC8_EVIDENCE_HASHES,
+    unproven_count,
+  };
+  const ledgerSnapshot = { ...expected };
+  const metricsSnapshot = { ...expected };
+  const receiptSnapshot = { ...expected };
+  const htmlSnapshot = { ...expected };
+
+  if (mode === 'spec_id_drift') {
+    receiptSnapshot.spec_ids = ['SPEC-001', 'SPEC-002'];
+  }
+  if (mode === 'status_drift') {
+    ledgerSnapshot.share_status = 'blocked_by_sanitization';
+    receiptSnapshot.report_status = 'local_package_blocked';
+    htmlSnapshot.final_status = GM12_SPEC8_STOP_STATE;
+  }
+  if (mode === 'evidence_hash_drift') {
+    htmlSnapshot.evidence_hashes = [
+      GM12_SPEC8_EVIDENCE_HASHES[0],
+      'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      GM12_SPEC8_EVIDENCE_HASHES[2],
+    ];
+  }
+
+  return {
+    ...base,
+    harness_contract: GM12_SPEC8_CONTRACT,
+    report_coherence_required: true,
+    ledger_grammar_expectations: {
+      stop_state: GM12_SPEC7_STOP_STATE,
+      declared_specs: GM12_SPEC8_DECLARED_SPECS,
+    },
+    report_coherence_expectations: expected,
+    ledger_text: [
+      gm12Spec7LedgerText('valid'),
+      '',
+      gm12Spec8SurfaceText('ledger', ledgerSnapshot),
+    ].join('\n'),
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      sources: GM12_SPEC8_EVIDENCE_HASHES.map((hash, index) => ({
+        ref: `EV-SPEC-00${index + 1}-REPORT-COHERENCE`,
+        type: 'fixture',
+        hash,
+      })),
+      final_status: {
+        ...base.thermometer_metrics.final_status,
+        goal_maestro_execution_state: GM12_SPEC8_FINAL_STATUS,
+        thermometer_report_status: GM12_SPEC8_REPORT_STATUS,
+        share_gate_status: GM12_SPEC8_SHARE_STATUS,
+      },
+      report_coherence: metricsSnapshot,
+    },
+    receipt_text: gm12Spec8SurfaceText('receipt', receiptSnapshot),
+    html_text: gm12Spec8HtmlText(htmlSnapshot),
+    closeout: {
+      status: 'pass',
+      report_coherence: expected,
+    },
+    checksum_validation: gm12Spec8ChecksumValidation(mode),
+  };
+}
+
+function gm12Spec8SurfaceText(surface, snapshot) {
+  return [
+    `# ${surface} report coherence`,
+    `spec_ids: ${snapshot.spec_ids.join(',')}`,
+    `final_status: ${snapshot.final_status}`,
+    `report_status: ${snapshot.report_status}`,
+    `share_status: ${snapshot.share_status}`,
+    `evidence_hashes: ${snapshot.evidence_hashes.join(',')}`,
+    `unproven_count: ${snapshot.unproven_count}`,
+  ].join('\n');
+}
+
+function gm12Spec8HtmlText(snapshot) {
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '<body>',
+    '<pre>',
+    gm12Spec8SurfaceText('html', snapshot),
+    '</pre>',
+    '</body>',
+    '</html>',
+  ].join('\n');
+}
+
+function gm12Spec8ChecksumValidation(mode) {
+  const actualHtmlHash = mode === 'checksum_mismatch'
+    ? 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    : GM12_SPEC8_CHECKSUM_HASHES.html;
+  return {
+    status: 'pass',
+    files: [
+      { path: 'ledger.md', expected_hash: GM12_SPEC8_CHECKSUM_HASHES.ledger, actual_hash: GM12_SPEC8_CHECKSUM_HASHES.ledger },
+      { path: 'exec_metrics.json', expected_hash: GM12_SPEC8_CHECKSUM_HASHES.metrics, actual_hash: GM12_SPEC8_CHECKSUM_HASHES.metrics },
+      { path: 'context-receipt.md', expected_hash: GM12_SPEC8_CHECKSUM_HASHES.receipt, actual_hash: GM12_SPEC8_CHECKSUM_HASHES.receipt },
+      { path: 'execution-thermometer.html', expected_hash: GM12_SPEC8_CHECKSUM_HASHES.html, actual_hash: actualHtmlHash },
+    ],
+  };
 }
 
 function gm12Spec2PreEditEvent(spec_id, at) {
@@ -1141,6 +1293,37 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec7NestedCloseoutArgs,
     revert: gm12Spec7RevertArgs,
+  },
+  // GM12S8 — SPEC-008 keeps ledger, metrics, receipt, HTML, checksum, and closeout coherent.
+  {
+    id: 'GM12S8 goal-maestro-p0-report-coherence-spec-id-drift',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec8SpecIdDriftArgs,
+    revert: gm12Spec8RevertArgs,
+  },
+  {
+    id: 'GM12S8 goal-maestro-p0-report-coherence-status-drift',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec8StatusDriftArgs,
+    revert: gm12Spec8RevertArgs,
+  },
+  {
+    id: 'GM12S8 goal-maestro-p0-report-coherence-evidence-hash-drift',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec8EvidenceHashDriftArgs,
+    revert: gm12Spec8RevertArgs,
+  },
+  {
+    id: 'GM12S8 goal-maestro-p0-report-coherence-unproven-closeout',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec8UnprovenCloseoutArgs,
+    revert: gm12Spec8RevertArgs,
+  },
+  {
+    id: 'GM12S8 goal-maestro-p0-report-coherence-checksum-mismatch',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec8ChecksumMismatchArgs,
+    revert: gm12Spec8RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
