@@ -77,6 +77,14 @@ def write_fixture_files(target: Path, setup: dict[str, Any]) -> list[str]:
     return failures
 
 
+def write_installed_discipline_oracle(target: Path) -> None:
+    """Materialize the canonical installed TES oracle path for hook fixtures."""
+    oracle = target / field_reports.CANONICAL_DISCIPLINE_ORACLE
+    oracle.parent.mkdir(parents=True, exist_ok=True)
+    oracle.write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+    oracle.chmod(0o755)
+
+
 def validate_fixture_shape(path: Path, fixture: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixture.get("fixture_schema") != FIXTURE_SCHEMA:
@@ -136,6 +144,8 @@ def run_git_fixture(path: Path, fixture: dict[str, Any]) -> list[str]:
         if configured is not None:
             subprocess.run(["git", "config", "core.hooksPath", str(configured)], cwd=target, text=True, capture_output=True, check=False)
         failures.extend(write_fixture_files(target, setup))
+        if expected.get("status") == "PASS":
+            write_installed_discipline_oracle(target)
 
         first = field_reports.install_hook(target)
         second = field_reports.install_hook(target)
