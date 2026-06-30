@@ -1,4 +1,4 @@
-// SPEC-015 — Mutation suite for executable wall fixtures.
+// SPEC-016 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -73,6 +73,8 @@ const GM12_SPEC14_INSTALLED_AT = '2026-06-28T23:55:00Z';
 const GM12_SPEC14_AFTER_MATERIAL_AT = '2026-06-29T00:30:00Z';
 const GM12_SPEC15_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification';
 const GM12_SPEC15_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
+const GM12_SPEC16_CONTRACT = 'goal-maestro-p0-git-admission-gate';
+const GM12_SPEC16_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -500,6 +502,30 @@ function gm12Spec15PrecommitEnforcedArgs() {
 
 function gm12Spec15RevertArgs() {
   return [fixture('gm12-spec15-commit-enforcement-ok.json', JSON.stringify(gm12Spec15Fixture('valid')))];
+}
+
+function gm12Spec16MissingRepoNoStopArgs() {
+  return [fixture('gm12-spec16-git-admission-missing-repo-no-stop.json', JSON.stringify(gm12Spec16Fixture('missing_repo_no_stop')))];
+}
+
+function gm12Spec16SilentGitInitArgs() {
+  return [fixture('gm12-spec16-git-admission-silent-init.json', JSON.stringify(gm12Spec16Fixture('silent_git_init')))];
+}
+
+function gm12Spec16MissingBaselineClassificationArgs() {
+  return [fixture('gm12-spec16-git-admission-missing-baseline-classification.json', JSON.stringify(gm12Spec16Fixture('missing_baseline_classification')))];
+}
+
+function gm12Spec16NeedsGitRepositoryArgs() {
+  return [fixture('gm12-spec16-git-admission-needs-git-repository.json', JSON.stringify(gm12Spec16Fixture('needs_git_repository')))];
+}
+
+function gm12Spec16AuthorizedGitInitArgs() {
+  return [fixture('gm12-spec16-git-admission-authorized-init.json', JSON.stringify(gm12Spec16Fixture('authorized_git_init')))];
+}
+
+function gm12Spec16RevertArgs() {
+  return [fixture('gm12-spec16-git-admission-ok.json', JSON.stringify(gm12Spec16Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1484,6 +1510,92 @@ function gm12Spec15Closeout(closeout, mode, commitEnforcement) {
   return result;
 }
 
+function gm12Spec16Fixture(mode) {
+  const base = gm12Spec15Fixture('valid');
+  const gitAdmission = gm12Spec16GitAdmission(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC16_CONTRACT,
+    git_admission_gate_required: true,
+    git_admission: gitAdmission,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      git_admission: gitAdmission,
+    },
+    closeout: gm12Spec16Closeout(base.closeout, mode, gitAdmission),
+  };
+}
+
+function gm12Spec16GitAdmission(mode) {
+  const admission = {
+    checked_before_loop: true,
+    repository_status: 'present',
+    git_repository_exists: true,
+    owner_decision: 'use_existing_repository',
+    git_init: {
+      performed: false,
+      owner_authorized: false,
+    },
+    baseline_commit_classification: {
+      status: 'existing_head',
+      commit: '5246d3c8',
+      evidence_ref: 'git rev-parse HEAD',
+    },
+  };
+  if (mode === 'missing_repo_no_stop') {
+    admission.repository_status = 'absent';
+    admission.git_repository_exists = false;
+    admission.owner_decision = 'continue_without_git';
+    admission.baseline_commit_classification = {
+      status: 'no_git_repository',
+      evidence_ref: 'git rev-parse --is-inside-work-tree exit 128',
+    };
+  }
+  if (mode === 'needs_git_repository') {
+    admission.repository_status = 'absent';
+    admission.git_repository_exists = false;
+    admission.owner_decision = 'needs_git_repository';
+    admission.stop_state = GM12_SPEC16_STOP_STATE;
+    admission.baseline_commit_classification = {
+      status: 'no_git_repository',
+      evidence_ref: 'git rev-parse --is-inside-work-tree exit 128',
+    };
+  }
+  if (mode === 'silent_git_init' || mode === 'authorized_git_init') {
+    admission.repository_status = 'absent';
+    admission.git_repository_exists = false;
+    admission.owner_decision = mode === 'authorized_git_init' ? 'authorized_git_init' : 'git_init_performed';
+    admission.owner_authorization_ref = mode === 'authorized_git_init' ? 'owner-approved-git-init' : '';
+    admission.git_init = {
+      performed: true,
+      owner_authorized: mode === 'authorized_git_init',
+    };
+    admission.baseline_commit_classification = {
+      status: 'initialized_empty_repository',
+      evidence_ref: mode === 'authorized_git_init' ? 'owner-approved-git-init' : 'git init terminal output',
+    };
+  }
+  if (mode === 'missing_baseline_classification') {
+    delete admission.baseline_commit_classification;
+  }
+  return admission;
+}
+
+function gm12Spec16Closeout(closeout, mode, gitAdmission) {
+  return {
+    ...closeout,
+    git_admission: {
+      repository_status: gitAdmission.repository_status,
+      owner_decision: gitAdmission.owner_decision,
+      stop_state: mode === 'needs_git_repository' ? GM12_SPEC16_STOP_STATE : 'ready_for_loop',
+      baseline_commit_classification: gitAdmission.baseline_commit_classification ?? null,
+      report_text: mode === 'authorized_git_init'
+        ? 'git init authorized explicitly by owner with initialized-empty baseline evidence'
+        : 'Git repository admission classified before execution loop',
+    },
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2294,6 +2406,25 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec15ManualClaimsEnforcedArgs,
     revert: gm12Spec15PrecommitEnforcedArgs,
+  },
+  // GM12S16 — SPEC-016 classifies Git repository admission before execution.
+  {
+    id: 'GM12S16 goal-maestro-p0-git-admission-missing-repository',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec16MissingRepoNoStopArgs,
+    revert: gm12Spec16NeedsGitRepositoryArgs,
+  },
+  {
+    id: 'GM12S16 goal-maestro-p0-git-admission-silent-init',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec16SilentGitInitArgs,
+    revert: gm12Spec16AuthorizedGitInitArgs,
+  },
+  {
+    id: 'GM12S16 goal-maestro-p0-git-admission-baseline-classification',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec16MissingBaselineClassificationArgs,
+    revert: gm12Spec16RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

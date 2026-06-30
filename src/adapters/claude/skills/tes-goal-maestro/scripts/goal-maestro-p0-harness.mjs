@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -27,6 +27,8 @@
 // install_chronology_required:true.
 // SPEC-015 fixtures opt into commit enforcement classification validation with
 // commit_enforcement_classification_required:true.
+// SPEC-016 fixtures opt into Git admission validation with
+// git_admission_gate_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -47,6 +49,7 @@ const VISUAL_SEMANTIC_STOP_STATE = 'NEEDS_VISUAL_SEMANTIC_GATE';
 const BROWSER_METRICS_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
 const INSTALL_CHRONOLOGY_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
 const COMMIT_ENFORCEMENT_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
+const GIT_ADMISSION_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -61,6 +64,7 @@ const VISUAL_SEMANTIC_CONTRACT = 'goal-maestro-p0-visual-semantic-gate';
 const BROWSER_METRICS_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
 const INSTALL_CHRONOLOGY_CONTRACT = 'goal-maestro-p0-install-chronology';
 const COMMIT_ENFORCEMENT_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification';
+const GIT_ADMISSION_CONTRACT = 'goal-maestro-p0-git-admission-gate';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -135,6 +139,7 @@ const visualSemanticGateRequired = requiresVisualSemanticGate(fixture);
 const browserMetricsSchemaRequired = requiresBrowserMetricsSchema(fixture);
 const installChronologyRequired = requiresInstallChronologyGate(fixture);
 const commitEnforcementRequired = requiresCommitEnforcementClassification(fixture);
+const gitAdmissionRequired = requiresGitAdmissionGate(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -294,8 +299,13 @@ if (installChronologyRequired) {
 if (commitEnforcementRequired) {
   addCommitEnforcementClassificationChecks();
 }
+if (gitAdmissionRequired) {
+  addGitAdmissionChecks();
+}
 
-const harnessTitle = commitEnforcementRequired
+const harnessTitle = gitAdmissionRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016 goal-maestro-p0-git-admission-gate (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE})`
+  : commitEnforcementRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015 goal-maestro-p0-commit-enforcement-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE})`
   : installChronologyRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014 goal-maestro-p0-install-chronology (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE})`
@@ -1464,6 +1474,86 @@ function addCommitEnforcementClassificationChecks() {
   );
 }
 
+function addGitAdmissionChecks() {
+  const admission = gitAdmissionFromFixture(fixture);
+  const repositoryStatus = normalizeGitRepositoryStatus(gitRepositoryStatusFromAdmission(admission));
+  const repositoryPresent = repositoryStatus === 'present';
+  const repositoryAbsent = repositoryStatus === 'absent';
+  const ownerDecision = normalizeGitAdmissionOwnerDecision(ownerDecisionFromGitAdmission(admission));
+  const gitInit = gitInitFromAdmission(admission);
+  const gitInitPerformed = gitInitWasPerformed(gitInit, admission);
+  const gitInitAuthorized = gitInitWasOwnerAuthorized(gitInit, admission, ownerDecision);
+  const stopState = gitAdmissionStopStateFromFixture(fixture, admission);
+  const baselineClassification = baselineCommitClassificationFromGitAdmission(admission);
+  const baselineStatus = normalizeSemanticValue(firstNonEmptyString(
+    baselineClassification.status,
+    baselineClassification.classification,
+    baselineClassification.state,
+  ));
+  const baselineCommit = firstNonEmptyString(
+    baselineClassification.commit,
+    baselineClassification.git_head,
+    baselineClassification.gitHead,
+    baselineClassification.ref,
+  );
+  const baselineEvidenceRef = firstNonEmptyString(
+    baselineClassification.evidence_ref,
+    baselineClassification.evidence,
+    admission.authorization_ref,
+    admission.owner_authorization_ref,
+  );
+
+  gitAdmissionCheck(
+    'git admission evidence is present',
+    hasNonEmptyObject(admission),
+    'git_admission evidence is required',
+  );
+  gitAdmissionCheck(
+    'git repository check is before loop execution',
+    admission.checked_before_loop === true || admission.confirmed_before_loop === true || admission.before_loop === true,
+    'Git repository existence must be checked before the execution loop starts',
+  );
+  gitAdmissionCheck(
+    'git repository status is classified',
+    repositoryPresent || repositoryAbsent,
+    'repository_status must classify the target as present or absent',
+  );
+  gitAdmissionCheck(
+    'owner decision is recorded',
+    nonEmptyString(ownerDecision),
+    'owner decision is required before proceeding on Git admission',
+  );
+  gitAdmissionCheck(
+    'missing repository stops or has explicit owner authorization',
+    !repositoryAbsent || stopState === GIT_ADMISSION_STOP_STATE || ownerDecision === 'authorized_git_init',
+    'absent Git repository requires NEEDS_GIT_REPOSITORY or explicit owner authorization for git init',
+  );
+  gitAdmissionCheck(
+    'git init is not silent',
+    !gitInitPerformed || gitInitAuthorized,
+    'git init was performed without explicit owner authorization',
+  );
+  gitAdmissionCheck(
+    'baseline commit classification is recorded',
+    hasNonEmptyObject(baselineClassification) && nonEmptyString(baselineStatus),
+    'baseline commit classification is required',
+  );
+  if (repositoryPresent) {
+    gitAdmissionCheck(
+      'existing repository baseline commit is recorded',
+      nonEmptyString(baselineCommit),
+      'present Git repository requires a baseline commit or git HEAD reference',
+    );
+  }
+  if (ownerDecision === 'authorized_git_init') {
+    gitAdmissionCheck(
+      'authorized git init has baseline evidence',
+      gitInitAuthorized && nonEmptyString(baselineEvidenceRef) && ['initialized empty repository', 'no baseline commit yet', 'new repository initialized'].includes(baselineStatus),
+      'authorized git init requires owner authorization evidence and initialized-empty baseline classification',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1621,6 +1711,10 @@ function installChronologyCheck(name, pass, detail) {
 
 function commitEnforcementCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${COMMIT_ENFORCEMENT_STOP_STATE}: ${detail}` });
+}
+
+function gitAdmissionCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${GIT_ADMISSION_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1813,6 +1907,13 @@ function requiresCommitEnforcementClassification(value) {
     || value.commit_enforcement_required === true
     || value.harness_contract === COMMIT_ENFORCEMENT_CONTRACT
     || value.contract === COMMIT_ENFORCEMENT_CONTRACT;
+}
+
+function requiresGitAdmissionGate(value) {
+  return value.git_admission_gate_required === true
+    || value.git_admission_required === true
+    || value.harness_contract === GIT_ADMISSION_CONTRACT
+    || value.contract === GIT_ADMISSION_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -2622,6 +2723,144 @@ function commitEnforcementClaimsFromSurface(surface) {
       || value.includes('hook enforced')
       || value.includes('precommit hook enforced');
   });
+}
+
+function gitAdmissionFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.git_admission,
+    value.git_admission_gate,
+    value.git_repository_admission,
+    value.repository_admission,
+    metrics.git_admission,
+    metrics.git_admission_gate,
+    metrics.git_repository_admission,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return hasGitAdmissionShape(value) ? value : {};
+}
+
+function hasGitAdmissionShape(value) {
+  return isPlainObject(value) && (
+    nonEmptyString(gitRepositoryStatusFromAdmission(value))
+    || typeof value.git_repository_exists === 'boolean'
+    || typeof value.is_git_repository === 'boolean'
+    || isPlainObject(value.git_init)
+    || isPlainObject(value.baseline_commit_classification)
+  );
+}
+
+function gitRepositoryStatusFromAdmission(value) {
+  if (value.git_repository_exists === true || value.is_git_repository === true || value.repository_exists === true) return 'present';
+  if (value.git_repository_exists === false || value.is_git_repository === false || value.repository_exists === false) return 'absent';
+  return firstNonEmptyString(
+    value.repository_status,
+    value.git_repository_status,
+    value.repo_status,
+    value.status,
+    value.classification,
+  );
+}
+
+function normalizeGitRepositoryStatus(value) {
+  const status = normalizeSemanticValue(value);
+  if (['present', 'exists', 'existing repository', 'git repository present'].includes(status)) return 'present';
+  if (['absent', 'missing', 'not a git repository', 'no git repository', 'no repository'].includes(status)) return 'absent';
+  return status;
+}
+
+function ownerDecisionFromGitAdmission(value) {
+  return firstNonEmptyString(
+    value.owner_decision,
+    value.ownerDecision,
+    value.decision,
+    value.git_init_decision,
+    value.owner_authorization?.decision,
+  );
+}
+
+function normalizeGitAdmissionOwnerDecision(value) {
+  const decision = normalizeSemanticValue(value);
+  if (['authorized git init', 'git init authorized', 'owner authorized git init', 'authorized_git_init'].includes(decision)) {
+    return 'authorized_git_init';
+  }
+  if (['use existing repository', 'use_existing_repository', 'existing repository accepted'].includes(decision)) {
+    return 'use_existing_repository';
+  }
+  if ([GIT_ADMISSION_STOP_STATE.toLowerCase(), 'needs git repository', 'needs_git_repository'].includes(decision)) {
+    return GIT_ADMISSION_STOP_STATE;
+  }
+  return decision;
+}
+
+function gitInitFromAdmission(value) {
+  return firstPlainObject(
+    value.git_init,
+    value.gitInit,
+    value.init,
+    value.owner_authorization?.git_init,
+  ) ?? {};
+}
+
+function gitInitWasPerformed(gitInit, admission) {
+  if (gitInit.performed === true || gitInit.executed === true || gitInit.ran === true) return true;
+  if (admission.git_init_performed === true || admission.silent_git_init === true) return true;
+  const status = normalizeSemanticValue(firstNonEmptyString(gitInit.status, gitInit.state, admission.git_init_status));
+  return ['performed', 'executed', 'ran', 'initialized'].includes(status);
+}
+
+function gitInitWasOwnerAuthorized(gitInit, admission, ownerDecision) {
+  return ownerDecision === 'authorized_git_init'
+    || gitInit.owner_authorized === true
+    || gitInit.authorized === true
+    || gitInit.explicit_owner_authorization === true
+    || admission.owner_authorized_git_init === true
+    || admission.git_init_owner_authorized === true;
+}
+
+function gitAdmissionStopStateFromFixture(value, admission) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const surfaces = [
+    admission,
+    value.report,
+    value.closeout,
+    value.thermometer_report,
+    metrics.report,
+    metrics.closeout,
+    metrics.git_admission,
+  ].filter(isPlainObject);
+  for (const surface of surfaces) {
+    const direct = firstNonEmptyString(
+      surface.stop_state,
+      surface.stopState,
+      surface.goal_maestro_execution_state,
+      surface.final_status,
+      surface.status,
+    );
+    if (direct === GIT_ADMISSION_STOP_STATE) return GIT_ADMISSION_STOP_STATE;
+    const strings = collectStrings(surface);
+    if (strings.includes(GIT_ADMISSION_STOP_STATE)) return GIT_ADMISSION_STOP_STATE;
+  }
+  return null;
+}
+
+function baselineCommitClassificationFromGitAdmission(value) {
+  const candidate = firstPlainObject(
+    value.baseline_commit_classification,
+    value.baseline_classification,
+    value.baseline_commit,
+    value.baseline,
+    value.git_baseline,
+  );
+  if (candidate) return candidate;
+  const commit = firstNonEmptyString(value.baseline_commit_ref, value.baseline_commit, value.git_head, value.gitHead);
+  const status = firstNonEmptyString(value.baseline_status, value.baseline_commit_status);
+  if (nonEmptyString(commit) || nonEmptyString(status)) {
+    return { commit, status };
+  }
+  return {};
 }
 
 function isMobileResponsiveEvidence(item) {
