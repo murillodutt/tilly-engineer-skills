@@ -890,6 +890,13 @@ documents:
     consumer: maintainers, Cursor execution agents, installer authors, oracle authors, canary operators, and Goal Maestro operators
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-claude-opus-clean-install-admission.md
+    id: roadmap.goal_super_spec.tes_canary_claude_opus_clean_install_admission
+    class: roadmap
+    status: active
+    consumer: maintainers, Claude Opus execution agents, installer authors, oracle authors, canary operators, and Goal Maestro operators
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-ceiling-self-falsifying.md
     id: roadmap.goal_ledger_ceiling_self_falsifying
     class: roadmap
