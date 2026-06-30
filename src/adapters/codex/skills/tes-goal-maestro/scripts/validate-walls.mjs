@@ -1,4 +1,4 @@
-// SPEC-020 — Mutation suite for executable wall fixtures.
+// SPEC-021 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -84,6 +84,8 @@ const GM12_SPEC19_STOP_STATE = 'NEEDS_LENS_LEDGER';
 const GM12_SPEC19_LENSES = ['document', 'product', 'architecture', 'runtime', 'visual', 'security', 'performance', 'evidence', 'adversarial', 'cost', 'dx', 'delivery'];
 const GM12_SPEC20_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
 const GM12_SPEC20_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
+const GM12_SPEC21_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
+const GM12_SPEC21_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -627,6 +629,30 @@ function gm12Spec20RanAuthorizedArgs() {
 
 function gm12Spec20RevertArgs() {
   return [fixture('gm12-spec20-cloud-search-ok.json', JSON.stringify(gm12Spec20Fixture('valid')))];
+}
+
+function gm12Spec21MissingTelemetryArgs() {
+  return [fixture('gm12-spec21-llm-cache-cost-missing-telemetry.json', JSON.stringify(gm12Spec21Fixture('missing_telemetry')))];
+}
+
+function gm12Spec21MissingFieldArgs() {
+  return [fixture('gm12-spec21-llm-cache-cost-missing-field.json', JSON.stringify(gm12Spec21Fixture('missing_field')))];
+}
+
+function gm12Spec21ZeroedMissingFieldArgs() {
+  return [fixture('gm12-spec21-llm-cache-cost-zeroed-missing-field.json', JSON.stringify(gm12Spec21Fixture('zeroed_missing_field')))];
+}
+
+function gm12Spec21UnqualifiedEfficiencyArgs() {
+  return [fixture('gm12-spec21-llm-cache-cost-unqualified-efficiency.json', JSON.stringify(gm12Spec21Fixture('unqualified_efficiency')))];
+}
+
+function gm12Spec21UnprovenQualifiedArgs() {
+  return [fixture('gm12-spec21-llm-cache-cost-unproven-qualified.json', JSON.stringify(gm12Spec21Fixture('unproven_qualified')))];
+}
+
+function gm12Spec21RevertArgs() {
+  return [fixture('gm12-spec21-llm-cache-cost-ok.json', JSON.stringify(gm12Spec21Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1948,6 +1974,87 @@ function gm12Spec20Closeout(closeout, mode, cloudSearch) {
   };
 }
 
+function gm12Spec21Fixture(mode) {
+  const base = gm12Spec20Fixture('valid');
+  const telemetry = gm12Spec21Telemetry(mode);
+  const result = {
+    ...base,
+    harness_contract: GM12_SPEC21_CONTRACT,
+    llm_cache_cost_telemetry_required: true,
+    llm_cache_cost_telemetry: telemetry,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      llm_cache_cost_telemetry: telemetry,
+    },
+    closeout: gm12Spec21Closeout(base.closeout, mode, telemetry),
+  };
+  if (mode === 'missing_telemetry') {
+    delete result.llm_cache_cost_telemetry;
+    delete result.thermometer_metrics.llm_cache_cost_telemetry;
+  }
+  return result;
+}
+
+function gm12Spec21Telemetry(mode) {
+  const telemetry = {
+    input_tokens: 12000,
+    cached_input_tokens: 8000,
+    output_tokens: 900,
+    reasoning_tokens: 700,
+    cache_hit_estimate: 0.66,
+    wall_time_ms: 184000,
+    confidence: 0.82,
+    efficiency_score: {
+      value: 0.74,
+      basis: ['input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_tokens', 'cache_hit_estimate'],
+    },
+  };
+  if (mode === 'missing_field') {
+    delete telemetry.cached_input_tokens;
+  }
+  if (mode === 'zeroed_missing_field') {
+    telemetry.cached_input_tokens = 0;
+    telemetry.missing_fields = ['cached_input_tokens'];
+    telemetry.efficiency_score = {
+      value: 0.65,
+      qualified: true,
+      qualification: 'cached input tokens unproven',
+    };
+  }
+  if (mode === 'unqualified_efficiency' || mode === 'unproven_qualified') {
+    telemetry.cached_input_tokens = 'unproven';
+    telemetry.missing_fields = ['cached_input_tokens'];
+    telemetry.efficiency_score = {
+      value: 0.92,
+      basis: ['input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_tokens', 'cache_hit_estimate'],
+      qualified: mode === 'unproven_qualified',
+      qualification: mode === 'unproven_qualified' ? 'cached input tokens unproven' : '',
+    };
+  }
+  return telemetry;
+}
+
+function gm12Spec21Closeout(closeout, mode, telemetry) {
+  return {
+    ...closeout,
+    llm_cache_cost_telemetry: {
+      status: mode === 'missing_telemetry' ? 'missing' : 'present',
+      stop_state: mode === 'missing_telemetry' ? GM12_SPEC21_STOP_STATE : 'ready_for_loop',
+      input_tokens: telemetry.input_tokens,
+      cached_input_tokens: telemetry.cached_input_tokens,
+      output_tokens: telemetry.output_tokens,
+      reasoning_tokens: telemetry.reasoning_tokens,
+      cache_hit_estimate: telemetry.cache_hit_estimate,
+      wall_time_ms: telemetry.wall_time_ms,
+      confidence: telemetry.confidence,
+      report_text: mode === 'missing_telemetry'
+        ? 'LLM cache and cost telemetry omitted'
+        : 'LLM cache and cost telemetry records token, cache, timing, and confidence fields',
+    },
+    efficiency_score: telemetry.efficiency_score,
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2871,6 +2978,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec20MissingRedactionArgs,
     revert: gm12Spec20RanAuthorizedArgs,
+  },
+  // GM12S21 — SPEC-021 records LLM cache/cost telemetry and qualifies efficiency claims.
+  {
+    id: 'GM12S21 goal-maestro-p0-llm-cache-cost-telemetry-present',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec21MissingTelemetryArgs,
+    revert: gm12Spec21RevertArgs,
+  },
+  {
+    id: 'GM12S21 goal-maestro-p0-llm-cache-cost-fields-recorded',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec21MissingFieldArgs,
+    revert: gm12Spec21RevertArgs,
+  },
+  {
+    id: 'GM12S21 goal-maestro-p0-llm-cache-cost-missing-unproven-not-zero',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec21ZeroedMissingFieldArgs,
+    revert: gm12Spec21UnprovenQualifiedArgs,
+  },
+  {
+    id: 'GM12S21 goal-maestro-p0-llm-cache-cost-efficiency-qualified',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec21UnqualifiedEfficiencyArgs,
+    revert: gm12Spec21UnprovenQualifiedArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

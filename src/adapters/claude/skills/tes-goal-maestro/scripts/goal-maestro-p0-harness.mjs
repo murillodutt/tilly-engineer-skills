@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -37,6 +37,8 @@
 // lens_ledger_required:true.
 // SPEC-020 fixtures opt into cloud search classification validation with
 // cloud_search_classification_required:true.
+// SPEC-021 fixtures opt into LLM cache and cost telemetry validation with
+// llm_cache_cost_telemetry_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -62,6 +64,7 @@ const EVIDENCE_TRACKING_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
 const FLASH_FRY_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
 const LENS_LEDGER_STOP_STATE = 'NEEDS_LENS_LEDGER';
 const CLOUD_SEARCH_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
+const LLM_CACHE_COST_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -81,6 +84,7 @@ const EVIDENCE_TRACKING_CONTRACT = 'goal-maestro-p0-evidence-tracking-classifica
 const FLASH_FRY_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
 const LENS_LEDGER_CONTRACT = 'goal-maestro-p0-lens-ledger';
 const CLOUD_SEARCH_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
+const LLM_CACHE_COST_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -102,6 +106,22 @@ const REQUIRED_LENS_LEDGER_LENSES = ['document', 'product', 'architecture', 'run
 const LENS_LEDGER_CLASSIFICATIONS = new Set(['applied', 'not_required', 'blocked']);
 const CLOUD_SEARCH_STATUSES = new Set(['required', 'not_required', 'not_authorized', 'blocked', 'ran']);
 const CLOUD_SEARCH_AUTHORIZED_STATUSES = new Set(['owner_authorized', 'contract_allowed']);
+const LLM_CACHE_COST_FIELDS = [
+  'input_tokens',
+  'cached_input_tokens',
+  'output_tokens',
+  'reasoning_tokens',
+  'cache_hit_estimate',
+  'wall_time',
+  'confidence',
+];
+const LLM_TOKEN_CACHE_FIELDS = [
+  'input_tokens',
+  'cached_input_tokens',
+  'output_tokens',
+  'reasoning_tokens',
+  'cache_hit_estimate',
+];
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -168,6 +188,7 @@ const evidenceTrackingRequired = requiresEvidenceTrackingClassification(fixture)
 const flashFryRequired = requiresFlashFryOperationalStatus(fixture);
 const lensLedgerRequired = requiresLensLedger(fixture);
 const cloudSearchRequired = requiresCloudSearchClassification(fixture);
+const llmCacheCostRequired = requiresLLMCacheCostTelemetry(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -342,8 +363,13 @@ if (lensLedgerRequired) {
 if (cloudSearchRequired) {
   addCloudSearchClassificationChecks();
 }
+if (llmCacheCostRequired) {
+  addLLMCacheCostTelemetryChecks();
+}
 
-const harnessTitle = cloudSearchRequired
+const harnessTitle = llmCacheCostRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021 goal-maestro-p0-llm-cache-cost-telemetry (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE})`
+  : cloudSearchRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020 goal-maestro-p0-cloud-search-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE})`
   : lensLedgerRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019 goal-maestro-p0-lens-ledger (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE})`
@@ -1788,6 +1814,45 @@ function addCloudSearchClassificationChecks() {
   }
 }
 
+function addLLMCacheCostTelemetryChecks() {
+  const telemetry = llmCacheCostTelemetryFromFixture(fixture);
+  const missingRecordedFields = LLM_CACHE_COST_FIELDS.filter((field) => !llmCacheCostFieldIsRecorded(telemetry, field));
+  const zeroedMissingFields = llmCacheCostMissingFields(telemetry).filter((field) => {
+    return llmCacheCostFieldValue(telemetry, field) === 0;
+  });
+  const unprovenTokenCacheFields = LLM_TOKEN_CACHE_FIELDS.filter((field) => {
+    const value = llmCacheCostFieldValue(telemetry, field);
+    return isUnprovenValue(value) || llmCacheCostMissingFields(telemetry).includes(field);
+  });
+  const efficiencyScores = llmEfficiencyScoreSurfaces(fixture, telemetry);
+  const unqualifiedEfficiencyScores = efficiencyScores.filter((score) => {
+    return !llmEfficiencyScoreIsQualifiedOrLowered(score);
+  });
+
+  llmCacheCostCheck(
+    'LLM cache and cost telemetry is present',
+    hasNonEmptyObject(telemetry),
+    'LLM cache and cost telemetry is required before efficiency claims',
+  );
+  llmCacheCostCheck(
+    'LLM cache and cost telemetry records required fields',
+    missingRecordedFields.length === 0,
+    `missing LLM cache/cost field(s): ${formatValues(missingRecordedFields)}`,
+  );
+  llmCacheCostCheck(
+    'missing LLM telemetry fields are unproven, not zero',
+    zeroedMissingFields.length === 0,
+    `missing LLM telemetry field(s) were zero-filled: ${formatValues(zeroedMissingFields)}`,
+  );
+  if (unprovenTokenCacheFields.length > 0 && efficiencyScores.length > 0) {
+    llmCacheCostCheck(
+      'efficiency score is qualified when token or cache data is unproven',
+      unqualifiedEfficiencyScores.length === 0,
+      `efficiency score over unproven token/cache data must be lowered or qualified: ${formatValues(unprovenTokenCacheFields)}`,
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1965,6 +2030,10 @@ function lensLedgerCheck(name, pass, detail) {
 
 function cloudSearchCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${CLOUD_SEARCH_STOP_STATE}: ${detail}` });
+}
+
+function llmCacheCostCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${LLM_CACHE_COST_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -2192,6 +2261,14 @@ function requiresCloudSearchClassification(value) {
     || value.cloud_search_required === true
     || value.harness_contract === CLOUD_SEARCH_CONTRACT
     || value.contract === CLOUD_SEARCH_CONTRACT;
+}
+
+function requiresLLMCacheCostTelemetry(value) {
+  return value.llm_cache_cost_telemetry_required === true
+    || value.llm_cost_telemetry_required === true
+    || value.cache_cost_telemetry_required === true
+    || value.harness_contract === LLM_CACHE_COST_CONTRACT
+    || value.contract === LLM_CACHE_COST_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -3643,6 +3720,116 @@ function cloudSearchRedactionStatus(value) {
     value.privacy_status,
     value.redaction?.status,
   );
+}
+
+function llmCacheCostTelemetryFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.llm_cache_cost_telemetry,
+    value.llm_cost_telemetry,
+    value.cache_cost_telemetry,
+    value.llm_telemetry,
+    metrics.llm_cache_cost_telemetry,
+    metrics.llm_cost_telemetry,
+    metrics.cache_cost_telemetry,
+    metrics.llm_telemetry,
+    metrics.efficiency?.llm_cache_cost_telemetry,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return hasLLMCacheCostTelemetryShape(value) ? value : {};
+}
+
+function hasLLMCacheCostTelemetryShape(value) {
+  if (!isPlainObject(value)) return false;
+  return LLM_CACHE_COST_FIELDS.some((field) => llmCacheCostFieldValue(value, field) !== undefined);
+}
+
+function llmCacheCostFieldIsRecorded(telemetry, field) {
+  const value = llmCacheCostFieldValue(telemetry, field);
+  if (value === undefined || value === null || value === '') return false;
+  if (isUnprovenValue(value)) return true;
+  if (typeof value === 'number') return Number.isFinite(value) && value >= 0;
+  if (field === 'confidence') return nonEmptyString(value);
+  return false;
+}
+
+function llmCacheCostFieldValue(telemetry, field) {
+  const aliases = llmCacheCostFieldAliases(field);
+  for (const alias of aliases) {
+    if (telemetry[alias] !== undefined) return telemetry[alias];
+  }
+  return undefined;
+}
+
+function llmCacheCostFieldAliases(field) {
+  if (field === 'input_tokens') return ['input_tokens', 'prompt_tokens', 'tokens_input'];
+  if (field === 'cached_input_tokens') return ['cached_input_tokens', 'input_cached_tokens', 'cache_read_input_tokens', 'cached_tokens'];
+  if (field === 'output_tokens') return ['output_tokens', 'completion_tokens', 'tokens_output'];
+  if (field === 'reasoning_tokens') return ['reasoning_tokens', 'reasoning_output_tokens'];
+  if (field === 'cache_hit_estimate') return ['cache_hit_estimate', 'cache_hit_rate', 'cache_hit_ratio'];
+  if (field === 'wall_time') return ['wall_time', 'wall_time_ms', 'wall_seconds', 'duration_ms', 'elapsed_ms', 'elapsed_seconds'];
+  if (field === 'confidence') return ['confidence', 'telemetry_confidence', 'cost_confidence'];
+  return [field];
+}
+
+function llmCacheCostMissingFields(telemetry) {
+  return uniqueStrings([
+    ...normalizeLLMCacheCostFieldNames(telemetry.missing_fields),
+    ...normalizeLLMCacheCostFieldNames(telemetry.unproven_fields),
+    ...normalizeLLMCacheCostFieldNames(telemetry.unavailable_fields),
+  ]);
+}
+
+function normalizeLLMCacheCostFieldNames(value) {
+  return stringListFromValue(value)
+    .map(normalizeLLMCacheCostFieldName)
+    .filter(nonEmptyString);
+}
+
+function normalizeLLMCacheCostFieldName(value) {
+  const normalized = normalizeSemanticValue(value);
+  if (normalized === 'input tokens' || normalized === 'prompt tokens') return 'input_tokens';
+  if (normalized === 'cached input tokens' || normalized === 'input cached tokens' || normalized === 'cache read input tokens' || normalized === 'cached tokens') return 'cached_input_tokens';
+  if (normalized === 'output tokens' || normalized === 'completion tokens') return 'output_tokens';
+  if (normalized === 'reasoning tokens' || normalized === 'reasoning output tokens') return 'reasoning_tokens';
+  if (normalized === 'cache hit estimate' || normalized === 'cache hit rate' || normalized === 'cache hit ratio') return 'cache_hit_estimate';
+  if (normalized === 'wall time' || normalized === 'wall time ms' || normalized === 'duration ms' || normalized === 'elapsed ms' || normalized === 'elapsed seconds') return 'wall_time';
+  if (normalized === 'confidence' || normalized === 'telemetry confidence' || normalized === 'cost confidence') return 'confidence';
+  return normalized?.replace(/\s+/g, '_') ?? null;
+}
+
+function llmEfficiencyScoreSurfaces(value, telemetry) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const surfaces = [
+    telemetry.efficiency_score,
+    telemetry.efficiency,
+    value.efficiency_score,
+    value.efficiency,
+    value.closeout?.efficiency_score,
+    value.closeout?.efficiency,
+    metrics.efficiency_score,
+    metrics.efficiency,
+    metrics.closeout?.efficiency_score,
+  ].filter(isPlainObject);
+  return surfaces.filter(llmEfficiencyScoreHasValue);
+}
+
+function llmEfficiencyScoreHasValue(score) {
+  return typeof score.value === 'number'
+    || typeof score.score === 'number'
+    || nonEmptyString(score.value)
+    || nonEmptyString(score.score);
+}
+
+function llmEfficiencyScoreIsQualifiedOrLowered(score) {
+  if (score.qualified === true) return true;
+  if (score.lowered_for_unproven_data === true || score.adjusted_for_unproven_data === true || score.adjusted_for_unproven === true) return true;
+  if (nonEmptyString(score.qualification) || nonEmptyString(score.qualifier)) return true;
+  if (nonEmptyString(score.adjustment_reason) && normalizeSemanticValue(score.adjustment_reason).includes('unproven')) return true;
+  const status = normalizeSemanticValue(firstNonEmptyString(score.status, score.evidence_status, score.confidence_status));
+  return status === 'qualified' || status === 'lowered' || status === 'unproven qualified';
 }
 
 function isMobileResponsiveEvidence(item) {
