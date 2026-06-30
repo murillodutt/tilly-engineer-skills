@@ -147,10 +147,23 @@ def mcp_registration(target: Path) -> dict[str, Any]:
     elif config_present:
         handshake = {"status": "HOST_UNOBSERVABLE", "reason": "handshake helper unavailable; config presence only"}
 
+    # Ceiling F26: certify the EXPECTED MCP from the install lock, not from
+    # config presence alone. If the lock says the MCP surface was attached (for
+    # one or more agents) but NO registered config is present, that is a FAILURE
+    # — total absence of MCP config must not read as PASS when MCP was promised.
+    lock = read_json(target / LOCK_PATH)
+    lock_surfaces = lock.get("attached_surfaces") if isinstance(lock.get("attached_surfaces"), list) else []
+    mcp_expected = "mcp" in lock_surfaces
+    if mcp_expected and not config_present:
+        failures.append("install lock attached the MCP surface but no registered MCP config is present")
+
     if failures:
         status = "FAIL"
+    elif not config_present and mcp_expected:
+        # Defensive: should be caught by the failure above; never silently PASS.
+        status = "FAIL"
     elif not config_present:
-        status = "PASS"  # nothing to register; not a failure
+        status = "NOT_APPLIED"  # MCP not attached and none present — nothing to register, not a green PASS
     elif host_connected_measured:
         status = "PASS"  # config written AND host handshake proved the server
     elif not server_installed:
@@ -450,11 +463,41 @@ def evaluate(target: Path) -> dict[str, Any]:
                 "repair": "Rebuild the bundle from a clean, provenance-stamped source tree before claiming a sealed release.",
             }
         )
+    # Ceiling F24: distinguish PASS_BASIC from PASS_CEILING at the headline. The
+    # PreToolUse ceiling status rides on hook_runtime_health; when it has not
+    # proven the ceiling (ceiling_status != PASS_CEILING while hooks are in play),
+    # surface NEEDS_CEILING_EVIDENCE as a visible finding rather than letting a
+    # floor-green hook collapse into an unqualified PASS headline.
+    hook_health = components.get("hook_runtime_health") if isinstance(components.get("hook_runtime_health"), dict) else {}
+    ceiling_status = str(hook_health.get("ceiling_status") or "")
+    hooks_in_play = str(hook_health.get("status") or "") != "NOT_APPLIED"
+    certification_tier = "PASS_BASIC"
+    if hooks_in_play and ceiling_status == "PASS_CEILING":
+        certification_tier = "PASS_CEILING"
+    if hooks_in_play and ceiling_status and ceiling_status != "PASS_CEILING":
+        # The hook ran at the floor (PASS_BASIC) but the ceiling is not yet
+        # observed. Per ceiling F24 this must be DISTINGUISHED (certification_tier
+        # stays PASS_BASIC) and SURFACED (a visible ceiling_evidence finding), but
+        # on an otherwise-healthy fresh install it is readiness, not a defect —
+        # the ceiling is proven by exercising the host PreToolUse path, exactly
+        # like host-pending MCP/hook evidence. So the finding is INFO (visible,
+        # non-gating); the tier difference is the load-bearing signal. It would
+        # only gate if some OTHER finding already makes the run non-PASS.
+        if not any(f.get("component") == "ceiling_evidence" for f in findings):
+            findings.append(
+                {
+                    "component": "ceiling_evidence",
+                    "status": "INFO",
+                    "detail": [f"hook ceiling_status={ceiling_status} (PASS_BASIC, ceiling not yet observed)"],
+                    "repair": "Exercise the host PreToolUse path so the ceiling contract is observed, then recertify for PASS_CEILING.",
+                }
+            )
     return {
         "schema": SCHEMA,
         "version": VERSION,
         "target": str(target),
         "status": status_from_findings(findings),
+        "certification_tier": certification_tier,
         "components": components,
         "findings": findings,
         "release_claim_status": hygiene.get("release_claim_status"),
@@ -929,6 +972,43 @@ def self_test() -> dict[str, Any]:
                 f"MCP config without an installed server must be NOT_APPLIED (ladder not started), "
                 f"got {no_server_result['components']['mcp_registration'].get('status')}"
             )
+
+        # Red-capable Ceiling F26: the install lock attached the MCP surface but
+        # NO MCP config is present -> mcp_registration must FAIL (promised MCP is
+        # absent), never read as PASS. Reverting to a config-presence PASS turns
+        # this red.
+        mcp_expected_target = root / "healthy-mcp-attached-but-absent"
+        write_base_fixture(mcp_expected_target, healthy=True)
+        # Remove every MCP config so configs=[] while the lock says mcp attached.
+        for relpath in (".codex/config.toml", ".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
+            p = mcp_expected_target / relpath
+            if p.exists():
+                p.unlink()
+        lock_path = mcp_expected_target / LOCK_PATH
+        lock = read_json(lock_path)
+        surfaces = set(lock.get("attached_surfaces") or [])
+        surfaces.add("mcp")
+        lock["attached_surfaces"] = sorted(surfaces)
+        lock_path.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        mcp_expected_result = evaluate(mcp_expected_target)
+        if mcp_expected_result["components"]["mcp_registration"].get("status") != "FAIL":
+            failures.append(
+                "F26: lock attached MCP but no config present must FAIL mcp_registration, "
+                f"got {mcp_expected_result['components']['mcp_registration'].get('status')}"
+            )
+
+        # Red-capable Ceiling F24: certification_tier must distinguish PASS_BASIC
+        # from PASS_CEILING. The healthy fixture's hook runs at the floor with the
+        # ceiling unobserved -> tier must be PASS_BASIC and a visible (non-gating)
+        # ceiling_evidence finding must be present. Collapsing tier into a bare
+        # PASS, or hiding the ceiling_evidence finding, turns this red.
+        if healthy_result.get("certification_tier") != "PASS_BASIC":
+            failures.append(
+                f"F24: healthy floor-only hook must report certification_tier PASS_BASIC, "
+                f"got {healthy_result.get('certification_tier')}"
+            )
+        if not any(f.get("component") == "ceiling_evidence" for f in healthy_result.get("findings", [])):
+            failures.append("F24: a floor-only (ceiling-unobserved) hook must surface a ceiling_evidence finding")
     return {
         "schema": SCHEMA,
         "version": VERSION,

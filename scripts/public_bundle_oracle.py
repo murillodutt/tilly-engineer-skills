@@ -66,6 +66,46 @@ def certify_public_bundle() -> dict[str, object]:
     if len(source_commit) != 40 or any(char not in "0123456789abcdef" for char in source_commit.lower()):
         failures.append("public bundle index source_commit must be a 40-character git SHA")
 
+    # Ceiling F29: the hand-maintained public-docs structure mirror
+    # (docs/i18n/tes-public.structure.yml) carries evidence.bundle_sha256 /
+    # bundle_index / version that compose the public bundle identity, yet this
+    # oracle was blind to it — a stale structure SHA could pass here while TDS
+    # blocked it. Validate the mirror against the canonical published identity
+    # (the sidecar/index sha already computed above). Compare by value, not by
+    # absolute-vs-relative index path.
+    structure_path = ROOT / "docs/i18n/tes-public.structure.yml"
+    if not structure_path.exists():
+        failures.append("public bundle structure mirror missing: docs/i18n/tes-public.structure.yml")
+    else:
+        try:
+            import tds_surface_oracle  # type: ignore
+
+            structure = tds_surface_oracle.load_jsonish(structure_path)
+        except Exception as exc:  # noqa: BLE001 - report any parse/import failure
+            failures.append(f"could not parse tes-public.structure.yml: {exc}")
+            structure = {}
+        evidence = structure.get("evidence") if isinstance(structure.get("evidence"), dict) else {}
+        structure_sha = str(evidence.get("bundle_sha256") or "")
+        if structure_sha != expected_sha:
+            failures.append(
+                f"tes-public.structure.yml evidence.bundle_sha256 ({structure_sha or 'missing'}) "
+                f"!= published bundle sha ({expected_sha})"
+            )
+        if str(structure.get("version") or "") != VERSION:
+            failures.append(
+                f"tes-public.structure.yml version ({structure.get('version')}) must be {VERSION}"
+            )
+        structure_index = str(evidence.get("bundle_index") or "")
+        # Compare by version/name, not absolute path: structure stores a relative
+        # 'dist/<v>/index.json' while the oracle holds an absolute index path.
+        if structure_index and not structure_index.endswith(index_path.name) or (
+            structure_index and VERSION not in structure_index
+        ):
+            failures.append(
+                f"tes-public.structure.yml evidence.bundle_index ({structure_index}) "
+                f"must point at dist/{VERSION}/{index_path.name}"
+            )
+
     with tempfile.TemporaryDirectory(prefix="tes-public-bundle-oracle-") as tempdir:
         extracted = Path(tempdir) / "extracted"
         with zipfile.ZipFile(bundle) as archive:

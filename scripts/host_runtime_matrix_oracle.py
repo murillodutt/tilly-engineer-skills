@@ -296,6 +296,12 @@ def _assert_install_scope(payload: dict[str, Any], failures: list[str]) -> None:
         # defect; it does not block the install (it gates a real release claim).
         if item.get("component") == "release_claim":
             continue
+        # Ceiling F24: a floor-green hook whose PreToolUse ceiling is not yet
+        # observed surfaces a non-gating INFO ceiling_evidence finding. On a fresh
+        # install that is readiness (the ceiling is proven by exercising the host),
+        # not a defect — distinct from a real gap.
+        if item.get("component") == "ceiling_evidence" and str(item.get("status")) == "INFO":
+            continue
         failures.append(f"install: unexpected certification finding {item!r}")
 
 

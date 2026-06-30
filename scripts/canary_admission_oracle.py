@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -50,7 +51,7 @@ import field_reports
 import tes_install
 
 
-VERSION = "0.3.232"
+VERSION = "0.3.233"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
@@ -87,40 +88,108 @@ def git_is_clean(target: Path) -> bool | None:
 
 
 def prepush_evidence(target: Path) -> dict[str, Any]:
-    """Material proof of the Field Reports pre-push gate, reusing field_reports."""
+    """Two distinct pre-push claims, each proven by its OWN marker (ceiling F21).
+
+    The pre-push surface carries two structurally different things that earlier
+    code conflated:
+      - field_reports_prepush_drain: the Field Reports drain the installer writes,
+        identified ONLY by HOOK_MARKER. It is an ADVISORY, non-blocking drain
+        (exit 0 by design); its presence proves Field Reports is active.
+      - project_prepush_gate: a blocking project gate, identified ONLY by the
+        gate-pre-git invocation. Its presence proves a hard pre-push gate exists.
+
+    Neither marker may prove the other claim. `prepush_installed` is kept as a
+    back-compatible alias meaning "the Field Reports drain is installed" (the
+    claim canary admission actually gates on), preserving session-1 behavior.
+    """
     git_dir = target / ".git"
     if not git_dir.exists():
-        return {"prepush_installed": False, "reason": "no .git directory"}
+        return {
+            "prepush_installed": False,
+            "field_reports_prepush_drain": False,
+            "project_prepush_gate": False,
+            "reason": "no .git directory",
+        }
     hook_info = field_reports.resolve_pre_push_hook(target, git_dir)
     if hook_info.get("status") != "PASS":
-        return {"prepush_installed": False, "reason": str(hook_info.get("reason") or "hook resolution blocked")}
+        return {
+            "prepush_installed": False,
+            "field_reports_prepush_drain": False,
+            "project_prepush_gate": False,
+            "reason": str(hook_info.get("reason") or "hook resolution blocked"),
+        }
     hook = hook_info.get("hook")
     hook_path = Path(str(hook)) if hook else None
     if not hook_path or not hook_path.is_file():
-        return {"prepush_installed": False, "reason": "pre-push hook file absent", "hook": str(hook_path or "")}
-    text = hook_path.read_text(encoding="utf-8", errors="ignore")
-    # The TES pre-push gate is identified by HOOK_MARKER (the Field Reports drain
-    # the installer writes). A composed gate-pre-git push is reinforcing evidence
-    # when a foreign hook carried it, but the marker is the material proof — the
-    # installer's default gate uses the field_reports drain, not gate-pre-git, so
-    # requiring gate-pre-git here would reject every TES-installed pre-push.
-    has_marker = field_reports.HOOK_MARKER in text
-    if not (has_marker or field_reports.has_gate_pre_git_push(text)):
         return {
             "prepush_installed": False,
-            "reason": "pre-push hook present but missing TES Field Reports gate marker",
+            "field_reports_prepush_drain": False,
+            "project_prepush_gate": False,
+            "reason": "pre-push hook file absent",
+            "hook": str(hook_path or ""),
+        }
+    text = hook_path.read_text(encoding="utf-8", errors="ignore")
+    drain_present = field_reports.HOOK_MARKER in text  # advisory drain claim
+    project_gate_present = field_reports.has_gate_pre_git_push(text)  # blocking gate claim
+    if not (drain_present or project_gate_present):
+        return {
+            "prepush_installed": False,
+            "field_reports_prepush_drain": False,
+            "project_prepush_gate": False,
+            "reason": "pre-push hook present but missing the Field Reports drain marker",
             "hook": str(hook_path),
         }
     return {
-        "prepush_installed": True,
+        # Back-compat alias: admission gates on the Field Reports drain claim.
+        "prepush_installed": drain_present,
+        "field_reports_prepush_drain": drain_present,
+        "project_prepush_gate": project_gate_present,
         "hook": str(hook_path),
         "mode": hook_info.get("mode"),
-        "gate_pre_git": field_reports.has_gate_pre_git_push(text),
+        "reason": None if drain_present else "project pre-push gate present but Field Reports drain absent",
     }
 
 
+STRICT_GATE_TOKENS = ("--strict", "commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
+
+
+def _strip_shell_comments(text: str) -> str:
+    """Drop full-line and trailing `#` comments so a token in a comment never
+    counts as a real gate invocation (ceiling F22: prove the command, not a note).
+
+    Conservative: removes from an unquoted `#` to end of line. A `#` inside a
+    quote is rare in hook bodies and erring toward stripping only makes the proof
+    stricter, never falsely positive.
+    """
+    out: list[str] = []
+    for line in text.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("#"):
+            continue  # full comment / shebang line
+        # Trailing comment: cut at the first ' #' not inside an obvious quote.
+        in_single = in_double = False
+        cut = None
+        for i, ch in enumerate(line):
+            if ch == "'" and not in_double:
+                in_single = not in_single
+            elif ch == '"' and not in_single:
+                in_double = not in_double
+            elif ch == "#" and not in_single and not in_double and (i == 0 or line[i - 1].isspace()):
+                cut = i
+                break
+        out.append(line[:cut] if cut is not None else line)
+    return "\n".join(out)
+
+
 def precommit_evidence(target: Path) -> dict[str, Any]:
-    """Material proof of a strict pre-commit gate file with a runnable command."""
+    """Proof of a strict pre-commit gate by EXECUTABILITY, not comment substring.
+
+    Ceiling F22: a comment containing `commit:check` must never set
+    precommit_enforced=true. The proof is two-part: (1) the resolved hook is
+    runnable (executable bit, mirroring tes_init's hook-runnability check), and
+    (2) a strict gate token appears in the hook's CODE (comments stripped), i.e.
+    it actually invokes a TES gate rather than merely mentioning one.
+    """
     git_dir = target / ".git"
     if not git_dir.exists():
         return {"precommit_enforced": False, "reason": "no .git directory"}
@@ -132,22 +201,38 @@ def precommit_evidence(target: Path) -> dict[str, Any]:
     hook_path = hooks_dir / "pre-commit"
     if not hook_path.is_file():
         return {"precommit_enforced": False, "reason": "pre-commit hook file absent", "hook": str(hook_path)}
-    text = hook_path.read_text(encoding="utf-8", errors="ignore")
-    # Strict means the hook actually invokes a TES gate, not an empty stub.
-    has_strict = ("--strict" in text) or ("commit:check" in text) or ("commit:closure" in text) or (
-        "discipline_oracle" in text
-    ) or ("project_context_oracle" in text)
-    if not has_strict:
+    # (1) Runnability: a strict gate must be executable to actually fire.
+    runnable = os.access(hook_path, os.X_OK)
+    if not runnable:
         return {
             "precommit_enforced": False,
-            "reason": "pre-commit present but not a strict TES gate",
+            "reason": "pre-commit hook present but not executable (cannot fire as a gate)",
             "hook": str(hook_path),
+            "executable": False,
         }
-    return {"precommit_enforced": True, "hook": str(hook_path)}
+    # (2) Real invocation: a strict gate token in CODE, not in a comment.
+    code = _strip_shell_comments(hook_path.read_text(encoding="utf-8", errors="ignore"))
+    matched = [token for token in STRICT_GATE_TOKENS if token in code]
+    if not matched:
+        return {
+            "precommit_enforced": False,
+            "reason": "pre-commit present and executable but invokes no strict TES gate (token only in comments, or absent)",
+            "hook": str(hook_path),
+            "executable": True,
+        }
+    return {"precommit_enforced": True, "hook": str(hook_path), "executable": True, "gate_tokens": matched}
 
 
 def git_admission(target: Path) -> dict[str, Any]:
-    """Block readiness unless Git, pre-push, and strict pre-commit are proven."""
+    """Block readiness unless Git, the Field Reports drain, and a strict
+    pre-commit are proven.
+
+    Ceiling F25: the Field Reports pre-push is an ADVISORY non-blocking drain
+    (exit-0 by design — it must never block an adopter's push). Admission gates on
+    the drain being INSTALLED (proves Field Reports is active), not on it being a
+    blocking gate. The blocking `project_prepush_gate` claim is reported
+    separately and observationally — its absence is not an admission blocker.
+    """
     blockers: list[str] = []
     if not is_git_work_tree(target):
         # No Git: every Git claim is false, and admission is BLOCKED, not skipped.
@@ -156,14 +241,17 @@ def git_admission(target: Path) -> dict[str, Any]:
             "git_work_tree": False,
             "git_clean": False,
             "prepush_installed": False,
+            "field_reports_prepush_drain": False,
+            "project_prepush_gate": False,
             "precommit_enforced": False,
             "blockers": ["target is not a Git work tree; canary admission requires Git"],
         }
     clean = git_is_clean(target)
     pre_push = prepush_evidence(target)
     pre_commit = precommit_evidence(target)
-    if not pre_push.get("prepush_installed"):
-        blockers.append(f"Field Reports pre-push gate absent: {pre_push.get('reason')}")
+    # Admission gate: the Field Reports drain must be installed (advisory claim).
+    if not pre_push.get("field_reports_prepush_drain"):
+        blockers.append(f"Field Reports pre-push drain absent: {pre_push.get('reason')}")
     if not pre_commit.get("precommit_enforced"):
         blockers.append(f"strict pre-commit gate absent: {pre_commit.get('reason')}")
     if clean is False:
@@ -172,7 +260,12 @@ def git_admission(target: Path) -> dict[str, Any]:
         "status": "BLOCKED" if blockers else "PASS",
         "git_work_tree": True,
         "git_clean": bool(clean),
-        "prepush_installed": bool(pre_push.get("prepush_installed")),
+        # Back-compat alias kept; the drain is the gated claim.
+        "prepush_installed": bool(pre_push.get("field_reports_prepush_drain")),
+        "field_reports_prepush_drain": bool(pre_push.get("field_reports_prepush_drain")),
+        # Observational: a blocking project pre-push gate exists or not. Not an
+        # admission blocker (the drain is advisory; the project gate is optional).
+        "project_prepush_gate": bool(pre_push.get("project_prepush_gate")),
         "precommit_enforced": bool(pre_commit.get("precommit_enforced")),
         "prepush": pre_push,
         "precommit": pre_commit,
@@ -256,10 +349,19 @@ def _init_git(target: Path) -> None:
 
 
 def _write_prepush(target: Path) -> None:
+    """Write a fully-equipped pre-push carrying BOTH claims: the Field Reports
+    drain (HOOK_MARKER, the advisory claim admission gates on) AND a blocking
+    project gate (gate-pre-git). After the F21 split, a fully-gated target must
+    carry the drain marker — a project gate alone no longer satisfies admission.
+    """
     hooks = target / ".git/hooks"
     hooks.mkdir(parents=True, exist_ok=True)
     hook = hooks / "pre-push"
-    hook.write_text(field_reports.gate_pre_git_push_shell(), encoding="utf-8")
+    hook.write_text(
+        f"#!/bin/sh\n# {field_reports.HOOK_MARKER}\n"
+        + field_reports.gate_pre_git_push_shell(),
+        encoding="utf-8",
+    )
     hook.chmod(0o755)
 
 
@@ -400,6 +502,63 @@ def self_test() -> dict[str, Any]:
             failures.append(f"fully-gated Git target must PASS git_admission, got {full_git['status']}: {full_git['blockers']}")
         if not (full_git["prepush_installed"] and full_git["precommit_enforced"]):
             failures.append("fully-gated target must claim prepush_installed and precommit_enforced on real evidence")
+
+        # 3a) Ceiling F21 — drain vs project gate are SEPARATE claims, each proven
+        #     by its own marker only. A drain-only pre-push (HOOK_MARKER, no
+        #     gate-pre-git) proves the drain but NOT the project gate; a
+        #     gate-only pre-push proves the inverse. Neither marker proves the
+        #     other claim.
+        drain_only = root / "drain-only"
+        drain_only.mkdir()
+        _init_git(drain_only)
+        po = drain_only / ".git/hooks/pre-push"
+        po.parent.mkdir(parents=True, exist_ok=True)
+        po.write_text(f"#!/bin/sh\n# {field_reports.HOOK_MARKER}\nexit 0\n", encoding="utf-8")
+        po.chmod(0o755)
+        drain_ev = prepush_evidence(drain_only.resolve())
+        if not drain_ev.get("field_reports_prepush_drain") or drain_ev.get("project_prepush_gate"):
+            failures.append(
+                "F21: drain-only pre-push must prove the drain claim and NOT the project gate claim, "
+                f"got drain={drain_ev.get('field_reports_prepush_drain')} gate={drain_ev.get('project_prepush_gate')}"
+            )
+        gate_only = root / "gate-only"
+        gate_only.mkdir()
+        _init_git(gate_only)
+        go = gate_only / ".git/hooks/pre-push"
+        go.parent.mkdir(parents=True, exist_ok=True)
+        go.write_text(field_reports.gate_pre_git_push_shell(), encoding="utf-8")  # gate-pre-git, no HOOK_MARKER
+        go.chmod(0o755)
+        gate_ev = prepush_evidence(gate_only.resolve())
+        if gate_ev.get("field_reports_prepush_drain") or not gate_ev.get("project_prepush_gate"):
+            failures.append(
+                "F21: gate-only pre-push must prove the project gate claim and NOT the drain claim, "
+                f"got drain={gate_ev.get('field_reports_prepush_drain')} gate={gate_ev.get('project_prepush_gate')}"
+            )
+        # And admission gates on the DRAIN: a gate-only target is BLOCKED (no drain).
+        if git_admission(gate_only.resolve())["status"] != "BLOCKED":
+            failures.append("F21/F25: a project-gate-only target (no Field Reports drain) must BLOCK admission")
+
+        # 3b) Ceiling F22 — strict pre-commit proven by EXECUTABILITY + real
+        #     invocation, never a comment substring. A comment-only stub and a
+        #     non-executable real-token hook must both be rejected.
+        comment_stub = root / "comment-stub"
+        comment_stub.mkdir()
+        _init_git(comment_stub)
+        cs = comment_stub / ".git/hooks/pre-commit"
+        cs.parent.mkdir(parents=True, exist_ok=True)
+        cs.write_text("#!/bin/sh\n# someday run commit:check here\nexit 0\n", encoding="utf-8")
+        cs.chmod(0o755)
+        if precommit_evidence(comment_stub.resolve()).get("precommit_enforced"):
+            failures.append("F22: a pre-commit with the gate token only in a comment must NOT be precommit_enforced")
+        non_exec = root / "non-exec"
+        non_exec.mkdir()
+        _init_git(non_exec)
+        ne = non_exec / ".git/hooks/pre-commit"
+        ne.parent.mkdir(parents=True, exist_ok=True)
+        ne.write_text("#!/bin/sh\nnpm run commit:check\n", encoding="utf-8")
+        ne.chmod(0o644)  # real invocation but not executable
+        if precommit_evidence(non_exec.resolve()).get("precommit_enforced"):
+            failures.append("F22: a non-executable pre-commit must NOT be precommit_enforced (cannot fire)")
 
         # 4) Per-host native hook truthfulness: only Claude has its own runtime
         #    records; Codex+Cursor are configured but unobserved. Claude must be

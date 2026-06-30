@@ -420,7 +420,10 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
             else:
                 findings.append(Finding("BLOCKER", "bundle_sha_mismatch", "Public docs bundle SHA differs from structure, sidecar, or ZIP.", sidecar_path.relative_to(root).as_posix()))
         else:
-            findings.append(Finding("WARN", "bundle_artifact_missing", "Declared public bundle artifact or SHA sidecar is missing.", f"docs/dist/{version}"))
+            # Ceiling F29: a declared bundle SHA whose artifact/sidecar is absent
+            # is a real identity gap, not a soft warning — the structure mirror
+            # claims an identity that cannot be verified. Block.
+            findings.append(Finding("BLOCKER", "bundle_artifact_missing", "Declared public bundle artifact or SHA sidecar is missing.", f"docs/dist/{version}"))
 
     languages = [str(item.get("code")) for item in structure.get("languages", []) if isinstance(item, dict) and item.get("code")]
     sections = content.get("sections", {})

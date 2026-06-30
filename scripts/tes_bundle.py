@@ -3181,6 +3181,34 @@ def self_test() -> dict[str, Any]:
             globals()["source_is_ancestor"] = original_is_ancestor
             sys.argv = original_argv
 
+    # F35: the query/gate exit-code split must also apply to NON-freshness
+    # subcommands. A BLOCKED status must stay exit-0 under --query/default
+    # (back-compat) but exit non-zero under --gate, so $?/`set -e` never
+    # certifies the opposite of the JSON. We force a BLOCKED status by patching
+    # plan_target and drive the real CLI dispatch (main) in-process.
+    import io as _io35
+    import contextlib as _ctx35
+    original_plan_target = globals()["plan_target"]
+    original_argv35 = sys.argv
+    try:
+        globals()["plan_target"] = lambda *a, **k: {"version": VERSION, "status": "BLOCKED", "failures": ["fixture-blocked"]}
+
+        def _run_main35(argv: list[str]) -> int:
+            sys.argv = argv
+            with _ctx35.redirect_stdout(_io35.StringIO()):
+                return main()
+
+        base35 = ["tes_bundle.py", "plan", "--target", "."]
+        if _run_main35(base35 + ["--gate"]) == 0:
+            failures.append("F35: plan --gate must exit non-zero on BLOCKED")
+        if _run_main35(base35 + ["--query"]) != 0:
+            failures.append("F35: plan --query must stay exit 0 on BLOCKED (back-compat)")
+        if _run_main35(base35) != 0:
+            failures.append("F35: plan default must stay exit 0 on BLOCKED (back-compat)")
+    finally:
+        globals()["plan_target"] = original_plan_target
+        sys.argv = original_argv35
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -3194,6 +3222,18 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
     subparsers = parser.add_subparsers(dest="command")
+
+    def add_gate_mode(subparser: argparse.ArgumentParser) -> None:
+        # Ceiling F35: query vs gate exit code. Default (--query) keeps the
+        # historical exit-0 contract for non-pass states (NEEDS_REVIEW /
+        # STALE_SOURCE / BLOCKED / FAIL) so JSON-reading callers are not
+        # regressed; --gate opts a scripted caller into a non-zero exit on a
+        # non-pass status so `$?`/`set -e` never certifies the opposite of the
+        # JSON. (freshness keeps its own --gate/--query via freshness_gate.)
+        mode = subparser.add_mutually_exclusive_group()
+        mode.add_argument("--query", dest="gate", action="store_false", help="back-compat (default): exit 0; read status from JSON")
+        mode.add_argument("--gate", dest="gate", action="store_true", help="exit non-zero on a non-pass status")
+        subparser.set_defaults(gate=False)
 
     build_parser = subparsers.add_parser("build")
     build_parser.add_argument("--out", type=Path, required=True)
@@ -3247,6 +3287,13 @@ def main() -> int:
     restore_parser.add_argument("--backup-id", required=True)
     restore_parser.add_argument("--dry-run", action="store_true")
     restore_parser.add_argument("--yes", action="store_true")
+
+    # F35: every non-freshness subcommand gets the query/gate exit-code mode.
+    for _gate_parser in (
+        build_parser, publish_parser, stage_parser, backup_parser,
+        plan_parser, apply_parser, recover_parser, restore_parser,
+    ):
+        add_gate_mode(_gate_parser)
 
     freshness_parser = subparsers.add_parser("freshness")
     freshness_parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -3333,7 +3380,8 @@ def main() -> int:
         return 2
 
     print(json.dumps(result, indent=2))
-    return 0 if result.get("status") in {
+    # Pass states that always exit 0.
+    pass_states = {
         "PASS",
         "BUILT",
         "PUBLISHED",
@@ -3344,10 +3392,17 @@ def main() -> int:
         "CLEAN_APPLIED",
         "RECOVERED",
         "RESTORED",
-        "NEEDS_REVIEW",
-        "STALE_SOURCE",
-        "BLOCKED",
-    } else 1
+    }
+    # Non-pass states that historically exit 0 in query mode (back-compat for
+    # JSON-reading callers). Under --gate (F35) these exit non-zero so a scripted
+    # caller's exit code never certifies the opposite of the JSON.
+    query_exit0_states = {"NEEDS_REVIEW", "STALE_SOURCE", "BLOCKED"}
+    status = result.get("status")
+    if status in pass_states:
+        return 0
+    if status in query_exit0_states and not getattr(args, "gate", False):
+        return 0
+    return 1
 
 
 if __name__ == "__main__":

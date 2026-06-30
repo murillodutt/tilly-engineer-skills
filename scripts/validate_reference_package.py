@@ -1186,6 +1186,29 @@ def main() -> int:
         if path.exists() and VERSION not in path.read_text(encoding="utf-8"):
             failures.append(f"{relpath} must declare {VERSION}")
 
+    # Ceiling F31: the version gate must scan EVERY scripts/**.py literal VERSION
+    # constant, not a hand-picked handful — the SYNC-AUDIT checklist promises "all
+    # scripts" but the gate historically covered only package.json + 4 manifests,
+    # letting two scripts drift stale across a release. A script with a literal
+    # `VERSION = "x.y.z"` must equal the package VERSION unless it is on an explicit
+    # independent-version allowlist; module-derived versions (VERSION =
+    # tes_bundle.VERSION) are excluded automatically by the literal-only regex.
+    independent_version_scripts = {
+        "scripts/tes_bump.py",          # its own helper-contract version
+        "scripts/retention_metadata.py",  # independent retention-schema version
+    }
+    version_literal_re = re.compile(r'^VERSION\s*=\s*"(\d+\.\d+\.\d+)"', re.MULTILINE)
+    for script_path in sorted(ROOT.glob("scripts/**/*.py")):
+        relpath = script_path.relative_to(ROOT).as_posix()
+        if relpath in independent_version_scripts:
+            continue
+        match = version_literal_re.search(script_path.read_text(encoding="utf-8", errors="ignore"))
+        if match and match.group(1) != VERSION:
+            failures.append(
+                f"{relpath} VERSION constant is {match.group(1)}, must be {VERSION} "
+                f"(add to the independent-version allowlist if intentional)"
+            )
+
     if args.staged_ready:
         if failures:
             print("[tes-reference] FAIL")

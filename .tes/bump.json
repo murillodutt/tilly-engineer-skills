@@ -9,12 +9,22 @@
       "pattern": "VERSION = \"{{VERSION}}\""
     },
     {
+      "path": "scripts/canary_admission_oracle.py",
+      "type": "regex",
+      "pattern": "VERSION = \"{{VERSION}}\""
+    },
+    {
       "path": "scripts/capsule_residue_oracle.py",
       "type": "regex",
       "pattern": "VERSION = \"{{VERSION}}\""
     },
     {
       "path": "scripts/checkpoint.py",
+      "type": "regex",
+      "pattern": "VERSION = \"{{VERSION}}\""
+    },
+    {
+      "path": "scripts/code_documentation_oracle.py",
       "type": "regex",
       "pattern": "VERSION = \"{{VERSION}}\""
     },

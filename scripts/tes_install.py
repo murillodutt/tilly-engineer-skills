@@ -1054,6 +1054,53 @@ def write_install_lock(
     return write_json(target / LOCK_PATH, lock, dry_run=dry_run)
 
 
+def transact_lock_surface(
+    target: Path,
+    surface: str,
+    *,
+    attach: bool,
+    certification_result: dict[str, Any] | None,
+    dry_run: bool,
+) -> dict[str, Any]:
+    """Ceiling F27: attach/detach must re-transact the install lock.
+
+    A full `install` is not the only operation that mutates which surfaces are
+    materialized — `attach`/`detach` do too, yet historically left the lock's
+    `attached_surfaces` (read by hook_surface_attached / admission) pointing at
+    the install-time set. This narrowly patches that one field plus the lock's
+    version/installed_at and certification summary, additively: attach merges the
+    surface in, detach removes it but never drops the capsule. Honors --dry-run.
+    """
+    if dry_run:
+        return {"action": "would-transact-lock", "surface": surface, "attach": attach}
+    lock = read_json(target / LOCK_PATH)
+    if not lock:
+        # No prior install lock to transact (e.g. capsule written without a lock):
+        # nothing to keep in sync, report rather than fabricate a partial lock.
+        return {"action": "no-install-lock", "surface": surface, "attach": attach}
+    surfaces = lock.get("attached_surfaces")
+    current = {str(s) for s in surfaces if isinstance(s, str)} if isinstance(surfaces, list) else set()
+    current.add("capsule")  # the capsule is always present and never detachable
+    if attach:
+        current.add(surface)
+    else:
+        current.discard(surface)
+        current.add("capsule")  # detach must never drop the capsule
+    lock["attached_surfaces"] = sorted(current)
+    lock["version"] = VERSION
+    lock["installed_at"] = utc_stamp()
+    if isinstance(certification_result, dict):
+        lock["certification"] = summarize_certification_result(certification_result)
+    write_action = write_json(target / LOCK_PATH, lock, dry_run=False)
+    return {
+        "action": "transact-lock",
+        "surface": surface,
+        "attach": attach,
+        "attached_surfaces": lock["attached_surfaces"],
+        "write": write_action,
+    }
+
+
 def summarize_result(result: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
     for key in ("version", "status", "source", "stage_dir", "manifest", "entries", "mode", "backup_id", "installed_manifest"):
@@ -1393,6 +1440,12 @@ def git_readiness(target: Path, hooks_attached: bool) -> dict[str, Any]:
 #    headline (it still surfaces, and it DOES gate a real release-seal claim).
 HOST_PENDING_FINDING_COMPONENTS = {"mcp_registration", "hook_runtime_health"}
 RELEASE_IDENTITY_FINDING_COMPONENTS = {"release_claim"}
+# Ceiling F24: a floor-green hook whose PreToolUse ceiling has not yet been
+# observed surfaces a non-gating INFO ceiling_evidence finding. On a fresh
+# install that is readiness (the ceiling is proven by exercising the host),
+# exactly like host-pending evidence — it must not turn the headline into a
+# review item.
+CEILING_READINESS_FINDING_COMPONENTS = {"ceiling_evidence"}
 
 
 def certification_is_host_pending_only(certification_result: dict[str, Any]) -> bool:
@@ -1416,6 +1469,8 @@ def certification_is_host_pending_only(certification_result: dict[str, Any]) -> 
         if component in HOST_PENDING_FINDING_COMPONENTS and status in {"NEEDS_EVIDENCE", "PENDING_HOST_RESTART", "PENDING_TRUST", "HOST_UNOBSERVABLE"}:
             continue
         if component in RELEASE_IDENTITY_FINDING_COMPONENTS:
+            continue
+        if component in CEILING_READINESS_FINDING_COMPONENTS and status in {"INFO", "NEEDS_EVIDENCE"}:
             continue
         return False
     return True
@@ -1445,6 +1500,8 @@ def certification_findings_are_host_pending_only(findings: list[Any]) -> bool:
         }:
             continue
         if component in RELEASE_IDENTITY_FINDING_COMPONENTS:
+            continue
+        if component in CEILING_READINESS_FINDING_COMPONENTS and status in {"INFO", "NEEDS_EVIDENCE"}:
             continue
         return False
     return True
@@ -1630,9 +1687,21 @@ def attach(args: argparse.Namespace) -> int:
             }[health_status]
             readiness = {"status": health_status, "reason": reason, "hint": hint}
             readiness_line = f" ({health_status}: {hint})"
+        # Ceiling F27: a successful attach (ATTACHED, including PENDING_* readiness)
+        # must transact the install lock so attached_surfaces reflects reality, then
+        # recertify so the closeout folds the installed-target verdict.
+        lock_txn = None
+        certification = None
+        if status == "ATTACHED":
+            certification = run_installed_certification(target, args.dry_run, args.timeout)
+            lock_txn = transact_lock_surface(
+                target, surface, attach=True, certification_result=certification, dry_run=args.dry_run
+            )
         result = {
             "version": VERSION, "status": status, "target": str(target), "surface": surface,
             "writer": writer, "health": health, "readiness": readiness,
+            "lock": lock_txn,
+            "certification": summarize_certification_result(certification) if certification else None,
         }
         print(json.dumps(result, indent=2, sort_keys=True))
         print("[tes-attach] " + status + readiness_line)
@@ -1652,7 +1721,19 @@ def attach(args: argparse.Namespace) -> int:
         target, dry_run=args.dry_run, yes=args.yes, mode="preserve", adapter=args.agent, surfaces={"capsule", surface},
     )
     status = "DRY-RUN" if args.dry_run else ("ATTACHED" if apply_result.get("status") in {"APPLIED", "CLEAN_APPLIED"} else str(apply_result.get("status")))
-    result = {"version": VERSION, "status": status, "target": str(target), "surface": surface, "apply": apply_result}
+    # Ceiling F27: transact the lock + recertify on a successful bundle attach too.
+    lock_txn = None
+    certification = None
+    if status == "ATTACHED":
+        certification = run_installed_certification(target, args.dry_run, args.timeout)
+        lock_txn = transact_lock_surface(
+            target, surface, attach=True, certification_result=certification, dry_run=args.dry_run
+        )
+    result = {
+        "version": VERSION, "status": status, "target": str(target), "surface": surface, "apply": apply_result,
+        "lock": lock_txn,
+        "certification": summarize_certification_result(certification) if certification else None,
+    }
     print(json.dumps(result, indent=2, sort_keys=True))
     print("[tes-attach] " + status)
     return 0 if status in {"ATTACHED", "DRY-RUN"} else 1
@@ -1676,6 +1757,15 @@ def detach(args: argparse.Namespace) -> int:
     result = tes_bundle.detach_surface(target, args.surface, dry_run=args.dry_run, yes=args.yes)
     status = str(result.get("status") or "")
     verdict = "PASS" if status == "DETACHED" else status
+    # Ceiling F27: a successful detach must remove the surface from the lock and
+    # recertify, so the lock never claims a surface that was just removed (the
+    # capsule is never dropped). Honors --dry-run (no write).
+    if status == "DETACHED":
+        certification = run_installed_certification(target, args.dry_run, args.timeout)
+        result["lock"] = transact_lock_surface(
+            target, args.surface, attach=False, certification_result=certification, dry_run=args.dry_run
+        )
+        result["certification"] = summarize_certification_result(certification)
     print(json.dumps(result, indent=2, sort_keys=True))
     print("[tes-detach] " + verdict)
     return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
@@ -1707,21 +1797,64 @@ def doctor(args: argparse.Namespace) -> int:
         attachments[surface] = attach_health_oracle.evaluate(target, surface)
 
     attached = sorted(s for s, h in attachments.items() if str(h.get("status")) not in {"NOT_APPLIED", "FAIL"})
-    # doctor is a report, never a failure verdict on its own; FAIL is reserved for
-    # a bad invocation (handled above). An unhealthy attachment surfaces in its
-    # own per-surface status, not by failing the whole report.
-    status = "PASS" if capsule_present else "NOT_INSTALLED"
+    # Ceiling F28: separate report_status from readiness_status. report_status is
+    # the capsule-presence report (a green capsule is genuinely installed). But a
+    # green capsule must NOT imply ready: readiness_status folds the WORST
+    # materialized attachment health (PENDING_*/HOST_UNOBSERVABLE/DEGRADED/FAIL),
+    # so a pending or degraded surface cannot hide inside the per-surface payload
+    # behind an unqualified PASS headline.
+    report_status = "PASS" if capsule_present else "NOT_INSTALLED"
+    materialized = [str(h.get("status") or "") for s, h in attachments.items() if str(h.get("status")) != "NOT_APPLIED"]
+    readiness_status = _fold_attachment_readiness(report_status, materialized)
     result = {
         "version": VERSION,
-        "status": status,
+        # status stays the capsule report (back-compat headline / exit contract);
+        # readiness_status is the folded worst-attachment readiness verdict.
+        "status": report_status,
+        "report_status": report_status,
+        "readiness_status": readiness_status,
         "target": str(target),
         "capsule": capsule_health,
         "attachments": attachments,
         "attached_surfaces": attached,
     }
     print(json.dumps(result, indent=2, sort_keys=True))
-    print("[tes-doctor] " + status)
+    # Surface the readiness verdict on the headline line when it differs from the
+    # capsule report, so PENDING_*/DEGRADED is never silent.
+    suffix = "" if readiness_status == report_status else f" (readiness: {readiness_status})"
+    print("[tes-doctor] " + report_status + suffix)
     return 0
+
+
+# Worst-wins readiness ladder over materialized attachment health (ceiling F28).
+DOCTOR_READINESS_RANK = {
+    "PASS": 0,
+    "READY_PENDING_HOST": 1,
+    "HOST_UNOBSERVABLE": 2,
+    "PENDING_TRUST": 3,
+    "PENDING_HOST_RESTART": 3,
+    "NEEDS_REVIEW": 4,
+    "DEGRADED": 5,
+    "FAIL": 6,
+}
+
+
+def _fold_attachment_readiness(report_status: str, materialized_statuses: list[str]) -> str:
+    """Fold the worst materialized attachment health into a readiness verdict.
+
+    A green capsule with a pending/degraded surface is not ready; the readiness
+    verdict reflects the worst surface so nothing hides in the payload.
+    """
+    if report_status == "NOT_INSTALLED":
+        return "NOT_INSTALLED"
+    worst = "PASS"
+    worst_rank = 0
+    for status in materialized_statuses:
+        rank = DOCTOR_READINESS_RANK.get(status, 4)  # unknown statuses are review-worthy
+        if rank > worst_rank:
+            worst_rank = rank
+            worst = status
+    return worst
 
 
 def install(args: argparse.Namespace) -> int:
@@ -3775,11 +3908,34 @@ def status(args: argparse.Namespace) -> int:
 def hook_health(args: argparse.Namespace) -> int:
     result = hook_health_payload(args.target, current_host=getattr(args, "agent", None))
     print(json.dumps(result, indent=2, sort_keys=True))
+    # Ceiling F23: query vs gate exit codes. The DEFAULT (query) mode preserves
+    # the pending-host install contract — a fresh install legitimately reports
+    # NEEDS_EVIDENCE (hooks configured, host not yet observed) and must exit 0 so
+    # the installer flow does not treat it as failure. Opt-in --gate mode makes
+    # the exit code certify the JSON: NEEDS_EVIDENCE (missing proof) exits
+    # non-zero, so a shell caller cannot read success where the JSON says
+    # evidence is absent.
+    gate = getattr(args, "gate", False)
+    if gate:
+        return 0 if result["status"] in {"PASS", "PASS_WITH_FINDINGS"} else 1
     return 0 if result["status"] in {"PASS", "PASS_WITH_FINDINGS", "NEEDS_EVIDENCE"} else 1
 
 
 def self_test() -> int:
     failures: list[str] = []
+
+    # Ceiling F28 (doctor readiness fold): a green capsule with a pending or
+    # degraded attachment must NOT read as ready — readiness folds the worst
+    # materialized surface. Pure-function red-capable check: collapsing the fold
+    # to always-PASS turns these red.
+    if _fold_attachment_readiness("PASS", ["PASS", "PASS"]) != "PASS":
+        failures.append("F28: all-healthy attachments must fold to PASS readiness")
+    if _fold_attachment_readiness("PASS", ["PASS", "PENDING_HOST_RESTART"]) != "PENDING_HOST_RESTART":
+        failures.append("F28: a pending attachment must surface in readiness, not hide behind a PASS capsule")
+    if _fold_attachment_readiness("PASS", ["PASS", "DEGRADED"]) != "DEGRADED":
+        failures.append("F28: a degraded attachment must surface in readiness")
+    if _fold_attachment_readiness("NOT_INSTALLED", []) != "NOT_INSTALLED":
+        failures.append("F28: no capsule must read NOT_INSTALLED readiness")
 
     def run(
         args: list[str] | tuple[str, ...],
@@ -5014,6 +5170,38 @@ def self_test() -> int:
             failures.append("hook-health configured-only fixture must not fill helper_contract_status from source imports")
         if configured_only_payload.get("discoverability_status") != "MISSING":
             failures.append("hook-health configured-only fixture must explicitly report missing discoverability evidence")
+        # Ceiling F23 red-capable proof: the SAME configured-only fixture
+        # (NEEDS_EVIDENCE) must keep exit 0 in default/query mode but exit
+        # non-zero under --gate, so a shell caller's exit code can never certify
+        # success where the JSON reports missing proof.
+        configured_only_gate = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(configured_only_target),
+                "--json-only",
+                "--gate",
+            ],
+            cwd=source_root(),
+        )
+        if configured_only_gate.returncode == 0:
+            failures.append("hook-health --gate must exit non-zero on NEEDS_EVIDENCE (F23)")
+        configured_only_query = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(configured_only_target),
+                "--json-only",
+                "--query",
+            ],
+            cwd=source_root(),
+        )
+        if configured_only_query.returncode != 0:
+            failures.append("hook-health --query must exit 0 on NEEDS_EVIDENCE (F23 back-compat)")
         duplicate_health_target = target / "duplicate-health"
         duplicate_health_target.mkdir()
         run(["git", "init"], cwd=duplicate_health_target)
@@ -5760,6 +5948,12 @@ def main() -> int:
     hook_health_parser.add_argument("--target", type=Path, default=Path.cwd())
     hook_health_parser.add_argument("--agent", choices=AGENTS)
     hook_health_parser.add_argument("--json-only", action="store_true")
+    # Ceiling F23: --query (default) exits 0 on NEEDS_EVIDENCE to preserve the
+    # pending-host install contract; --gate exits non-zero on NEEDS_EVIDENCE so a
+    # shell caller's exit code never certifies success where proof is absent.
+    hook_health_mode = hook_health_parser.add_mutually_exclusive_group()
+    hook_health_mode.add_argument("--gate", action="store_true", help="exit non-zero on NEEDS_EVIDENCE (missing proof)")
+    hook_health_mode.add_argument("--query", action="store_true", help="exit 0 on NEEDS_EVIDENCE (default)")
 
     # ADR 0004 SPEC-003: reverse a TES installation and prove zero active residue.
     uninstall_parser = subparsers.add_parser("uninstall")
@@ -5779,6 +5973,7 @@ def main() -> int:
     detach_parser = subparsers.add_parser("detach")
     detach_parser.add_argument("surface", choices=list(ALL_ATTACH_SURFACES))
     detach_parser.add_argument("--target", type=Path, default=Path.cwd())
+    detach_parser.add_argument("--timeout", type=float, default=120.0)
     detach_parser.add_argument("--dry-run", action="store_true")
     detach_parser.add_argument("--yes", action="store_true")
 
