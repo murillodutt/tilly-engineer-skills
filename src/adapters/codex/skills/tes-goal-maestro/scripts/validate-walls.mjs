@@ -30,6 +30,10 @@ const GM12_SPEC3_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
 const GM12_SPEC3_SOURCE_PROMPT = 'ACTIVE_SPEC=SPEC-003 execute only the Prompt Enrichment Packet slice; do not execute SPEC-004 or later.';
 const GM12_SPEC4_DOCUMENT_REF = 'document_analysis_packet.json';
 const GM12_SPEC4_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
+const GM12_SPEC5_CONTRACT = 'goal-maestro-p0-spec-fidelity';
+const GM12_SPEC5_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
+const GM12_SPEC5_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
+const GM12_SPEC5_REPAIR_UNIT = 'REPAIR-SPEC-002-HARNESS';
 const GM12_SPEC2_ALLOWED_FILES = [
   'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
   'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
@@ -176,6 +180,34 @@ function gm12Spec4RevertArgs() {
   return [fixture('gm12-spec4-document-analysis-ok.json', JSON.stringify(gm12Spec4Fixture('valid')))];
 }
 
+function gm12Spec5MissingExecutionArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-missing-execution.json', JSON.stringify(gm12Spec5Fixture('missing_execution')))];
+}
+
+function gm12Spec5ReportedDriftArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-reported-drift.json', JSON.stringify(gm12Spec5Fixture('reported_drift')))];
+}
+
+function gm12Spec5AuditMaterialArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-audit-material.json', JSON.stringify(gm12Spec5Fixture('audit_material')))];
+}
+
+function gm12Spec5MergedExecutionArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-merged-execution.json', JSON.stringify(gm12Spec5Fixture('merged_execution')))];
+}
+
+function gm12Spec5UnacceptedRepairArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-unaccepted-repair.json', JSON.stringify(gm12Spec5Fixture('unaccepted_repair')))];
+}
+
+function gm12Spec5RevertArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-ok.json', JSON.stringify(gm12Spec5Fixture('valid')))];
+}
+
+function gm12Spec5AcceptedRepairArgs() {
+  return [fixture('gm12-spec5-spec-fidelity-accepted-repair.json', JSON.stringify(gm12Spec5Fixture('accepted_repair')))];
+}
+
 function gm12ValidFixture() {
   const declared_specs = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
   const events = [];
@@ -313,6 +345,52 @@ function gm12Spec4Fixture(mode) {
     declared_specs: [spec_id],
     events,
   };
+}
+
+function gm12Spec5Fixture(mode) {
+  const declared_specs = GM12_SPEC5_DECLARED_SPECS;
+  const events = [];
+  let second = 0;
+  for (const spec_id of declared_specs) {
+    events.push({ type: 'open_spec', spec_id, at: gm12Time(second++) });
+    if (!(mode === 'missing_execution' && spec_id === 'SPEC-003')) {
+      const implementEvent = { type: 'implement', spec_id, at: gm12Time(second++) };
+      if (mode === 'merged_execution' && spec_id === 'SPEC-002') {
+        implementEvent.merged_spec_ids = ['SPEC-003'];
+      }
+      events.push(implementEvent);
+    }
+    events.push(
+      { type: 'evidence', spec_id, evidence_ref: `EV-${spec_id}-SPEC-FIDELITY`, at: gm12Time(second++) },
+      { type: 'oracle_result', spec_id, status: 'pass', at: gm12Time(second++) },
+      { type: 'local_commit_status', spec_id, status: 'LOCAL_COMMITTED', at: gm12Time(second++) },
+      { type: 'parent_validation', spec_id, status: 'pass', at: gm12Time(second++) },
+    );
+  }
+
+  const reported_specs = mode === 'reported_drift'
+    ? ['SPEC-001', 'SPEC-003', 'SPEC-002', 'SPEC-004']
+    : mode === 'audit_material'
+      ? [...declared_specs, 'EXECUTIVE-STOP-AUDIT']
+      : (mode === 'accepted_repair' || mode === 'unaccepted_repair')
+        ? [...declared_specs, GM12_SPEC5_REPAIR_UNIT]
+        : declared_specs;
+  const fixture = {
+    schema_version: 1,
+    harness_contract: GM12_SPEC5_CONTRACT,
+    spec_fidelity_required: true,
+    spec_fidelity_expectations: {
+      stop_state: GM12_SPEC5_STOP_STATE,
+      declared_specs,
+    },
+    declared_specs,
+    reported_specs,
+    events,
+  };
+  if (mode === 'accepted_repair') {
+    fixture.accepted_bounded_repair_units = [GM12_SPEC5_REPAIR_UNIT];
+  }
+  return fixture;
 }
 
 function gm12Spec2PreEditEvent(spec_id, at) {
@@ -777,6 +855,37 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec4MissingAcceptanceCriteriaArgs,
     revert: gm12Spec4RevertArgs,
+  },
+  // GM12S5 — SPEC-005 preserves declared SPEC units across execution and report surfaces.
+  {
+    id: 'GM12S5 goal-maestro-p0-spec-fidelity-missing-execution',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec5MissingExecutionArgs,
+    revert: gm12Spec5RevertArgs,
+  },
+  {
+    id: 'GM12S5 goal-maestro-p0-spec-fidelity-reported-drift',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec5ReportedDriftArgs,
+    revert: gm12Spec5RevertArgs,
+  },
+  {
+    id: 'GM12S5 goal-maestro-p0-spec-fidelity-audit-material',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec5AuditMaterialArgs,
+    revert: gm12Spec5RevertArgs,
+  },
+  {
+    id: 'GM12S5 goal-maestro-p0-spec-fidelity-merged-execution',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec5MergedExecutionArgs,
+    revert: gm12Spec5RevertArgs,
+  },
+  {
+    id: 'GM12S5 goal-maestro-p0-spec-fidelity-bounded-repair',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec5UnacceptedRepairArgs,
+    revert: gm12Spec5AcceptedRepairArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

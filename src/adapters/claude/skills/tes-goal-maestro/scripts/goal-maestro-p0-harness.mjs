@@ -6,6 +6,7 @@
 // into prompt enrichment packet validation with prompt_enrichment_packet_required:true.
 // SPEC-004 fixtures opt into document analysis packet validation with
 // document_analysis_packet_required:true.
+// SPEC-005 fixtures opt into SPEC fidelity validation with spec_fidelity_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -15,9 +16,11 @@ const LINEAR_STOP_STATE = 'NEEDS_LINEAR_SPEC_PIPELINE';
 const PRE_EDIT_STOP_STATE = 'NEEDS_PRE_EDIT_GATE_ARTIFACT';
 const PROMPT_ENRICHMENT_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
 const DOCUMENT_ANALYSIS_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
+const SPEC_FIDELITY_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
+const SPEC_FIDELITY_CONTRACT = 'goal-maestro-p0-spec-fidelity';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -64,9 +67,14 @@ const events = fixture.events;
 const preEditGateRequired = requiresPreEditGate(fixture);
 const promptEnrichmentPacketRequired = requiresPromptEnrichmentPacket(fixture);
 const documentAnalysisPacketRequired = requiresDocumentAnalysisPacket(fixture);
+const specFidelityRequired = requiresSpecFidelityGate(fixture);
+const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
 const documentAnalysisPacketEvents = [];
+const materialOpenedSpecIds = [];
+const materialExecutedSpecIds = [];
+const materialCommittedSpecIds = [];
 let firstLoopStartIndex = null;
 let firstMaterialEditIndex = null;
 const specStates = new Map();
@@ -75,6 +83,7 @@ for (const specId of declaredSpecs) {
     opened: false,
     openIndex: null,
     openedAt: null,
+    executed: false,
     complete: {
       evidence: false,
       oracle_result: false,
@@ -119,7 +128,14 @@ for (const [eventIndex, event] of events.entries()) {
     continue;
   }
 
+  if (specFidelityRequired) {
+    observeSpecFidelityEvent(eventIndex, event);
+  }
+
   if (!specStates.has(specId)) {
+    if (isAcceptedBoundedRepairUnit(specId)) {
+      continue;
+    }
     fail(`event ${eventIndex + 1} spec`, `event references undeclared SPEC ${String(specId)}`);
     continue;
   }
@@ -177,8 +193,13 @@ if (promptEnrichmentPacketRequired) {
 if (documentAnalysisPacketRequired) {
   addDocumentAnalysisPacketChecks();
 }
+if (specFidelityRequired) {
+  addSpecFidelityChecks();
+}
 
-const harnessTitle = documentAnalysisPacketRequired
+const harnessTitle = specFidelityRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005 goal-maestro-p0-spec-fidelity (${LINEAR_STOP_STATE}/${SPEC_FIDELITY_STOP_STATE})`
+  : documentAnalysisPacketRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004 goal-maestro-p0-document-analysis-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE}/${DOCUMENT_ANALYSIS_STOP_STATE})`
   : promptEnrichmentPacketRequired
     ? `SPEC-001+SPEC-002+SPEC-003 goal-maestro-p0-prompt-enrichment-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE})`
@@ -200,6 +221,27 @@ function observePromptEnrichmentPacket(eventIndex, event) {
 function observeDocumentAnalysisPacket(eventIndex, event) {
   const packet = isPlainObject(event.artifact) ? event.artifact : event;
   documentAnalysisPacketEvents.push({ eventIndex, event, packet });
+}
+
+function observeSpecFidelityEvent(eventIndex, event) {
+  const eventType = event.type;
+  const specId = event.spec_id;
+  const mergedUnitIds = mergedSpecIds(event);
+  if (mergedUnitIds.length > 0) {
+    specFidelityCheck(
+      `event ${eventIndex + 1} does not merge execution units`,
+      false,
+      `merged execution units are forbidden in material SPEC flow: ${formatIds(mergedUnitIds)}`,
+    );
+  }
+
+  if (eventType === 'open_spec') {
+    materialOpenedSpecIds.push(specId);
+  } else if (eventType === 'implement') {
+    materialExecutedSpecIds.push(specId);
+  } else if (eventType === 'local_commit_status' && (event.status ?? event.value) === 'LOCAL_COMMITTED') {
+    materialCommittedSpecIds.push(specId);
+  }
 }
 
 function addPreEditGateChecks() {
@@ -595,6 +637,59 @@ function addDocumentAnalysisPacketChecks() {
   }
 }
 
+function addSpecFidelityChecks() {
+  const reportedSpecIds = reportedSpecIdsFromFixture(fixture);
+  specFidelityCheck(
+    'reported SPEC IDs are present',
+    reportedSpecIds.length > 0,
+    'reported SPEC IDs are required for SPEC fidelity comparison',
+  );
+
+  compareSpecFidelityList('opened SPEC IDs', materialOpenedSpecIds);
+  compareSpecFidelityList('executed SPEC IDs', materialExecutedSpecIds);
+  compareSpecFidelityList('committed SPEC IDs', materialCommittedSpecIds);
+  compareSpecFidelityList('reported SPEC IDs', reportedSpecIds);
+
+  for (const specId of declaredSpecs) {
+    const state = specStates.get(specId);
+    specFidelityCheck(
+      `${specId} executed`,
+      state?.executed === true,
+      `${specId} is declared but missing from execution`,
+    );
+    specFidelityCheck(
+      `${specId} has per-SPEC evidence after open`,
+      state?.opened === true && state.complete.evidence === true,
+      `${specId} lacks per-SPEC evidence after ACTIVE_SPEC opened`,
+    );
+  }
+}
+
+function compareSpecFidelityList(label, ids) {
+  const actualIds = normalizeSpecIdArray(ids);
+  const auditIds = actualIds.filter(isAuditUnitId);
+  const unexpectedUnits = actualIds.filter((id) => (
+    !isMaterialSpecId(id) && !isAuditUnitId(id) && !isAcceptedBoundedRepairUnit(id)
+  ));
+  const materialSpecIds = actualIds.filter(isMaterialSpecId);
+
+  specFidelityCheck(
+    `${label} exclude audit units`,
+    auditIds.length === 0,
+    `${label} counted audit unit(s) as material: ${formatIds(auditIds)}`,
+  );
+  specFidelityCheck(
+    `${label} contain only material SPECs or accepted repair units`,
+    unexpectedUnits.length === 0,
+    `${label} include undeclared non-SPEC unit(s): ${formatIds(unexpectedUnits)}`,
+  );
+  specFidelityCheck(
+    `${label} match declared SPEC order exactly`,
+    sameStringArray(materialSpecIds, declaredSpecs),
+    `${label} ${formatIds(materialSpecIds)} must exactly match declared_specs ${formatIds(declaredSpecs)}`,
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -653,6 +748,7 @@ function applySpecEvent(eventIndex, event) {
   }
 
   if (event.type === 'implement') {
+    state.executed = true;
     return;
   }
 
@@ -709,6 +805,10 @@ function documentAnalysisCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${DOCUMENT_ANALYSIS_STOP_STATE}: ${detail}` });
 }
 
+function specFidelityCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${SPEC_FIDELITY_STOP_STATE}: ${detail}` });
+}
+
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -740,6 +840,52 @@ function hasMappedPacketField(value) {
 function sameStringArray(left, right) {
   if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
   return left.every((value, index) => value === right[index]);
+}
+
+function normalizeSpecIdArray(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(specIdFromValue).filter(nonEmptyString);
+}
+
+function specIdFromValue(value) {
+  if (typeof value === 'string') return value;
+  if (!isPlainObject(value)) return null;
+  return value.spec_id ?? value.specId ?? value.id ?? value.unit_id ?? null;
+}
+
+function reportedSpecIdsFromFixture(value) {
+  const candidates = [
+    value.reported_specs,
+    value.reported_spec_ids,
+    value.material_specs,
+    value.material_spec_ids,
+    value.spec_fidelity?.reported_specs,
+    value.spec_fidelity_report?.reported_specs,
+    value.report?.specs,
+    value.report?.reported_specs,
+    value.thermometer_metrics?.specs,
+    value.thermometer_metrics?.reported_specs,
+    value.closeout?.specs,
+    value.closeout?.reported_specs,
+  ];
+  for (const candidate of candidates) {
+    const specIds = normalizeSpecIdArray(candidate);
+    if (specIds.length > 0) return specIds;
+  }
+  return [];
+}
+
+function mergedSpecIds(event) {
+  const mergedIds = [
+    ...normalizeSpecIdArray(event.merged_spec_ids),
+    ...normalizeSpecIdArray(event.merged_specs),
+    ...normalizeSpecIdArray(event.merged_units),
+  ];
+  const eventSpecIds = normalizeSpecIdArray(event.spec_ids);
+  if (eventSpecIds.length > 1 || (eventSpecIds.length === 1 && eventSpecIds[0] !== event.spec_id)) {
+    mergedIds.push(...eventSpecIds);
+  }
+  return [...new Set(mergedIds)];
 }
 
 function preEditArtifactRef(event, artifact) {
@@ -780,6 +926,44 @@ function requiresDocumentAnalysisPacket(value) {
   return value.document_analysis_packet_required === true
     || value.harness_contract === DOCUMENT_ANALYSIS_CONTRACT
     || value.contract === DOCUMENT_ANALYSIS_CONTRACT;
+}
+
+function requiresSpecFidelityGate(value) {
+  return value.spec_fidelity_required === true
+    || value.harness_contract === SPEC_FIDELITY_CONTRACT
+    || value.contract === SPEC_FIDELITY_CONTRACT;
+}
+
+function acceptedBoundedRepairUnitIds(value) {
+  const acceptedUnits = [
+    ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
+    ...normalizeSpecIdArray(value.accepted_repair_units),
+  ];
+  for (const unit of Array.isArray(value.bounded_repair_units) ? value.bounded_repair_units : []) {
+    if (typeof unit === 'string') continue;
+    if (!isPlainObject(unit)) continue;
+    if (unit.accepted === true || unit.status === 'accepted') {
+      const unitId = specIdFromValue(unit);
+      if (nonEmptyString(unitId)) acceptedUnits.push(unitId);
+    }
+  }
+  return new Set(acceptedUnits.filter((unitId) => !isMaterialSpecId(unitId)));
+}
+
+function isAcceptedBoundedRepairUnit(value) {
+  return nonEmptyString(value) && acceptedBoundedRepairUnits.has(value);
+}
+
+function isMaterialSpecId(value) {
+  return /^SPEC-\d{3}$/.test(String(value));
+}
+
+function isAuditUnitId(value) {
+  return /(^|[-_])AUDIT($|[-_])/i.test(String(value));
+}
+
+function formatIds(ids) {
+  return `[${normalizeSpecIdArray(ids).join(', ')}]`;
 }
 
 function isPromptEnrichmentPacketRef(value) {
