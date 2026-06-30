@@ -1,4 +1,4 @@
-// SPEC-012 — Mutation-suite das 7 famílias (12 testes-de-violação do placar).
+// SPEC-013 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -64,6 +64,9 @@ const GM12_SPEC12_EXPECTED_OBJECTS = ['board', 'score', 'selected card'];
 const GM12_SPEC12_SCORE_STATUS = ['score 12', 'active'];
 const GM12_SPEC12_LAYOUT_AREAS = ['game board area', 'score panel'];
 const GM12_SPEC12_INTERACTION_RESULTS = ['card selected'];
+const GM12_SPEC13_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
+const GM12_SPEC13_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
+const GM12_SPEC13_BROWSER_SOURCES = ['codex', 'claude', 'cursor'];
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -411,6 +414,34 @@ function gm12Spec12MissingInteractionResultArgs() {
 
 function gm12Spec12RevertArgs() {
   return [fixture('gm12-spec12-visual-semantic-ok.json', JSON.stringify(gm12Spec12Fixture('valid')))];
+}
+
+function gm12Spec13HostMinimalArgs() {
+  return [fixture('gm12-spec13-browser-metrics-host-minimal.json', JSON.stringify(gm12Spec13Fixture('host_minimal')))];
+}
+
+function gm12Spec13MissingStatusArgs() {
+  return [fixture('gm12-spec13-browser-metrics-missing-status.json', JSON.stringify(gm12Spec13Fixture('missing_status')))];
+}
+
+function gm12Spec13MissingSourceCoverageArgs() {
+  return [fixture('gm12-spec13-browser-metrics-missing-source-coverage.json', JSON.stringify(gm12Spec13Fixture('missing_source_coverage')))];
+}
+
+function gm12Spec13MissingStateTransitionsArgs() {
+  return [fixture('gm12-spec13-browser-metrics-missing-state-transitions.json', JSON.stringify(gm12Spec13Fixture('missing_state_transitions')))];
+}
+
+function gm12Spec13MissingRestartEvidenceArgs() {
+  return [fixture('gm12-spec13-browser-metrics-missing-restart-evidence.json', JSON.stringify(gm12Spec13Fixture('missing_restart_evidence')))];
+}
+
+function gm12Spec13MissingDomainMetricsArgs() {
+  return [fixture('gm12-spec13-browser-metrics-missing-domain-metrics.json', JSON.stringify(gm12Spec13Fixture('missing_domain_metrics')))];
+}
+
+function gm12Spec13RevertArgs() {
+  return [fixture('gm12-spec13-browser-metrics-ok.json', JSON.stringify(gm12Spec13Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1174,6 +1205,113 @@ function gm12Spec12VisualEvidence(mode) {
   return [initial, active, terminal, responsive];
 }
 
+function gm12Spec13Fixture(mode) {
+  const base = gm12Spec12Fixture('valid');
+  const browserMetrics = mode === 'host_minimal'
+    ? [gm12Spec13HostMinimalMetric()]
+    : gm12Spec13BrowserMetricsForMode(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC13_CONTRACT,
+    browser_metrics_schema_required: true,
+    browser_metrics_expectations: {
+      stop_state: GM12_SPEC13_STOP_STATE,
+      required_browser_sources: GM12_SPEC13_BROWSER_SOURCES,
+    },
+    browser_metrics_json: {
+      schema_version: 1,
+      metrics: browserMetrics,
+    },
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      browser_metrics: {
+        schema_version: 1,
+        metrics: browserMetrics,
+      },
+    },
+    closeout: {
+      ...base.closeout,
+      browser_metrics: {
+        status: mode === 'valid' ? 'complete' : 'claimed_complete_by_mutation',
+        sources: browserMetrics.map((entry) => entry.browser_source),
+      },
+    },
+  };
+}
+
+function gm12Spec13HostMinimalMetric() {
+  return {
+    runtime_target: 'browser',
+    browser_source: 'codex',
+    console_errors: [],
+  };
+}
+
+function gm12Spec13BrowserMetricsForMode(mode) {
+  const metrics = GM12_SPEC13_BROWSER_SOURCES.map(gm12Spec13BrowserMetric);
+  if (mode === 'missing_status') {
+    delete metrics[0].status;
+  }
+  if (mode === 'missing_source_coverage') {
+    return metrics.filter((entry) => entry.browser_source !== 'cursor');
+  }
+  if (mode === 'missing_state_transitions') {
+    delete metrics[0].state_transitions;
+  }
+  if (mode === 'missing_restart_evidence') {
+    const cursorMetric = metrics.find((entry) => entry.browser_source === 'cursor');
+    cursorMetric.restart = { applicable: true };
+  }
+  if (mode === 'missing_domain_metrics') {
+    metrics[0].domain_metrics = { applicable: true, metrics: [] };
+  }
+  return metrics;
+}
+
+function gm12Spec13BrowserMetric(browser_source) {
+  const screenshotRef = `screenshots/spec-013-${browser_source}-active.png`;
+  const restartApplicable = browser_source === 'cursor';
+  return {
+    status: 'PASS',
+    runtime_target: 'browser',
+    browser_source,
+    console_errors: [],
+    uncaught_errors: [],
+    screenshots: [
+      {
+        ref: screenshotRef,
+        state: 'active',
+        hash: `${browser_source}-screenshot-hash`,
+      },
+    ],
+    state_transitions: [
+      { from: 'initial', to: 'active', via: 'open served app and run interaction' },
+      { from: 'active', to: 'terminal', via: 'complete the checked interaction path' },
+    ],
+    visual_assertions: [
+      { name: 'active scene visible', status: 'pass', evidence_ref: screenshotRef },
+      { name: 'expected objects present', status: 'pass', evidence_ref: screenshotRef },
+    ],
+    interaction_path: [
+      { step: 1, action: 'navigate', target: 'served browser runtime' },
+      { step: 2, action: 'interact', target: 'active scene control' },
+    ],
+    restart: {
+      applicable: restartApplicable,
+      status: restartApplicable ? 'pass' : 'not_applicable',
+      attempts: restartApplicable ? [{ reason: 'host requested browser restart', status: 'pass' }] : [],
+    },
+    domain_metrics: {
+      applicable: true,
+      metrics: [
+        { name: 'score', value: 12, source: 'rendered_output' },
+        { name: 'state', value: 'active', source: 'visual_assertion' },
+      ],
+    },
+    failures: [],
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -1885,6 +2023,43 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec12MissingInteractionResultArgs,
     revert: gm12Spec12RevertArgs,
+  },
+  // GM12S13 — SPEC-013 standardizes browser-metrics.json across Codex, Claude, and Cursor sources.
+  {
+    id: 'GM12S13 goal-maestro-p0-browser-metrics-schema-host-minimal',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec13HostMinimalArgs,
+    revert: gm12Spec13RevertArgs,
+  },
+  {
+    id: 'GM12S13 goal-maestro-p0-browser-metrics-schema-status',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec13MissingStatusArgs,
+    revert: gm12Spec13RevertArgs,
+  },
+  {
+    id: 'GM12S13 goal-maestro-p0-browser-metrics-schema-source-coverage',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec13MissingSourceCoverageArgs,
+    revert: gm12Spec13RevertArgs,
+  },
+  {
+    id: 'GM12S13 goal-maestro-p0-browser-metrics-schema-state-transitions',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec13MissingStateTransitionsArgs,
+    revert: gm12Spec13RevertArgs,
+  },
+  {
+    id: 'GM12S13 goal-maestro-p0-browser-metrics-schema-restart-evidence',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec13MissingRestartEvidenceArgs,
+    revert: gm12Spec13RevertArgs,
+  },
+  {
+    id: 'GM12S13 goal-maestro-p0-browser-metrics-schema-domain-metrics',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec13MissingDomainMetricsArgs,
+    revert: gm12Spec13RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

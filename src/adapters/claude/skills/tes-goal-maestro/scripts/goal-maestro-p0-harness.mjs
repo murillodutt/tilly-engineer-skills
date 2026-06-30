@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -21,6 +21,8 @@
 // visual_evidence_contract_required:true.
 // SPEC-012 fixtures opt into semantic visual proof validation with
 // visual_semantic_gate_required:true.
+// SPEC-013 fixtures opt into browser metrics schema validation with
+// browser_metrics_schema_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -38,6 +40,7 @@ const PACKAGE_HIERARCHY_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
 const REPORT_IDENTITY_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
 const VISUAL_EVIDENCE_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
 const VISUAL_SEMANTIC_STOP_STATE = 'NEEDS_VISUAL_SEMANTIC_GATE';
+const BROWSER_METRICS_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -49,6 +52,7 @@ const PACKAGE_HIERARCHY_CONTRACT = 'goal-maestro-p0-package-hierarchy';
 const REPORT_IDENTITY_CONTRACT = 'goal-maestro-p0-report-identity';
 const VISUAL_EVIDENCE_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
 const VISUAL_SEMANTIC_CONTRACT = 'goal-maestro-p0-visual-semantic-gate';
+const BROWSER_METRICS_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -60,6 +64,8 @@ const VISUAL_ARTIFACT_CLASSES = new Set(['ui', 'browser', 'rendered_app', 'inter
 const RENDERED_VISUAL_ARTIFACT_CLASSES = new Set(['rendered_app', 'interactive_rendered', 'static_rendered']);
 const INTERACTIVE_VISUAL_ARTIFACT_CLASSES = new Set(['browser', 'rendered_app', 'interactive_rendered']);
 const INTERACTIVE_VISUAL_STATES = ['initial', 'active', 'terminal'];
+const BROWSER_METRICS_STATUSES = new Set(['PASS', 'DEGRADED', 'BLOCKED']);
+const KNOWN_BROWSER_METRICS_SOURCES = new Set(['codex', 'claude', 'cursor']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -118,6 +124,7 @@ const packageHierarchyRequired = requiresPackageHierarchyGate(fixture);
 const reportIdentityRequired = requiresReportIdentityGate(fixture);
 const visualEvidenceContractRequired = requiresVisualEvidenceContract(fixture);
 const visualSemanticGateRequired = requiresVisualSemanticGate(fixture);
+const browserMetricsSchemaRequired = requiresBrowserMetricsSchema(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -268,8 +275,13 @@ if (visualEvidenceChecksRequired) {
 if (visualSemanticGateRequired) {
   addVisualSemanticGateChecks();
 }
+if (browserMetricsSchemaRequired) {
+  addBrowserMetricsSchemaChecks();
+}
 
-const harnessTitle = visualSemanticGateRequired
+const harnessTitle = browserMetricsSchemaRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013 goal-maestro-p0-browser-metrics-schema (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE})`
+  : visualSemanticGateRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012 goal-maestro-p0-visual-semantic-gate (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE})`
   : visualEvidenceContractRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011 goal-maestro-p0-visual-evidence-contract (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE})`
@@ -1254,6 +1266,89 @@ function addVisualSemanticGateChecks() {
   );
 }
 
+function addBrowserMetricsSchemaChecks() {
+  const document = browserMetricsDocumentFromFixture(fixture);
+  const entries = browserMetricsEntriesFromDocument(document);
+  const expected = browserMetricsExpectationsFromFixture(fixture);
+  const requiredSources = browserMetricsRequiredSources(expected);
+  const observedSources = uniqueStrings(entries.map((entry) => normalizeBrowserMetricsSource(browserMetricBrowserSource(entry))));
+  const missingSources = requiredSources.filter((source) => !observedSources.includes(source));
+
+  browserMetricsSchemaCheck(
+    'browser metrics schema version is present',
+    hasSchemaVersion(document),
+    'browser-metrics.json must declare schema_version',
+  );
+  browserMetricsSchemaCheck(
+    'browser metrics entries are present',
+    entries.length > 0,
+    'browser-metrics.json must contain one or more host metric entries',
+  );
+  if (requiredSources.length > 0) {
+    browserMetricsSchemaCheck(
+      'required browser sources are covered',
+      missingSources.length === 0,
+      `missing required browser_source value(s): ${formatValues(missingSources)}`,
+    );
+  }
+
+  for (const [index, entry] of entries.entries()) {
+    const rawSource = browserMetricBrowserSource(entry);
+    const source = normalizeBrowserMetricsSource(rawSource);
+    const label = `browser metrics entry ${index + 1}${source ? ` (${source})` : ''}`;
+    const status = browserMetricStatus(entry);
+    const runtimeTarget = browserMetricRuntimeTarget(entry);
+    const restart = browserMetricRestartField(entry);
+    const domainMetrics = browserMetricDomainMetricsField(entry);
+
+    browserMetricsSchemaCheck(
+      `${label} status is valid`,
+      BROWSER_METRICS_STATUSES.has(status),
+      'status must be PASS, DEGRADED, or BLOCKED',
+    );
+    browserMetricsSchemaCheck(
+      `${label} runtime target is present`,
+      nonEmptyString(runtimeTarget),
+      'runtime_target is required',
+    );
+    browserMetricsSchemaCheck(
+      `${label} browser source is present`,
+      nonEmptyString(rawSource),
+      'browser_source is required',
+    );
+    browserMetricsSchemaCheck(
+      `${label} browser source is supported`,
+      KNOWN_BROWSER_METRICS_SOURCES.has(source),
+      `browser_source must be codex, claude, or cursor; got ${rawSource ?? 'missing'}`,
+    );
+    browserMetricArrayFieldChecks(label, entry);
+    browserMetricsSchemaCheck(
+      `${label} restart applicability is declared`,
+      isPlainObject(restart) && typeof restart.applicable === 'boolean',
+      'restart must be an object with applicable boolean',
+    );
+    if (isPlainObject(restart) && restart.applicable === true) {
+      browserMetricsSchemaCheck(
+        `${label} applicable restart has evidence`,
+        browserMetricRestartHasEvidence(restart),
+        'restart.applicable=true requires restart status, attempt, or evidence ref',
+      );
+    }
+    browserMetricsSchemaCheck(
+      `${label} domain metrics applicability is declared`,
+      isPlainObject(domainMetrics) && typeof domainMetrics.applicable === 'boolean',
+      'domain_metrics must be an object with applicable boolean',
+    );
+    if (isPlainObject(domainMetrics) && domainMetrics.applicable === true) {
+      browserMetricsSchemaCheck(
+        `${label} applicable domain metrics are present`,
+        browserMetricDomainMetricsHaveValues(domainMetrics),
+        'domain_metrics.applicable=true requires metrics, scoring, or values',
+      );
+    }
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1399,6 +1494,10 @@ function visualEvidenceCheck(name, pass, detail) {
 
 function visualSemanticCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${VISUAL_SEMANTIC_STOP_STATE}: ${detail}` });
+}
+
+function browserMetricsSchemaCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${BROWSER_METRICS_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1570,6 +1669,13 @@ function requiresVisualSemanticGate(value) {
     || value.visual_semantic_required === true
     || value.harness_contract === VISUAL_SEMANTIC_CONTRACT
     || value.contract === VISUAL_SEMANTIC_CONTRACT;
+}
+
+function requiresBrowserMetricsSchema(value) {
+  return value.browser_metrics_schema_required === true
+    || value.browser_metrics_required === true
+    || value.harness_contract === BROWSER_METRICS_CONTRACT
+    || value.contract === BROWSER_METRICS_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -1933,6 +2039,226 @@ function visualEvidenceInteractionResults(item) {
     item.semantic_assertions?.interaction_result,
     item.semantic_assertions?.result_after_interaction,
   );
+}
+
+function browserMetricsDocumentFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.browser_metrics_json,
+    value.browser_metrics,
+    value.browserMetrics,
+    value['browser-metrics.json'],
+    metrics.browser_metrics_json,
+    metrics.browser_metrics,
+    metrics.browserMetrics,
+  ];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) return { metrics: candidate };
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return {};
+}
+
+function browserMetricsEntriesFromDocument(document) {
+  if (Array.isArray(document)) return document.filter(isPlainObject);
+  if (!isPlainObject(document)) return [];
+  const candidates = [
+    document.metrics,
+    document.entries,
+    document.host_metrics,
+    document.hosts,
+    document.sources,
+    document.browser_metrics,
+  ];
+  const entries = candidates.find(Array.isArray);
+  if (entries) return entries.filter(isPlainObject);
+  if (nonEmptyString(browserMetricRuntimeTarget(document)) || nonEmptyString(browserMetricBrowserSource(document))) {
+    return [document];
+  }
+  return [];
+}
+
+function browserMetricsExpectationsFromFixture(value) {
+  const schema = isPlainObject(value.browser_metrics_schema) ? value.browser_metrics_schema : {};
+  const expectations = isPlainObject(value.browser_metrics_expectations) ? value.browser_metrics_expectations : {};
+  return { ...schema, ...expectations };
+}
+
+function browserMetricsRequiredSources(expected) {
+  return uniqueStrings([
+    ...stringListFromValue(expected.required_browser_sources),
+    ...stringListFromValue(expected.required_sources),
+    ...stringListFromValue(expected.host_sources),
+  ].map(normalizeBrowserMetricsSource));
+}
+
+function browserMetricArrayFieldChecks(label, entry) {
+  const fields = [
+    {
+      name: 'console errors',
+      field: 'console_errors',
+      value: firstArray(entry.console_errors, entry.consoleErrors, entry.console?.errors),
+    },
+    {
+      name: 'uncaught errors',
+      field: 'uncaught_errors',
+      value: firstArray(entry.uncaught_errors, entry.uncaughtErrors, entry.uncaught, entry.runtime?.uncaught_errors, entry.runtime?.uncaughtErrors, entry.errors?.uncaught),
+    },
+    {
+      name: 'screenshots',
+      field: 'screenshots',
+      value: firstArray(entry.screenshots, entry.visual?.screenshots),
+    },
+    {
+      name: 'state transitions',
+      field: 'state_transitions',
+      value: firstArray(entry.state_transitions, entry.stateTransitions, entry.states?.transitions),
+    },
+    {
+      name: 'visual assertions',
+      field: 'visual_assertions',
+      value: firstArray(entry.visual_assertions, entry.visualAssertions, entry.visual?.assertions),
+    },
+    {
+      name: 'interaction path',
+      field: 'interaction_path',
+      value: firstArray(entry.interaction_path, entry.interactionPath, entry.interactions),
+    },
+    {
+      name: 'failures',
+      field: 'failures',
+      value: firstArray(entry.failures, entry.runtime?.failures),
+    },
+  ];
+  for (const field of fields) {
+    browserMetricsSchemaCheck(
+      `${label} ${field.name} field is an array`,
+      Array.isArray(field.value),
+      `${field.field} array is required`,
+    );
+  }
+}
+
+function browserMetricStatus(entry) {
+  const status = firstNonEmptyString(
+    entry.status,
+    entry.result,
+    entry.browser_status,
+    entry.runtime?.status,
+  );
+  return nonEmptyString(status) ? String(status).trim().toUpperCase() : null;
+}
+
+function browserMetricRuntimeTarget(entry) {
+  return firstNonEmptyString(
+    entry.runtime_target,
+    entry.runtimeTarget,
+    entry.runtime?.target,
+    entry.target?.runtime,
+    entry.target,
+  );
+}
+
+function browserMetricBrowserSource(entry) {
+  return firstNonEmptyString(
+    entry.browser_source,
+    entry.browserSource,
+    entry.browser?.source,
+    entry.source?.host,
+    entry.source?.adapter,
+    entry.host,
+    entry.adapter,
+    entry.source,
+  );
+}
+
+function normalizeBrowserMetricsSource(value) {
+  if (!nonEmptyString(value)) return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (normalized.includes('codex')) return 'codex';
+  if (normalized.includes('claude')) return 'claude';
+  if (normalized.includes('cursor')) return 'cursor';
+  return normalized;
+}
+
+function browserMetricRestartField(entry) {
+  const candidate = firstPlainObject(entry.restart, entry.browser_restart, entry.restart_evidence);
+  if (candidate) return normalizeApplicableObject(candidate);
+  if (typeof entry.restart_applicable === 'boolean') {
+    return {
+      applicable: entry.restart_applicable,
+      status: entry.restart_status,
+      attempts: entry.restart_attempts,
+      evidence_ref: entry.restart_evidence_ref,
+    };
+  }
+  return null;
+}
+
+function browserMetricDomainMetricsField(entry) {
+  const candidate = firstPlainObject(
+    entry.domain_metrics,
+    entry.domainMetrics,
+    entry.scoring_metrics,
+    entry.scoringMetrics,
+    entry.domain?.metrics,
+  );
+  if (candidate) return normalizeApplicableObject(candidate);
+  if (typeof entry.domain_metrics_applicable === 'boolean') {
+    return {
+      applicable: entry.domain_metrics_applicable,
+      metrics: entry.domain_metric_values,
+      scoring: entry.scoring,
+    };
+  }
+  return null;
+}
+
+function normalizeApplicableObject(value) {
+  const applicable = typeof value.applicable === 'boolean'
+    ? value.applicable
+    : typeof value.required === 'boolean'
+      ? value.required
+      : typeof value.needed === 'boolean'
+        ? value.needed
+        : undefined;
+  return typeof applicable === 'boolean' ? { ...value, applicable } : value;
+}
+
+function browserMetricRestartHasEvidence(restart) {
+  return nonEmptyString(restart.status)
+    || nonEmptyString(restart.result)
+    || nonEmptyString(restart.evidence_ref)
+    || nonEmptyString(restart.log_ref)
+    || (Array.isArray(restart.attempts) && restart.attempts.length > 0)
+    || hasNonEmptyObject(restart.attempt);
+}
+
+function browserMetricDomainMetricsHaveValues(domainMetrics) {
+  const candidates = [
+    domainMetrics.metrics,
+    domainMetrics.values,
+    domainMetrics.scoring,
+    domainMetrics.scores,
+    domainMetrics.domain,
+  ];
+  return candidates.some((candidate) => {
+    if (Array.isArray(candidate)) return candidate.length > 0;
+    if (isPlainObject(candidate)) return Object.keys(candidate).length > 0;
+    return nonEmptyString(candidate) || Number.isFinite(candidate);
+  });
+}
+
+function firstArray(...values) {
+  return values.find(Array.isArray);
+}
+
+function firstPlainObject(...values) {
+  return values.find(isPlainObject);
+}
+
+function hasSchemaVersion(value) {
+  return isPlainObject(value) && (nonEmptyString(value.schema_version) || Number.isInteger(value.schema_version));
 }
 
 function isMobileResponsiveEvidence(item) {
