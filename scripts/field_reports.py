@@ -22,7 +22,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.236"
+VERSION = "0.3.237"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
@@ -1130,6 +1130,57 @@ push_base="$(git rev-parse --abbrev-ref --symbolic-full-name @{{u}} 2>/dev/null 
 """
 
 
+def strict_pre_push_shell() -> str:
+    """Strict pre-push quality fallback; Field Reports drain is added separately."""
+    return f"""
+run_tes_strict_pre_push() {{
+  if [ -f "package.json" ] && command -v npm >/dev/null 2>&1; then
+    if python3 - <<'PY'
+import json
+import sys
+
+try:
+    data = json.load(open("package.json", encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+scripts = data.get("scripts") if isinstance(data, dict) else None
+sys.exit(0 if isinstance(scripts, dict) and "prepush:check" in scripts else 1)
+PY
+    then
+      npm run --silent prepush:check
+      return $?
+    fi
+    if python3 - <<'PY'
+import json
+import sys
+
+try:
+    data = json.load(open("package.json", encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+scripts = data.get("scripts") if isinstance(data, dict) else None
+sys.exit(0 if isinstance(scripts, dict) and "commit:check" in scripts else 1)
+PY
+    then
+      npm run --silent commit:check
+      return $?
+    fi
+  fi
+  if [ -f "{CANONICAL_DISCIPLINE_ORACLE}" ]; then
+    python3 "{CANONICAL_DISCIPLINE_ORACLE}" --self-test
+    return $?
+  fi
+  if [ -f "{CLAUDE_DISCIPLINE_ORACLE}" ]; then
+    python3 "{CLAUDE_DISCIPLINE_ORACLE}" --self-test
+    return $?
+  fi
+  printf '%s\\n' "TES strict pre-push: no resolvable gate found; expected package.json scripts.prepush:check, scripts.commit:check, or {CANONICAL_DISCIPLINE_ORACLE}" >&2
+  return 1
+}}
+run_tes_strict_pre_push
+"""
+
+
 def existing_backup_path(current_hook: str, target: Path) -> Path | None:
     match = BACKUP_HOOK_RE.search(current_hook)
     if not match:
@@ -1354,11 +1405,14 @@ def install_hook(target: Path) -> dict[str, object]:
             else:
                 backup_shell = backup_hook_shell(backup_rel)
 
+    # The strict quality gate is blocking. Field Reports drain remains
+    # best-effort and runs only after the quality gate succeeds.
+    quality_gate_shell = gate_pre_git_shell or strict_pre_push_shell()
     hook_text = f"""#!/bin/sh
 # {HOOK_MARKER}
 set -eu
 {backup_shell}
-{gate_pre_git_shell}
+{quality_gate_shell}
 if [ -f ".tes/bin/field_reports.py" ]; then
   python3 ".tes/bin/field_reports.py" drain --target . --trigger pre-push >/dev/null 2>&1 || true
 elif [ -f "scripts/field_reports.py" ]; then
@@ -1564,6 +1618,13 @@ def prune_invalid_mantra_gates(target: Path) -> dict[str, object]:
 
 def self_test() -> dict[str, object]:
     failures: list[str] = []
+
+    def write_prepush_quality_oracle(fixture: Path) -> None:
+        oracle = fixture / CANONICAL_DISCIPLINE_ORACLE
+        oracle.parent.mkdir(parents=True, exist_ok=True)
+        oracle.write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+        oracle.chmod(0o755)
+
     with tempfile.TemporaryDirectory(prefix="tes-field-reports-") as tempdir:
         target = Path(tempdir)
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
@@ -1634,9 +1695,10 @@ def self_test() -> dict[str, object]:
             failures.append("core.hooksPath=.githooks active hook must contain Field Reports drain")
         if dormant_githook.exists() and HOOK_MARKER in dormant_githook.read_text(encoding="utf-8", errors="replace"):
             failures.append("core.hooksPath=.githooks install must not write an orphan .git/hooks/pre-push")
+        write_prepush_quality_oracle(githooks_target)
         githooks_run = subprocess.run([str(githooks_hook)], cwd=githooks_target, text=True, capture_output=True, check=False)
         if githooks_run.returncode != 0:
-            failures.append("core.hooksPath=.githooks pre-push hook must execute without blocking")
+            failures.append("core.hooksPath=.githooks pre-push hook must execute when a quality gate resolves")
 
         husky_target = target / "core-hooks-path-husky"
         husky_target.mkdir()
@@ -1663,9 +1725,10 @@ exit 0
             failures.append("Husky user pre-push hook must contain Field Reports drain")
         if HOOK_MARKER in husky_wrapper.read_text(encoding="utf-8", errors="replace"):
             failures.append("install-hook must not overwrite Husky internal wrapper")
+        write_prepush_quality_oracle(husky_target)
         husky_run = subprocess.run([str(husky_wrapper)], cwd=husky_target, text=True, capture_output=True, check=False)
         if husky_run.returncode != 0:
-            failures.append("Husky wrapper must execute the Field Reports user hook without blocking")
+            failures.append("Husky wrapper must execute the Field Reports user hook when a quality gate resolves")
 
         disabled_hooks_target = target / "core-hooks-path-disabled"
         disabled_hooks_target.mkdir()
@@ -1784,6 +1847,7 @@ printf '%s\\n' "$*" > gate-pre-git.log
                 "returncode": 1,
             },
         )
+        write_prepush_quality_oracle(target)
         events, event_failures = read_outbox(target)
         failures.extend(event_failures)
         if len(events) != 1:

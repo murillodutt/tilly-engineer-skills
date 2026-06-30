@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.236"
+VERSION = "0.3.237"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -1648,7 +1648,7 @@ def attach(args: argparse.Namespace) -> int:
 
     # Runtime-writer surfaces (mcp, hooks, docs-mesh) are not bundle-applied; run
     # their writers, then verify via the attach-health oracle (ADR 0004 L3 SPEC-005).
-    if surface in {"mcp", "hooks", "docs-mesh"}:
+    if surface in {"mcp", "hooks", "docs-mesh", "field-reports"}:
         if surface == "mcp":
             import install_mcp  # type: ignore
             actions, failures = install_mcp.install_configs(
@@ -1657,13 +1657,22 @@ def attach(args: argparse.Namespace) -> int:
             writer = {"actions": actions, "failures": failures}
         elif surface == "hooks":
             writer = {"actions": install_hooks(target, selected_agents(args.agent), args.dry_run)}
+        elif surface == "field-reports":
+            if args.dry_run:
+                writer = {"status": "DRY-RUN", "action": "would-install-field-reports-git-hooks"}
+            else:
+                import field_reports  # type: ignore
+
+                writer = field_reports.install_hook(target)
         else:  # docs-mesh
             if args.dry_run:
                 writer = {"status": "DRY-RUN", "action": "would-run-tes-init"}
             else:
                 writer = run_helper(target, "tes_init.py", ("--target", "{target}", "--yes"), args.timeout)
         health = {"status": "SKIP", "reason": "dry-run"}
-        if not args.dry_run:
+        if surface == "field-reports" and not args.dry_run:
+            health = {"status": writer.get("status"), "reason": writer.get("reason")}
+        elif not args.dry_run:
             import attach_health_oracle  # type: ignore
             health = attach_health_oracle.evaluate(target, surface)
         health_status = str(health.get("status") or "")
@@ -1967,6 +1976,11 @@ def install(args: argparse.Namespace) -> int:
         if hooks_attached and not args.no_hooks
         else [{"action": "skip-capsule-only" if not hooks_attached else "skip-disabled", "surface": "hooks"}]
     )
+    field_reports_result: dict[str, Any] = (
+        {"status": "SKIP", "reason": "field-reports not attached", "surface": "field-reports"}
+        if "field-reports" not in surfaces or args.dry_run
+        else __import__("field_reports").install_hook(target)
+    )
     if mcp_result.get("status") == "FAIL":
         result = {
             "version": VERSION,
@@ -2073,6 +2087,7 @@ def install(args: argparse.Namespace) -> int:
         "legacy_retirement": summarize_legacy_retirement_result(legacy_retirement_result),
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
+        "field_reports": summarize_result(field_reports_result),
         "mcp": summarize_mcp_result(mcp_result),
         "certification": summarize_certification_result(certification_result),
         "postinstall": sentinel_action,
@@ -5507,6 +5522,7 @@ def self_test() -> int:
             claude_target = Path(claude_tempdir)
             (claude_target / "README.md").write_text("# Claude Hook Fixture\n", encoding="utf-8")
             (claude_target / "package.json").write_text('{"name":"tes-claude-hook-fixture"}\n', encoding="utf-8")
+            run(["git", "init"], cwd=claude_target)
             claude_install = run(
                 [
                     sys.executable,
@@ -5617,6 +5633,7 @@ def self_test() -> int:
                 '{"name":"tes-claude-partial-hook-fixture"}\n',
                 encoding="utf-8",
             )
+            run(["git", "init"], cwd=claude_partial_target)
             claude_partial_install = run(
                 [
                     sys.executable,

@@ -104,6 +104,8 @@ def validate_fixture(path: Path, fixture: dict[str, Any]) -> list[str]:
     with tempfile.TemporaryDirectory(prefix=f"tes-hook-manager-{host}-") as tempdir:
         target = Path(tempdir)
         configure_target(target, fixture)
+        if fixture.get("expected_install", {}).get("status") == "PASS":
+            _write_installed_discipline_oracle(target)
         original_hook = existing_hook_text(target, fixture)
         first = field_reports.install_hook(target)
         second = field_reports.install_hook(target)
@@ -239,8 +241,8 @@ def validate_selection_and_precommit() -> list[str]:
         if not pc.get("precommit_enforced"):
             failures.append(f"precommit: canary admission does not recognize strict gate: {pc.get('reason')}")
         pp = cao.prepush_evidence(t)
-        if not pp.get("prepush_installed"):
-            failures.append(f"precommit: canary admission does not recognize pre-push gate: {pp.get('reason')}")
+        if not (pp.get("prepush_installed") and pp.get("field_reports_prepush_drain") and pp.get("prepush_enforced")):
+            failures.append(f"precommit: canary admission does not recognize strict pre-push gate: {pp.get('reason')}")
         # Idempotent reinstall: no duplicate pre-commit backups.
         field_reports.install_hook(t)
         backups = sorted((t / ".git" / "hooks").glob("pre-commit.before-tes-*"))

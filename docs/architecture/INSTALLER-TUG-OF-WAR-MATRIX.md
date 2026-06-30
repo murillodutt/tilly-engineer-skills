@@ -168,11 +168,11 @@ ceiling audit confirmed 36/36 findings RESOLVED with a red-capable oracle each.
 
 | # | Decision materialized | Where | Oracle |
 |---|-----------------------|-------|--------|
-| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` (gate-pre-git, blocking); neither marker proves the other | `canary_admission.prepush_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` / `prepush_enforced` (blocking quality gate); drain-only never proves pre-push enforcement | `canary_admission.prepush_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
 | 22 | Strict pre-commit proven by executability (`os.access X_OK`) + a gate token in CODE (comments stripped), never a substring | `canary_admission.precommit_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
 | 23 | hook-health `--gate` exits non-zero on `NEEDS_EVIDENCE`; `--query` (default) stays 0 | `tes_install` hook-health CLI | `python3 scripts/tes_install.py --self-test` |
 | 24 | `certification_tier` distinguishes `PASS_BASIC` from `PASS_CEILING`; `ceiling_evidence` surfaced (INFO, non-gating on fresh install) | `installed_certification.evaluate` | `python3 scripts/installed_certification_oracle.py --self-test` |
-| 25 | Field Reports pre-push is an advisory non-blocking drain; admission gates on the drain, the project gate is observational | `canary_admission.git_admission` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 25 | Field Reports pre-push is an advisory non-blocking drain; admission requires a resolved pre-push quality gate (`prepush_enforced=true`) plus the drain | `canary_admission.git_admission` | `python3 scripts/canary_admission_oracle.py --self-test` |
 | 26 | Expected MCP derived from the install lock — lock attached MCP but no config = FAIL, never silent PASS | `installed_certification.mcp_registration` | `python3 scripts/installed_certification_oracle.py --self-test` |
 | 27 | `attach`/`detach` transact the install lock + recertify (honor `--dry-run`, additive merge, capsule preserved) | `tes_install.transact_lock_surface` | `python3 scripts/tes_install.py --self-test` |
 | 28 | `doctor` separates `report_status` (capsule) from `readiness_status` (folds worst attachment); `PENDING_*`/`DEGRADED` never hidden | `tes_install.doctor` + `_fold_attachment_readiness` | `python3 scripts/tes_install.py --self-test` |

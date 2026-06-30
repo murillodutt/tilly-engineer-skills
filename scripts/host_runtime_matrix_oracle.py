@@ -247,6 +247,12 @@ def _install_hooks(target: Path, failures: list[str]) -> dict[str, Any]:
             "all",
             "--attach",
             "hooks",
+            "--attach",
+            "field-reports",
+            "--attach",
+            "skills",
+            "--attach",
+            "root-context",
             "--yes",
         ]
     )
@@ -262,6 +268,12 @@ def _install_hooks(target: Path, failures: list[str]) -> dict[str, Any]:
         failures.append(f"install: unexpected status {payload.get('status')!r}")
     if "hooks" not in payload.get("attached_surfaces", []):
         failures.append("install: hooks attachment surface must be reported")
+    if "field-reports" not in payload.get("attached_surfaces", []):
+        failures.append("install: field-reports attachment surface must be reported")
+    if "skills" not in payload.get("attached_surfaces", []):
+        failures.append("install: skills attachment surface must be reported")
+    if "root-context" not in payload.get("attached_surfaces", []):
+        failures.append("install: root-context attachment surface must be reported")
     return payload
 
 
