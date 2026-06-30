@@ -28,6 +28,8 @@ const GM12_SPEC3_PROMPT_REF = 'prompt_enrichment_packet.json';
 const GM12_SPEC3_STRUCTURAL_METHOD = 'gm-p0-harness-platform';
 const GM12_SPEC3_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
 const GM12_SPEC3_SOURCE_PROMPT = 'ACTIVE_SPEC=SPEC-003 execute only the Prompt Enrichment Packet slice; do not execute SPEC-004 or later.';
+const GM12_SPEC4_DOCUMENT_REF = 'document_analysis_packet.json';
+const GM12_SPEC4_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
 const GM12_SPEC2_ALLOWED_FILES = [
   'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
   'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
@@ -162,6 +164,18 @@ function gm12Spec3RevertArgs() {
   return [fixture('gm12-spec3-prompt-enrichment-ok.json', JSON.stringify(gm12Spec3Fixture('valid')))];
 }
 
+function gm12Spec4MissingDocumentAnalysisArgs() {
+  return [fixture('gm12-spec4-document-analysis-missing.json', JSON.stringify(gm12Spec4Fixture('missing')))];
+}
+
+function gm12Spec4MissingAcceptanceCriteriaArgs() {
+  return [fixture('gm12-spec4-document-analysis-missing-acceptance.json', JSON.stringify(gm12Spec4Fixture('missing_acceptance_criteria')))];
+}
+
+function gm12Spec4RevertArgs() {
+  return [fixture('gm12-spec4-document-analysis-ok.json', JSON.stringify(gm12Spec4Fixture('valid')))];
+}
+
 function gm12ValidFixture() {
   const declared_specs = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
   const events = [];
@@ -272,6 +286,35 @@ function gm12Spec3Fixture(mode) {
   };
 }
 
+function gm12Spec4Fixture(mode) {
+  const spec_id = 'SPEC-004';
+  const events = [];
+  let second = 0;
+  if (mode === 'valid' || mode === 'missing_acceptance_criteria') {
+    events.push(gm12Spec4DocumentAnalysisEvent(spec_id, gm12Time(second++), mode));
+  }
+  events.push(
+    { type: 'open_spec', spec_id, at: gm12Time(second++) },
+    { type: 'implement', spec_id, at: gm12Time(second++) },
+    { type: 'evidence', spec_id, evidence_ref: 'EV-SPEC-004-DOCUMENT-ANALYSIS-PACKET', at: gm12Time(second++) },
+    { type: 'oracle_result', spec_id, status: 'pass', at: gm12Time(second++) },
+    { type: 'local_commit_status', spec_id, status: 'LOCAL_COMMITTED', at: gm12Time(second++) },
+    { type: 'parent_validation', spec_id, status: 'pass', at: gm12Time(second++) },
+  );
+
+  return {
+    schema_version: 1,
+    harness_contract: 'goal-maestro-p0-document-analysis-packet',
+    document_analysis_packet_required: true,
+    document_analysis_expectations: {
+      external_documentation_required: false,
+      cloud_search_required: false,
+    },
+    declared_specs: [spec_id],
+    events,
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -324,6 +367,35 @@ function gm12Spec3PromptEvent(spec_id, at, mode) {
 
   return {
     type: 'prompt_enrichment_packet',
+    spec_id,
+    at,
+    artifact,
+  };
+}
+
+function gm12Spec4DocumentAnalysisEvent(spec_id, at, mode) {
+  const artifact = {
+    path: GM12_SPEC4_DOCUMENT_REF,
+    source_artifact_kind: 'Super SPEC',
+    functional_requirements: ['convert the source artifact into a document analysis packet before execution'],
+    non_functional_requirements: ['local-only harness validation with no runtime service'],
+    acceptance_criteria: [
+      'execution without a document analysis packet fails',
+      'a packet with missing acceptance criteria fails',
+    ],
+    forbidden_moves: ['SPEC-005 and later remain out of scope', 'no docs claims', 'no package version bump'],
+    visual_runtime_requirements: ['runtime harness validation only; visual requirements not applicable'],
+    evidence_requirements: ['direct positive fixture', 'missing packet negative fixture', 'missing acceptance criteria negative fixture'],
+    explicit_ambiguities: ['none for this SPEC-004 harness fixture'],
+    external_documentation_required: false,
+    cloud_search_required: false,
+  };
+  if (mode === 'missing_acceptance_criteria') {
+    delete artifact.acceptance_criteria;
+  }
+
+  return {
+    type: 'document_analysis_packet',
     spec_id,
     at,
     artifact,
@@ -692,6 +764,19 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec3EchoPromptArgs,
     revert: gm12Spec3RevertArgs,
+  },
+  // GM12S4 — SPEC-004 document analysis packet must exist and map acceptance criteria before execution.
+  {
+    id: 'GM12S4 goal-maestro-p0-document-analysis-missing',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec4MissingDocumentAnalysisArgs,
+    revert: gm12Spec4RevertArgs,
+  },
+  {
+    id: 'GM12S4 goal-maestro-p0-document-analysis-acceptance-criteria',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec4MissingAcceptanceCriteriaArgs,
+    revert: gm12Spec4RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

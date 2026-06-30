@@ -4,6 +4,8 @@
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
 // artifact validation with pre_edit_gate_required:true. SPEC-003 fixtures opt
 // into prompt enrichment packet validation with prompt_enrichment_packet_required:true.
+// SPEC-004 fixtures opt into document analysis packet validation with
+// document_analysis_packet_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -12,13 +14,17 @@ import { readText, runChecks } from './lib/harness.mjs';
 const LINEAR_STOP_STATE = 'NEEDS_LINEAR_SPEC_PIPELINE';
 const PRE_EDIT_STOP_STATE = 'NEEDS_PRE_EDIT_GATE_ARTIFACT';
 const PROMPT_ENRICHMENT_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
+const DOCUMENT_ANALYSIS_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
+const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
+const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
+  DOCUMENT_ANALYSIS_EVENT_TYPE,
   'open_spec',
   'implement',
   'evidence',
@@ -57,8 +63,10 @@ const declaredSpecs = fixture.declared_specs;
 const events = fixture.events;
 const preEditGateRequired = requiresPreEditGate(fixture);
 const promptEnrichmentPacketRequired = requiresPromptEnrichmentPacket(fixture);
+const documentAnalysisPacketRequired = requiresDocumentAnalysisPacket(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
+const documentAnalysisPacketEvents = [];
 let firstLoopStartIndex = null;
 let firstMaterialEditIndex = null;
 const specStates = new Map();
@@ -126,6 +134,11 @@ for (const [eventIndex, event] of events.entries()) {
     continue;
   }
 
+  if (eventType === DOCUMENT_ANALYSIS_EVENT_TYPE) {
+    observeDocumentAnalysisPacket(eventIndex, event);
+    continue;
+  }
+
   if (eventType === 'open_spec') {
     if (firstLoopStartIndex === null) firstLoopStartIndex = eventIndex;
     openSpec(eventIndex, event);
@@ -161,12 +174,17 @@ if (preEditGateRequired) {
 if (promptEnrichmentPacketRequired) {
   addPromptEnrichmentPacketChecks();
 }
+if (documentAnalysisPacketRequired) {
+  addDocumentAnalysisPacketChecks();
+}
 
-const harnessTitle = promptEnrichmentPacketRequired
-  ? `SPEC-001+SPEC-002+SPEC-003 goal-maestro-p0-prompt-enrichment-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE})`
-  : preEditGateRequired
-    ? `SPEC-001+SPEC-002 goal-maestro-p0-pre-edit-gate (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE})`
-    : `SPEC-001 goal-maestro-p0-linear-pipeline (${LINEAR_STOP_STATE})`;
+const harnessTitle = documentAnalysisPacketRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004 goal-maestro-p0-document-analysis-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE}/${DOCUMENT_ANALYSIS_STOP_STATE})`
+  : promptEnrichmentPacketRequired
+    ? `SPEC-001+SPEC-002+SPEC-003 goal-maestro-p0-prompt-enrichment-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE})`
+    : preEditGateRequired
+      ? `SPEC-001+SPEC-002 goal-maestro-p0-pre-edit-gate (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE})`
+      : `SPEC-001 goal-maestro-p0-linear-pipeline (${LINEAR_STOP_STATE})`;
 runChecks(harnessTitle, checks);
 
 function observePreEditGate(eventIndex, event) {
@@ -177,6 +195,11 @@ function observePreEditGate(eventIndex, event) {
 function observePromptEnrichmentPacket(eventIndex, event) {
   const packet = isPlainObject(event.artifact) ? event.artifact : event;
   promptEnrichmentPacketEvents.push({ eventIndex, event, packet });
+}
+
+function observeDocumentAnalysisPacket(eventIndex, event) {
+  const packet = isPlainObject(event.artifact) ? event.artifact : event;
+  documentAnalysisPacketEvents.push({ eventIndex, event, packet });
 }
 
 function addPreEditGateChecks() {
@@ -469,6 +492,109 @@ function addPromptEnrichmentPacketChecks() {
   }
 }
 
+function addDocumentAnalysisPacketChecks() {
+  const packetEvent = documentAnalysisPacketEvents[0] ?? null;
+  const packet = packetEvent?.packet ?? {};
+  const packetRef = preEditArtifactRef(packetEvent?.event, packet);
+  const expected = isPlainObject(fixture.document_analysis_expectations) ? fixture.document_analysis_expectations : {};
+  const expectedExternalDocumentationRequired = expected.external_documentation_required ?? fixture.external_documentation_required;
+  const expectedCloudSearchRequired = expected.cloud_search_required ?? fixture.cloud_search_required;
+
+  documentAnalysisCheck(
+    'document analysis packet event exists',
+    documentAnalysisPacketEvents.length > 0,
+    'loop start requires a durable document analysis packet event',
+  );
+  documentAnalysisCheck(
+    'document analysis packet event is unique',
+    documentAnalysisPacketEvents.length === 1,
+    'exactly one durable document analysis packet event must be emitted',
+  );
+
+  if (!packetEvent) return;
+
+  documentAnalysisCheck(
+    'document analysis packet precedes loop start',
+    firstLoopStartIndex === null || packetEvent.eventIndex < firstLoopStartIndex,
+    'document analysis packet was not emitted before loop start',
+  );
+  documentAnalysisCheck(
+    'document analysis packet precedes first material edit',
+    firstMaterialEditIndex === null || packetEvent.eventIndex < firstMaterialEditIndex,
+    'document analysis packet was emitted after the first material edit',
+  );
+  documentAnalysisCheck(
+    'document analysis packet ref is package-local',
+    isPackageLocalArtifactRef(packetRef),
+    'packet ref must be a non-absolute package-local path',
+  );
+  documentAnalysisCheck(
+    'document analysis packet ref uses json or md',
+    isDocumentAnalysisPacketRef(packetRef),
+    'packet ref must end in .json or .md',
+  );
+  documentAnalysisCheck(
+    'document analysis packet functional requirements are mapped',
+    hasMappedPacketField(packet.functional_requirements),
+    'packet lacks functional_requirements',
+  );
+  documentAnalysisCheck(
+    'document analysis packet non-functional requirements are mapped',
+    hasMappedPacketField(packet.non_functional_requirements),
+    'packet lacks non_functional_requirements',
+  );
+  documentAnalysisCheck(
+    'document analysis packet acceptance criteria are mapped',
+    hasMappedPacketField(packet.acceptance_criteria),
+    'packet lacks acceptance_criteria',
+  );
+  documentAnalysisCheck(
+    'document analysis packet forbidden moves are mapped',
+    hasMappedPacketField(packet.forbidden_moves),
+    'packet lacks forbidden_moves',
+  );
+  documentAnalysisCheck(
+    'document analysis packet visual/runtime requirements are mapped',
+    hasMappedPacketField(packet.visual_runtime_requirements),
+    'packet lacks visual_runtime_requirements',
+  );
+  documentAnalysisCheck(
+    'document analysis packet evidence requirements are mapped',
+    hasMappedPacketField(packet.evidence_requirements),
+    'packet lacks evidence_requirements',
+  );
+  documentAnalysisCheck(
+    'document analysis packet explicit ambiguities are mapped',
+    hasMappedPacketField(packet.explicit_ambiguities),
+    'packet lacks explicit_ambiguities',
+  );
+  documentAnalysisCheck(
+    'document analysis packet external documentation requirement is recorded',
+    typeof packet.external_documentation_required === 'boolean',
+    'packet lacks external_documentation_required boolean',
+  );
+  documentAnalysisCheck(
+    'document analysis packet cloud search requirement is recorded',
+    typeof packet.cloud_search_required === 'boolean',
+    'packet lacks cloud_search_required boolean',
+  );
+
+  if (typeof expectedExternalDocumentationRequired === 'boolean') {
+    documentAnalysisCheck(
+      'document analysis packet external documentation requirement matches expectation',
+      packet.external_documentation_required === expectedExternalDocumentationRequired,
+      `packet external_documentation_required must be ${expectedExternalDocumentationRequired}`,
+    );
+  }
+  if (typeof expectedCloudSearchRequired === 'boolean') {
+    documentAnalysisCheck(
+      'document analysis packet cloud search requirement matches expectation',
+      packet.cloud_search_required === expectedCloudSearchRequired,
+      `packet cloud_search_required must be ${expectedCloudSearchRequired}`,
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -579,6 +705,10 @@ function promptEnrichmentCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${PROMPT_ENRICHMENT_STOP_STATE}: ${detail}` });
 }
 
+function documentAnalysisCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${DOCUMENT_ANALYSIS_STOP_STATE}: ${detail}` });
+}
+
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -598,6 +728,13 @@ function hasNonEmptyStringArray(value) {
 
 function hasNonEmptyObject(value) {
   return isPlainObject(value) && Object.keys(value).length > 0;
+}
+
+function hasMappedPacketField(value) {
+  if (nonEmptyString(value)) return true;
+  if (Array.isArray(value)) return value.length > 0 && value.some(hasMappedPacketField);
+  if (isPlainObject(value)) return Object.values(value).some(hasMappedPacketField);
+  return false;
 }
 
 function sameStringArray(left, right) {
@@ -639,8 +776,20 @@ function requiresPromptEnrichmentPacket(value) {
     || value.contract === PROMPT_ENRICHMENT_CONTRACT;
 }
 
+function requiresDocumentAnalysisPacket(value) {
+  return value.document_analysis_packet_required === true
+    || value.harness_contract === DOCUMENT_ANALYSIS_CONTRACT
+    || value.contract === DOCUMENT_ANALYSIS_CONTRACT;
+}
+
 function isPromptEnrichmentPacketRef(value) {
   return nonEmptyString(value) && (value.endsWith('.json') || value.endsWith('.md'));
+}
+
+function isDocumentAnalysisPacketRef(value) {
+  if (!nonEmptyString(value)) return false;
+  const fileName = value.split(/[\\/]+/).at(-1);
+  return fileName === 'document_analysis_packet.json' || fileName === 'document_analysis_packet.md';
 }
 
 function isPromptEchoOnly(packet, sourcePrompt) {
