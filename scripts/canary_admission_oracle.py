@@ -51,7 +51,7 @@ import field_reports
 import tes_install
 
 
-VERSION = "0.3.233"
+VERSION = "0.3.234"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
