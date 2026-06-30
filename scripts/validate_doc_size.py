@@ -28,6 +28,14 @@ LIMITS = {
     # by id instead of re-designing. The length is the embedded solution, not
     # padding — the same rationale as the assisted-context installer prompt.
     "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-declared-contract-arbiter-and-effort-gate.md": 800,
+    # Cleanroom canary Super SPEC: multi-canary oracle matrix + admission bar in one
+    # execution contract (same rationale as the arbiter Super SPEC override).
+    "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-pre-goal-maestro-cleanroom-fix.md": 950,
+    # Evidence packet oracle dumps: raw preflight/admission JSON is intentionally
+    # monolithic for audit replay; partition only when a follow-on wave adds more.
+    "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/PREFLIGHT.md": 850,
+    "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/ORACLE-RESULTS.md": 600,
+    "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/FINAL-ADMISSION-MATRIX.md": 1400,
 }
 WARN_RATIOS = {
     "docs/roadmap/README.md": 0.75,

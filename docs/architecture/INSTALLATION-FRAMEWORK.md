@@ -76,7 +76,7 @@ Each host gets a SessionStart-style hook whose command references the engine ent
 | Host | Config file | Entrypoint reference |
 |------|-------------|----------------------|
 | Claude Code | `.claude/settings.json` | `${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py` |
-| Codex | `.codex/config.toml` | `$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py` |
+| Codex | `.codex/config.toml` | absolute `{target}/.tes/bin/tes_install.py` via `codex_hook_command()` (Git-safe in non-Git targets) |
 | Cursor | `.cursor/hooks.json` | `.tes/bin/tes_install.py` (relative) |
 | git | active `pre-push` hook (`core.hooksPath` aware) | field-reports pre-push gate |
 

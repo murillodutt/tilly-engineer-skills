@@ -109,7 +109,10 @@ EXCLUDED_PARTS = {
     "dist",
     "build",
     "coverage",
+    "__MACOSX",
 }
+OS_RESIDUE_NAMES = {".DS_Store", "__MACOSX", "Thumbs.db", ".AppleDouble", ".LSOverride"}
+OS_RESIDUE_PREFIXES = ("._",)
 TES_RUNTIME_PREFIXES = (
     (".agents", "skills", "tes-"),
     (".claude", "skills", "tes-"),
@@ -209,6 +212,12 @@ def iter_project_files(target: Path) -> list[Path]:
     )
 
 
+def is_os_residue_relpath(relpath: Path) -> bool:
+    return any(
+        part in OS_RESIDUE_NAMES or part.startswith(OS_RESIDUE_PREFIXES) for part in relpath.parts
+    )
+
+
 def is_excluded(path: Path, target: Path) -> bool:
     try:
         relpath = path.relative_to(target)
@@ -223,6 +232,8 @@ def is_excluded(path: Path, target: Path) -> bool:
     if len(relpath.parts) >= 3 and relpath.parts[:3] == ("docs", "agents", "evidence"):
         return True
     parts = relpath.parts
+    if is_os_residue_relpath(path.relative_to(target)):
+        return True
     return any(part in EXCLUDED_PARTS for part in parts)
 
 
@@ -553,6 +564,8 @@ def expected_anchors(target: Path) -> list[str]:
                 except ValueError:
                     continue
                 if relpath.parts and relpath.parts[0] == dirname:
+                    if is_os_residue_relpath(relpath):
+                        continue
                     anchors.append(relpath.as_posix())
                     break
     return sorted(dict.fromkeys(anchors))

@@ -257,11 +257,18 @@ def write_text_if_changed(path: Path, text: str, target: Path, dry_run: bool, ba
     return result
 
 
-def codex_hook_snippet() -> str:
-    command = (
-        f'{python_command_token()} "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" '
-        'hook --agent codex --target "$(git rev-parse --show-toplevel)"'
+def codex_hook_command(target: Path) -> str:
+    """Return a Codex hook command safe in Git and non-Git targets."""
+    resolved = str(target.resolve())
+    script = f"{resolved}/.tes/bin/tes_install.py"
+    return (
+        f"{python_command_token()} {shlex.quote(script)} "
+        f"hook --agent codex --target {shlex.quote(resolved)}"
     )
+
+
+def codex_hook_snippet(target: Path) -> str:
+    command = codex_hook_command(target)
     return f"""# TES first-session post-install hook.
 [[hooks.SessionStart]]
 matcher = "startup|resume"
@@ -274,11 +281,8 @@ statusMessage = "Checking TES post-install"
 """
 
 
-def codex_pretooluse_snippet() -> str:
-    command = (
-        f'{python_command_token()} "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" '
-        'hook --agent codex --target "$(git rev-parse --show-toplevel)"'
-    )
+def codex_pretooluse_snippet(target: Path) -> str:
+    command = codex_hook_command(target)
     return f"""# TES PreToolUse senior-manager gate.
 [[hooks.PreToolUse]]
 matcher = "{CLAUDE_PRETOOLUSE_MATCHER}"
@@ -296,8 +300,8 @@ def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     updated = replace_or_insert_toml_feature(existing, "hooks", "true")
     updated = remove_toml_feature_line(updated, "codex_hooks")
     updated = refresh_codex_tes_hook_blocks(updated)
-    snippet = codex_hook_snippet().strip()
-    pretooluse = codex_pretooluse_snippet().strip()
+    snippet = codex_hook_snippet(target).strip()
+    pretooluse = codex_pretooluse_snippet(target).strip()
     updated = updated.rstrip() + "\n\n" + snippet + "\n\n" + pretooluse + "\n"
     backup = not is_codex_tes_only_mcp_config(existing)
     return write_text_if_changed(path, updated, target, dry_run, backup=backup)
@@ -4006,6 +4010,12 @@ def self_test() -> int:
                 )
         except tomllib.TOMLDecodeError as exc:
             failures.append(f"Codex legacy matcher migration must keep TOML parseable: {exc}")
+        legacy_config_text = (legacy_codex_target / ".codex/config.toml").read_text(encoding="utf-8")
+        if "git rev-parse --show-toplevel" in legacy_config_text:
+            failures.append("Codex hook reinstall must replace git rev-parse paths with target-safe paths")
+        resolved_legacy = str(legacy_codex_target.resolve())
+        if resolved_legacy not in legacy_config_text:
+            failures.append("Codex hook reinstall must embed absolute target path")
 
         partial_target = Path(tempdir) / "partial-target"
         partial_target.mkdir()

@@ -94,6 +94,8 @@ ALIGNMENT_FILES = {
     "knowledge_lifecycle": AGENTS / "KNOWLEDGE-LIFECYCLE.md",
     "glossary": AGENTS / "GLOSSARY.md",
 }
+DOCUMENTATION_AUTHORITY = AGENTS / "DOCUMENTATION-AUTHORITY.md"
+CONTRACTS_DIR = AGENTS / "contracts"
 FRONTMATTER_KEYS = ("tes_doc", "status", "updated", "confidence", "tags", "evidence")
 ROADMAP_TERMS = ("Done", "Active", "Next", "Later", "Deferred", "Blocked", "Unknown")
 ROADMAP_FRAME_TERMS = ("System X-Ray", "Convergence Line", "Current Claim", "Next Irreversible Step")
@@ -888,6 +890,17 @@ def analyze(target: Path) -> dict[str, Any]:
     freshness = freshness_reconciliation(target)
     warnings.extend(freshness.get("notes", []))
 
+    if not freshness.get("mesh_scaffold_only", False):
+        if not read_text(target / DOCUMENTATION_AUTHORITY).strip():
+            failures.append("missing alignment surface: docs/agents/DOCUMENTATION-AUTHORITY.md")
+        contract_files = (
+            sorted(path for path in (target / CONTRACTS_DIR).rglob("*") if path.is_file())
+            if (target / CONTRACTS_DIR).is_dir()
+            else []
+        )
+        if not contract_files:
+            failures.append("missing alignment surface: docs/agents/contracts/** (at least one contract file required)")
+
     inventory = inventory_hygiene_gate(target)
     inventory_failures = [
         f"inventory hygiene: {item.get('reason', item.get('code', 'unknown'))}"
@@ -1019,6 +1032,16 @@ def write_good_fixture(target: Path) -> None:
 
     write(Path("README.md"), "# Example Product\n")
     write(Path("package.json"), '{"scripts":{"test":"node test.js","lint":"eslint ."}}\n')
+    write(
+        DOCUMENTATION_AUTHORITY,
+        fm("documentation-authority")
+        + "# Documentation Authority\n\nTier 1: `docs/project/super-spec.md`. "
+        + "Related: [[PROJECT-STATE]], [[PROJECT-ROADMAP]], [[QUALITY-GATES]].\n",
+    )
+    write(
+        CONTRACTS_DIR / "OPERATING-MESH.yml",
+        "version: 1\nscope:\n  - docs/agents/**\n",
+    )
     write(
         ALIGNMENT_FILES["project_context"],
         fm("project-context")

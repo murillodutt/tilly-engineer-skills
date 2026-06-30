@@ -130,6 +130,23 @@ def quality_gates_path_status(target: Path) -> dict[str, Any]:
     }
 
 
+def target_os_residue_files(target: Path) -> list[str]:
+    """Scan the installed target for OS residue outside Git metadata."""
+    found: list[str] = []
+    for path in target.rglob("*"):
+        if not path.is_file():
+            continue
+        try:
+            relpath = path.relative_to(target)
+        except ValueError:
+            continue
+        if relpath.parts and relpath.parts[0] == ".git":
+            continue
+        if is_os_residue(relpath):
+            found.append(rel(path, target))
+    return sorted(set(found))
+
+
 def artifact_hygiene(target: Path) -> dict[str, Any]:
     failures: list[str] = []
     residue: list[str] = []
@@ -140,6 +157,7 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
     for root in (target / ".tes/setup", target / ".tes/bin"):
         if root.exists():
             residue.extend(rel(path, target) for path in root.rglob("*") if path.is_file() and is_os_residue(path.relative_to(root)))
+    residue.extend(target_os_residue_files(target))
     if residue:
         failures.extend(f"OS residue present: {path}" for path in sorted(set(residue)))
     metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
@@ -301,6 +319,16 @@ def evaluate(target: Path) -> dict[str, Any]:
     for name, payload in components.items():
         status = str(payload.get("status") or "UNKNOWN")
         if status in {"PASS", "PASS_WITH_FINDINGS", "OK", "NOT_APPLIED"}:
+            continue
+        if status == "NEEDS_EVIDENCE" and name == "hook_runtime_health":
+            findings.append(
+                {
+                    "component": name,
+                    "status": "NEEDS_EVIDENCE",
+                    "detail": payload.get("findings") or payload.get("agents") or [],
+                    "repair": REPAIR_ROUTES.get(name, "Inspect this certification component and rerun installed certification."),
+                }
+            )
             continue
         findings.append(
             {
@@ -533,6 +561,14 @@ def self_test() -> dict[str, Any]:
             failures.append("degraded fixture findings must include repair routes")
         if healthy_result["status"] != "PASS":
             failures.append(f"healthy fixture must report PASS, got {healthy_result['status']}")
+        hook_health = healthy_result["components"]["hook_runtime_health"]
+        if hook_health.get("status") == "NEEDS_EVIDENCE":
+            hook_finding = next(
+                (item for item in healthy_result.get("findings", []) if item.get("component") == "hook_runtime_health"),
+                None,
+            )
+            if not hook_finding or hook_finding.get("status") != "NEEDS_EVIDENCE":
+                failures.append("hook_runtime_health NEEDS_EVIDENCE must remain visible without collapsing aggregate PASS")
         if not healthy_result["negative_checks"]["host_connected_not_inferred"]:
             failures.append("installed certification must never infer host_connected")
         if healthy_result["components"]["pretooluse_contract_reference"]["status"] != "PASS":

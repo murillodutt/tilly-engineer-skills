@@ -91,8 +91,9 @@ EXCLUDED_SUFFIXES = {
     ".sqlite-shm",
     ".sqlite-wal",
     ".db",
-    ".DS_Store",
 }
+OS_RESIDUE_NAMES = {".DS_Store", "__MACOSX", "Thumbs.db", ".AppleDouble", ".LSOverride"}
+OS_RESIDUE_PREFIXES = ("._",)
 TES_RUNTIME_PREFIXES = (
     (".agents", "skills", "tes-"),
     (".claude", "skills", "tes-"),
@@ -408,6 +409,12 @@ def is_generated_root_bootloader(relpath: Path, path: Path | None) -> bool:
         return False
 
 
+def is_os_residue_relpath(relpath: Path) -> bool:
+    return any(
+        part in OS_RESIDUE_NAMES or part.startswith(OS_RESIDUE_PREFIXES) for part in relpath.parts
+    )
+
+
 def is_excluded(relpath: Path, path: Path | None = None) -> bool:
     if relpath.as_posix() in TES_AGENT_MESH_RELPATHS:
         return True
@@ -421,9 +428,13 @@ def is_excluded(relpath: Path, path: Path | None = None) -> bool:
         return True
     if len(relpath.parts) >= 3 and relpath.parts[0] == ".tes" and relpath.parts[1] == "bin" and ".bak-" in relpath.name:
         return True
+    if is_os_residue_relpath(relpath):
+        return True
     if any(part in EXCLUDED_PARTS for part in relpath.parts):
         return True
     if relpath.suffix in EXCLUDED_SUFFIXES:
+        return True
+    if relpath.name in OS_RESIDUE_NAMES:
         return True
     if relpath.as_posix() == cortex.RECALL_DB.as_posix():
         return True
