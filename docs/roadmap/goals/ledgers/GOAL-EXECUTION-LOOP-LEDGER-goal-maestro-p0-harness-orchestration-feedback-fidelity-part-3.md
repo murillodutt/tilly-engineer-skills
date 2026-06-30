@@ -54,40 +54,6 @@ BASELINE_ONLY_COMMITS=cc4a8bbe,74c4bfc2,6d3862e8,78e4b64b,bbdac904,6de00ad6,f6a7
 LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-p0-harness-orchestration-feedback-fidelity-part-3.md
 MAY_EDIT=yes
 
-### SPEC-024 - No Automation Boundary
-
-spec_id: SPEC-024
-spec_version: source-anchor-1f99741c
-attempt: 1
-repair_count: 0
-audit_repair_cycle: 0
-first_unexecuted_unit: SPEC-024
-failed_attempt_recovery_decision: not_applicable
-commit: no-commit-pre-edit-gate
-oracle_status: PASS (no-automation boundary blocked missing boundary evidence, unauthorized scheduled wakeup, unclassified accidental automation, and missing heartbeat sidecar prompt citation with NEEDS_NO_AUTOMATION_BOUNDARY; explicit owner-authorized automation and no-automation sidecar evidence passed; validate-walls GM12S24 fixtures fired and reverted)
-structural_method_id: gm-p0-harness-platform
-topology_decision: extend-source-wall-harness
-topology_decision_artifact: this-ledger
-structural_debt: installed-target-canary-pending
-next_structural_constraint: preserve-local-only-no-automation-boundary
-topology_probe_result: PASS
-browser_metrics_contract: not_applicable
-visual_spatial_oracle: not_applicable
-browser_attempt: not_applicable
-visual_evidence: not_applicable
-runtime_smoke_oracle: node src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs validates no-automation boundary enforcement
-adversary_objection: repaired
-shared_contract_extended: yes
-extension_point_proven: yes
-contract_handoff_artifact: this-ledger
-api_lint_status: PASS
-auditor_distinct_from_operator: not_applicable
-auditor_rewrote_no_oracle: not_applicable
-audit_remutation: not_applicable
-distinct_refuters: not_applicable
-stop_state: source_units_complete_installed_canary_pending
-next_allowed_action: run_installed_target_canary_or_owner_release_identity_decision
-
 ### SPEC-017 - Evidence Tracking Classification
 
 spec_id: SPEC-017
@@ -430,3 +396,37 @@ ACTIVE_SPEC=SPEC-024
 BASELINE_ONLY_COMMITS=cc4a8bbe,74c4bfc2,6d3862e8,78e4b64b,bbdac904,6de00ad6,f6a780f6,8aca2269,f4bfe82b,4370f155,f44df0cc,a8734f14,2b88f5b6,e3e85baf,b6e2c78a,5246d3c8,f985ba0d,2db3124e,f53ca8ed,a3c59358,ed49c772,90023b2e,fc730947,23c2be30
 LEDGER=docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-p0-harness-orchestration-feedback-fidelity-part-3.md
 MAY_EDIT=yes
+
+### SPEC-024 - No Automation Boundary
+
+spec_id: SPEC-024
+spec_version: source-anchor-1f99741c
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-024
+failed_attempt_recovery_decision: not_applicable
+commit: 3f574dc6
+oracle_status: PASS (no-automation boundary blocked missing boundary evidence, unauthorized scheduled wakeup, unclassified accidental automation, and missing heartbeat sidecar prompt citation with NEEDS_NO_AUTOMATION_BOUNDARY; explicit owner-authorized automation and no-automation sidecar evidence passed; validate-walls GM12S24 fixtures fired and reverted)
+structural_method_id: gm-p0-harness-platform
+topology_decision: extend-source-wall-harness
+topology_decision_artifact: this-ledger
+structural_debt: installed-target-canary-pending
+next_structural_constraint: preserve-local-only-no-automation-boundary
+topology_probe_result: PASS
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: node src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs validates no-automation boundary enforcement
+adversary_objection: repaired
+shared_contract_extended: yes
+extension_point_proven: yes
+contract_handoff_artifact: this-ledger
+api_lint_status: PASS
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: source_units_complete_installed_canary_pending
+next_allowed_action: run_installed_target_canary_or_owner_release_identity_decision
