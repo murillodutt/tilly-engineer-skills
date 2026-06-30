@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021/SPEC-022 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021/SPEC-022/SPEC-023 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -41,6 +41,8 @@
 // llm_cache_cost_telemetry_required:true.
 // SPEC-022 fixtures opt into closeout consistency validation with
 // closeout_consistency_gate_required:true.
+// SPEC-023 fixtures opt into heartbeat sidecar validation with
+// heartbeat_sidecar_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -68,6 +70,7 @@ const LENS_LEDGER_STOP_STATE = 'NEEDS_LENS_LEDGER';
 const CLOUD_SEARCH_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
 const LLM_CACHE_COST_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
 const CLOSEOUT_CONSISTENCY_STOP_STATE = 'NEEDS_CLOSEOUT_CONSISTENCY';
+const HEARTBEAT_SIDECAR_STOP_STATE = 'NEEDS_HEARTBEAT_SIDECAR';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -89,6 +92,7 @@ const LENS_LEDGER_CONTRACT = 'goal-maestro-p0-lens-ledger';
 const CLOUD_SEARCH_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
 const LLM_CACHE_COST_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
 const CLOSEOUT_CONSISTENCY_CONTRACT = 'goal-maestro-p0-closeout-consistency';
+const HEARTBEAT_SIDECAR_CONTRACT = 'goal-maestro-p0-heartbeat-sidecar';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -195,6 +199,7 @@ const lensLedgerRequired = requiresLensLedger(fixture);
 const cloudSearchRequired = requiresCloudSearchClassification(fixture);
 const llmCacheCostRequired = requiresLLMCacheCostTelemetry(fixture);
 const closeoutConsistencyRequired = requiresCloseoutConsistencyGate(fixture);
+const heartbeatSidecarRequired = requiresHeartbeatSidecar(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -375,8 +380,13 @@ if (llmCacheCostRequired) {
 if (closeoutConsistencyRequired) {
   addCloseoutConsistencyChecks();
 }
+if (heartbeatSidecarRequired) {
+  addHeartbeatSidecarChecks();
+}
 
-const harnessTitle = closeoutConsistencyRequired
+const harnessTitle = heartbeatSidecarRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021+SPEC-022+SPEC-023 goal-maestro-p0-heartbeat-sidecar (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE}/${CLOSEOUT_CONSISTENCY_STOP_STATE}/${HEARTBEAT_SIDECAR_STOP_STATE})`
+  : closeoutConsistencyRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021+SPEC-022 goal-maestro-p0-closeout-consistency (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE}/${CLOSEOUT_CONSISTENCY_STOP_STATE})`
   : llmCacheCostRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021 goal-maestro-p0-llm-cache-cost-telemetry (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE})`
@@ -1907,6 +1917,38 @@ function addCloseoutConsistencyChecks() {
   );
 }
 
+function addHeartbeatSidecarChecks() {
+  const request = heartbeatSidecarRequestFromFixture(fixture);
+  const sidecar = heartbeatSidecarFromFixture(fixture);
+  const closeout = heartbeatSidecarCloseoutFromFixture(fixture);
+
+  heartbeatSidecarCheck(
+    'heartbeat sidecar request combines execute-loop and audit heartbeat',
+    request.executeLoopRequested && request.auditHeartbeatRequested,
+    'heartbeat sidecar materialization requires both --execute-loop and --audit-heartbeat-prompt',
+  );
+  heartbeatSidecarCheck(
+    'heartbeat sidecar is present',
+    heartbeatSidecarPresent(sidecar),
+    'requested audit heartbeat prompt must be emitted as a same-response sidecar or tracked local artifact',
+  );
+  heartbeatSidecarCheck(
+    'heartbeat sidecar appears in closeout evidence',
+    heartbeatSidecarCloseoutEvidence(sidecar, closeout),
+    'contract-only pass is insufficient without closeout sidecar evidence',
+  );
+  heartbeatSidecarCheck(
+    'heartbeat sidecar is read-only and non-executing',
+    heartbeatSidecarIsReadOnly(sidecar) && heartbeatSidecarWasNotExecutedScheduledOrShared(sidecar),
+    'heartbeat sidecar must be read-only and must not execute, schedule, or share',
+  );
+  heartbeatSidecarCheck(
+    'heartbeat sidecar does not create a second Goal Maestro command',
+    !heartbeatSidecarCreatesSecondCommand(sidecar),
+    'heartbeat sidecar must not create a second Goal Maestro command',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -2092,6 +2134,10 @@ function llmCacheCostCheck(name, pass, detail) {
 
 function closeoutConsistencyCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${CLOSEOUT_CONSISTENCY_STOP_STATE}: ${detail}` });
+}
+
+function heartbeatSidecarCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${HEARTBEAT_SIDECAR_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -2334,6 +2380,14 @@ function requiresCloseoutConsistencyGate(value) {
     || value.closeout_consistency_required === true
     || value.harness_contract === CLOSEOUT_CONSISTENCY_CONTRACT
     || value.contract === CLOSEOUT_CONSISTENCY_CONTRACT;
+}
+
+function requiresHeartbeatSidecar(value) {
+  return value.heartbeat_sidecar_required === true
+    || value.audit_heartbeat_sidecar_required === true
+    || value.audit_heartbeat_prompt_required === true
+    || value.harness_contract === HEARTBEAT_SIDECAR_CONTRACT
+    || value.contract === HEARTBEAT_SIDECAR_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -4039,6 +4093,95 @@ function normalizeCloseoutConsistencyStatus(value) {
   const normalized = normalizeSemanticValue(value);
   if (['pass', 'passed', 'complete', 'completed', 'success'].includes(normalized)) return 'pass';
   return normalized;
+}
+
+function heartbeatSidecarRequestFromFixture(value) {
+  return {
+    executeLoopRequested: value.execute_loop_requested === true
+      || value.execute_loop === true
+      || value.options?.execute_loop === true,
+    auditHeartbeatRequested: value.audit_heartbeat_prompt_requested === true
+      || value.audit_heartbeat === true
+      || value.audit_heartbeat_prompt === true
+      || value.options?.audit_heartbeat_prompt === true,
+  };
+}
+
+function heartbeatSidecarFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.heartbeat_sidecar,
+    value.audit_heartbeat_sidecar,
+    value.adversarial_audit_heartbeat_sidecar,
+    value.adversarial_audit_heartbeat,
+    metrics.heartbeat_sidecar,
+    metrics.audit_heartbeat_sidecar,
+    value.closeout?.heartbeat_sidecar,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+    if (nonEmptyString(candidate)) return { prompt: candidate };
+  }
+  return {};
+}
+
+function heartbeatSidecarCloseoutFromFixture(value) {
+  if (isPlainObject(value.closeout?.heartbeat_sidecar) || value.closeout?.heartbeat_sidecar_present === true) {
+    return value.closeout;
+  }
+  const surfaces = isPlainObject(value.closeout_consistency_surfaces) ? value.closeout_consistency_surfaces : {};
+  return surfaces.chat ?? value.chat_closeout ?? value.closeout ?? {};
+}
+
+function heartbeatSidecarPresent(sidecar) {
+  if (sidecar.present === false) return false;
+  return hasNonEmptyObject(sidecar) && (
+    nonEmptyString(sidecar.prompt)
+    || nonEmptyString(sidecar.prompt_ref)
+    || nonEmptyString(sidecar.artifact_ref)
+    || nonEmptyString(sidecar.path)
+    || sidecar.present === true
+  );
+}
+
+function heartbeatSidecarCloseoutEvidence(sidecar, closeout) {
+  if (!closeoutSurfacePresent(closeout)) return false;
+  if (isPlainObject(closeout.heartbeat_sidecar) && closeout.heartbeat_sidecar.present !== false) return true;
+  if (closeout.heartbeat_sidecar_present === true) return true;
+  const refs = [
+    sidecar.prompt_ref,
+    sidecar.artifact_ref,
+    sidecar.path,
+    sidecar.ref,
+  ].filter(nonEmptyString);
+  const closeoutStrings = collectStrings(closeout);
+  return refs.length > 0 && refs.some((ref) => closeoutStrings.includes(ref));
+}
+
+function heartbeatSidecarIsReadOnly(sidecar) {
+  const boundary = normalizeSemanticValue(firstNonEmptyString(sidecar.boundary, sidecar.mode, sidecar.access));
+  return sidecar.read_only === true
+    || sidecar.readonly === true
+    || boundary === 'read only'
+    || boundary === 'read only sidecar';
+}
+
+function heartbeatSidecarWasNotExecutedScheduledOrShared(sidecar) {
+  const executionStatus = normalizeSemanticValue(firstNonEmptyString(sidecar.execution_status, sidecar.executed_status));
+  const scheduleStatus = normalizeSemanticValue(firstNonEmptyString(sidecar.schedule_status, sidecar.scheduled_status));
+  const shareStatus = normalizeSemanticValue(firstNonEmptyString(sidecar.share_status, sidecar.shared_status));
+  return sidecar.executed !== true
+    && sidecar.scheduled !== true
+    && sidecar.shared !== true
+    && !['executed', 'ran'].includes(executionStatus)
+    && !['scheduled', 'queued'].includes(scheduleStatus)
+    && !['shared', 'sent'].includes(shareStatus);
+}
+
+function heartbeatSidecarCreatesSecondCommand(sidecar) {
+  if (sidecar.second_goal_maestro_command_created === true || sidecar.created_second_command === true) return true;
+  const command = firstNonEmptyString(sidecar.command, sidecar.goal_maestro_command, sidecar.second_command);
+  return nonEmptyString(command) && normalizeSemanticValue(command).includes('tes goal maestro');
 }
 
 function ledgerTextFromFixture(value) {

@@ -1,4 +1,4 @@
-// SPEC-022 — Mutation suite for executable wall fixtures.
+// SPEC-023 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -88,6 +88,8 @@ const GM12_SPEC21_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
 const GM12_SPEC21_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
 const GM12_SPEC22_CONTRACT = 'goal-maestro-p0-closeout-consistency';
 const GM12_SPEC22_STOP_STATE = 'NEEDS_CLOSEOUT_CONSISTENCY';
+const GM12_SPEC23_CONTRACT = 'goal-maestro-p0-heartbeat-sidecar';
+const GM12_SPEC23_STOP_STATE = 'NEEDS_HEARTBEAT_SIDECAR';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -675,6 +677,26 @@ function gm12Spec22StatusDriftArgs() {
 
 function gm12Spec22RevertArgs() {
   return [fixture('gm12-spec22-closeout-consistency-ok.json', JSON.stringify(gm12Spec22Fixture('valid')))];
+}
+
+function gm12Spec23MissingSidecarArgs() {
+  return [fixture('gm12-spec23-heartbeat-sidecar-missing.json', JSON.stringify(gm12Spec23Fixture('missing_sidecar')))];
+}
+
+function gm12Spec23ContractOnlyArgs() {
+  return [fixture('gm12-spec23-heartbeat-sidecar-contract-only.json', JSON.stringify(gm12Spec23Fixture('contract_only')))];
+}
+
+function gm12Spec23ExecutedSidecarArgs() {
+  return [fixture('gm12-spec23-heartbeat-sidecar-executed.json', JSON.stringify(gm12Spec23Fixture('executed_sidecar')))];
+}
+
+function gm12Spec23SecondCommandArgs() {
+  return [fixture('gm12-spec23-heartbeat-sidecar-second-command.json', JSON.stringify(gm12Spec23Fixture('second_command')))];
+}
+
+function gm12Spec23RevertArgs() {
+  return [fixture('gm12-spec23-heartbeat-sidecar-ok.json', JSON.stringify(gm12Spec23Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -2148,6 +2170,70 @@ function gm12Spec22Closeout(closeout, mode, surfaces) {
   };
 }
 
+function gm12Spec23Fixture(mode) {
+  const base = gm12Spec22Fixture('valid');
+  const sidecar = gm12Spec23Sidecar(mode);
+  const result = {
+    ...base,
+    harness_contract: GM12_SPEC23_CONTRACT,
+    heartbeat_sidecar_required: true,
+    execute_loop_requested: true,
+    audit_heartbeat_prompt_requested: true,
+    heartbeat_sidecar: sidecar,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+    },
+    closeout: gm12Spec23Closeout(base.closeout, mode, sidecar),
+  };
+  if (mode === 'missing_sidecar') {
+    delete result.heartbeat_sidecar;
+  }
+  return result;
+}
+
+function gm12Spec23Sidecar(mode) {
+  const sidecar = {
+    present: true,
+    prompt_ref: 'adversarial-audit-heartbeat-sidecar.md',
+    prompt: 'Read-only adversarial audit heartbeat prompt for the current Goal Maestro loop.',
+    read_only: true,
+    boundary: 'read_only',
+    execution_status: 'not_executed',
+    schedule_status: 'not_scheduled',
+    share_status: 'not_shared',
+    second_goal_maestro_command_created: false,
+  };
+  if (mode === 'executed_sidecar') {
+    sidecar.read_only = false;
+    sidecar.execution_status = 'executed';
+  }
+  if (mode === 'second_command') {
+    sidecar.second_goal_maestro_command_created = true;
+    sidecar.goal_maestro_command = '/tes-goal-maestro --execute-loop --audit-heartbeat-prompt';
+  }
+  return sidecar;
+}
+
+function gm12Spec23Closeout(closeout, mode, sidecar) {
+  const result = {
+    ...closeout,
+    heartbeat_sidecar: {
+      present: mode !== 'missing_sidecar' && mode !== 'contract_only',
+      prompt_ref: sidecar.prompt_ref,
+      boundary: sidecar.boundary,
+      execution_status: sidecar.execution_status,
+      schedule_status: sidecar.schedule_status,
+      share_status: sidecar.share_status,
+      stop_state: mode === 'valid' ? 'ready_for_loop' : GM12_SPEC23_STOP_STATE,
+    },
+  };
+  if (mode === 'contract_only') {
+    delete result.heartbeat_sidecar;
+    result.contract_text = 'heartbeat sidecar contract declared without closeout sidecar evidence';
+  }
+  return result;
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -3121,6 +3207,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec22StatusDriftArgs,
     revert: gm12Spec22RevertArgs,
+  },
+  // GM12S23 — SPEC-023 materializes the audit heartbeat as a read-only sidecar.
+  {
+    id: 'GM12S23 goal-maestro-p0-heartbeat-sidecar-present',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec23MissingSidecarArgs,
+    revert: gm12Spec23RevertArgs,
+  },
+  {
+    id: 'GM12S23 goal-maestro-p0-heartbeat-sidecar-closeout-evidence',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec23ContractOnlyArgs,
+    revert: gm12Spec23RevertArgs,
+  },
+  {
+    id: 'GM12S23 goal-maestro-p0-heartbeat-sidecar-read-only',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec23ExecutedSidecarArgs,
+    revert: gm12Spec23RevertArgs,
+  },
+  {
+    id: 'GM12S23 goal-maestro-p0-heartbeat-sidecar-no-second-command',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec23SecondCommandArgs,
+    revert: gm12Spec23RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
