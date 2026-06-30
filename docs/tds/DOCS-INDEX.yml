@@ -36,6 +36,13 @@ documents:
     consumer: maintainers, hook authors, installer authors, oracle authors, and hook auditors
     source_of_truth: true
     evidence_level: L2
+  - path: docs/architecture/INSTALLER-TUG-OF-WAR-MATRIX.md
+    id: architecture.installer_tug_of_war_matrix
+    class: architecture
+    status: active
+    consumer: maintainers, installer authors, oracle authors
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/architecture/TES-NAMING-MIGRATION-CATALOG.md
     id: architecture.tes_naming_migration_catalog
     class: architecture
