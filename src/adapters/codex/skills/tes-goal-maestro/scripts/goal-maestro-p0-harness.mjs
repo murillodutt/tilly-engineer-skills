@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -9,6 +9,8 @@
 // SPEC-005 fixtures opt into SPEC fidelity validation with spec_fidelity_required:true.
 // SPEC-006 fixtures opt into Thermometer fidelity validation with
 // thermometer_fidelity_required:true.
+// SPEC-007 fixtures opt into canonical ledger grammar validation with
+// ledger_grammar_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -20,14 +22,17 @@ const PROMPT_ENRICHMENT_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
 const DOCUMENT_ANALYSIS_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
 const SPEC_FIDELITY_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
 const THERMOMETER_FIDELITY_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
+const LEDGER_GRAMMAR_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
 const SPEC_FIDELITY_CONTRACT = 'goal-maestro-p0-spec-fidelity';
 const THERMOMETER_FIDELITY_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
+const LEDGER_GRAMMAR_CONTRACT = 'goal-maestro-p0-ledger-grammar';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
+const MATERIAL_SPEC_HEADING_RE = /^### (SPEC-\d{3}) - (.+\S)$/;
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -80,6 +85,7 @@ const promptEnrichmentPacketRequired = requiresPromptEnrichmentPacket(fixture);
 const documentAnalysisPacketRequired = requiresDocumentAnalysisPacket(fixture);
 const specFidelityRequired = requiresSpecFidelityGate(fixture);
 const thermometerFidelityRequired = requiresThermometerFidelityGate(fixture);
+const ledgerGrammarRequired = requiresLedgerGrammarGate(fixture);
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -208,11 +214,16 @@ if (documentAnalysisPacketRequired) {
 if (specFidelityRequired) {
   addSpecFidelityChecks();
 }
+if (ledgerGrammarRequired) {
+  addLedgerGrammarChecks();
+}
 if (thermometerFidelityRequired) {
   addThermometerFidelityChecks();
 }
 
-const harnessTitle = thermometerFidelityRequired
+const harnessTitle = ledgerGrammarRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007 goal-maestro-p0-ledger-grammar (${LINEAR_STOP_STATE}/${LEDGER_GRAMMAR_STOP_STATE})`
+  : thermometerFidelityRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006 goal-maestro-p0-thermometer-fidelity (${LINEAR_STOP_STATE}/${THERMOMETER_FIDELITY_STOP_STATE})`
   : specFidelityRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005 goal-maestro-p0-spec-fidelity (${LINEAR_STOP_STATE}/${SPEC_FIDELITY_STOP_STATE})`
@@ -748,6 +759,73 @@ function addThermometerFidelityChecks() {
   );
 }
 
+function addLedgerGrammarChecks() {
+  const ledgerText = ledgerTextFromFixture(fixture);
+  const parsed = parseLedgerGrammar(ledgerText);
+  const expected = isPlainObject(fixture.ledger_grammar_expectations) ? fixture.ledger_grammar_expectations : {};
+  const expectedDeclaredSpecs = expected.declared_specs ?? fixture.ledger_declared_specs ?? declaredSpecs;
+  const sectionSpecIds = parsed.materialSections.map((section) => section.headingSpecId);
+  const duplicateSectionIds = duplicateStrings(sectionSpecIds);
+  const nonMatchingSpecIdSections = parsed.materialSections.filter((section) => (
+    section.specIdValues.some((specId) => specId !== section.headingSpecId)
+  ));
+  const invalidSpecIdCardinalitySections = parsed.materialSections.filter((section) => (
+    section.specIdValues.length !== 1 || section.specIdValues[0] !== section.headingSpecId
+  ));
+  const finalSection = parsed.materialSections.at(-1) ?? null;
+  const thermometerMetrics = thermometerMetricsFromFixture(fixture);
+  const grammarValid = nonEmptyString(ledgerText)
+    && parsed.malformedSpecHeadings.length === 0
+    && duplicateSectionIds.length === 0
+    && sameStringArray(sectionSpecIds, expectedDeclaredSpecs)
+    && invalidSpecIdCardinalitySections.length === 0
+    && nonMatchingSpecIdSections.length === 0
+    && (finalSection?.nestedAuditCloseoutHeadings.length ?? 0) === 0;
+
+  ledgerGrammarCheck(
+    'ledger text is present',
+    nonEmptyString(ledgerText),
+    'ledger_text or ledger markdown text is required for grammar validation',
+  );
+  ledgerGrammarCheck(
+    'material SPEC headings use canonical grammar',
+    parsed.malformedSpecHeadings.length === 0,
+    `material SPEC headings must use "### SPEC-NNN - Title": ${formatValues(parsed.malformedSpecHeadings)}`,
+  );
+  ledgerGrammarCheck(
+    'material SPEC sections are unique',
+    duplicateSectionIds.length === 0,
+    `duplicate material SPEC section(s): ${formatValues(duplicateSectionIds)}`,
+  );
+  ledgerGrammarCheck(
+    'material SPEC sections match declared SPEC order',
+    sameStringArray(sectionSpecIds, expectedDeclaredSpecs),
+    `ledger material sections ${formatValues(sectionSpecIds)} must match declared_specs ${formatValues(expectedDeclaredSpecs)}`,
+  );
+  ledgerGrammarCheck(
+    'each material section has exactly one matching spec_id',
+    invalidSpecIdCardinalitySections.length === 0,
+    `section spec_id cardinality or value mismatch: ${formatValues(invalidSpecIdCardinalitySections.map((section) => section.headingSpecId))}`,
+  );
+  ledgerGrammarCheck(
+    'audit fields cannot overwrite material spec_id',
+    nonMatchingSpecIdSections.length === 0,
+    `material section(s) contain non-matching spec_id fields: ${formatValues(nonMatchingSpecIdSections.map((section) => section.headingSpecId))}`,
+  );
+  ledgerGrammarCheck(
+    'final material SPEC body excludes audit and closeout sections',
+    (finalSection?.nestedAuditCloseoutHeadings.length ?? 0) === 0,
+    `final material SPEC body contains audit/closeout heading(s): ${formatValues(finalSection?.nestedAuditCloseoutHeadings ?? [])}`,
+  );
+  if (hasNonEmptyObject(thermometerMetrics)) {
+    ledgerGrammarCheck(
+      'malformed grammar blocks Thermometer packaging',
+      grammarValid,
+      'canonical ledger grammar must pass before Thermometer metrics are packaged',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -869,6 +947,10 @@ function specFidelityCheck(name, pass, detail) {
 
 function thermometerFidelityCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${THERMOMETER_FIDELITY_STOP_STATE}: ${detail}` });
+}
+
+function ledgerGrammarCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${LEDGER_GRAMMAR_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1002,6 +1084,12 @@ function requiresThermometerFidelityGate(value) {
     || value.contract === THERMOMETER_FIDELITY_CONTRACT;
 }
 
+function requiresLedgerGrammarGate(value) {
+  return value.ledger_grammar_required === true
+    || value.harness_contract === LEDGER_GRAMMAR_CONTRACT
+    || value.contract === LEDGER_GRAMMAR_CONTRACT;
+}
+
 function acceptedBoundedRepairUnitIds(value) {
   const acceptedUnits = [
     ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
@@ -1038,6 +1126,20 @@ function formatIds(ids) {
   return `[${normalizeSpecIdArray(ids).join(', ')}]`;
 }
 
+function formatValues(values) {
+  return `[${(Array.isArray(values) ? values : []).join(', ')}]`;
+}
+
+function duplicateStrings(values) {
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const value of values.filter(nonEmptyString)) {
+    if (seen.has(value)) duplicates.add(value);
+    seen.add(value);
+  }
+  return [...duplicates];
+}
+
 function uniqueStrings(values) {
   return [...new Set(values.filter(nonEmptyString))];
 }
@@ -1045,6 +1147,76 @@ function uniqueStrings(values) {
 function thermometerMetricsFromFixture(value) {
   const metrics = value.thermometer_metrics ?? value.execution_thermometer ?? value.thermometer ?? {};
   return isPlainObject(metrics) ? metrics : {};
+}
+
+function ledgerTextFromFixture(value) {
+  const candidates = [
+    value.ledger_text,
+    value.ledger_markdown,
+    value.ledger?.text,
+    value.ledger?.markdown,
+    value.ledger?.body,
+    value.ledger?.content,
+  ];
+  return candidates.find(nonEmptyString) ?? '';
+}
+
+function parseLedgerGrammar(text) {
+  if (!nonEmptyString(text)) {
+    return { materialSections: [], malformedSpecHeadings: [] };
+  }
+  const lines = text.split(/\r?\n/);
+  const headings = collectMarkdownHeadings(lines);
+  const malformedSpecHeadings = headings
+    .filter((heading) => heading.level === 3 && /^SPEC-\d+/.test(heading.text) && !MATERIAL_SPEC_HEADING_RE.test(heading.line))
+    .map((heading) => heading.line.trim());
+  const materialSections = headings
+    .filter((heading) => MATERIAL_SPEC_HEADING_RE.test(heading.line))
+    .map((heading) => ledgerMaterialSectionFromHeading(heading, headings, lines));
+  return { materialSections, malformedSpecHeadings };
+}
+
+function collectMarkdownHeadings(lines) {
+  const headings = [];
+  for (const [index, line] of lines.entries()) {
+    const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
+    if (!match) continue;
+    headings.push({
+      line,
+      index,
+      level: match[1].length,
+      text: match[2],
+    });
+  }
+  return headings;
+}
+
+function ledgerMaterialSectionFromHeading(heading, headings, lines) {
+  const match = MATERIAL_SPEC_HEADING_RE.exec(heading.line);
+  const nextBoundary = headings.find((candidate) => candidate.index > heading.index && candidate.level <= 3);
+  const bodyLines = lines.slice(heading.index + 1, nextBoundary?.index ?? lines.length);
+  return {
+    headingSpecId: match[1],
+    title: match[2].trim(),
+    specIdValues: specIdFieldValues(bodyLines),
+    nestedAuditCloseoutHeadings: nestedAuditCloseoutHeadings(bodyLines),
+  };
+}
+
+function specIdFieldValues(lines) {
+  return lines
+    .map((line) => /^spec_id:\s*(.+?)\s*$/.exec(line))
+    .filter(Boolean)
+    .map((match) => match[1].trim())
+    .filter(nonEmptyString);
+}
+
+function nestedAuditCloseoutHeadings(lines) {
+  return lines
+    .map((line) => /^(#{4,6})\s+(.+?)\s*$/.exec(line))
+    .filter(Boolean)
+    .map((match) => match[2].trim())
+    .filter((headingText) => /\b(audit|closeout)\b/i.test(headingText));
 }
 
 function collectThermometerSpecIds(value) {

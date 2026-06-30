@@ -37,6 +37,9 @@ const GM12_SPEC5_REPAIR_UNIT = 'REPAIR-SPEC-002-HARNESS';
 const GM12_SPEC6_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
 const GM12_SPEC6_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
 const GM12_SPEC6_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
+const GM12_SPEC7_CONTRACT = 'goal-maestro-p0-ledger-grammar';
+const GM12_SPEC7_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
+const GM12_SPEC7_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
 const GM12_SPEC2_ALLOWED_FILES = [
   'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
   'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
@@ -229,6 +232,26 @@ function gm12Spec6UnprovenMetricsArgs() {
 
 function gm12Spec6RevertArgs() {
   return [fixture('gm12-spec6-thermometer-fidelity-ok.json', JSON.stringify(gm12Spec6Fixture('valid')))];
+}
+
+function gm12Spec7MalformedHeadingArgs() {
+  return [fixture('gm12-spec7-ledger-grammar-malformed-heading.json', JSON.stringify(gm12Spec7Fixture('malformed_heading')))];
+}
+
+function gm12Spec7DuplicateSpecIdArgs() {
+  return [fixture('gm12-spec7-ledger-grammar-duplicate-spec-id.json', JSON.stringify(gm12Spec7Fixture('duplicate_spec_id')))];
+}
+
+function gm12Spec7AuditOverwriteArgs() {
+  return [fixture('gm12-spec7-ledger-grammar-audit-overwrite.json', JSON.stringify(gm12Spec7Fixture('audit_overwrite')))];
+}
+
+function gm12Spec7NestedCloseoutArgs() {
+  return [fixture('gm12-spec7-ledger-grammar-nested-closeout.json', JSON.stringify(gm12Spec7Fixture('nested_closeout')))];
+}
+
+function gm12Spec7RevertArgs() {
+  return [fixture('gm12-spec7-ledger-grammar-ok.json', JSON.stringify(gm12Spec7Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -496,6 +519,83 @@ function gm12Spec6Fixture(mode) {
     },
     events,
   };
+}
+
+function gm12Spec7Fixture(mode) {
+  const base = gm12Spec6Fixture('valid');
+  return {
+    ...base,
+    harness_contract: GM12_SPEC7_CONTRACT,
+    ledger_grammar_required: true,
+    thermometer_fidelity_required: true,
+    ledger_grammar_expectations: {
+      stop_state: GM12_SPEC7_STOP_STATE,
+      declared_specs: GM12_SPEC7_DECLARED_SPECS,
+    },
+    declared_specs: GM12_SPEC7_DECLARED_SPECS,
+    ledger_text: gm12Spec7LedgerText(mode),
+  };
+}
+
+function gm12Spec7LedgerText(mode) {
+  const spec3Heading = mode === 'malformed_heading'
+    ? '### SPEC-003 Prompt Enrichment'
+    : '### SPEC-003 - Prompt Enrichment';
+  const spec3Lines = [
+    spec3Heading,
+    'spec_id: SPEC-003',
+  ];
+  if (mode === 'duplicate_spec_id') {
+    spec3Lines.push('spec_id: SPEC-003');
+  }
+  spec3Lines.push(
+    'oracle_status: PASS',
+    'stop_state: ready_for_closeout',
+  );
+  if (mode === 'audit_overwrite') {
+    spec3Lines.push(
+      '',
+      '#### Executive Stop Audit',
+      'spec_id: EXECUTIVE-STOP-AUDIT',
+      'audit_status: PASS',
+    );
+  } else if (mode === 'nested_closeout') {
+    spec3Lines.push(
+      '',
+      '#### Closeout',
+      'status: complete',
+    );
+  } else {
+    spec3Lines.push(
+      '',
+      '### Executive Stop Audit',
+      'spec_id: EXECUTIVE-STOP-AUDIT',
+      'audit_status: PASS',
+      '',
+      '### Closeout',
+      'status: complete',
+      'reported_specs: SPEC-001,SPEC-002,SPEC-003',
+    );
+  }
+
+  return [
+    '# Synthetic Goal Maestro P0 Ledger',
+    '',
+    '## Ledger Entries',
+    '',
+    '### SPEC-001 - Linear Pipeline',
+    'spec_id: SPEC-001',
+    'oracle_status: PASS',
+    'stop_state: ready_for_SPEC-002',
+    '',
+    '### SPEC-002 - Pre Edit Gate',
+    'spec_id: SPEC-002',
+    'oracle_status: PASS',
+    'stop_state: ready_for_SPEC-003',
+    '',
+    ...spec3Lines,
+    '',
+  ].join('\n');
 }
 
 function gm12Spec2PreEditEvent(spec_id, at) {
@@ -1016,6 +1116,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec6UnprovenMetricsArgs,
     revert: gm12Spec6RevertArgs,
+  },
+  // GM12S7 — SPEC-007 ledger grammar blocks malformed material sections before Thermometer packaging.
+  {
+    id: 'GM12S7 goal-maestro-p0-ledger-grammar-malformed-heading',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec7MalformedHeadingArgs,
+    revert: gm12Spec7RevertArgs,
+  },
+  {
+    id: 'GM12S7 goal-maestro-p0-ledger-grammar-duplicate-spec-id',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec7DuplicateSpecIdArgs,
+    revert: gm12Spec7RevertArgs,
+  },
+  {
+    id: 'GM12S7 goal-maestro-p0-ledger-grammar-last-spec-overwrite',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec7AuditOverwriteArgs,
+    revert: gm12Spec7RevertArgs,
+  },
+  {
+    id: 'GM12S7 goal-maestro-p0-ledger-grammar-final-closeout-body',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec7NestedCloseoutArgs,
+    revert: gm12Spec7RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
