@@ -890,8 +890,8 @@ documents:
     consumer: maintainers, Cursor execution agents, installer authors, oracle authors, canary operators, and Goal Maestro operators
     source_of_truth: true
     evidence_level: L2
-  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-claude-opus-clean-install-admission.md
-    id: roadmap.goal_super_spec.tes_canary_claude_opus_clean_install_admission
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-gap-repair-and-admission-alignment.md
+    id: roadmap.goal_super_spec.tes_canary_gap_repair_admission_alignment
     class: roadmap
     status: active
     consumer: maintainers, Claude Opus execution agents, installer authors, oracle authors, canary operators, and Goal Maestro operators
@@ -1765,3 +1765,31 @@ documents:
     consumer: maintainers, canary operators, and Goal Maestro operators
     source_of_truth: false
     evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-claude-opus-clean-install-admission-20260630T151155Z-tes-canary-claude-opus-clean-install-admission/BUNDLE-PROVENANCE.md
+    id: evidence.canary_claude_opus_clean_install_admission_aborted.bundle_provenance_20260630
+    class: evidence
+    status: archived
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/evidence/reports/2026/06/30/canary-claude-opus-clean-install-admission-20260630T151155Z-tes-canary-claude-opus-clean-install-admission/CLEAN-INSTALL.md
+    id: evidence.canary_claude_opus_clean_install_admission_aborted.clean_install_20260630
+    class: evidence
+    status: archived
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/evidence/reports/2026/06/30/canary-claude-opus-clean-install-admission-20260630T151155Z-tes-canary-claude-opus-clean-install-admission/GIT-GATES.md
+    id: evidence.canary_claude_opus_clean_install_admission_aborted.git_gates_20260630
+    class: evidence
+    status: archived
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/evidence/reports/2026/06/30/canary-claude-opus-clean-install-admission-20260630T151155Z-tes-canary-claude-opus-clean-install-admission/PREFLIGHT.md
+    id: evidence.canary_claude_opus_clean_install_admission_aborted.preflight_20260630
+    class: evidence
+    status: archived
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L1

@@ -31,9 +31,10 @@ LIMITS = {
     # Cleanroom canary Super SPEC: multi-canary oracle matrix + admission bar in one
     # execution contract (same rationale as the arbiter Super SPEC override).
     "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-pre-goal-maestro-cleanroom-fix.md": 950,
-    # Claude Opus clean-install admission SPEC: retained as one executable
-    # contract so journal, bundle, Git, hook, and oracle gates cannot drift.
-    "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-claude-opus-clean-install-admission.md": 1000,
+    # Claude Opus gap-repair SPEC: retained as one executable contract so the
+    # four confirmed canary gaps, journal gate, source fixes, and replay handoff
+    # cannot drift across separate documents.
+    "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-gap-repair-and-admission-alignment.md": 1000,
     # Evidence packet oracle dumps: raw preflight/admission JSON is intentionally
     # monolithic for audit replay; partition only when a follow-on wave adds more.
     "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/PREFLIGHT.md": 850,
