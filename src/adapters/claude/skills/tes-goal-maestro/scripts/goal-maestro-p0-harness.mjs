@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -7,6 +7,8 @@
 // SPEC-004 fixtures opt into document analysis packet validation with
 // document_analysis_packet_required:true.
 // SPEC-005 fixtures opt into SPEC fidelity validation with spec_fidelity_required:true.
+// SPEC-006 fixtures opt into Thermometer fidelity validation with
+// thermometer_fidelity_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -17,10 +19,12 @@ const PRE_EDIT_STOP_STATE = 'NEEDS_PRE_EDIT_GATE_ARTIFACT';
 const PROMPT_ENRICHMENT_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
 const DOCUMENT_ANALYSIS_STOP_STATE = 'NEEDS_DOCUMENT_ANALYSIS';
 const SPEC_FIDELITY_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
+const THERMOMETER_FIDELITY_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
 const SPEC_FIDELITY_CONTRACT = 'goal-maestro-p0-spec-fidelity';
+const THERMOMETER_FIDELITY_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -42,6 +46,13 @@ const REQUIRED_STEP_LABELS = {
   local_commit_status: 'LOCAL_COMMITTED status',
   parent_validation: 'passing parent validation',
 };
+const DEFAULT_REQUIRED_EXECUTION_FIDELITY_FIELDS = [
+  'thermometer.spec_results',
+  'thermometer.loops.spec_ids',
+  'thermometer.latest_loop.spec_ids',
+  'thermometer.final_status.goal_maestro_execution_state',
+  'oracle_status',
+];
 
 const [fixturePath] = process.argv.slice(2);
 if (!fixturePath) {
@@ -68,6 +79,7 @@ const preEditGateRequired = requiresPreEditGate(fixture);
 const promptEnrichmentPacketRequired = requiresPromptEnrichmentPacket(fixture);
 const documentAnalysisPacketRequired = requiresDocumentAnalysisPacket(fixture);
 const specFidelityRequired = requiresSpecFidelityGate(fixture);
+const thermometerFidelityRequired = requiresThermometerFidelityGate(fixture);
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -196,8 +208,13 @@ if (documentAnalysisPacketRequired) {
 if (specFidelityRequired) {
   addSpecFidelityChecks();
 }
+if (thermometerFidelityRequired) {
+  addThermometerFidelityChecks();
+}
 
-const harnessTitle = specFidelityRequired
+const harnessTitle = thermometerFidelityRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006 goal-maestro-p0-thermometer-fidelity (${LINEAR_STOP_STATE}/${THERMOMETER_FIDELITY_STOP_STATE})`
+  : specFidelityRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005 goal-maestro-p0-spec-fidelity (${LINEAR_STOP_STATE}/${SPEC_FIDELITY_STOP_STATE})`
   : documentAnalysisPacketRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004 goal-maestro-p0-document-analysis-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE}/${DOCUMENT_ANALYSIS_STOP_STATE})`
@@ -690,6 +707,47 @@ function compareSpecFidelityList(label, ids) {
   );
 }
 
+function addThermometerFidelityChecks() {
+  const metrics = thermometerMetricsFromFixture(fixture);
+  const emittedSpecIds = collectThermometerSpecIds(metrics);
+  const unknownSpecIds = emittedSpecIds.filter(isUnknownSpecId);
+  const auditUnitIds = emittedSpecIds.filter(isAuditUnitId);
+  const materialSpecIds = uniqueStrings(emittedSpecIds.filter(isMaterialSpecId));
+  const missingDeclaredSpecs = declaredSpecs.filter((specId) => !materialSpecIds.includes(specId));
+  const unprovenRequiredMetrics = blockingUnprovenExecutionMetrics(metrics, fixture);
+
+  thermometerFidelityCheck(
+    'thermometer metrics are present',
+    hasNonEmptyObject(metrics),
+    'thermometer metrics are required for complete closeout',
+  );
+  thermometerFidelityCheck(
+    'thermometer emitted SPEC IDs are present',
+    emittedSpecIds.length > 0,
+    'thermometer must emit material SPEC IDs for execution fidelity',
+  );
+  thermometerFidelityCheck(
+    'thermometer complete closeout excludes SPEC-UNKNOWN',
+    unknownSpecIds.length === 0,
+    `complete closeout cannot include ${formatIds(unknownSpecIds)}`,
+  );
+  thermometerFidelityCheck(
+    'thermometer material SPECs include every declared SPEC',
+    missingDeclaredSpecs.length === 0,
+    `declared material SPEC(s) missing from thermometer: ${formatIds(missingDeclaredSpecs)}`,
+  );
+  thermometerFidelityCheck(
+    'thermometer material SPECs exclude audit units',
+    auditUnitIds.length === 0,
+    `audit unit(s) counted as material SPECs: ${formatIds(auditUnitIds)}`,
+  );
+  thermometerFidelityCheck(
+    'required execution fidelity fields have no unproven metrics',
+    unprovenRequiredMetrics.length === 0,
+    `unproven execution fidelity metric(s): ${formatMetricNames(unprovenRequiredMetrics)}`,
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -807,6 +865,10 @@ function documentAnalysisCheck(name, pass, detail) {
 
 function specFidelityCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${SPEC_FIDELITY_STOP_STATE}: ${detail}` });
+}
+
+function thermometerFidelityCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${THERMOMETER_FIDELITY_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -934,6 +996,12 @@ function requiresSpecFidelityGate(value) {
     || value.contract === SPEC_FIDELITY_CONTRACT;
 }
 
+function requiresThermometerFidelityGate(value) {
+  return value.thermometer_fidelity_required === true
+    || value.harness_contract === THERMOMETER_FIDELITY_CONTRACT
+    || value.contract === THERMOMETER_FIDELITY_CONTRACT;
+}
+
 function acceptedBoundedRepairUnitIds(value) {
   const acceptedUnits = [
     ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
@@ -962,8 +1030,80 @@ function isAuditUnitId(value) {
   return /(^|[-_])AUDIT($|[-_])/i.test(String(value));
 }
 
+function isUnknownSpecId(value) {
+  return String(value).toUpperCase() === 'SPEC-UNKNOWN';
+}
+
 function formatIds(ids) {
   return `[${normalizeSpecIdArray(ids).join(', ')}]`;
+}
+
+function uniqueStrings(values) {
+  return [...new Set(values.filter(nonEmptyString))];
+}
+
+function thermometerMetricsFromFixture(value) {
+  const metrics = value.thermometer_metrics ?? value.execution_thermometer ?? value.thermometer ?? {};
+  return isPlainObject(metrics) ? metrics : {};
+}
+
+function collectThermometerSpecIds(value) {
+  const ids = [];
+  collectThermometerSpecIdsInto(value, ids);
+  return uniqueStrings(ids);
+}
+
+function collectThermometerSpecIdsInto(value, ids) {
+  if (typeof value === 'string') {
+    if (isMaterialSpecId(value) || isAuditUnitId(value) || isUnknownSpecId(value)) ids.push(value);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) collectThermometerSpecIdsInto(entry, ids);
+    return;
+  }
+  if (!isPlainObject(value)) return;
+  for (const entry of Object.values(value)) collectThermometerSpecIdsInto(entry, ids);
+}
+
+function blockingUnprovenExecutionMetrics(metrics, fixtureValue) {
+  const unprovenMetrics = Array.isArray(metrics.unproven_metrics) ? metrics.unproven_metrics : [];
+  const requiredFields = requiredExecutionFidelityFields(fixtureValue);
+  return unprovenMetrics.filter((metric) => isRequiredExecutionFidelityMetric(metric, requiredFields));
+}
+
+function requiredExecutionFidelityFields(value) {
+  const expected = isPlainObject(value.thermometer_fidelity_expectations) ? value.thermometer_fidelity_expectations : {};
+  return hasNonEmptyStringArray(expected.required_execution_fidelity_fields)
+    ? expected.required_execution_fidelity_fields
+    : DEFAULT_REQUIRED_EXECUTION_FIDELITY_FIELDS;
+}
+
+function isRequiredExecutionFidelityMetric(metric, requiredFields) {
+  const labels = unprovenMetricLabels(metric).map(normalizeMetricLabel);
+  if (labels.length === 0) return true;
+  return labels.some((label) => requiredFields.some((field) => metricLabelMatches(label, field)));
+}
+
+function unprovenMetricLabels(metric) {
+  if (typeof metric === 'string') return [metric];
+  if (!isPlainObject(metric)) return [];
+  return ['name', 'field', 'path', 'metric', 'id', 'key', 'source_field']
+    .map((key) => metric[key])
+    .filter(nonEmptyString);
+}
+
+function metricLabelMatches(label, requiredField) {
+  const normalizedRequired = normalizeMetricLabel(requiredField);
+  return label === normalizedRequired || label.includes(normalizedRequired) || normalizedRequired.includes(label);
+}
+
+function normalizeMetricLabel(value) {
+  return String(value).trim().toLowerCase();
+}
+
+function formatMetricNames(metrics) {
+  return `[${metrics.map((metric) => unprovenMetricLabels(metric)[0] ?? String(metric)).join(', ')}]`;
 }
 
 function isPromptEnrichmentPacketRef(value) {

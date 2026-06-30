@@ -34,6 +34,9 @@ const GM12_SPEC5_CONTRACT = 'goal-maestro-p0-spec-fidelity';
 const GM12_SPEC5_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
 const GM12_SPEC5_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
 const GM12_SPEC5_REPAIR_UNIT = 'REPAIR-SPEC-002-HARNESS';
+const GM12_SPEC6_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
+const GM12_SPEC6_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
+const GM12_SPEC6_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
 const GM12_SPEC2_ALLOWED_FILES = [
   'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
   'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
@@ -206,6 +209,26 @@ function gm12Spec5RevertArgs() {
 
 function gm12Spec5AcceptedRepairArgs() {
   return [fixture('gm12-spec5-spec-fidelity-accepted-repair.json', JSON.stringify(gm12Spec5Fixture('accepted_repair')))];
+}
+
+function gm12Spec6UnknownSpecArgs() {
+  return [fixture('gm12-spec6-thermometer-fidelity-unknown-spec.json', JSON.stringify(gm12Spec6Fixture('unknown_spec')))];
+}
+
+function gm12Spec6MissingMaterialArgs() {
+  return [fixture('gm12-spec6-thermometer-fidelity-missing-material.json', JSON.stringify(gm12Spec6Fixture('missing_material')))];
+}
+
+function gm12Spec6AuditMaterialArgs() {
+  return [fixture('gm12-spec6-thermometer-fidelity-audit-material.json', JSON.stringify(gm12Spec6Fixture('audit_material')))];
+}
+
+function gm12Spec6UnprovenMetricsArgs() {
+  return [fixture('gm12-spec6-thermometer-fidelity-unproven-metrics.json', JSON.stringify(gm12Spec6Fixture('unproven_metrics')))];
+}
+
+function gm12Spec6RevertArgs() {
+  return [fixture('gm12-spec6-thermometer-fidelity-ok.json', JSON.stringify(gm12Spec6Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -391,6 +414,88 @@ function gm12Spec5Fixture(mode) {
     fixture.accepted_bounded_repair_units = [GM12_SPEC5_REPAIR_UNIT];
   }
   return fixture;
+}
+
+function gm12Spec6Fixture(mode) {
+  const declared_specs = GM12_SPEC6_DECLARED_SPECS;
+  const events = [];
+  let second = 0;
+  for (const spec_id of declared_specs) {
+    events.push(
+      { type: 'open_spec', spec_id, at: gm12Time(second++) },
+      { type: 'implement', spec_id, at: gm12Time(second++) },
+      { type: 'evidence', spec_id, evidence_ref: `EV-${spec_id}-THERMOMETER-FIDELITY`, at: gm12Time(second++) },
+      { type: 'oracle_result', spec_id, status: 'pass', at: gm12Time(second++) },
+      { type: 'local_commit_status', spec_id, status: 'LOCAL_COMMITTED', at: gm12Time(second++) },
+      { type: 'parent_validation', spec_id, status: 'pass', at: gm12Time(second++) },
+    );
+  }
+
+  const spec_results = declared_specs.map((spec_id) => ({
+    spec_id,
+    title: `${spec_id} material execution unit`,
+    status: 'pass',
+    evidence_refs: [`EV-${spec_id}-THERMOMETER-FIDELITY`],
+    unproven_metrics: [],
+  }));
+  if (mode === 'unknown_spec') {
+    spec_results[2] = {
+      spec_id: 'SPEC-UNKNOWN',
+      title: 'Unsectioned ledger evidence from installed canary report',
+      status: 'pass',
+      evidence_refs: ['EV-SPEC-UNKNOWN-CANARY'],
+      unproven_metrics: [],
+    };
+  }
+  if (mode === 'missing_material') {
+    spec_results.pop();
+  }
+  if (mode === 'audit_material') {
+    spec_results.push({
+      spec_id: 'EXECUTIVE-STOP-AUDIT',
+      title: 'Executive Stop Audit row from installed canary report',
+      status: 'pass',
+      evidence_refs: ['EV-AUDIT-CANARY'],
+      unproven_metrics: [],
+    });
+  }
+  const specIds = spec_results.map((result) => result.spec_id);
+  const unproven_metrics = mode === 'unproven_metrics'
+    ? [{ name: 'thermometer.spec_results', field: 'thermometer.spec_results', status: 'unproven', evidence_refs: [] }]
+    : [];
+
+  return {
+    schema_version: 1,
+    harness_contract: GM12_SPEC6_CONTRACT,
+    thermometer_fidelity_required: true,
+    thermometer_fidelity_expectations: {
+      stop_state: GM12_SPEC6_STOP_STATE,
+      declared_specs,
+      required_execution_fidelity_fields: [
+        'thermometer.spec_results',
+        'thermometer.loops.spec_ids',
+        'thermometer.final_status.goal_maestro_execution_state',
+      ],
+    },
+    declared_specs,
+    thermometer_metrics: {
+      spec_results,
+      loops: [{ loop_id: 'L1', spec_ids: specIds, status: 'on_track' }],
+      latest_loop: { loop_id: 'L1', spec_ids: specIds, status: 'on_track' },
+      final_status: {
+        goal_maestro_execution_state: 'PASS_P0_HARNESS_ORCHESTRATION_FEEDBACK_FIDELITY',
+        thermometer_report_status: 'local_package_ready',
+        share_gate_status: 'not_requested',
+        notes: 'SPEC-006 fixture exercises thermometer execution fidelity.',
+      },
+      unproven_metrics,
+    },
+    closeout: {
+      status: 'complete',
+      reported_specs: specIds,
+    },
+    events,
+  };
 }
 
 function gm12Spec2PreEditEvent(spec_id, at) {
@@ -886,6 +991,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec5UnacceptedRepairArgs,
     revert: gm12Spec5AcceptedRepairArgs,
+  },
+  // GM12S6 — SPEC-006 Thermometer cannot hide unknown, missing, audit, or unproven execution semantics.
+  {
+    id: 'GM12S6 goal-maestro-p0-thermometer-fidelity-unknown-spec',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec6UnknownSpecArgs,
+    revert: gm12Spec6RevertArgs,
+  },
+  {
+    id: 'GM12S6 goal-maestro-p0-thermometer-fidelity-missing-material',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec6MissingMaterialArgs,
+    revert: gm12Spec6RevertArgs,
+  },
+  {
+    id: 'GM12S6 goal-maestro-p0-thermometer-fidelity-audit-material',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec6AuditMaterialArgs,
+    revert: gm12Spec6RevertArgs,
+  },
+  {
+    id: 'GM12S6 goal-maestro-p0-thermometer-fidelity-unproven-metrics',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec6UnprovenMetricsArgs,
+    revert: gm12Spec6RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
