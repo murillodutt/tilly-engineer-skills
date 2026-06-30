@@ -24,6 +24,10 @@ const sourceCursorRuntimeRule = join(sourceRoot, 'src/adapters/cursor/rules/tes-
 const installedCursorRuntimeRule = join(skillRoot, '../../../.cursor/rules/tes-runtime-capabilities.mdc');
 const GM12_SPEC2_PRE_EDIT_REF = 'pre_edit_gate.json';
 const GM12_SPEC2_ANCHOR_HASH = '1f99741c919726b2d088e038078e7931ab9c2a70';
+const GM12_SPEC3_PROMPT_REF = 'prompt_enrichment_packet.json';
+const GM12_SPEC3_STRUCTURAL_METHOD = 'gm-p0-harness-platform';
+const GM12_SPEC3_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
+const GM12_SPEC3_SOURCE_PROMPT = 'ACTIVE_SPEC=SPEC-003 execute only the Prompt Enrichment Packet slice; do not execute SPEC-004 or later.';
 const GM12_SPEC2_ALLOWED_FILES = [
   'src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
   'src/adapters/claude/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs',
@@ -146,6 +150,18 @@ function gm12Spec2RevertArgs() {
   return [fixture('gm12-spec2-pre-edit-ok.json', JSON.stringify(gm12Spec2Fixture('valid')))];
 }
 
+function gm12Spec3MissingPromptArgs() {
+  return [fixture('gm12-spec3-prompt-enrichment-missing.json', JSON.stringify(gm12Spec3Fixture('missing')))];
+}
+
+function gm12Spec3EchoPromptArgs() {
+  return [fixture('gm12-spec3-prompt-enrichment-echo.json', JSON.stringify(gm12Spec3Fixture('echo')))];
+}
+
+function gm12Spec3RevertArgs() {
+  return [fixture('gm12-spec3-prompt-enrichment-ok.json', JSON.stringify(gm12Spec3Fixture('valid')))];
+}
+
 function gm12ValidFixture() {
   const declared_specs = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
   const events = [];
@@ -223,6 +239,39 @@ function gm12Spec2Fixture(mode) {
   };
 }
 
+function gm12Spec3Fixture(mode) {
+  const spec_id = 'SPEC-003';
+  const events = [];
+  let second = 0;
+  if (mode === 'valid' || mode === 'echo') {
+    events.push(gm12Spec3PromptEvent(spec_id, gm12Time(second++), mode));
+  }
+  events.push(
+    { type: 'open_spec', spec_id, at: gm12Time(second++) },
+    { type: 'implement', spec_id, at: gm12Time(second++) },
+    { type: 'evidence', spec_id, evidence_ref: 'EV-SPEC-003-PROMPT-ENRICHMENT-PACKET', at: gm12Time(second++) },
+    { type: 'oracle_result', spec_id, status: 'pass', at: gm12Time(second++) },
+    { type: 'local_commit_status', spec_id, status: 'LOCAL_COMMITTED', at: gm12Time(second++) },
+    { type: 'parent_validation', spec_id, status: 'pass', at: gm12Time(second++) },
+  );
+
+  return {
+    schema_version: 1,
+    harness_contract: 'goal-maestro-p0-prompt-enrichment-packet',
+    prompt_enrichment_packet_required: true,
+    source_prompt: GM12_SPEC3_SOURCE_PROMPT,
+    structural_method: GM12_SPEC3_STRUCTURAL_METHOD,
+    prompt_enrichment_expectations: {
+      spec_queue: [spec_id],
+      structural_method: GM12_SPEC3_STRUCTURAL_METHOD,
+      stop_states: [GM12_SPEC3_STOP_STATE],
+      source_prompt: GM12_SPEC3_SOURCE_PROMPT,
+    },
+    declared_specs: [spec_id],
+    events,
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -244,6 +293,40 @@ function gm12Spec2PreEditEvent(spec_id, at) {
       installed_tes_version: '0.3.230',
       commit_mode: 'no-commit',
     },
+  };
+}
+
+function gm12Spec3PromptEvent(spec_id, at, mode) {
+  const artifact = mode === 'echo'
+    ? {
+        path: 'prompt_enrichment_packet.md',
+        body: GM12_SPEC3_SOURCE_PROMPT,
+      }
+    : {
+        path: GM12_SPEC3_PROMPT_REF,
+        extracted_intent: 'Validate that Goal Maestro enriched the source artifact before SPEC-003 execution.',
+        spec_queue: [spec_id],
+        lenses_selected: ['execution-order', 'prompt-enrichment', 'evidence-contract'],
+        structural_method: GM12_SPEC3_STRUCTURAL_METHOD,
+        oracle_packet: {
+          direct_positive: 'goal-maestro-p0-harness.mjs accepts a complete prompt enrichment packet',
+          direct_negative: GM12_SPEC3_STOP_STATE,
+        },
+        evidence_contract: {
+          packet_ref: GM12_SPEC3_PROMPT_REF,
+          required_before: ['open_spec', 'implement'],
+        },
+        stop_states: [GM12_SPEC3_STOP_STATE],
+        risk_decisions: ['SPEC-004 and later remain out of scope'],
+        non_objectives: ['no docs claims', 'no package version bump', 'no remote sync'],
+        sidecar_requirements: ['prompt_enrichment_packet.json or prompt_enrichment_packet.md'],
+      };
+
+  return {
+    type: 'prompt_enrichment_packet',
+    spec_id,
+    at,
+    artifact,
   };
 }
 
@@ -596,6 +679,19 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec2LatePreEditArgs,
     revert: gm12Spec2RevertArgs,
+  },
+  // GM12S3 — SPEC-003 prompt enrichment packet must exist before execution and not echo the prompt.
+  {
+    id: 'GM12S3 goal-maestro-p0-prompt-enrichment-missing',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec3MissingPromptArgs,
+    revert: gm12Spec3RevertArgs,
+  },
+  {
+    id: 'GM12S3 goal-maestro-p0-prompt-enrichment-echo-only',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec3EchoPromptArgs,
+    revert: gm12Spec3RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

@@ -1,8 +1,9 @@
-// SPEC-001/SPEC-002 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
-// artifact validation with pre_edit_gate_required:true.
+// artifact validation with pre_edit_gate_required:true. SPEC-003 fixtures opt
+// into prompt enrichment packet validation with prompt_enrichment_packet_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -10,10 +11,14 @@ import { readText, runChecks } from './lib/harness.mjs';
 
 const LINEAR_STOP_STATE = 'NEEDS_LINEAR_SPEC_PIPELINE';
 const PRE_EDIT_STOP_STATE = 'NEEDS_PRE_EDIT_GATE_ARTIFACT';
+const PROMPT_ENRICHMENT_STOP_STATE = 'NEEDS_PROMPT_ENRICHMENT_PACKET';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
+const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
+const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
+  PROMPT_ENRICHMENT_EVENT_TYPE,
   'open_spec',
   'implement',
   'evidence',
@@ -51,7 +56,9 @@ if (!isPlainObject(fixture) || !Array.isArray(fixture.declared_specs) || !Array.
 const declaredSpecs = fixture.declared_specs;
 const events = fixture.events;
 const preEditGateRequired = requiresPreEditGate(fixture);
+const promptEnrichmentPacketRequired = requiresPromptEnrichmentPacket(fixture);
 const preEditGateEvents = [];
+const promptEnrichmentPacketEvents = [];
 let firstLoopStartIndex = null;
 let firstMaterialEditIndex = null;
 const specStates = new Map();
@@ -114,6 +121,11 @@ for (const [eventIndex, event] of events.entries()) {
     continue;
   }
 
+  if (eventType === PROMPT_ENRICHMENT_EVENT_TYPE) {
+    observePromptEnrichmentPacket(eventIndex, event);
+    continue;
+  }
+
   if (eventType === 'open_spec') {
     if (firstLoopStartIndex === null) firstLoopStartIndex = eventIndex;
     openSpec(eventIndex, event);
@@ -131,14 +143,14 @@ for (const specId of declaredSpecs) {
   checks.push({
     name: `${specId} opened`,
     pass: state.opened,
-    detail: state.opened ? undefined : `${STOP_STATE}: ${specId} never opened`,
+    detail: state.opened ? undefined : `${LINEAR_STOP_STATE}: ${specId} never opened`,
   });
 
   for (const step of REQUIRED_STEPS) {
     checks.push({
       name: `${specId} ${step} after open`,
       pass: state.complete[step],
-      detail: state.complete[step] ? undefined : `${STOP_STATE}: ${specId} lacks ${REQUIRED_STEP_LABELS[step]} after ACTIVE_SPEC opened`,
+      detail: state.complete[step] ? undefined : `${LINEAR_STOP_STATE}: ${specId} lacks ${REQUIRED_STEP_LABELS[step]} after ACTIVE_SPEC opened`,
     });
   }
 }
@@ -146,15 +158,25 @@ for (const specId of declaredSpecs) {
 if (preEditGateRequired) {
   addPreEditGateChecks();
 }
+if (promptEnrichmentPacketRequired) {
+  addPromptEnrichmentPacketChecks();
+}
 
-const harnessTitle = preEditGateRequired
-  ? `SPEC-001+SPEC-002 goal-maestro-p0-pre-edit-gate (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE})`
-  : `SPEC-001 goal-maestro-p0-linear-pipeline (${LINEAR_STOP_STATE})`;
+const harnessTitle = promptEnrichmentPacketRequired
+  ? `SPEC-001+SPEC-002+SPEC-003 goal-maestro-p0-prompt-enrichment-packet (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE}/${PROMPT_ENRICHMENT_STOP_STATE})`
+  : preEditGateRequired
+    ? `SPEC-001+SPEC-002 goal-maestro-p0-pre-edit-gate (${LINEAR_STOP_STATE}/${PRE_EDIT_STOP_STATE})`
+    : `SPEC-001 goal-maestro-p0-linear-pipeline (${LINEAR_STOP_STATE})`;
 runChecks(harnessTitle, checks);
 
 function observePreEditGate(eventIndex, event) {
   const artifact = isPlainObject(event.artifact) ? event.artifact : event;
   preEditGateEvents.push({ eventIndex, event, artifact });
+}
+
+function observePromptEnrichmentPacket(eventIndex, event) {
+  const packet = isPlainObject(event.artifact) ? event.artifact : event;
+  promptEnrichmentPacketEvents.push({ eventIndex, event, packet });
 }
 
 function addPreEditGateChecks() {
@@ -320,6 +342,133 @@ function addPreEditGateChecks() {
   }
 }
 
+function addPromptEnrichmentPacketChecks() {
+  const packetEvent = promptEnrichmentPacketEvents[0] ?? null;
+  const packet = packetEvent?.packet ?? {};
+  const packetRef = preEditArtifactRef(packetEvent?.event, packet);
+  const expected = isPlainObject(fixture.prompt_enrichment_expectations) ? fixture.prompt_enrichment_expectations : {};
+  const expectedSpecQueue = expected.spec_queue ?? fixture.spec_queue ?? declaredSpecs;
+  const expectedStructuralMethod = expected.structural_method ?? fixture.structural_method ?? fixture.structural_method_id;
+  const expectedStopStates = expected.stop_states ?? fixture.stop_states;
+  const sourcePrompt = expected.source_prompt ?? fixture.source_prompt ?? fixture.user_prompt;
+
+  promptEnrichmentCheck(
+    'prompt enrichment packet event exists',
+    promptEnrichmentPacketEvents.length > 0,
+    'loop start requires a durable prompt enrichment packet event',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet event is unique',
+    promptEnrichmentPacketEvents.length === 1,
+    'exactly one durable prompt enrichment packet event must be emitted',
+  );
+
+  if (!packetEvent) return;
+
+  promptEnrichmentCheck(
+    'prompt enrichment packet precedes loop start',
+    firstLoopStartIndex === null || packetEvent.eventIndex < firstLoopStartIndex,
+    'prompt enrichment packet was not emitted before loop start',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet precedes first material edit',
+    firstMaterialEditIndex === null || packetEvent.eventIndex < firstMaterialEditIndex,
+    'prompt enrichment packet was emitted after the first material edit',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet ref is package-local',
+    isPackageLocalArtifactRef(packetRef),
+    'packet ref must be a non-absolute package-local path',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet ref uses json or md',
+    isPromptEnrichmentPacketRef(packetRef),
+    'packet ref must end in .json or .md',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet is not prompt echo only',
+    !isPromptEchoOnly(packet, sourcePrompt),
+    'packet only repeats the user prompt and does not prove source-artifact enrichment',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet extracted intent is present',
+    nonEmptyString(packet.extracted_intent),
+    'packet lacks extracted_intent',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet SPEC queue is present',
+    hasNonEmptyStringArray(packet.spec_queue),
+    'packet lacks spec_queue',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet lenses are present',
+    hasNonEmptyStringArray(packet.lenses_selected),
+    'packet lacks lenses_selected',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet structural method is present',
+    nonEmptyString(packet.structural_method),
+    'packet lacks structural_method',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet oracle packet is present',
+    hasNonEmptyObject(packet.oracle_packet),
+    'packet lacks oracle_packet',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet evidence contract is present',
+    hasNonEmptyObject(packet.evidence_contract),
+    'packet lacks evidence_contract',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet stop states are present',
+    hasNonEmptyStringArray(packet.stop_states),
+    'packet lacks stop_states',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet risk decisions are present',
+    hasNonEmptyStringArray(packet.risk_decisions),
+    'packet lacks risk_decisions',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet non-objectives are present',
+    hasNonEmptyStringArray(packet.non_objectives),
+    'packet lacks non_objectives',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet sidecar requirements are present',
+    hasNonEmptyStringArray(packet.sidecar_requirements),
+    'packet lacks sidecar_requirements',
+  );
+  promptEnrichmentCheck(
+    'prompt enrichment packet stop state is declared',
+    Array.isArray(packet.stop_states) && packet.stop_states.includes(PROMPT_ENRICHMENT_STOP_STATE),
+    `packet stop_states must include ${PROMPT_ENRICHMENT_STOP_STATE}`,
+  );
+
+  if (hasNonEmptyStringArray(expectedSpecQueue)) {
+    promptEnrichmentCheck(
+      'prompt enrichment packet SPEC queue matches expectation',
+      sameStringArray(packet.spec_queue, expectedSpecQueue),
+      'packet spec_queue drifted from the execution contract',
+    );
+  }
+  if (nonEmptyString(expectedStructuralMethod)) {
+    promptEnrichmentCheck(
+      'prompt enrichment packet structural method matches expectation',
+      packet.structural_method === expectedStructuralMethod,
+      `packet structural_method must be ${expectedStructuralMethod}`,
+    );
+  }
+  if (hasNonEmptyStringArray(expectedStopStates)) {
+    promptEnrichmentCheck(
+      'prompt enrichment packet stop states match expectation',
+      sameStringArray(packet.stop_states, expectedStopStates),
+      'packet stop_states drifted from the execution contract',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -426,6 +575,10 @@ function preEditCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${PRE_EDIT_STOP_STATE}: ${detail}` });
 }
 
+function promptEnrichmentCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${PROMPT_ENRICHMENT_STOP_STATE}: ${detail}` });
+}
+
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -441,6 +594,10 @@ function hasBaselineState(value) {
 
 function hasNonEmptyStringArray(value) {
   return Array.isArray(value) && value.length > 0 && value.every(nonEmptyString);
+}
+
+function hasNonEmptyObject(value) {
+  return isPlainObject(value) && Object.keys(value).length > 0;
 }
 
 function sameStringArray(left, right) {
@@ -474,6 +631,43 @@ function requiresPreEditGate(value) {
   return value.pre_edit_gate_required === true
     || value.harness_contract === PRE_EDIT_CONTRACT
     || value.contract === PRE_EDIT_CONTRACT;
+}
+
+function requiresPromptEnrichmentPacket(value) {
+  return value.prompt_enrichment_packet_required === true
+    || value.harness_contract === PROMPT_ENRICHMENT_CONTRACT
+    || value.contract === PROMPT_ENRICHMENT_CONTRACT;
+}
+
+function isPromptEnrichmentPacketRef(value) {
+  return nonEmptyString(value) && (value.endsWith('.json') || value.endsWith('.md'));
+}
+
+function isPromptEchoOnly(packet, sourcePrompt) {
+  if (!nonEmptyString(sourcePrompt) || !isPlainObject(packet)) return false;
+  const semanticStrings = collectSemanticStrings(packet);
+  if (semanticStrings.length === 0) return false;
+  const normalizedPrompt = normalizePrompt(sourcePrompt);
+  return semanticStrings.every((value) => normalizePrompt(value) === normalizedPrompt);
+}
+
+function collectSemanticStrings(value, key = null) {
+  if (typeof value === 'string') {
+    return isMetadataStringKey(key) ? [] : [value];
+  }
+  if (Array.isArray(value)) return value.flatMap((entry) => collectSemanticStrings(entry));
+  if (isPlainObject(value)) {
+    return Object.entries(value).flatMap(([entryKey, entryValue]) => collectSemanticStrings(entryValue, entryKey));
+  }
+  return [];
+}
+
+function isMetadataStringKey(key) {
+  return ['path', 'artifact_ref', 'ref', 'at', 'type', 'spec_id'].includes(key);
+}
+
+function normalizePrompt(value) {
+  return String(value).replace(/\s+/g, ' ').trim();
 }
 
 function isPassStatus(value) {
