@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -35,6 +35,8 @@
 // flash_fry_operational_status_required:true.
 // SPEC-019 fixtures opt into lens ledger validation with
 // lens_ledger_required:true.
+// SPEC-020 fixtures opt into cloud search classification validation with
+// cloud_search_classification_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -59,6 +61,7 @@ const GIT_ADMISSION_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
 const EVIDENCE_TRACKING_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
 const FLASH_FRY_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
 const LENS_LEDGER_STOP_STATE = 'NEEDS_LENS_LEDGER';
+const CLOUD_SEARCH_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -77,6 +80,7 @@ const GIT_ADMISSION_CONTRACT = 'goal-maestro-p0-git-admission-gate';
 const EVIDENCE_TRACKING_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
 const FLASH_FRY_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
 const LENS_LEDGER_CONTRACT = 'goal-maestro-p0-lens-ledger';
+const CLOUD_SEARCH_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -96,6 +100,8 @@ const UNTRACKED_EVIDENCE_CLASSIFICATIONS = new Set(['runtime_only', 'ignored', '
 const FLASH_FRY_STATUSES = new Set(['ran', 'not_required', 'not_configured', 'blocked']);
 const REQUIRED_LENS_LEDGER_LENSES = ['document', 'product', 'architecture', 'runtime', 'visual', 'security', 'performance', 'evidence', 'adversarial', 'cost', 'dx', 'delivery'];
 const LENS_LEDGER_CLASSIFICATIONS = new Set(['applied', 'not_required', 'blocked']);
+const CLOUD_SEARCH_STATUSES = new Set(['required', 'not_required', 'not_authorized', 'blocked', 'ran']);
+const CLOUD_SEARCH_AUTHORIZED_STATUSES = new Set(['owner_authorized', 'contract_allowed']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -161,6 +167,7 @@ const gitAdmissionRequired = requiresGitAdmissionGate(fixture);
 const evidenceTrackingRequired = requiresEvidenceTrackingClassification(fixture);
 const flashFryRequired = requiresFlashFryOperationalStatus(fixture);
 const lensLedgerRequired = requiresLensLedger(fixture);
+const cloudSearchRequired = requiresCloudSearchClassification(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -332,8 +339,13 @@ if (flashFryRequired) {
 if (lensLedgerRequired) {
   addLensLedgerChecks();
 }
+if (cloudSearchRequired) {
+  addCloudSearchClassificationChecks();
+}
 
-const harnessTitle = lensLedgerRequired
+const harnessTitle = cloudSearchRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020 goal-maestro-p0-cloud-search-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE})`
+  : lensLedgerRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019 goal-maestro-p0-lens-ledger (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE})`
   : flashFryRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018 goal-maestro-p0-flash-fry-operational-status (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE})`
@@ -1734,6 +1746,48 @@ function addLensLedgerChecks() {
   );
 }
 
+function addCloudSearchClassificationChecks() {
+  const cloudSearch = cloudSearchFromFixture(fixture);
+  const status = normalizeCloudSearchStatus(cloudSearchStatusValue(cloudSearch));
+  const reason = cloudSearchReason(cloudSearch);
+  const authorizationStatus = normalizeCloudSearchAuthorizationStatus(cloudSearchAuthorizationStatus(cloudSearch));
+  const redactionStatus = normalizeSemanticValue(cloudSearchRedactionStatus(cloudSearch));
+  const authRelevant = ['required', 'not_authorized', 'blocked', 'ran'].includes(status);
+  const redactionRelevant = ['required', 'blocked', 'ran'].includes(status);
+
+  cloudSearchCheck(
+    'cloud search classification is present',
+    CLOUD_SEARCH_STATUSES.has(status),
+    'cloud_search must be required, not_required, not_authorized, blocked, or ran',
+  );
+  cloudSearchCheck(
+    'cloud search reason is present',
+    nonEmptyString(reason),
+    'cloud search classification requires a reason',
+  );
+  if (authRelevant) {
+    cloudSearchCheck(
+      'cloud search authorization status is recorded',
+      nonEmptyString(authorizationStatus),
+      'cloud search requires explicit authorization status when relevant',
+    );
+  }
+  if (redactionRelevant) {
+    cloudSearchCheck(
+      'cloud search redaction status is recorded',
+      nonEmptyString(redactionStatus),
+      'cloud search requires redaction status when relevant',
+    );
+  }
+  if (status === 'ran') {
+    cloudSearchCheck(
+      'cloud search run is authorized',
+      CLOUD_SEARCH_AUTHORIZED_STATUSES.has(authorizationStatus) || cloudSearch.active_contract_allows_cloud_search === true,
+      'cloud search ran without explicit owner authorization or active contract allowance',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1907,6 +1961,10 @@ function flashFryCheck(name, pass, detail) {
 
 function lensLedgerCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${LENS_LEDGER_STOP_STATE}: ${detail}` });
+}
+
+function cloudSearchCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${CLOUD_SEARCH_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -2127,6 +2185,13 @@ function requiresLensLedger(value) {
     || value.lenses_required === true
     || value.harness_contract === LENS_LEDGER_CONTRACT
     || value.contract === LENS_LEDGER_CONTRACT;
+}
+
+function requiresCloudSearchClassification(value) {
+  return value.cloud_search_classification_required === true
+    || value.cloud_search_required === true
+    || value.harness_contract === CLOUD_SEARCH_CONTRACT
+    || value.contract === CLOUD_SEARCH_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -3499,6 +3564,85 @@ function lensScoreCitationsFromSurface(surface) {
 function formatLensRefs(items) {
   const refs = items.map((item) => firstNonEmptyString(item.lens, item.name, item.id, item.axis, item.type)).filter(nonEmptyString);
   return formatValues(refs);
+}
+
+function cloudSearchFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.cloud_search,
+    value.cloud_search_classification,
+    value.external_lookup,
+    metrics.cloud_search,
+    metrics.cloud_search_classification,
+    metrics.external_lookup,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+    if (nonEmptyString(candidate)) return { status: candidate };
+  }
+  return hasCloudSearchShape(value) ? value : {};
+}
+
+function hasCloudSearchShape(value) {
+  return isPlainObject(value) && (
+    nonEmptyString(value.cloud_search)
+    || nonEmptyString(value.cloud_search_status)
+    || nonEmptyString(value.authorization_status)
+  );
+}
+
+function cloudSearchStatusValue(value) {
+  return firstNonEmptyString(
+    value.cloud_search,
+    value.cloud_search_status,
+    value.status,
+    value.classification,
+    value.state,
+  );
+}
+
+function normalizeCloudSearchStatus(value) {
+  const status = normalizeSemanticValue(value);
+  if (status === 'required') return 'required';
+  if (['not required', 'not needed', 'not applicable'].includes(status)) return 'not_required';
+  if (['not authorized', 'unauthorized'].includes(status)) return 'not_authorized';
+  if (status === 'blocked') return 'blocked';
+  if (status === 'ran') return 'ran';
+  return status;
+}
+
+function cloudSearchReason(value) {
+  return firstNonEmptyString(value.reason, value.why, value.decision_reason, value.classification_reason);
+}
+
+function cloudSearchAuthorizationStatus(value) {
+  return firstNonEmptyString(
+    value.authorization_status,
+    value.auth_status,
+    value.owner_authorization_status,
+    value.authorization?.status,
+    value.owner_authorization?.status,
+  );
+}
+
+function normalizeCloudSearchAuthorizationStatus(value) {
+  const status = normalizeSemanticValue(value);
+  if (['owner authorized', 'authorized', 'explicit owner authorization'].includes(status)) return 'owner_authorized';
+  if (['contract allowed', 'active contract allowed', 'allowed by active contract'].includes(status)) return 'contract_allowed';
+  if (['not authorized', 'unauthorized'].includes(status)) return 'not_authorized';
+  if (['not required', 'not applicable'].includes(status)) return 'not_required';
+  if (status === 'blocked') return 'blocked';
+  return status;
+}
+
+function cloudSearchRedactionStatus(value) {
+  return firstNonEmptyString(
+    value.redaction_status,
+    value.redaction,
+    value.redaction_state,
+    value.privacy_status,
+    value.redaction?.status,
+  );
 }
 
 function isMobileResponsiveEvidence(item) {

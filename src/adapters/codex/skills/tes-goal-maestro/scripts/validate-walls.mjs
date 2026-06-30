@@ -1,4 +1,4 @@
-// SPEC-019 — Mutation suite for executable wall fixtures.
+// SPEC-020 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -82,6 +82,8 @@ const GM12_SPEC18_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
 const GM12_SPEC19_CONTRACT = 'goal-maestro-p0-lens-ledger';
 const GM12_SPEC19_STOP_STATE = 'NEEDS_LENS_LEDGER';
 const GM12_SPEC19_LENSES = ['document', 'product', 'architecture', 'runtime', 'visual', 'security', 'performance', 'evidence', 'adversarial', 'cost', 'dx', 'delivery'];
+const GM12_SPEC20_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
+const GM12_SPEC20_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -601,6 +603,30 @@ function gm12Spec19ScoreWithEvidenceArgs() {
 
 function gm12Spec19RevertArgs() {
   return [fixture('gm12-spec19-lens-ledger-ok.json', JSON.stringify(gm12Spec19Fixture('valid')))];
+}
+
+function gm12Spec20MissingStatusArgs() {
+  return [fixture('gm12-spec20-cloud-search-missing-status.json', JSON.stringify(gm12Spec20Fixture('missing_status')))];
+}
+
+function gm12Spec20MissingReasonArgs() {
+  return [fixture('gm12-spec20-cloud-search-missing-reason.json', JSON.stringify(gm12Spec20Fixture('missing_reason')))];
+}
+
+function gm12Spec20UnauthorizedRunArgs() {
+  return [fixture('gm12-spec20-cloud-search-unauthorized-run.json', JSON.stringify(gm12Spec20Fixture('unauthorized_run')))];
+}
+
+function gm12Spec20MissingRedactionArgs() {
+  return [fixture('gm12-spec20-cloud-search-missing-redaction.json', JSON.stringify(gm12Spec20Fixture('missing_redaction')))];
+}
+
+function gm12Spec20RanAuthorizedArgs() {
+  return [fixture('gm12-spec20-cloud-search-ran-authorized.json', JSON.stringify(gm12Spec20Fixture('ran_authorized')))];
+}
+
+function gm12Spec20RevertArgs() {
+  return [fixture('gm12-spec20-cloud-search-ok.json', JSON.stringify(gm12Spec20Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1868,6 +1894,60 @@ function gm12Spec19Closeout(closeout, mode, lensLedger) {
   return result;
 }
 
+function gm12Spec20Fixture(mode) {
+  const base = gm12Spec19Fixture('valid');
+  const cloudSearch = gm12Spec20CloudSearch(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC20_CONTRACT,
+    cloud_search_classification_required: true,
+    cloud_search: cloudSearch,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      cloud_search: cloudSearch,
+    },
+    closeout: gm12Spec20Closeout(base.closeout, mode, cloudSearch),
+  };
+}
+
+function gm12Spec20CloudSearch(mode) {
+  const classification = {
+    status: 'not_required',
+    reason: 'self-contained local work used repository source and local fixtures only',
+    authorization_status: 'not_required',
+    redaction_status: 'not_required',
+  };
+  if (mode === 'missing_status') {
+    delete classification.status;
+  }
+  if (mode === 'missing_reason') {
+    delete classification.reason;
+  }
+  if (mode === 'unauthorized_run' || mode === 'missing_redaction' || mode === 'ran_authorized') {
+    classification.status = 'ran';
+    classification.reason = 'external lookup was used to verify current host behavior';
+    classification.authorization_status = mode === 'unauthorized_run' ? 'not_authorized' : 'owner_authorized';
+    classification.redaction_status = mode === 'missing_redaction' ? '' : 'redacted';
+  }
+  return classification;
+}
+
+function gm12Spec20Closeout(closeout, mode, cloudSearch) {
+  return {
+    ...closeout,
+    cloud_search: {
+      status: cloudSearch.status ?? 'missing',
+      stop_state: mode === 'missing_status' ? GM12_SPEC20_STOP_STATE : 'ready_for_loop',
+      reason: cloudSearch.reason,
+      authorization_status: cloudSearch.authorization_status,
+      redaction_status: cloudSearch.redaction_status,
+      report_text: mode === 'missing_status'
+        ? 'cloud search decision omitted'
+        : 'cloud search decision recorded with authorization and redaction context',
+    },
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2766,6 +2846,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec19ScoreWithoutEvidenceArgs,
     revert: gm12Spec19ScoreWithEvidenceArgs,
+  },
+  // GM12S20 — SPEC-020 records cloud/external lookup decisions and authorization.
+  {
+    id: 'GM12S20 goal-maestro-p0-cloud-search-status-present',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec20MissingStatusArgs,
+    revert: gm12Spec20RevertArgs,
+  },
+  {
+    id: 'GM12S20 goal-maestro-p0-cloud-search-reason',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec20MissingReasonArgs,
+    revert: gm12Spec20RevertArgs,
+  },
+  {
+    id: 'GM12S20 goal-maestro-p0-cloud-search-authorization',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec20UnauthorizedRunArgs,
+    revert: gm12Spec20RanAuthorizedArgs,
+  },
+  {
+    id: 'GM12S20 goal-maestro-p0-cloud-search-redaction',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec20MissingRedactionArgs,
+    revert: gm12Spec20RanAuthorizedArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
