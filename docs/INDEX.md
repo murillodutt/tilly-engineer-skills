@@ -35,6 +35,7 @@ This documentation layer explains the method behind the source package without t
 | GitHub Pages landing | `index.html` |
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
+| Documentation assets | `assets/README.md` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
 | Public installer bundle | `dist/0.3.230/tilly-engineer-skills-0.3.230.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
@@ -104,6 +105,9 @@ This documentation layer explains the method behind the source package without t
 | Goal Maestro Progressive Disclosure Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-progressive-disclosure.md` |
 | Goal Maestro Execution Thermometer And Gold Sharing Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execution-thermometer-and-gold-sharing.md` |
 | Goal Maestro Adversarial Audit Heartbeat Prompt Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-adversarial-audit-heartbeat.md` |
+| Goal Maestro P0 Harness Orchestration And Feedback Fidelity Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p0-harness-orchestration-feedback-fidelity.md` |
+| Goal Maestro P1 Cross-Host Report Parity Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p1-cross-host-report-parity.md` |
+| Goal Maestro P2 Enterprise Schema And Regression Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p2-enterprise-schema-regression-hardening.md` |
 | Inherited Context line dashboard | `roadmap/inherited-context/DASHBOARD.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |

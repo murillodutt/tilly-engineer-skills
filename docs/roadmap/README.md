@@ -55,6 +55,9 @@ This folder preserves roadmap lineage without turning the roadmap into the work.
 | Goal Maestro ceiling (self-falsifying proof generator) | Complete | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-ceiling-self-falsifying.md` (ADR 0006; EXECUTION_LOOP_COMPLETE) |
 | Goal Maestro execution thermometer and gold sharing | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execution-thermometer-and-gold-sharing.md` |
 | Goal Maestro adversarial audit heartbeat prompt | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-adversarial-audit-heartbeat.md` |
+| Goal Maestro P0 harness orchestration and feedback fidelity | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p0-harness-orchestration-feedback-fidelity.md` |
+| Goal Maestro P1 cross-host report parity | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p1-cross-host-report-parity.md` |
+| Goal Maestro P2 enterprise schema and regression hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p2-enterprise-schema-regression-hardening.md` |
 | Goal Maestro Axis 4: cross-domain wall-compiler | Deferred | `docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md` § Axis 4 (owner-deferred: new codegen surface + release-identity risk; needs own anchor + canary) |
 | Goal Maestro Axis 5: context-economy by structural class | Deferred | `docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md` § Axis 5 (owner-deferred: new ledger fields + sizing reader; ROI depends on Axes 1-2 first) |
 | RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |

@@ -8,6 +8,13 @@ documents:
     consumer: maintainers and agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/assets/README.md
+    id: docs.assets
+    class: index
+    status: active
+    consumer: maintainers, documentation authors, brand asset authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/architecture/PROJECT-STRUCTURE.md
     id: architecture.project_structure
     class: architecture
@@ -559,6 +566,27 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, Cursor rule reviewers, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p0-harness-orchestration-feedback-fidelity.md
+    id: roadmap.goal_super_spec.goal_maestro_p0_harness_orchestration_feedback_fidelity
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, installed-canary operators, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p1-cross-host-report-parity.md
+    id: roadmap.goal_super_spec.goal_maestro_p1_cross_host_report_parity
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, report authors, installed-canary operators, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-p2-enterprise-schema-regression-hardening.md
+    id: roadmap.goal_super_spec.goal_maestro_p2_enterprise_schema_regression_hardening
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, schema authors, oracle authors, release reviewers, and installed-canary operators
     source_of_truth: true
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/goal-maestro-execution-thermometer/EXPERIENCE-AND-DATA-CONTRACT.md
