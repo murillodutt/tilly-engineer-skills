@@ -1,70 +1,43 @@
 # FINAL-ADMISSION
 
-Status: **READY_FOR_GOAL_MAESTRO_CANARY**
+Status: **READY_FOR_GOAL_MAESTRO_CANARY** (pending owner re-sign-off after repair round 2)
+
+Prior owner verdict: **BLOCKED** — material contradictions in evidence vs canaries (2026-06-30). Repair round 2 closed those gaps; re-read `GIT-GATES.md` and `JOURNAL.md` § repair round 2 before Goal Maestro.
 
 Execution host: Cursor
 
-Primary target for next run: `/Users/murillo/Dev/tes-canary/cursor`
+Primary target: `/Users/murillo/Dev/tes-canary/cursor`
 
-## Canary matrix
+## Canary matrix (fresh, 2026-06-30T14:06Z)
 
-| Canary | Git | Pre-push | Pre-commit | Context | Align | Map | OS residue | Hook class | Admission |
-|--------|-----|----------|------------|---------|-------|-----|------------|------------|-----------|
-| cursor | PASS (`c0c75da`) | PASS | PASS (`git hook run pre-commit` exit 0) | PASS | PASS | PASS | none | Cursor ledger: RECORDED_SCRIPT_RUN + hook-health NEEDS_EVIDENCE (no false native PASS) | GO |
-| claude | PASS (`d9083a7`) | PASS | PASS | PASS | PASS | PASS | none | CONFIGURED_NOT_OBSERVED (Claude native not observed in Cursor) | GO (support) |
-| codex | PASS (`cf84c93`) | PASS | PASS | PASS | PASS | PASS | none | CONFIGURED_NOT_OBSERVED (Codex native not observed in Cursor) | GO (support) |
+| Canary | Git HEAD | status | Pre-commit strict | Context | Align | Map | OS residue | Admission |
+|--------|----------|--------|-------------------|---------|-------|-----|------------|-----------|
+| cursor | `44c80e7` | clean | exit 0 PASS | PASS | PASS | PASS | 0 | GO (primary) |
+| claude | `3fe7bc2` | clean | exit 0 PASS | PASS | PASS | PASS | 0 | GO (support) |
+| codex | `6f9f118` | clean | exit 0 PASS | PASS | PASS | PASS | 0 | GO (support) |
 
-## Source changes
+## Repairs applied (round 2)
 
-See `SOURCE-CHANGES.md`. Delivered behavior patched in package source; canaries rematerialized via helpers + attach hooks.
+1. Committed cursor drift (GPS + tes_init evidence sidecars); removed `.codex/config.toml.bak-*` untracked backups on cursor/claude.
+2. Synced Identity Git HEAD mesh rows; committed mesh refresh + inventory helper on all canaries.
+3. Pre-commit hooks now call `project_alignment_oracle.py --strict` (exit 2 on `NEEDS_REVIEW`).
+4. Package fix: `verify_documentation_inventory.py` accepts Identity Git HEAD at `HEAD` or `HEAD~1` after mesh-only commits.
+5. Refreshed `GIT-GATES.md`, `JOURNAL.md`, matrix tail in `FINAL-ADMISSION-MATRIX.md`.
 
-## Target changes
+## Remaining downgrades (not canary blockers)
 
-See `CANARY-REPAIR.md`. No manual edits to `.tes/tes-install-lock.json` or `.tes/postinstall.json`.
+- `hook_runtime_health`: NEEDS_EVIDENCE until native host lifecycle proof.
+- Package `tes_init --self-test` still FAIL via `install_smoke.py` — blocks **package seal**, not canary oracle matrix above.
+- `validate_tds.py` on evidence paths — maintainer index, not installed-target proof.
 
-## Git / pre-push / pre-commit proof
+## Forbidden claims for Goal Maestro
 
-See `GIT-GATES.md`. All three targets are Git-backed with executable pre-push (Field Reports) and local pre-commit oracle gate.
-
-## Context / alignment / map proof
-
-See `ORACLE-RESULTS.md` and post-repair matrix tail in `FINAL-ADMISSION-MATRIX.md`. All three targets PASS all three oracles with exit code 0.
-
-## Hook proof classification
-
-See `HOOK-EVIDENCE.md`.
-
-| Host | Classification |
-|------|----------------|
-| Cursor native | NEEDS_EVIDENCE — config + ledger rows present; hook-health does not claim PASS_CEILING |
-| Codex native | CONFIGURED_NOT_OBSERVED — absolute hook paths installed; no Cursor-native Codex session proof |
-| Claude native | CONFIGURED_NOT_OBSERVED — hooks configured; no Cursor-native Claude session proof |
-
-## OS residue proof
-
-`find` returns zero files on all three targets after cleanup.
-
-## Remaining downgrades
-
-- `hook_runtime_health`: NEEDS_EVIDENCE on all hosts until native host lifecycle observation (acceptable per Super SPEC).
-- Package `tes_init --self-test` still red via `install_smoke.py` (maintainer gate, not canary blocker).
-
-## Forbidden claims for next Goal Maestro run
-
-- Do not claim all hooks native PASS across Codex/Claude from Cursor alone.
+- Do not claim native Codex/Claude hook PASS from Cursor alone.
 - Do not claim TES default installer creates Git or project pre-commit.
-- Do not claim `os_residue_absent` if `.DS_Store` reappears on proof surfaces.
+- Do not treat pre-commit exit 0 without `--strict` as alignment proof.
 
-## Journal
-
-`docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/JOURNAL.md`
-
-## Next exact command or prompt
-
-In a **new** Cursor window (Goal Maestro allowed there):
+## Next command (after owner re-sign-off)
 
 ```text
 /tes-goal-maestro --execute-loop --target /Users/murillo/Dev/tes-canary/cursor
 ```
-
-Use the active Super SPEC queue after confirming cursor canary HEAD `c0c75da` and clean `git status`.

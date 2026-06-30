@@ -1373,3 +1373,24 @@ codex_hook_path: safe
 /opt/homebrew/Cellar/python@3.14/3.14.4_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/.tes/bin/project_alignment_oracle.py': [Errno 2] No such file or directory
 /opt/homebrew/Cellar/python@3.14/3.14.4_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/.tes/bin/tes_map_oracle.py': [Errno 2] No such file or directory
        8
+
+# REPAIR-ROUND-2 MATRIX (2026-06-30T14:06Z)
+
+| Canary | HEAD | git status | context | align | map | pre-commit strict | .DS_Store |
+|--------|------|------------|---------|-------|-----|-------------------|-----------|
+| cursor | 44c80e7 | clean | PASS exit 0 | PASS exit 0 | PASS exit 0 | exit 0 | 0 |
+| claude | 3fe7bc2 | clean | PASS exit 0 | PASS exit 0 | PASS exit 0 | exit 0 | 0 |
+| codex | 6f9f118 | clean | PASS exit 0 | PASS exit 0 | PASS exit 0 | exit 0 | 0 |
+
+Command bundle:
+
+```bash
+for t in cursor claude codex; do
+  TARGET=/Users/murillo/Dev/tes-canary/$t
+  python3 /Users/murillo/Dev/tilly-engineer-skills/scripts/project_context_oracle.py --target "$TARGET"; echo context:$?
+  python3 /Users/murillo/Dev/tilly-engineer-skills/scripts/project_alignment_oracle.py --target "$TARGET"; echo align:$?
+  python3 /Users/murillo/Dev/tilly-engineer-skills/scripts/tes_map_oracle.py --target "$TARGET"; echo map:$?
+  git -C "$TARGET" hook run pre-commit; echo pre-commit:$?
+  find "$TARGET" -name .DS_Store | wc -l
+done
+```

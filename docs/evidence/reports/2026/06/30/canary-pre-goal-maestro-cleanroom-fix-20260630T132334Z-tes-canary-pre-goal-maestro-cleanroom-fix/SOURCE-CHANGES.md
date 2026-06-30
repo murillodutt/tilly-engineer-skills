@@ -9,6 +9,7 @@ Portable fixes applied in `/Users/murillo/Dev/tilly-engineer-skills`:
 | `scripts/tes_init.py` | SPEC-003 | OS residue excluded from project scan/anchors by name and prefix |
 | `scripts/installed_certification_oracle.py` | SPEC-003, SPEC-005 | Full-target OS residue scan; visible `hook_runtime_health` NEEDS_EVIDENCE finding without collapsing aggregate PASS |
 | `scripts/project_alignment_oracle.py` | SPEC-004 | Require `DOCUMENTATION-AUTHORITY.md` and `docs/agents/contracts/**` after non-scaffold mesh |
+| `scripts/verify_documentation_inventory.py` | repair round 2 | Accept Identity Git HEAD at `HEAD`, `HEAD~1`, or any Git ancestor of `HEAD`; self-tests for parent and multi-commit drift |
 | `docs/architecture/INSTALLATION-FRAMEWORK.md` | SPEC-002 (audit) | Codex hook entry documents absolute target path via `codex_hook_command()`, not `git rev-parse` |
 
 Version decision: **required content, identity already 0.3.231** — delivered installer/oracle behavior changed; package version was already bumped to `0.3.231` in-tree before this run. No additional bump/tag/push performed (owner authorization required).

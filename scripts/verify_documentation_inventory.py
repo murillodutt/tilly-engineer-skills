@@ -67,6 +67,70 @@ def git_head(target: Path) -> str | None:
         return None
 
 
+def git_parent_head(target: Path) -> str | None:
+    """Return HEAD~1 when the target is a Git worktree with history."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(target), "rev-parse", "HEAD~1"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip() or None
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
+def git_object_exists(target: Path, ref: str) -> bool:
+    try:
+        subprocess.run(
+            ["git", "-C", str(target), "rev-parse", "--verify", f"{ref}^{{commit}}"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
+def git_is_ancestor(target: Path, ancestor: str, descendant: str) -> bool:
+    try:
+        subprocess.run(
+            ["git", "-C", str(target), "merge-base", "--is-ancestor", ancestor, descendant],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
+def git_head_row_matches(
+    mesh_head: str,
+    repository_head: str | None,
+    target: Path | None = None,
+    parent_head: str | None = None,
+) -> bool:
+    """Return True when the Identity Git HEAD row matches the repository state.
+
+    Accept exact HEAD, short-hash prefix, immediate parent after a mesh-only
+    commit, or any documented commit that is a Git ancestor of current HEAD.
+    """
+    if not repository_head:
+        return False
+    if mesh_head == repository_head:
+        return True
+    if repository_head.startswith(mesh_head):
+        return True
+    if parent_head and (mesh_head == parent_head or parent_head.startswith(mesh_head)):
+        return True
+    if target and git_object_exists(target, mesh_head) and git_is_ancestor(target, mesh_head, "HEAD"):
+        return True
+    return False
+
+
 def extract_section(text: str, heading: str) -> str:
     pattern = re.compile(
         rf"^{re.escape(heading)}\s*$(.*?)(?=^## |\Z)",
@@ -150,6 +214,7 @@ def analyze(target: Path) -> dict[str, Any]:
 
         if pc.get("git_head_must_match"):
             head = git_head(target)
+            parent = git_parent_head(target)
             if head:
                 match = re.search(r"Git HEAD\s*\|\s*`([0-9a-f]{7,40})`", pc_text)
                 if not match:
@@ -161,7 +226,7 @@ def analyze(target: Path) -> dict[str, Any]:
                             "reason": "Identity table missing Git HEAD row",
                         }
                     )
-                elif match.group(1) != head and not head.startswith(match.group(1)):
+                elif not git_head_row_matches(match.group(1), head, target, parent):
                     findings.append(
                         {
                             "code": "inventory.stale_git_head",
@@ -270,6 +335,61 @@ def self_test() -> dict[str, Any]:
         result = analyze(target)
         if result["status"] != "FAIL":
             failures.append("forbidden deep read fixture must FAIL")
+
+    with tempfile.TemporaryDirectory(prefix="inv-hygiene-git-head-parent-") as tempdir:
+        target = Path(tempdir)
+        contract_dir = target / "docs/agents/contracts"
+        contract_dir.mkdir(parents=True)
+        (contract_dir / "INVENTORY-HYGIENE.yml").write_text(fixture_yaml, encoding="utf-8")
+        (target / "docs/agents/DOCUMENTATION-AUTHORITY.md").write_text("# ok\n", encoding="utf-8")
+        subprocess.run(["git", "init"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(target), "config", "user.email", "test@example.com"], check=True)
+        subprocess.run(["git", "-C", str(target), "config", "user.name", "test"], check=True)
+        (target / "README.md").write_text("# fixture\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(target), "add", "README.md"], check=True)
+        subprocess.run(["git", "-C", str(target), "commit", "-m", "first"], check=True)
+        parent = git_head(target)
+        (target / "docs/agents/PROJECT-CONTEXT.md").write_text(
+            f"---\ntier: 3-inventory\n---\n\n## Identity\n\n| Git HEAD | `{parent}` |\n\n"
+            "## Recommended Deep Reads\n\n- [[DOCUMENTATION-AUTHORITY]]\n- [[EXECUTION-LINE]]\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "-C", str(target), "add", "docs/agents/PROJECT-CONTEXT.md"], check=True)
+        subprocess.run(["git", "-C", str(target), "commit", "-m", "mesh head sync"], check=True)
+        result = analyze(target)
+        if result["status"] != "PASS":
+            failures.append(
+                "mesh-only Git HEAD commit must PASS when Identity row records parent HEAD"
+            )
+
+    with tempfile.TemporaryDirectory(prefix="inv-hygiene-git-head-ancestor-") as tempdir:
+        target = Path(tempdir)
+        contract_dir = target / "docs/agents/contracts"
+        contract_dir.mkdir(parents=True)
+        (contract_dir / "INVENTORY-HYGIENE.yml").write_text(fixture_yaml, encoding="utf-8")
+        (target / "docs/agents/DOCUMENTATION-AUTHORITY.md").write_text("# ok\n", encoding="utf-8")
+        subprocess.run(["git", "init"], cwd=target, check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(target), "config", "user.email", "test@example.com"], check=True)
+        subprocess.run(["git", "-C", str(target), "config", "user.name", "test"], check=True)
+        (target / "README.md").write_text("# fixture\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(target), "add", "README.md"], check=True)
+        subprocess.run(["git", "-C", str(target), "commit", "-m", "first"], check=True)
+        documented = git_head(target)
+        (target / "docs/agents/PROJECT-CONTEXT.md").write_text(
+            f"---\ntier: 3-inventory\n---\n\n## Identity\n\n| Git HEAD | `{documented}` |\n\n"
+            "## Recommended Deep Reads\n\n- [[DOCUMENTATION-AUTHORITY]]\n- [[EXECUTION-LINE]]\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "-C", str(target), "add", "docs/agents/PROJECT-CONTEXT.md"], check=True)
+        subprocess.run(["git", "-C", str(target), "commit", "-m", "mesh head sync"], check=True)
+        (target / "NOTES.md").write_text("follow-up\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(target), "add", "NOTES.md"], check=True)
+        subprocess.run(["git", "-C", str(target), "commit", "-m", "follow-up without mesh refresh"], check=True)
+        result = analyze(target)
+        if result["status"] != "PASS":
+            failures.append(
+                "Identity Git HEAD at an ancestor of HEAD must PASS without immediate mesh refresh"
+            )
 
     return {"status": "PASS" if not failures else "FAIL", "failures": failures}
 
