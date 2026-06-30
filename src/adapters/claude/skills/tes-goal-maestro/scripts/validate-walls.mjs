@@ -55,6 +55,9 @@ const GM12_SPEC10_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
 const GM12_SPEC10_INSTALLED_VERSION = sourcePackageVersion();
 const GM12_SPEC10_INSTALLED_AT = '2026-06-29T00:00:00Z';
 const GM12_SPEC10_SOURCE_HASH = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const GM12_SPEC11_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
+const GM12_SPEC11_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
+const GM12_SPEC11_DOMAIN_OBJECTS = ['board', 'score', 'selected card'];
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -346,6 +349,34 @@ function gm12Spec10MissingSourceIdentityArgs() {
 
 function gm12Spec10RevertArgs() {
   return [fixture('gm12-spec10-report-identity-ok.json', JSON.stringify(gm12Spec10Fixture('valid')))];
+}
+
+function gm12Spec11UnsupportedArtifactClassArgs() {
+  return [fixture('gm12-spec11-visual-evidence-unsupported-artifact-class.json', JSON.stringify(gm12Spec11Fixture('unsupported_artifact_class')))];
+}
+
+function gm12Spec11InitialOnlyArgs() {
+  return [fixture('gm12-spec11-visual-evidence-initial-only.json', JSON.stringify(gm12Spec11Fixture('initial_only')))];
+}
+
+function gm12Spec11TerminalOnlyArgs() {
+  return [fixture('gm12-spec11-visual-evidence-terminal-only.json', JSON.stringify(gm12Spec11Fixture('terminal_only')))];
+}
+
+function gm12Spec11UnmappedScreenshotArgs() {
+  return [fixture('gm12-spec11-visual-evidence-unmapped-screenshot.json', JSON.stringify(gm12Spec11Fixture('unmapped_screenshot')))];
+}
+
+function gm12Spec11ActiveWithoutDomainObjectsArgs() {
+  return [fixture('gm12-spec11-visual-evidence-active-without-domain-objects.json', JSON.stringify(gm12Spec11Fixture('active_without_domain_objects')))];
+}
+
+function gm12Spec11MissingResponsiveArgs() {
+  return [fixture('gm12-spec11-visual-evidence-missing-responsive.json', JSON.stringify(gm12Spec11Fixture('missing_responsive')))];
+}
+
+function gm12Spec11RevertArgs() {
+  return [fixture('gm12-spec11-visual-evidence-ok.json', JSON.stringify(gm12Spec11Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -948,6 +979,85 @@ function gm12Spec10Identity(mode) {
     delete identity.source_package.bundle_sha256;
   }
   return identity;
+}
+
+function gm12Spec11Fixture(mode) {
+  const base = gm12Spec10Fixture('valid');
+  const artifact_class = mode === 'unsupported_artifact_class' ? 'api' : 'interactive_rendered_app';
+  const visual_evidence = gm12Spec11VisualEvidence(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC11_CONTRACT,
+    visual_evidence_contract_required: true,
+    visual_evidence_expectations: {
+      stop_state: GM12_SPEC11_STOP_STATE,
+      artifact_class,
+      interactive: true,
+      responsive_required: true,
+      required_states: ['initial', 'active', 'terminal'],
+    },
+    source_artifact: {
+      artifact_class,
+      asks_for_responsive_behavior: true,
+    },
+    visual_evidence,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      visual_evidence,
+    },
+    closeout: {
+      ...base.closeout,
+      visual_evidence: {
+        status: mode === 'valid' ? 'complete' : 'claimed_complete_by_mutation',
+        screenshot_refs: visual_evidence.map((item) => item.ref),
+      },
+    },
+  };
+}
+
+function gm12Spec11VisualEvidence(mode) {
+  const initial = {
+    type: 'screenshot',
+    ref: 'screenshots/spec-011-initial.png',
+    state: 'initial',
+    proves: 'initial state before interaction',
+  };
+  const active = {
+    type: 'screenshot',
+    ref: 'screenshots/spec-011-active.png',
+    state: 'active',
+    domain_objects: GM12_SPEC11_DOMAIN_OBJECTS,
+    proves: 'active state with domain objects',
+  };
+  const terminal = {
+    type: 'screenshot',
+    ref: 'screenshots/spec-011-terminal.png',
+    state: 'terminal',
+    proves: 'terminal state after completion',
+  };
+  const mobileActive = {
+    type: 'screenshot',
+    ref: 'screenshots/spec-011-mobile-active.png',
+    state: 'active',
+    viewport: 'mobile',
+    responsive: true,
+    domain_objects: GM12_SPEC11_DOMAIN_OBJECTS,
+    proves: 'mobile responsive active state',
+  };
+
+  if (mode === 'initial_only') return [initial];
+  if (mode === 'terminal_only') return [terminal];
+  if (mode === 'unmapped_screenshot') return [initial, { ...active, state: undefined }, terminal, mobileActive];
+  if (mode === 'active_without_domain_objects') {
+    return [
+      initial,
+      { ...active, domain_objects: [] },
+      terminal,
+      { ...mobileActive, domain_objects: [] },
+    ];
+  }
+  if (mode === 'missing_responsive') return [initial, active, terminal];
+  return [initial, active, terminal, mobileActive];
 }
 
 function gm12Spec2PreEditEvent(spec_id, at) {
@@ -1587,6 +1697,43 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec10MissingSourceIdentityArgs,
     revert: gm12Spec10RevertArgs,
+  },
+  // GM12S11 — SPEC-011 requires mapped scene coverage for visual UI/browser/rendered app evidence.
+  {
+    id: 'GM12S11 goal-maestro-p0-visual-evidence-artifact-class',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec11UnsupportedArtifactClassArgs,
+    revert: gm12Spec11RevertArgs,
+  },
+  {
+    id: 'GM12S11 goal-maestro-p0-visual-evidence-initial-only',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec11InitialOnlyArgs,
+    revert: gm12Spec11RevertArgs,
+  },
+  {
+    id: 'GM12S11 goal-maestro-p0-visual-evidence-terminal-only',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec11TerminalOnlyArgs,
+    revert: gm12Spec11RevertArgs,
+  },
+  {
+    id: 'GM12S11 goal-maestro-p0-visual-evidence-state-map',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec11UnmappedScreenshotArgs,
+    revert: gm12Spec11RevertArgs,
+  },
+  {
+    id: 'GM12S11 goal-maestro-p0-visual-evidence-active-domain-objects',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec11ActiveWithoutDomainObjectsArgs,
+    revert: gm12Spec11RevertArgs,
+  },
+  {
+    id: 'GM12S11 goal-maestro-p0-visual-evidence-responsive',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec11MissingResponsiveArgs,
+    revert: gm12Spec11RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

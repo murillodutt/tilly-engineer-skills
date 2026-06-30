@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -17,6 +17,8 @@
 // validation with package_hierarchy_required:true.
 // SPEC-010 fixtures opt into report identity/version accuracy validation
 // with report_identity_required:true.
+// SPEC-011 fixtures opt into visual evidence scene coverage validation with
+// visual_evidence_contract_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -32,6 +34,7 @@ const LEDGER_GRAMMAR_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
 const REPORT_COHERENCE_STOP_STATE = 'NEEDS_REPORT_COHERENCE';
 const PACKAGE_HIERARCHY_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
 const REPORT_IDENTITY_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
+const VISUAL_EVIDENCE_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -41,6 +44,7 @@ const LEDGER_GRAMMAR_CONTRACT = 'goal-maestro-p0-ledger-grammar';
 const REPORT_COHERENCE_CONTRACT = 'goal-maestro-p0-report-coherence';
 const PACKAGE_HIERARCHY_CONTRACT = 'goal-maestro-p0-package-hierarchy';
 const REPORT_IDENTITY_CONTRACT = 'goal-maestro-p0-report-identity';
+const VISUAL_EVIDENCE_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -48,6 +52,9 @@ const MATERIAL_SPEC_HEADING_RE = /^### (SPEC-\d{3}) - (.+\S)$/;
 const REPORT_COHERENCE_FIELDS = ['spec_ids', 'final_status', 'report_status', 'share_status', 'evidence_hashes', 'unproven_count'];
 const PACKAGE_HIERARCHY_STATUSES = new Set(['latest', 'superseded', 'historical']);
 const KNOWN_ADAPTERS = new Set(['codex', 'claude', 'cursor']);
+const VISUAL_ARTIFACT_CLASSES = new Set(['ui', 'browser', 'rendered_app', 'interactive_rendered', 'static_rendered']);
+const INTERACTIVE_VISUAL_ARTIFACT_CLASSES = new Set(['browser', 'rendered_app', 'interactive_rendered']);
+const INTERACTIVE_VISUAL_STATES = ['initial', 'active', 'terminal'];
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -104,6 +111,7 @@ const ledgerGrammarRequired = requiresLedgerGrammarGate(fixture);
 const reportCoherenceRequired = requiresReportCoherenceGate(fixture);
 const packageHierarchyRequired = requiresPackageHierarchyGate(fixture);
 const reportIdentityRequired = requiresReportIdentityGate(fixture);
+const visualEvidenceContractRequired = requiresVisualEvidenceContract(fixture);
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -247,8 +255,13 @@ if (packageHierarchyRequired) {
 if (reportIdentityRequired) {
   addReportIdentityChecks();
 }
+if (visualEvidenceContractRequired) {
+  addVisualEvidenceContractChecks();
+}
 
-const harnessTitle = reportIdentityRequired
+const harnessTitle = visualEvidenceContractRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011 goal-maestro-p0-visual-evidence-contract (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE})`
+  : reportIdentityRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010 goal-maestro-p0-report-identity (${LINEAR_STOP_STATE}/${REPORT_IDENTITY_STOP_STATE})`
   : packageHierarchyRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009 goal-maestro-p0-package-hierarchy (${LINEAR_STOP_STATE}/${PACKAGE_HIERARCHY_STOP_STATE})`
@@ -1077,6 +1090,67 @@ function addReportIdentityChecks() {
   }
 }
 
+function addVisualEvidenceContractChecks() {
+  const expected = visualEvidenceExpectationsFromFixture(fixture);
+  const artifactClass = visualArtifactClassFromFixture(fixture, expected);
+  const interactiveCoverageRequired = expected.interactive === true || INTERACTIVE_VISUAL_ARTIFACT_CLASSES.has(artifactClass);
+  const requiredStates = visualRequiredStatesForArtifact(artifactClass, expected, interactiveCoverageRequired);
+  const responsiveRequired = visualResponsiveRequiredFromFixture(fixture, expected);
+  const evidenceItems = visualEvidenceItemsFromFixture(fixture);
+  const screenshots = evidenceItems.filter(isVisualScreenshotEvidence);
+  const unmappedScreenshots = screenshots.filter((item) => !nonEmptyString(visualEvidenceState(item)));
+  const screenshotStates = uniqueStrings(screenshots.map(visualEvidenceState));
+  const missingStates = requiredStates.filter((state) => !screenshotStates.includes(state));
+  const activeScreenshots = screenshots.filter((item) => visualEvidenceState(item) === 'active');
+  const activeScreenshotsWithDomainObjects = activeScreenshots.filter((item) => visualEvidenceDomainObjects(item).length > 0);
+  const responsiveScreenshots = screenshots.filter(isMobileResponsiveEvidence);
+
+  visualEvidenceCheck(
+    'visual artifact class is present',
+    nonEmptyString(artifactClass),
+    'visual evidence contract requires artifact_class for UI, browser, or rendered app work',
+  );
+  visualEvidenceCheck(
+    'visual artifact class is supported',
+    VISUAL_ARTIFACT_CLASSES.has(artifactClass),
+    `unsupported visual artifact_class ${artifactClass ?? 'missing'}`,
+  );
+  visualEvidenceCheck(
+    'visual scene evidence is present',
+    evidenceItems.length > 0,
+    'visual_evidence must list the screenshots or scene evidence used for proof',
+  );
+  visualEvidenceCheck(
+    'screenshot evidence is present',
+    screenshots.length > 0,
+    'at least one screenshot evidence item is required for visual proof',
+  );
+  visualEvidenceCheck(
+    'every screenshot maps to a proved state',
+    screenshots.length > 0 && unmappedScreenshots.length === 0,
+    `screenshot(s) lack state mapping: ${formatVisualEvidenceRefs(unmappedScreenshots)}`,
+  );
+  visualEvidenceCheck(
+    'required scene states are covered',
+    missingStates.length === 0,
+    `missing required visual state screenshot(s): ${formatValues(missingStates)}`,
+  );
+  if (interactiveCoverageRequired) {
+    visualEvidenceCheck(
+      'active-state screenshot has domain objects',
+      activeScreenshotsWithDomainObjects.length > 0,
+      'interactive rendered work requires active-state screenshot evidence with domain_objects',
+    );
+  }
+  if (responsiveRequired) {
+    visualEvidenceCheck(
+      'mobile or responsive screenshot is present',
+      responsiveScreenshots.length > 0,
+      'source artifact asks for responsive behavior, so mobile/responsive screenshot evidence is required',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1214,6 +1288,10 @@ function packageHierarchyCheck(name, pass, detail) {
 
 function reportIdentityCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${REPORT_IDENTITY_STOP_STATE}: ${detail}` });
+}
+
+function visualEvidenceCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${VISUAL_EVIDENCE_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1373,6 +1451,13 @@ function requiresReportIdentityGate(value) {
     || value.contract === REPORT_IDENTITY_CONTRACT;
 }
 
+function requiresVisualEvidenceContract(value) {
+  return value.visual_evidence_contract_required === true
+    || value.visual_evidence_required === true
+    || value.harness_contract === VISUAL_EVIDENCE_CONTRACT
+    || value.contract === VISUAL_EVIDENCE_CONTRACT;
+}
+
 function acceptedBoundedRepairUnitIds(value) {
   const acceptedUnits = [
     ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
@@ -1445,6 +1530,156 @@ function reportIdentityFromFixture(value) {
     metrics.identity,
   ];
   return candidates.find(isPlainObject) ?? {};
+}
+
+function visualEvidenceExpectationsFromFixture(value) {
+  const contract = isPlainObject(value.visual_evidence_contract) ? value.visual_evidence_contract : {};
+  const expectations = isPlainObject(value.visual_evidence_expectations) ? value.visual_evidence_expectations : {};
+  return { ...contract, ...expectations };
+}
+
+function visualEvidenceItemsFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const contract = isPlainObject(value.visual_evidence_contract) ? value.visual_evidence_contract : {};
+  const candidates = [
+    value.visual_evidence,
+    value.screenshots,
+    value.visual_screenshots,
+    contract.evidence,
+    contract.screenshots,
+    contract.items,
+    metrics.visual_evidence,
+    metrics.screenshots,
+  ];
+  const direct = candidates.find(Array.isArray);
+  if (direct) return direct.filter(isPlainObject);
+  const report = isPlainObject(value.visual_evidence_report) ? value.visual_evidence_report : {};
+  if (Array.isArray(report.evidence)) return report.evidence.filter(isPlainObject);
+  if (Array.isArray(report.screenshots)) return report.screenshots.filter(isPlainObject);
+  return [];
+}
+
+function visualArtifactClassFromFixture(value, expected) {
+  return normalizeVisualArtifactClass(firstNonEmptyString(
+    expected.artifact_class,
+    expected.artifact_kind,
+    value.artifact_class,
+    value.artifact_kind,
+    value.source_artifact?.artifact_class,
+    value.source_artifact?.artifact_kind,
+    value.source_artifact?.kind,
+    value.source_artifact?.class,
+  ));
+}
+
+function normalizeVisualArtifactClass(value) {
+  if (!nonEmptyString(value)) return null;
+  const normalized = String(value).trim().toLowerCase().replace(/[-\s]+/g, '_');
+  if (['interactive_rendered_app', 'interactive_rendered_work', 'interactive_ui', 'web_app', 'generated_app', 'game'].includes(normalized)) {
+    return 'interactive_rendered';
+  }
+  if (['browser_work', 'browser_app', 'browser_ui'].includes(normalized)) return 'browser';
+  if (['rendered_application', 'rendered_ui', 'app_ui'].includes(normalized)) return 'rendered_app';
+  if (['static_rendered_app', 'static_ui', 'visual_static'].includes(normalized)) return 'static_rendered';
+  if (['user_interface', 'interface'].includes(normalized)) return 'ui';
+  return normalized;
+}
+
+function visualRequiredStatesForArtifact(artifactClass, expected, interactiveCoverageRequired) {
+  const expectedStates = normalizeVisualStateArray(expected.required_states);
+  if (expectedStates.length > 0) return expectedStates;
+  if (interactiveCoverageRequired) return INTERACTIVE_VISUAL_STATES;
+  if (VISUAL_ARTIFACT_CLASSES.has(artifactClass)) return ['initial'];
+  return [];
+}
+
+function visualResponsiveRequiredFromFixture(value, expected) {
+  const source = isPlainObject(value.source_artifact) ? value.source_artifact : {};
+  return expected.responsive_required === true
+    || expected.mobile_required === true
+    || value.responsive_required === true
+    || value.mobile_required === true
+    || source.responsive_required === true
+    || source.asks_for_responsive_behavior === true
+    || source.responsive_behavior_required === true;
+}
+
+function isVisualScreenshotEvidence(item) {
+  if (!isPlainObject(item)) return false;
+  const evidenceType = firstNonEmptyString(item.type, item.kind, item.media_type, item.evidence_type);
+  return /screenshot/i.test(String(evidenceType ?? ''))
+    || nonEmptyString(item.screenshot_ref)
+    || nonEmptyString(item.image_ref)
+    || nonEmptyString(item.path)
+    || nonEmptyString(item.ref);
+}
+
+function visualEvidenceState(item) {
+  return normalizeVisualState(firstNonEmptyString(
+    item.state,
+    item.proves_state,
+    item.scene_state,
+    item.visual_state,
+    item.screenshot_state,
+    item.coverage?.state,
+    item.proves?.state,
+  ));
+}
+
+function normalizeVisualState(value) {
+  if (!nonEmptyString(value)) return null;
+  const normalized = String(value).trim().toLowerCase().replace(/[-\s]+/g, '_');
+  if (['initial_state', 'start', 'start_state', 'empty', 'idle', 'before_interaction'].includes(normalized)) return 'initial';
+  if (['active_state', 'interaction', 'in_progress', 'running', 'domain_active', 'gameplay', 'populated'].includes(normalized)) return 'active';
+  if (['terminal_state', 'end', 'end_state', 'final', 'final_state', 'completed', 'complete', 'success', 'failure', 'game_over', 'done'].includes(normalized)) return 'terminal';
+  return normalized;
+}
+
+function normalizeVisualStateArray(value) {
+  return uniqueStrings(stringListFromValue(value).map(normalizeVisualState));
+}
+
+function visualEvidenceDomainObjects(item) {
+  const candidates = [
+    item.domain_objects,
+    item.domainObjects,
+    item.expected_objects,
+    item.objects,
+    item.scene_objects,
+    item.assertions?.domain_objects,
+    item.assertions?.expected_objects,
+  ];
+  for (const candidate of candidates) {
+    const objects = stringListFromValue(candidate);
+    if (objects.length > 0) return objects;
+  }
+  return [];
+}
+
+function isMobileResponsiveEvidence(item) {
+  if (!isPlainObject(item)) return false;
+  const viewport = firstNonEmptyString(item.viewport, item.viewport_class, item.device, item.breakpoint);
+  const normalizedViewport = nonEmptyString(viewport) ? String(viewport).trim().toLowerCase().replace(/[-\s]+/g, '_') : null;
+  const tags = stringListFromValue(item.tags).map((tag) => tag.toLowerCase());
+  return item.mobile === true
+    || item.responsive === true
+    || ['mobile', 'phone', 'small', 'narrow', 'responsive'].includes(normalizedViewport)
+    || tags.some((tag) => ['mobile', 'responsive'].includes(tag));
+}
+
+function formatVisualEvidenceRefs(items) {
+  const refs = items.map((item) => firstNonEmptyString(item.ref, item.path, item.screenshot_ref, item.image_ref, item.id)).filter(nonEmptyString);
+  return formatValues(refs);
+}
+
+function stringListFromValue(value) {
+  if (typeof value === 'string') return [value].filter(nonEmptyString);
+  if (!Array.isArray(value)) return [];
+  return value.map((entry) => {
+    if (typeof entry === 'string') return entry;
+    if (!isPlainObject(entry)) return null;
+    return firstNonEmptyString(entry.name, entry.id, entry.type, entry.label);
+  }).filter(nonEmptyString);
 }
 
 function installedVersionFromReportIdentity(identity) {
