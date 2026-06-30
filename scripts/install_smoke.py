@@ -1034,8 +1034,12 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
             failures.extend(["legacy obsolete cleanup install failed", *stdout.splitlines(), *stderr.splitlines()])
             return {"route": "legacy-obsolete-cleanup", "status": "FAIL", "failures": failures}
         payload = parse_json_stdout(stdout)
-        if payload.get("status") != "INSTALLED":
-            failures.append(f"legacy obsolete cleanup expected INSTALLED, got {payload.get('status')}")
+        # Ceiling: a clean install whose only open findings are host-readiness
+        # pending (MCP/host not restarted, hooks not yet fired) reports the typed
+        # tier READY_PENDING_HOST instead of INSTALLED — both are a successful,
+        # reversible on-disk install (exit 0).
+        if payload.get("status") not in {"INSTALLED", "READY_PENDING_HOST"}:
+            failures.append(f"legacy obsolete cleanup expected INSTALLED/READY_PENDING_HOST, got {payload.get('status')}")
         cleanup = ((payload.get("apply") or {}).get("obsolete_cleanup") or {})
         if cleanup.get("status") not in {"PASS", "DRY-RUN"}:
             failures.append(f"legacy obsolete cleanup expected PASS cleanup, got {cleanup.get('status')}")

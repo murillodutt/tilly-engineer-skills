@@ -273,7 +273,7 @@ Give that file to an LLM or reviewer. Merge Tilly discipline while preserving pr
 
 - No remote script execution.
 - No package manager install.
-- No unrequested hooks, background agent, cloud, secret changes, global MCP config, or ungoverned write-capable MCP tools. TES project-scoped hooks are allowed only through the selected installer surface and must remain idempotent and advisory unless a separate hard gate blocks a risky action.
+- No unrequested hooks, background agent, cloud, secret changes, global MCP config, or ungoverned write-capable MCP tools. TES project-scoped hooks are installed only through the selected installer surface and stay idempotent (single backup, foreign hooks chained before the TES gate, never an orphan). When the project is Git-eligible, TES installs and verifies its Git gates — the Field Reports `pre-push` drain and a strict `pre-commit` gate, choosing the hook manager deterministically (husky for Node/TS, `pre-commit` when a `.pre-commit-config.yaml` exists, lefthook as the polyglot default, deferring to any existing manager). Readiness blocks (`NEEDS_GIT`) when the gates cannot be installed; absence of an installable gate on an eligible target is never reported as a silent pass.
 - Project-scoped Cortex MCP config is allowed only through the selected route and explicit installer report; governed remember is default and `--read-only` is the inspection-only opt-out.
 - No runtime overwrite before `.tes/bk/<timestamp>/manifest.json` exists; `.tes/bk/**` is local rollback history and stays out of Git. No non-interactive writes without `--yes`. Backup/restore and uninstall detail: [`REVERSIBILITY.md`](REVERSIBILITY.md).
 

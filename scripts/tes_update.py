@@ -574,7 +574,13 @@ def project_alignment_contract(target: Path, surface_map: dict[str, bool]) -> di
             "warnings": [],
             "paths": list(alignment_paths),
         }
-    status = "PASS" if result.returncode == 0 and payload.get("status") == "PASS" else "DRIFT"
+    # The alignment oracle now returns a PASS family: PASS_ALIGNED (refined mesh)
+    # and PASS_SCAFFOLD (clean but still the initial deterministic scaffold).
+    # Both are non-drift greens; the legacy "PASS" is accepted for resilience
+    # against an installed older oracle. Scaffold tier is surfaced as advisory by
+    # the install path, not as drift here.
+    alignment_pass = {"PASS", "PASS_ALIGNED", "PASS_SCAFFOLD"}
+    status = "PASS" if result.returncode == 0 and payload.get("status") in alignment_pass else "DRIFT"
     failures = [str(item) for item in payload.get("failures") or []]
     warnings = [str(item) for item in payload.get("warnings") or []]
     return {

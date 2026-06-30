@@ -16,6 +16,15 @@ import mantra_gate_adoption_oracle
 import tes_bundle
 import tes_install
 
+# Soft import (mirrors the capsule_residue pattern): the MCP registration ladder
+# uses the real out-of-process handshake when available, and degrades to
+# config-presence-only evidence (never inferring host connection) if the
+# attach-health helper is absent.
+try:
+    import attach_health_oracle as _attach_health
+except ModuleNotFoundError:  # pragma: no cover - degraded environment
+    _attach_health = None
+
 
 VERSION = "0.3.232"
 SCHEMA = "tes-installed-certification@1"
@@ -27,6 +36,11 @@ PRETOOLUSE_CONTRACT_INSTALLED_PATH = ".tes/docs/architecture/PRETOOLUSE-CONTRACT
 PARTIAL_STATUSES = {"DEGRADED", "FAIL", "PARTIAL"}
 REVIEW_STATUSES = {"NEEDS_REVIEW"}
 BLOCKED_STATUSES = {"BLOCKED", "BYPASS_SUSPECTED"}
+# Ceiling F9: honest pending verdicts the runtime CAN produce must GATE the
+# headline, never be absorbed as success at the presence-consuming aggregation.
+# NEEDS_EVIDENCE / PENDING_* / HOST_UNOBSERVABLE are real, unfinished proof —
+# they fold to NEEDS_REVIEW, not PASS.
+PENDING_STATUSES = {"NEEDS_EVIDENCE", "PENDING_TRUST", "PENDING_HOST_RESTART", "HOST_UNOBSERVABLE"}
 OS_RESIDUE_NAMES = {".DS_Store", ".AppleDouble", ".LSOverride", "__MACOSX"}
 OS_RESIDUE_PREFIXES = ("._",)
 REPAIR_ROUTES = {
@@ -68,10 +82,13 @@ def is_os_residue(path: Path) -> bool:
 
 
 def status_from_findings(findings: list[dict[str, Any]]) -> str:
+    # Fold the MIN over all signals (strictest wins), including pending/blocked —
+    # not just .status==PASS. A computed BLOCKED / pending / partial verdict one
+    # layer down propagates to the headline; it is never softened to PASS.
     statuses = {str(item.get("status") or "UNKNOWN") for item in findings}
     if statuses & BLOCKED_STATUSES:
         return "BLOCKED"
-    if statuses & REVIEW_STATUSES:
+    if statuses & (REVIEW_STATUSES | PENDING_STATUSES):
         return "NEEDS_REVIEW"
     if statuses & PARTIAL_STATUSES:
         return "PARTIAL"
@@ -107,9 +124,51 @@ def mcp_registration(target: Path) -> dict[str, Any]:
     if vscode.exists():
         configs.append({"adapter": "vscode", "path": ".vscode/mcp.json", "status": "EXPLICIT"})
 
+    # Ceiling F5: config presence is the FIRST rung of the registration ladder
+    # (config written), not the proof. A substring match in a config file is not
+    # a registered, host-connected MCP server. When config is present, climb the
+    # ladder with the real out-of-process handshake (initialize -> tools/list).
+    # The component only reads PASS when the handshake proves connection; a
+    # present-but-unproven config is NEEDS_EVIDENCE, never an inferred PASS.
+    config_present = bool(configs)
+    server_entrypoint = target / ".tes/bin/cortex_mcp.py"
+    server_installed = server_entrypoint.is_file()
+    handshake: dict[str, Any] = {"status": "NOT_APPLIED", "reason": "no MCP config present"}
+    host_connected_measured = False
+    if config_present and server_installed and _attach_health is not None:
+        handshake = _attach_health.mcp_handshake(target)
+        host_connected_measured = handshake.get("status") == "PASS"
+    elif config_present and not server_installed:
+        # Config written but the MCP server is not installed (capsule-only / thin
+        # install before the server materializes): the registration ladder has not
+        # started. NOT_APPLIED, not a false PASS and not a hard gate — there is no
+        # server yet to prove.
+        handshake = {"status": "NOT_APPLIED", "reason": "MCP config present but server not installed (ladder not started)"}
+    elif config_present:
+        handshake = {"status": "HOST_UNOBSERVABLE", "reason": "handshake helper unavailable; config presence only"}
+
+    if failures:
+        status = "FAIL"
+    elif not config_present:
+        status = "PASS"  # nothing to register; not a failure
+    elif host_connected_measured:
+        status = "PASS"  # config written AND host handshake proved the server
+    elif not server_installed:
+        # Config-only, server not yet materialized: registration is genuinely
+        # not-applicable at this stage (a substring match was never registration).
+        status = "NOT_APPLIED"
+    else:
+        # Server installed but the handshake did not prove connection (host has
+        # not (re)spawned it / cannot be observed): honest pending proof, gated
+        # downstream — config presence never reads as a silent green.
+        status = "NEEDS_EVIDENCE"
+
     return {
-        "status": "FAIL" if failures else "PASS",
+        "status": status,
         "configs": configs,
+        "server_installed": server_installed,
+        "handshake": handshake,
+        "host_connected": host_connected_measured,
         "failures": failures,
     }
 
@@ -188,8 +247,12 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
     if bytecode:
         failures.extend(f"delivered Python bytecode contamination: {path}" for path in sorted(set(bytecode)))
     metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
+    # Ceiling F6: absent provenance is UNKNOWN, never folded in with CLEAN. Only a
+    # measured "clean" source tree may allow a sealed claim; "unknown" (no
+    # provenance recorded) and "dirty"/"unsealed-package" are fail-closed. Missing
+    # proof must never read as sealed.
     source_tree_state = str(metadata.get("source_tree_state") or "unknown")
-    sealed_claim_allowed = source_tree_state in {"clean", "unknown"} and not failures
+    sealed_claim_allowed = source_tree_state == "clean" and not failures
     return {
         "status": "FAIL" if failures else "PASS",
         "source_tree_state": source_tree_state,
@@ -348,12 +411,15 @@ def evaluate(target: Path) -> dict[str, Any]:
         status = str(payload.get("status") or "UNKNOWN")
         if status in {"PASS", "PASS_WITH_FINDINGS", "OK", "NOT_APPLIED"}:
             continue
-        if status == "NEEDS_EVIDENCE" and name == "hook_runtime_health":
+        # Ceiling F9: any honest pending verdict (not just hook_runtime_health)
+        # becomes a gating finding — presence one layer down never consumes a
+        # pending state as success.
+        if status in PENDING_STATUSES:
             findings.append(
                 {
                     "component": name,
-                    "status": "NEEDS_EVIDENCE",
-                    "detail": payload.get("findings") or payload.get("agents") or [],
+                    "status": status,
+                    "detail": payload.get("findings") or payload.get("agents") or payload.get("failures") or [],
                     "repair": REPAIR_ROUTES.get(name, "Inspect this certification component and rerun installed certification."),
                 }
             )
@@ -366,6 +432,24 @@ def evaluate(target: Path) -> dict[str, Any]:
                 "repair": REPAIR_ROUTES.get(name, "Inspect this certification component and rerun installed certification."),
             }
         )
+    # Ceiling F8: the seal verdict reaches the headline, not just an internal
+    # component. When the source tree is not provably sealed *for a provenance
+    # reason* (unknown/dirty/unsealed-package) — and artifact_hygiene has not
+    # already FAILed for another cause (whose PARTIAL already gates the headline
+    # and whose failure is itself what suppresses the seal) — append a gating
+    # finding so the top-level status folds the seal in instead of burying it.
+    if hygiene.get("release_claim_status") != "SEALED_ALLOWED" and hygiene.get("status") != "FAIL":
+        findings.append(
+            {
+                "component": "release_claim",
+                "status": "NEEDS_REVIEW",
+                "detail": [
+                    f"source_tree_state={hygiene.get('source_tree_state')}; "
+                    f"release_claim_status={hygiene.get('release_claim_status')}"
+                ],
+                "repair": "Rebuild the bundle from a clean, provenance-stamped source tree before claiming a sealed release.",
+            }
+        )
     return {
         "schema": SCHEMA,
         "version": VERSION,
@@ -373,8 +457,17 @@ def evaluate(target: Path) -> dict[str, Any]:
         "status": status_from_findings(findings),
         "components": components,
         "findings": findings,
+        "release_claim_status": hygiene.get("release_claim_status"),
         "negative_checks": {
-            "host_connected_not_inferred": True,
+            # Ceiling F5: host_connected is a MEASURED field, never an inferred
+            # constant. The mcp_registration ladder sets host_connected True only
+            # when the real handshake proved the server; this negative check
+            # asserts the certification did not infer connection without that
+            # proof — i.e. host_connected is only True when handshake==PASS.
+            "host_connected_not_inferred": (
+                components["mcp_registration"].get("host_connected", False)
+                == (components["mcp_registration"].get("handshake", {}).get("status") == "PASS")
+            ),
             "vscode_not_part_of_agent_all": not (target / ".vscode/mcp.json").exists(),
             "stale_discipline_path_absent": not quality.get("failures"),
             "os_residue_absent": not hygiene.get("residue"),
@@ -424,9 +517,45 @@ def write_installed_trigger_surfaces(target: Path, *, include_portuguese_goal: b
     cursor.write_text(all_trigger_terms(), encoding="utf-8")
 
 
+def write_mcp_server_stub(target: Path) -> None:
+    """Plant a minimal MCP stdio server so the F5 registration ladder can climb.
+
+    Config presence alone is rung 1; the real handshake (initialize -> tools/list)
+    is the proof. This stub answers both so a fully-installed fixture proves
+    host_connected by measurement, not inference. A fixture WITHOUT this stub
+    leaves the ladder unproven (NEEDS_EVIDENCE) — the exact F5 false-PASS the
+    ceiling forbids.
+    """
+    entrypoint = target / ".tes/bin/cortex_mcp.py"
+    entrypoint.parent.mkdir(parents=True, exist_ok=True)
+    entrypoint.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json, sys\n"
+        "for line in sys.stdin:\n"
+        "    line = line.strip()\n"
+        "    if not line:\n"
+        "        continue\n"
+        "    try:\n"
+        "        msg = json.loads(line)\n"
+        "    except json.JSONDecodeError:\n"
+        "        continue\n"
+        "    mid = msg.get('id')\n"
+        "    method = msg.get('method')\n"
+        "    if method == 'initialize':\n"
+        "        print(json.dumps({'jsonrpc': '2.0', 'id': mid, 'result': {'protocolVersion': '2024-11-05', 'capabilities': {}, 'serverInfo': {'name': 'tes-cortex-stub', 'version': '0'}}}), flush=True)\n"
+        "    elif method == 'tools/list':\n"
+        "        print(json.dumps({'jsonrpc': '2.0', 'id': mid, 'result': {'tools': [{'name': 'tes_probe'}]}}), flush=True)\n",
+        encoding="utf-8",
+    )
+    entrypoint.chmod(0o755)
+
+
 def write_base_fixture(target: Path, *, healthy: bool) -> None:
     target.mkdir(parents=True, exist_ok=True)
     write_installed_trigger_surfaces(target, include_portuguese_goal=healthy)
+    # Both fixtures install the MCP server so the registration ladder is proven by
+    # a real handshake (F5), not inferred from config presence.
+    write_mcp_server_stub(target)
     if healthy:
         (target / "AGENTS.md").write_text(
             "Use the TES Mantra Gate defined in "
@@ -599,14 +728,16 @@ def self_test() -> dict[str, Any]:
             if not hook_finding or hook_finding.get("status") != "NEEDS_EVIDENCE":
                 failures.append("hook_runtime_health NEEDS_EVIDENCE must remain visible without collapsing aggregate PASS")
 
-        # Red-capable Gap 4 fixture: hooks CONFIGURED on disk + lock declares the
-        # hooks surface, but NO runtime ledger exists -> hook_runtime_health must
-        # be NEEDS_EVIDENCE, that finding MUST stay visible in findings[], AND the
-        # aggregate must stay PASS (NEEDS_EVIDENCE never silently collapses, never
-        # escalates). The healthy fixture writes a full ledger, so its
-        # status=='NEEDS_EVIDENCE' guard above is dead; this fixture is the one
-        # that actually drives and protects the invariant. Deleting the
-        # NEEDS_EVIDENCE finding emission turns THIS assertion red.
+        # Red-capable Gap 4 / Ceiling F9 fixture: hooks CONFIGURED on disk + lock
+        # declares the hooks surface, but NO runtime ledger exists -> hook_runtime
+        # _health must be NEEDS_EVIDENCE, that finding MUST stay visible in
+        # findings[], AND the aggregate must now GATE to NEEDS_REVIEW. The ceiling
+        # decision (F9) overturns the prior "NEEDS_EVIDENCE stays PASS" rule:
+        # configured-but-unobserved is honest pending proof, not success — absence
+        # of runtime evidence never reads green. NEEDS_REVIEW is a readiness
+        # verdict (install stays reversible, exit 0 at the install layer), not a
+        # process failure. Deleting the NEEDS_EVIDENCE finding emission, or folding
+        # it back to PASS, turns THIS assertion red.
         needs_evidence_target = root / "healthy-hooks-configured-no-runtime"
         write_base_fixture(needs_evidence_target, healthy=True)
         ne_ledger = needs_evidence_target / ".tes/runtime/hooks/executed.jsonl"
@@ -625,10 +756,10 @@ def self_test() -> dict[str, Any]:
         )
         if not ne_finding or ne_finding.get("status") != "NEEDS_EVIDENCE":
             failures.append("hook_runtime_health NEEDS_EVIDENCE finding must remain visible (not silently collapsed)")
-        if needs_evidence_result["status"] != "PASS":
+        if needs_evidence_result["status"] != "NEEDS_REVIEW":
             failures.append(
-                f"NEEDS_EVIDENCE hook runtime must not escalate the installed aggregate beyond PASS, "
-                f"got {needs_evidence_result['status']}"
+                f"NEEDS_EVIDENCE hook runtime must GATE the installed aggregate to NEEDS_REVIEW "
+                f"(ceiling F9: pending never reads PASS), got {needs_evidence_result['status']}"
             )
         if not healthy_result["negative_checks"]["host_connected_not_inferred"]:
             failures.append("installed certification must never infer host_connected")
@@ -730,6 +861,74 @@ def self_test() -> dict[str, Any]:
             pass
         if bytecode_result["negative_checks"].get("delivered_bytecode_absent") is not False:
             failures.append("negative_checks must expose delivered_bytecode_absent=False under contamination")
+
+        # Red-capable Ceiling F6 + F8 fixture: an otherwise-healthy target whose
+        # manifest records NO provenance (source_tree_state="unknown") must NOT
+        # read as sealed, and the seal verdict must reach the HEADLINE — the
+        # aggregate gates to NEEDS_REVIEW and release_claim_status surfaces at the
+        # top level, not buried under artifact_hygiene. Folding "unknown" back in
+        # with "clean", or dropping the release_claim finding, turns this red.
+        unsealed_target = root / "healthy-unknown-provenance"
+        write_base_fixture(unsealed_target, healthy=True)
+        manifest_path = unsealed_target / ".tes/manifest.json"
+        manifest = read_json(manifest_path)
+        manifest.setdefault("metadata", {})["source_tree_state"] = "unknown"
+        manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        unsealed_result = evaluate(unsealed_target)
+        if unsealed_result["components"]["artifact_hygiene"].get("sealed_claim_allowed") is not False:
+            failures.append("unknown provenance must NOT allow a sealed claim (F6: unknown is fail-closed, not clean)")
+        if unsealed_result.get("release_claim_status") != "UNSEALED_OR_NEEDS_RELEASE_GATE":
+            failures.append("release_claim_status must surface UNSEALED at the certification headline (F8)")
+        if unsealed_result["status"] != "NEEDS_REVIEW":
+            failures.append(
+                f"unsealed (unknown-provenance) target must GATE the aggregate to NEEDS_REVIEW "
+                f"(F8: seal reaches headline), got {unsealed_result['status']}"
+            )
+        if not any(f.get("component") == "release_claim" for f in unsealed_result.get("findings", [])):
+            failures.append("unsealed target must emit a release_claim certification finding (F8)")
+
+        # Red-capable Ceiling F5 fixture: MCP server IS installed and config IS
+        # present, but the server does not complete the handshake (here: a broken
+        # server that never answers initialize). config-substring PASS is gone —
+        # the ladder requires a real handshake, so mcp_registration must be
+        # NEEDS_EVIDENCE, host_connected measured False, and the aggregate gates
+        # to NEEDS_REVIEW. (Config WITHOUT an installed server is a distinct
+        # NOT_APPLIED case — the ladder has not started — exercised separately.)
+        unproven_mcp_target = root / "healthy-mcp-server-no-handshake"
+        write_base_fixture(unproven_mcp_target, healthy=True)
+        broken_server = unproven_mcp_target / ".tes/bin/cortex_mcp.py"
+        broken_server.write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")  # answers nothing
+        unproven_result = evaluate(unproven_mcp_target)
+        unproven_mcp = unproven_result["components"]["mcp_registration"]
+        if unproven_mcp.get("status") != "NEEDS_EVIDENCE":
+            failures.append(
+                f"installed MCP server that fails the handshake must be NEEDS_EVIDENCE (F5: config presence is not registration), "
+                f"got {unproven_mcp.get('status')}"
+            )
+        if unproven_mcp.get("host_connected") is not False:
+            failures.append("host_connected must be measured False when the handshake does not prove the server (F5)")
+        if not unproven_result["negative_checks"]["host_connected_not_inferred"]:
+            failures.append("host_connected_not_inferred must hold (measured, not inferred) when handshake fails (F5)")
+        if unproven_result["status"] != "NEEDS_REVIEW":
+            failures.append(
+                f"unproven MCP registration must GATE the aggregate to NEEDS_REVIEW (F5+F9), "
+                f"got {unproven_result['status']}"
+            )
+
+        # Companion: config present but server NOT installed -> NOT_APPLIED (the
+        # ladder has not started; a substring was never registration). This must
+        # NOT gate, distinguishing thin/capsule-only install from a broken server.
+        no_server_target = root / "healthy-mcp-config-no-server"
+        write_base_fixture(no_server_target, healthy=True)
+        no_server_stub = no_server_target / ".tes/bin/cortex_mcp.py"
+        if no_server_stub.exists():
+            no_server_stub.unlink()
+        no_server_result = evaluate(no_server_target)
+        if no_server_result["components"]["mcp_registration"].get("status") != "NOT_APPLIED":
+            failures.append(
+                f"MCP config without an installed server must be NOT_APPLIED (ladder not started), "
+                f"got {no_server_result['components']['mcp_registration'].get('status')}"
+            )
     return {
         "schema": SCHEMA,
         "version": VERSION,

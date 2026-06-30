@@ -2,15 +2,26 @@
 """Canary admission gate: block false readiness when Git/pre-push/pre-commit or
 per-host native hook evidence is absent or unproven.
 
-This is MAINTAINER/canary-admission infrastructure, not delivered adopter
-behavior. TES does NOT auto-install a strict pre-commit gate for adopters
-(INSTALL.md:276 keeps project-scoped hooks idempotent and advisory). This oracle
+This is MAINTAINER/canary-admission infrastructure that VERIFIES the delivered
+Git-gate behavior. Ceiling decision (tug-of-war matrix F1/F2/F3): when a project
+is Git-eligible, TES installs, chooses and verifies its Git gates — it installs
+the Field Reports pre-push gate AND a strict pre-commit gate (selecting the hook
+manager deterministically: husky for Node/TS, pre-commit when a config exists,
+lefthook as the polyglot default, deferring to any existing owner). This oracle
 is the gate a canary REPLAY session runs against a candidate target before it
-may claim READY_FOR_GOAL_MAESTRO_CANARY. It exists because no prior surface
-materially proved Git admission or refused cross-host native hook claims:
-installed_certification_oracle has zero Git checks, and hook runtime evidence is
-host-local (no host keeps a native ledger; only the hook's own runtime record
-proves firing — Claude/Codex/Cursor confirmed).
+may claim READY_FOR_GOAL_MAESTRO_CANARY; its evidence functions
+(prepush_evidence / precommit_evidence) define the contract the delivered
+installer (field_reports.install_hook) must satisfy. It exists because no prior
+surface materially proved Git admission or refused cross-host native hook
+claims: installed_certification_oracle had zero Git checks, and hook runtime
+evidence is host-local (no host keeps a native ledger; only the hook's own
+runtime record proves firing — Claude/Codex/Cursor confirmed).
+
+NOTE — overturned contract: an earlier contract stated "TES does NOT auto-install
+a strict pre-commit gate for adopters" (INSTALL.md:276 advisory-only). The
+tug-of-war ceiling consciously overturns that: absence of an installable Git
+gate on an eligible target is no longer acceptable as advisory; TES installs and
+verifies the gate, and admission BLOCKS when material proof is absent.
 
 Hard contract (never relaxed):
   - Git admission BLOCKS when the target is not a Git work tree.
@@ -22,8 +33,8 @@ Hard contract (never relaxed):
     records. A configured-but-unobserved host is CONFIGURED_NOT_OBSERVED, never
     native PASS. Records from one host MUST NOT fill another host's claim.
 
-Consumer: maintainer/canary gate (self-test + replay admission). Not delivered
-to adopters; not a HELPER_FILE.
+Consumer: maintainer/canary gate (self-test + replay admission). Verifies
+delivered behavior; the oracle itself is not a HELPER_FILE.
 """
 
 from __future__ import annotations
@@ -88,13 +99,24 @@ def prepush_evidence(target: Path) -> dict[str, Any]:
     if not hook_path or not hook_path.is_file():
         return {"prepush_installed": False, "reason": "pre-push hook file absent", "hook": str(hook_path or "")}
     text = hook_path.read_text(encoding="utf-8", errors="ignore")
-    if not field_reports.has_gate_pre_git_push(text):
+    # The TES pre-push gate is identified by HOOK_MARKER (the Field Reports drain
+    # the installer writes). A composed gate-pre-git push is reinforcing evidence
+    # when a foreign hook carried it, but the marker is the material proof — the
+    # installer's default gate uses the field_reports drain, not gate-pre-git, so
+    # requiring gate-pre-git here would reject every TES-installed pre-push.
+    has_marker = field_reports.HOOK_MARKER in text
+    if not (has_marker or field_reports.has_gate_pre_git_push(text)):
         return {
             "prepush_installed": False,
-            "reason": "pre-push hook present but missing Field Reports gate marker",
+            "reason": "pre-push hook present but missing TES Field Reports gate marker",
             "hook": str(hook_path),
         }
-    return {"prepush_installed": True, "hook": str(hook_path), "mode": hook_info.get("mode")}
+    return {
+        "prepush_installed": True,
+        "hook": str(hook_path),
+        "mode": hook_info.get("mode"),
+        "gate_pre_git": field_reports.has_gate_pre_git_push(text),
+    }
 
 
 def precommit_evidence(target: Path) -> dict[str, Any]:

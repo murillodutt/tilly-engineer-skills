@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """Focused Field Reports Git hook-manager oracle.
 
-This proves install-hook respects the active Git hook owner instead of writing a
-dormant `.git/hooks/pre-push`: native Git, core.hooksPath, Husky, Lefthook,
-project-owned hooks, and disabled hook routing are exercised in temp repos.
+This proves two contracts:
+
+1. Deference: install-hook respects the active Git hook owner instead of writing
+   a dormant `.git/hooks/pre-push` — native Git, core.hooksPath, Husky, Lefthook,
+   project-owned hooks, and disabled hook routing are exercised in temp repos.
+2. Selection + strict pre-commit install (ceiling: TES installs, chooses and
+   verifies Git gates when the project is eligible): the deterministic
+   hook-manager selection picks husky for Node/TS, pre-commit when its config is
+   present, lefthook as the polyglot default, and defers to any existing manager;
+   a strict pre-commit gate is installed on an eligible Git target and chained
+   over a foreign hook idempotently; no-Git and core.hooksPath=/dev/null block.
 """
 
 from __future__ import annotations
@@ -147,6 +155,104 @@ def validate_fixture(path: Path, fixture: dict[str, Any]) -> list[str]:
     return failures
 
 
+def _init_git(target: Path) -> None:
+    subprocess.run(["git", "init", "-q"], cwd=target, text=True, capture_output=True, check=False)
+    subprocess.run(["git", "config", "user.email", "t@t.com"], cwd=target, text=True, capture_output=True, check=False)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False)
+
+
+def validate_selection_and_precommit() -> list[str]:
+    """Red-capable proof of deterministic selection + strict pre-commit install.
+
+    Turns RED if selection becomes non-deterministic (random/missing), if a
+    strict pre-commit is no longer installed on an eligible Git target, if a
+    foreign pre-commit is not chained idempotently, or if no-Git / disabled hooks
+    stop blocking. Imports the canary admission evidence helpers as the contract
+    the installer must satisfy.
+    """
+    import canary_admission_oracle as cao  # noqa: E402
+
+    failures: list[str] = []
+
+    # 1. Deterministic selection by project type / existing owner.
+    cases = [
+        ({".husky": "dir"}, "husky", True, "existing husky owner"),
+        ({"lefthook.yml": "pre-commit:\n  jobs:\n    - run: echo\n"}, "lefthook", True, "existing lefthook owner"),
+        ({".pre-commit-config.yaml": "repos: []\n"}, "pre-commit", True, "existing pre-commit owner"),
+        ({"package.json": '{"name":"x"}'}, "husky", False, "Node/TS project"),
+        ({}, "lefthook", False, "polyglot default"),
+    ]
+    for files, expected_mgr, expected_deferred, label in cases:
+        with tempfile.TemporaryDirectory(prefix="tes-hm-select-") as d:
+            t = Path(d)
+            _init_git(t)
+            for name, content in files.items():
+                if content == "dir":
+                    (t / name).mkdir(parents=True, exist_ok=True)
+                else:
+                    (t / name).write_text(str(content), encoding="utf-8")
+            sel = field_reports.select_hook_manager(t)
+            if sel.get("manager") != expected_mgr:
+                failures.append(f"selection[{label}]: expected manager {expected_mgr}, got {sel.get('manager')}")
+            if bool(sel.get("deferred")) != expected_deferred:
+                failures.append(f"selection[{label}]: expected deferred={expected_deferred}, got {sel.get('deferred')}")
+
+    # 2. Strict pre-commit installed + recognized on an eligible Git target.
+    with tempfile.TemporaryDirectory(prefix="tes-hm-precommit-") as d:
+        t = Path(d)
+        _init_git(t)
+        res = field_reports.install_hook(t)
+        if res.get("status") != "PASS":
+            failures.append(f"precommit: install_hook status {res.get('status')} on eligible Git target")
+        if not res.get("pre_commit_installed"):
+            failures.append("precommit: pre_commit_installed is falsy after install on eligible Git target")
+        pc = cao.precommit_evidence(t)
+        if not pc.get("precommit_enforced"):
+            failures.append(f"precommit: canary admission does not recognize strict gate: {pc.get('reason')}")
+        pp = cao.prepush_evidence(t)
+        if not pp.get("prepush_installed"):
+            failures.append(f"precommit: canary admission does not recognize pre-push gate: {pp.get('reason')}")
+        # Idempotent reinstall: no duplicate pre-commit backups.
+        field_reports.install_hook(t)
+        backups = sorted((t / ".git" / "hooks").glob("pre-commit.before-tes-*"))
+        if len(backups) > 1:
+            failures.append("precommit: reinstall created duplicate pre-commit backups")
+
+    # 3. Foreign pre-commit chained over, backed up exactly once.
+    with tempfile.TemporaryDirectory(prefix="tes-hm-foreign-") as d:
+        t = Path(d)
+        _init_git(t)
+        hp = t / ".git" / "hooks" / "pre-commit"
+        hp.parent.mkdir(parents=True, exist_ok=True)
+        hp.write_text("#!/bin/sh\necho FOREIGN > foreign.log\n", encoding="utf-8")
+        hp.chmod(0o755)
+        field_reports.install_hook(t)
+        text = hp.read_text(encoding="utf-8")
+        backups = sorted(hp.parent.glob("pre-commit.before-tes-*"))
+        if field_reports.PRECOMMIT_MARKER not in text:
+            failures.append("foreign-precommit: TES strict marker missing after chaining")
+        if "BACKUP_PRECOMMIT" not in text:
+            failures.append("foreign-precommit: foreign hook not chained")
+        if len(backups) != 1:
+            failures.append(f"foreign-precommit: expected exactly one backup, got {len(backups)}")
+
+    # 4. No-Git and disabled hooks block (absence never becomes PASS).
+    with tempfile.TemporaryDirectory(prefix="tes-hm-nogit-") as d:
+        t = Path(d)
+        if field_reports.install_hook(t).get("status") != "BLOCKED":
+            failures.append("no-git: install_hook did not BLOCK on a non-Git target")
+        if cao.git_admission(t).get("status") != "BLOCKED":
+            failures.append("no-git: canary admission did not BLOCK on a non-Git target")
+    with tempfile.TemporaryDirectory(prefix="tes-hm-disabled-") as d:
+        t = Path(d)
+        _init_git(t)
+        subprocess.run(["git", "config", "core.hooksPath", "/dev/null"], cwd=t, text=True, capture_output=True, check=False)
+        if field_reports.install_hook(t).get("status") != "BLOCKED":
+            failures.append("disabled-hooks: install_hook did not BLOCK on core.hooksPath=/dev/null")
+
+    return failures
+
+
 def analyze() -> dict[str, Any]:
     failures: list[str] = []
     fixtures = load_fixtures()
@@ -156,10 +262,13 @@ def analyze() -> dict[str, Any]:
         failures.append("missing hook-manager fixtures: " + ", ".join(missing))
     for path, fixture in fixtures:
         failures.extend(validate_fixture(path, fixture))
+    selection_failures = validate_selection_and_precommit()
+    failures.extend(selection_failures)
     return {
         "status": "PASS" if not failures else "FAIL",
         "fixtures": [rel(path) for path, _ in fixtures],
         "hosts": sorted(hosts),
+        "selection_precommit": "PASS" if not selection_failures else "FAIL",
         "failures": failures,
     }
 

@@ -853,9 +853,37 @@ def prune_historical_dist(public_dist_root: Path = PUBLIC_DIST_ROOT) -> list[str
     return removed
 
 
-def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all") -> dict[str, Any]:
+def publish_public_bundle(
+    out_dir: Path = PUBLIC_DIST_ROOT,
+    adapter: str = "all",
+    allow_dirty: bool = False,
+) -> dict[str, Any]:
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Dirty-source publish gate (ADR 0005 source<->bundle integrity).
+    # source_tree_state is computed in bundle_metadata but was never read by the
+    # publish path, so a dirty working tree could publish PUBLISHED with only a
+    # passive "dirty" label — the artifact's bytes would not correspond to any
+    # committed source. This gate makes that REFUSE (FAIL): a dirty tree cannot
+    # publish a clean public bundle. The owner escape --allow-dirty mirrors the
+    # bump_in_flight escape in public_bundle_oracle.py: a deliberate,
+    # owner-gated override for the case where publishing uncommitted source is
+    # the intended action. Reuse source_status_lines so the gate matches exactly
+    # what bundle_metadata reports as source_tree_state.
+    dirty_lines = source_status_lines()
+    if dirty_lines and not allow_dirty:
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": [
+                "refusing to publish a dirty source tree: a dirty working tree "
+                "never publishes a clean public bundle. Commit the source or "
+                "re-run with --allow-dirty to override (owner escape).",
+                *[f"dirty: {line}" for line in dirty_lines],
+            ],
+        }
+
     bundle = out_dir / BUNDLE_FILENAME
     built = build_bundle(bundle, adapter=adapter)
     if built.get("status") != "BUILT":
@@ -3051,6 +3079,108 @@ def self_test() -> dict[str, Any]:
         if (s8 / "CLAUDE.md").read_text(encoding="utf-8") != plain:
             failures.append("SPEC-008: a non-inherited project root must be left untouched")
 
+    # F7: dirty-source publish gate. publish must REFUSE (FAIL) a dirty working
+    # tree — a dirty source never publishes a clean public bundle — while the
+    # owner escape --allow-dirty overrides. We drive source_status_lines (the
+    # exact function bundle_metadata uses to compute source_tree_state) to a
+    # synthesized dirty line so the gate is red-capable regardless of the real
+    # tree state, and confirm the escape path still publishes.
+    if source_package_available():
+        original_status_lines = globals()["source_status_lines"]
+        with tempfile.TemporaryDirectory(prefix="tes-bundle-dirty-gate-") as dirty_temp:
+            dirty_out = Path(dirty_temp) / "dist"
+            try:
+                globals()["source_status_lines"] = lambda: [" M scripts/tes_bundle.py"]
+                refused = publish_public_bundle(dirty_out, allow_dirty=False)
+                if refused.get("status") != "FAIL":
+                    failures.append(
+                        "F7: publish must REFUSE (FAIL) a dirty source tree, "
+                        f"got status {refused.get('status')!r}"
+                    )
+                if not any("dirty source tree" in f for f in refused.get("failures", [])):
+                    failures.append("F7: dirty refusal must name the dirty-source-tree reason")
+                escaped = publish_public_bundle(dirty_out, allow_dirty=True)
+                if escaped.get("status") != "PUBLISHED":
+                    failures.append(
+                        "F7: --allow-dirty owner escape must still publish, "
+                        f"got status {escaped.get('status')!r}"
+                    )
+                globals()["source_status_lines"] = lambda: []
+                clean = publish_public_bundle(dirty_out, allow_dirty=False)
+                if clean.get("status") != "PUBLISHED":
+                    failures.append(
+                        "F7: a clean source tree must still publish, "
+                        f"got status {clean.get('status')!r}"
+                    )
+            finally:
+                globals()["source_status_lines"] = original_status_lines
+
+    # F15: freshness --gate/--query exit-code split. A STALE_SOURCE result must
+    # exit non-zero under --gate but stay exit-0 under --query (the back-compat
+    # default), so scripted callers keying on $? are not regressed yet can opt
+    # into a hard gate. We force STALE_SOURCE by patching source_is_ancestor and
+    # drive the real CLI dispatch (main) in-process via sys.argv.
+    with tempfile.TemporaryDirectory(prefix="tes-bundle-freshness-gate-") as fg_temp:
+        fg_target = Path(fg_temp) / "target"
+        staged_dir = fg_target / SETUP_ROOT / VERSION
+        staged_dir.mkdir(parents=True, exist_ok=True)
+        fixture_commit = "0" * 40
+        (staged_dir / MANIFEST_NAME).write_text(
+            json.dumps(
+                {
+                    "version": VERSION,
+                    "source_commit": fixture_commit,
+                    "source_repository": "https://github.com/murillodutt/tilly-engineer-skills.git",
+                    "metadata": {"source_commit": fixture_commit},
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        original_is_ancestor = globals()["source_is_ancestor"]
+        original_argv = sys.argv
+        try:
+            globals()["source_is_ancestor"] = lambda *a, **k: (False, "fixture-stale")
+            remote_head = "1" * 40
+            gate_argv = [
+                "tes_bundle.py", "freshness",
+                "--target", str(fg_target),
+                "--remote-head", remote_head,
+                "--gate",
+            ]
+            query_argv = [
+                "tes_bundle.py", "freshness",
+                "--target", str(fg_target),
+                "--remote-head", remote_head,
+                "--query",
+            ]
+            default_argv = [
+                "tes_bundle.py", "freshness",
+                "--target", str(fg_target),
+                "--remote-head", remote_head,
+            ]
+            import io
+            import contextlib
+
+            def _run_main(argv: list[str]) -> int:
+                sys.argv = argv
+                with contextlib.redirect_stdout(io.StringIO()):
+                    return main()
+
+            gate_code = _run_main(gate_argv)
+            if gate_code == 0:
+                failures.append("F15: freshness --gate must exit non-zero on STALE_SOURCE")
+            query_code = _run_main(query_argv)
+            if query_code != 0:
+                failures.append("F15: freshness --query must stay exit 0 on STALE_SOURCE (back-compat)")
+            default_code = _run_main(default_argv)
+            if default_code != 0:
+                failures.append("F15: freshness default must stay exit 0 on STALE_SOURCE (back-compat)")
+        finally:
+            globals()["source_is_ancestor"] = original_is_ancestor
+            sys.argv = original_argv
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -3072,6 +3202,11 @@ def main() -> int:
     publish_parser = subparsers.add_parser("publish")
     publish_parser.add_argument("--out-dir", type=Path, default=PUBLIC_DIST_ROOT)
     publish_parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
+    publish_parser.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help="owner escape: publish even with a dirty source tree (default refuses)",
+    )
 
     stage_parser = subparsers.add_parser("stage")
     stage_parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -3117,6 +3252,25 @@ def main() -> int:
     freshness_parser.add_argument("--target", type=Path, default=Path.cwd())
     freshness_parser.add_argument("--index", type=Path)
     freshness_parser.add_argument("--remote-head")
+    # Exit-code mode (F15). Default is --query: exit 0 regardless of freshness
+    # status (back-compat for JSON-reading callers and the sync routine, which
+    # key on the printed JSON, not $?). --gate opts a scripted caller into a
+    # non-zero exit on a non-fresh result (BLOCKED / STALE_SOURCE), so `set -e`
+    # or `$?` checks actually fail when the source is stale or unverifiable.
+    freshness_mode = freshness_parser.add_mutually_exclusive_group()
+    freshness_mode.add_argument(
+        "--query",
+        dest="freshness_gate",
+        action="store_false",
+        help="back-compat (default): always exit 0; read status from JSON",
+    )
+    freshness_mode.add_argument(
+        "--gate",
+        dest="freshness_gate",
+        action="store_true",
+        help="exit non-zero when freshness is BLOCKED or STALE_SOURCE",
+    )
+    freshness_parser.set_defaults(freshness_gate=False)
 
     args = parser.parse_args()
     if args.self_test:
@@ -3124,7 +3278,7 @@ def main() -> int:
     elif args.command == "build":
         result = build_bundle(args.out, adapter=args.adapter)
     elif args.command == "publish":
-        result = publish_public_bundle(args.out_dir, adapter=args.adapter)
+        result = publish_public_bundle(args.out_dir, adapter=args.adapter, allow_dirty=args.allow_dirty)
     elif args.command == "stage":
         if args.url:
             result = stage_public_bundle(args.target, url=args.url, expected_sha256=args.sha256, dry_run=args.dry_run)
@@ -3166,6 +3320,14 @@ def main() -> int:
         result = restore_backup(args.target, args.backup_id, dry_run=args.dry_run, yes=args.yes)
     elif args.command == "freshness":
         result = certify_source_freshness(args.target, index=args.index, remote_head=args.remote_head)
+        # F15 gate mode: a scripted caller that passed --gate opts into a
+        # non-zero exit when the source is not fresh (BLOCKED / STALE_SOURCE),
+        # so `$?`/`set -e` actually trips. --query (the default) keeps the
+        # historical exit-0 contract so JSON-reading callers and the sync
+        # routine are not regressed.
+        if args.freshness_gate and result.get("status") in {"STALE_SOURCE", "BLOCKED"}:
+            print(json.dumps(result, indent=2))
+            return 1
     else:
         parser.print_help()
         return 2

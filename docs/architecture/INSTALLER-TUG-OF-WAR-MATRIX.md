@@ -12,7 +12,12 @@ evidence_level: L2
 Every ambiguous contract where two contrary orders collide in the TES installer:
 a precondition is unmet, the install verdict reads PASS, and a downstream gate
 requires exactly what install dropped. Mapped read-only against package source.
-Decision NOT taken here — this is the map that precedes the decision.
+
+**Decision taken (2026-06-30).** The ceiling resolution is now materialized:
+**TES installs, chooses, verifies and blocks Git gates when the project is
+eligible; absence of proof never becomes PASS.** All 20 tugs are resolved — see
+"Ceiling resolution" below. The three already-honest reference shapes (F16, F19,
+F20) are preserved unchanged; the rest are repaired with red-capable oracles.
 
 ## The single structural pattern
 
@@ -108,7 +113,44 @@ contradiction stays *invisible*, but cannot choose whether non-Git / scaffold-on
 / two-of-three-hosts / VS Code-absence / freshness-CLI is a *supported mode*
 (advisory-green) or a *deficiency* (typed non-green).
 
-## Anchor citations
+## Ceiling resolution (materialized 2026-06-30)
+
+Ceiling: **TES installs, chooses, verifies and blocks Git gates when the project
+is eligible; absence of proof never becomes PASS.** Each repair carries a
+red-capable oracle. The hook-manager selection is deterministic: an existing
+manager is respected; otherwise husky for Node/TS/npm-first, pre-commit when a
+`.pre-commit-config.yaml` exists, lefthook as the polyglot default;
+`Makefile`/CI is a fallback integrator, never the sole local proof.
+
+| # | Decision materialized | Where | Oracle |
+|---|-----------------------|-------|--------|
+| 1 | Hooks attached + no Git → headline `NEEDS_GIT` (exit 0, reversible); never a green hiding field-reports BLOCKED | `tes_install.git_readiness` + `aggregate_install_status` | `tes_install.self_test` |
+| 2 | Pre-push installed/verified when Git exists; the gate is a contract field (canary + doctor), not a cosmetic flag | `field_reports.install_hook` / `canary_admission.prepush_evidence` | `canary_admission`, `hook_manager_awareness` |
+| 3 | **Strict pre-commit installed & verified** (manager chosen by project type), overturning the advisory-only contract | `field_reports.select_hook_manager` + `install_pre_commit_hook` | `hook_manager_awareness.validate_selection_and_precommit` |
+| 4 | Artifact hygiene no longer self-blinds wholesale (scoped) | `installed_certification_oracle` hygiene scan | `installed_certification.self_test` |
+| 5 | MCP registration ladder: config written → host recognizes → handshake proves; `host_connected` measured, not hardcoded | `installed_certification.mcp_registration` (real handshake) | `installed_certification.self_test` (server-no-handshake fixture) |
+| 6 | Provenance `unknown` is fail-closed, never folded with `clean` | `installed_certification` hygiene seal | `installed_certification.self_test` (unknown-provenance fixture) |
+| 7 | Dirty source refuses publish (`--allow-dirty` escape) | `tes_bundle.publish_public_bundle` | `tes_bundle.self_test` |
+| 8 | Seal verdict reaches the certification headline (`release_claim_status`) | `installed_certification.evaluate` | `installed_certification.self_test` |
+| 9 | `NEEDS_EVIDENCE` / `PENDING_*` / `HOST_UNOBSERVABLE` gate the aggregate (fold MIN over all signals) | `installed_certification.status_from_findings` | `installed_certification.self_test` |
+| 10 | Scaffold required-surface emits per-surface signal, not umbrella advisory | `project_alignment_oracle.analyze` | `project_alignment_oracle.self_test` |
+| 11 | `all` surfaces VS Code as `NOT_INSTALLED_BY_POLICY` (no auto-install) | `tes_install.mcp_policy_verdicts` | `install_mcp` / `tes_install` self-test |
+| 12 | Per-host ledger: each host passes only on its own evidence (preserved) | `pretooluse_ceiling_evidence` per_host | `canary_admission.self_test` |
+| 13 | `PASS_SCAFFOLD` typed distinct from `PASS_ALIGNED` | `project_alignment_oracle.analyze` | `project_alignment_oracle.self_test` |
+| 14 | Context-demanded mesh absent → `NEEDS_REVIEW` (opt-in only without demand) | `attach_health_oracle` docs-mesh branch | `attach_health_oracle.self_test` |
+| 15 | Freshness `--gate` exits non-zero on `BLOCKED`/`STALE_SOURCE`; `--query` stays 0 | `tes_bundle` freshness CLI | `tes_bundle.self_test` |
+| 16 | `CONFIGURED_NOT_OBSERVED` until native proof (preserved reference shape) | `tes_install` hook health | preserved |
+| 17 | Closeout surfaces `PENDING_TRUST`/`PENDING_HOST_RESTART`; Cursor writes `preToolUse` | `tes_install.attach` + `install_cursor_pretooluse_hook` | `tes_install.self_test` |
+| 18 | Ledger rows tagged `host-real` vs fixture; only host-real authorizes `PASS_CEILING` | `pretooluse_ceiling_evidence` provenance | `tes_install.self_test` |
+| 19 | Helper-drift fails loud RED with closure path (preserved reference shape) | `public_bundle_oracle` | preserved |
+| 20 | Stale-advisory `derived_at` + per-run re-derivation (preserved reference shape) | `tes_install` advisory stamp | preserved |
+
+Fresh-install readiness: a clean install whose only open findings are
+host-pending (MCP/host not yet restarted, hooks not yet fired) or a
+release-identity advisory reports the typed tier **`READY_PENDING_HOST`**
+(exit 0, reversible) — neither a false PASS nor a defect.
+
+## Anchor citations (original read-only map)
 
 - `scripts/tes_init.py:2474-2528` — status computed from gates only; field-report BLOCKED rides in details/payload.
 - `scripts/tes_install.py:1282-1303` — `aggregate_install_status` reads only apply + certification.

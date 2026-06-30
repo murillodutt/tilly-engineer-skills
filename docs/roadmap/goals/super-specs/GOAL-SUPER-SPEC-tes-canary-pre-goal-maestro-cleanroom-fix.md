@@ -132,15 +132,32 @@ of these are true:
 
 ### Field Reports `pre-push` vs Project `pre-commit`
 
+> **OVERTURNED (2026-06-30, tug-of-war ceiling F3).** The original constraint
+> below — "TES does not auto-install a project pre-commit gate" — has been
+> consciously overturned. The ceiling decision is that when a project is
+> Git-eligible, TES **installs and verifies** both the Field Reports `pre-push`
+> gate **and** a strict `pre-commit` gate, selecting the hook manager
+> deterministically (husky for Node/TS, `pre-commit` when a config exists,
+> lefthook as the polyglot default, deferring to any existing manager). Absence
+> of an installable Git gate on an eligible target is no longer acceptable as
+> advisory. See `docs/architecture/INSTALLER-TUG-OF-WAR-MATRIX.md` (F1/F2/F3) and
+> `scripts/field_reports.py:install_hook` / `install_pre_commit_hook`. The
+> historical text is retained for provenance only.
+
 TES default install is responsible for Field Reports `pre-push` only when the
-target is a Git repository. TES does not auto-install a project pre-commit gate
-during `/tes-setup`.
+target is a Git repository. ~~TES does not auto-install a project pre-commit gate
+during `/tes-setup`.~~ *(superseded — TES now installs a strict pre-commit gate
+on an eligible Git target.)*
 
 For these canaries, this Super SPEC authorizes local canary Git initialization
 and a local persistent pre-commit gate **only as canary admission infrastructure
-for Goal Maestro**, not as a new TES default installer behavior.
+for Goal Maestro**, not as a new TES default installer behavior. *(The ceiling
+overturn above promotes pre-commit installation to delivered default behavior on
+eligible targets.)*
 
-The executor must not patch TES to auto-install pre-commit in adopter projects.
+~~The executor must not patch TES to auto-install pre-commit in adopter
+projects.~~ *(Overturned: TES now installs and verifies the strict pre-commit
+gate on Git-eligible adopter projects.)*
 
 ### Native Hook Proof vs Synthetic Or Config Proof
 

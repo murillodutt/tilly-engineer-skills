@@ -171,7 +171,9 @@ def analyze(target: Path, open_requested: bool, dry_run: bool) -> dict[str, Any]
     }
     if context.get("status") != "PASS":
         failures.extend(f"project-context: {item}" for item in context.get("failures", []))
-    if alignment.get("status") != "PASS":
+    # The alignment oracle returns a PASS family (PASS_ALIGNED / PASS_SCAFFOLD);
+    # both are clean greens. Legacy "PASS" stays accepted for an older oracle.
+    if alignment.get("status") not in {"PASS", "PASS_ALIGNED", "PASS_SCAFFOLD"}:
         failures.extend(f"project-alignment: {item}" for item in alignment.get("failures", []))
 
     before_hashes = obsidian_hashes(target)

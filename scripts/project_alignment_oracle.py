@@ -793,6 +793,20 @@ def analyze(target: Path) -> dict[str, Any]:
         if len(path_refs(text)) == 0 and label not in {"glossary"}:
             failures.append(f"{relpath.as_posix()} must cite at least one project path")
 
+    # F10: per-surface required-surface signal. The scaffold decision must not
+    # collapse the required mesh into a single umbrella flag — a consumer has to
+    # be able to read which required surfaces are present vs absent. Absence is
+    # already a hard failure above; this map exposes the per-surface presence so
+    # a scaffold-tier pass cannot hide a missing required surface behind one
+    # "scaffold-only" advisory.
+    required_surfaces = {
+        label: {"path": relpath.as_posix(), "present": docs[label]["exists"]}
+        for label, relpath in ALIGNMENT_FILES.items()
+    }
+    required_surfaces_absent = sorted(
+        info["path"] for info in required_surfaces.values() if not info["present"]
+    )
+
     roadmap = read_text(target / ALIGNMENT_FILES["project_roadmap"])
     failures.extend(require_terms("PROJECT-ROADMAP.md", roadmap, tuple(f"## {term}" for term in ROADMAP_TERMS)))
     failures.extend(require_terms("PROJECT-ROADMAP.md roadmap frame", roadmap, tuple(f"## {term}" for term in ROADMAP_FRAME_TERMS)))
@@ -914,18 +928,30 @@ def analyze(target: Path) -> dict[str, Any]:
     ]
     failures.extend(inventory_failures)
 
+    # CEILING: absence of proof never becomes the same green as proof, and
+    # scaffold is its own tier. A clean structural + semantic pass on a mesh
+    # that has NOT yet been refined via /tes-align (the initial deterministic
+    # scaffold) reads `PASS_SCAFFOLD`, distinct from the aligned `PASS_ALIGNED`.
+    # FAIL and NEEDS_REVIEW still take precedence — scaffold tier only applies
+    # to a mesh that would otherwise read fully green. Both PASS tiers exit 0
+    # (scaffold is not a failure; the protected baseline keeps a genuinely
+    # scaffold-only project installing green).
     if failures:
         status = "FAIL"
     elif semantic_needs_review or freshness.get("needs_review") or inventory_needs_review:
         status = "NEEDS_REVIEW"
+    elif freshness.get("mesh_scaffold_only") is True:
+        status = "PASS_SCAFFOLD"
     else:
-        status = "PASS"
+        status = "PASS_ALIGNED"
 
     return {
         "version": VERSION,
         "status": status,
         "target": str(target),
         "docs": docs,
+        "required_surfaces": required_surfaces,
+        "required_surfaces_absent": required_surfaces_absent,
         "evidence_packets": [rel(path, target) for path in retained],
         "failures": failures,
         "warnings": warnings,
@@ -1186,8 +1212,12 @@ def self_test() -> dict[str, Any]:
         target = Path(tempdir)
         write_good_fixture(target)
         result = analyze(target)
-        if result["status"] != "PASS":
-            failures.extend([f"good fixture must pass: {item}" for item in result["failures"]])
+        # The good fixture ships a refined evidence packet (limits: sparse
+        # fixture, not the scaffold literal), so it must read PASS_ALIGNED.
+        if result["status"] != "PASS_ALIGNED":
+            failures.extend([f"good fixture must pass aligned: {item}" for item in result["failures"]])
+        if result["status"] != "PASS_ALIGNED":
+            failures.append(f"good fixture must read PASS_ALIGNED, got {result['status']}")
 
     with tempfile.TemporaryDirectory(prefix="tes-align-literal-placeholders-") as tempdir:
         target = Path(tempdir)
@@ -1206,7 +1236,7 @@ def self_test() -> dict[str, Any]:
             encoding="utf-8",
         )
         result = analyze(target)
-        if result["status"] != "PASS":
+        if result["status"] != "PASS_ALIGNED":
             failures.extend(
                 [f"literal placeholder fixture must pass: {item}" for item in result["failures"]]
             )
@@ -1222,7 +1252,7 @@ def self_test() -> dict[str, Any]:
             encoding="utf-8",
         )
         result = analyze(target)
-        if result["status"] != "PASS":
+        if result["status"] != "PASS_ALIGNED":
             failures.extend([f"pt-br prose fixture must pass: {item}" for item in result["failures"]])
 
     with tempfile.TemporaryDirectory(prefix="tes-align-glossary-implementation-") as tempdir:
@@ -1322,7 +1352,7 @@ def self_test() -> dict[str, Any]:
             encoding="utf-8",
         )
         result = analyze(target)
-        if result["status"] != "PASS":
+        if result["status"] != "PASS_ALIGNED":
             failures.extend(
                 [
                     f"residue allowlist fixture must pass: {item}"
@@ -1346,7 +1376,7 @@ def self_test() -> dict[str, Any]:
             encoding="utf-8",
         )
         result = analyze(target)
-        if result["status"] != "PASS":
+        if result["status"] != "PASS_ALIGNED":
             failures.append(
                 "residue boundary fixture must pass; short literal must not match a longer unrelated word"
             )
@@ -1467,6 +1497,81 @@ def self_test() -> dict[str, Any]:
         refined = freshness_reconciliation(target)
         if refined.get("mesh_scaffold_only") is not False:
             failures.append("scaffold-only flag must clear once a refinement packet is newest")
+
+    # F13 CEILING: scaffold is its own tier. A clean structural + semantic pass
+    # on a mesh that is still the initial deterministic scaffold must read
+    # PASS_SCAFFOLD, NOT the same green as an aligned mesh (PASS_ALIGNED). This
+    # is RED-capable: before the tier split both states collapsed to "PASS",
+    # so a scaffold mesh read identically to a /tes-align-refined mesh.
+    with tempfile.TemporaryDirectory(prefix="tes-align-tier-scaffold-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        evidence_dir = target / EVIDENCE
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        # Replace the refined evidence packet with the initial scaffold packet so
+        # the newest packet carries the scaffold literal. Everything else in the
+        # good fixture stays valid, so the only change is the tier.
+        scaffold_packet = evidence_dir / "20260601T000000Z-project-alignment.md"
+        scaffold_packet.write_text(
+            "# Project Alignment Evidence\n\n"
+            + "```yaml\nalignment_evidence:\n"
+            + "  target: fixture\n"
+            + "  anchors_read:\n"
+            + "    - README.md\n"
+            + "    - package.json\n"
+            + "    - src/app.ts\n"
+            + "  quality_gates_discovered:\n"
+            + "    - npm test\n"
+            + "  limits: initial deterministic mesh; run /tes-align for refinement\n```\n",
+            encoding="utf-8",
+        )
+        os.utime(scaffold_packet, (2_100_000_000, 2_100_000_000))
+        result = analyze(target)
+        if result["status"] != "PASS_SCAFFOLD":
+            failures.append(
+                "scaffold-only mesh must read PASS_SCAFFOLD, not "
+                f"{result['status']} (scaffold is its own tier, not aligned green)"
+            )
+        if result["status"] == "PASS_ALIGNED":
+            failures.append(
+                "scaffold-only mesh must NOT read PASS_ALIGNED — absence of "
+                "/tes-align refinement cannot read as proof of alignment"
+            )
+        # F10: the per-surface required-surface signal must be present and report
+        # every required surface, so a scaffold-tier pass cannot hide a missing
+        # required surface behind one umbrella advisory.
+        required = result.get("required_surfaces") or {}
+        if set(required) != set(ALIGNMENT_FILES):
+            failures.append(
+                "scaffold result must expose a per-surface required_surfaces signal "
+                "covering every required alignment surface"
+            )
+        if not all(info.get("present") for info in required.values()):
+            failures.append(
+                "scaffold fixture has all required surfaces present; required_surfaces "
+                "must report present=True for each"
+            )
+        if result.get("required_surfaces_absent"):
+            failures.append(
+                "scaffold fixture with all surfaces present must report no absent surfaces"
+            )
+
+    # F10 RED-capable: a missing required surface must be named in the per-surface
+    # absent signal (not hidden behind the scaffold advisory) and must FAIL.
+    with tempfile.TemporaryDirectory(prefix="tes-align-tier-absent-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        missing = target / ALIGNMENT_FILES["execution_line"]
+        missing.unlink()
+        result = analyze(target)
+        if result["status"] != "FAIL":
+            failures.append("missing required surface must FAIL, never a scaffold-tier pass")
+        absent = result.get("required_surfaces_absent") or []
+        if ALIGNMENT_FILES["execution_line"].as_posix() not in absent:
+            failures.append(
+                "per-surface absent signal must name the missing required surface "
+                f"{ALIGNMENT_FILES['execution_line'].as_posix()}"
+            )
 
     return {
         "version": VERSION,

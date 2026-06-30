@@ -36,7 +36,27 @@ LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 BIN_HELPER = Path(".tes/bin/field_reports.py")
 SCOPE_HELPER = Path(".tes/bin/scope_contract.py")
 HOOK_MARKER = "TES_FIELD_REPORTS_PRE_PUSH"
+# Strict pre-commit gate marker. The canary_admission_oracle.precommit_evidence
+# contract recognizes a strict TES gate by `commit:check`/`--strict`/oracle
+# invocation; this marker lets install + audit identify a TES-owned pre-commit
+# wrapper idempotently, the same way HOOK_MARKER does for pre-push.
+PRECOMMIT_MARKER = "TES_STRICT_PRE_COMMIT"
 BACKUP_HOOK_RE = re.compile(r"^BACKUP_HOOK=(?P<value>.+)$", re.MULTILINE)
+BACKUP_PRECOMMIT_RE = re.compile(r"^BACKUP_PRECOMMIT=(?P<value>.+)$", re.MULTILINE)
+
+# Deterministic hook-manager selection (ceiling decision, never random).
+# Priority: an existing manager config is respected first (defer); otherwise
+# husky for Node/TS/npm-first trees, pre-commit when .pre-commit-config.yaml is
+# present (Python/data/tooling), lefthook as the polyglot/monorepo default, and
+# Makefile/CI only as a fallback integrator — never the sole local proof when
+# Git hooks are possible. Mechanics verified against upstream docs:
+#   - lefthook writes wrappers into .git/hooks (lefthook.dev)
+#   - husky sets core.hooksPath=.husky/_ (typicode.github.io/husky)
+#   - pre-commit installs via --hook-type into .git/hooks (pre-commit.com)
+HOOK_MANAGER_LEFTHOOK = "lefthook"
+HOOK_MANAGER_HUSKY = "husky"
+HOOK_MANAGER_PRECOMMIT = "pre-commit"
+HOOK_MANAGER_NATIVE = "git-native"
 MAX_ISSUE_BODY_CHARS = 48000
 SIGNAL_STATUSES = {"FAIL", "BLOCKED", "DEGRADED", "NEEDS_REVIEW", "STALE_SOURCE"}
 SUCCESS_INSTALL_EVENTS = {
@@ -1122,6 +1142,154 @@ def existing_backup_path(current_hook: str, target: Path) -> Path | None:
     return path if path.is_absolute() else target / path
 
 
+def select_hook_manager(target: Path) -> dict[str, Any]:
+    """Deterministically pick the Git hook manager for this target (ceiling rule).
+
+    Selection is never random. An existing manager config is respected first so
+    TES defers instead of colliding; otherwise the project type decides:
+      1. an existing manager config (husky / lefthook / pre-commit / native
+         core.hooksPath) -> defer to that owner;
+      2. husky        -> Node/TS/npm-first (package.json present, no stronger
+                         signal of another manager);
+      3. pre-commit   -> a .pre-commit-config.yaml is present (Python/data/tooling);
+      4. lefthook     -> the polyglot/monorepo default when nothing else matches.
+
+    Makefile/CI is never selected here: it is a fallback integrator, never the
+    sole local proof while Git hooks are installable. The returned manager is the
+    owner whose hook paths TES writes its strict pre-commit + pre-push gates into.
+    """
+    configured = git_config_get(target, "core.hooksPath")
+    has_husky = (target / ".husky").is_dir() or (configured or "").startswith(".husky")
+    has_lefthook = any(
+        (target / name).is_file()
+        for name in ("lefthook.yml", "lefthook.yaml", "lefthook.toml", "lefthook.json", ".lefthook.yml", ".lefthook.yaml")
+    )
+    has_precommit = (target / ".pre-commit-config.yaml").is_file() or (target / ".pre-commit-config.yml").is_file()
+
+    # 1. Respect an existing manager — defer, do not introduce a second owner.
+    if has_husky:
+        return {"manager": HOOK_MANAGER_HUSKY, "reason": "existing husky config", "deferred": True}
+    if has_lefthook:
+        return {"manager": HOOK_MANAGER_LEFTHOOK, "reason": "existing lefthook config", "deferred": True}
+    if has_precommit:
+        return {"manager": HOOK_MANAGER_PRECOMMIT, "reason": "existing .pre-commit-config.yaml", "deferred": True}
+
+    # 2-4. No existing manager: choose by project type, write into native paths.
+    is_node = (target / "package.json").is_file()
+    if is_node:
+        return {"manager": HOOK_MANAGER_HUSKY, "reason": "Node/TS/npm-first project (package.json)", "deferred": False}
+    # pre-commit only auto-selected when its config exists (handled above); a bare
+    # Python tree without config falls through to the polyglot default so TES still
+    # writes a strict gate rather than depending on an absent framework.
+    return {"manager": HOOK_MANAGER_LEFTHOOK, "reason": "polyglot/monorepo default", "deferred": False}
+
+
+def resolve_pre_commit_hook(target: Path, git_dir: Path) -> dict[str, Any]:
+    """Resolve the pre-commit hook path, mirroring resolve_pre_push_hook.
+
+    Honors core.hooksPath and the husky .husky/_ wrapper convention so the strict
+    pre-commit gate lands on the same owner surface as the pre-push gate.
+    """
+    configured = git_config_get(target, "core.hooksPath")
+    if configured == "/dev/null":
+        return {"status": "BLOCKED", "reason": "Git hooks are disabled by core.hooksPath=/dev/null"}
+    hooks_dir = git_dir / "hooks"
+    mode = "git-default"
+    if configured:
+        configured_path = Path(configured).expanduser()
+        hooks_dir = configured_path if configured_path.is_absolute() else target / configured_path
+        mode = "core.hooksPath"
+    if hooks_dir.name == "_" and hooks_dir.parent.name == ".husky":
+        return {"status": "PASS", "hook": hooks_dir.parent / "pre-commit", "mode": "husky", "hooksPath": configured}
+    return {"status": "PASS", "hook": hooks_dir / "pre-commit", "mode": mode, "hooksPath": configured}
+
+
+def backup_precommit_shell(backup_rel: str) -> str:
+    """Chain a backed-up foreign pre-commit before the TES strict gate, like pre-push."""
+    return f"""
+BACKUP_PRECOMMIT={shlex.quote(backup_rel)}
+if [ -f "$BACKUP_PRECOMMIT" ]; then
+  if [ -x "$BACKUP_PRECOMMIT" ]; then
+    "$BACKUP_PRECOMMIT" "$@"
+  else
+    sh "$BACKUP_PRECOMMIT" "$@"
+  fi
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    exit "$rc"
+  fi
+fi
+"""
+
+
+def existing_precommit_backup_path(current_hook: str, target: Path) -> Path | None:
+    match = BACKUP_PRECOMMIT_RE.search(current_hook)
+    if not match:
+        return None
+    raw = match.group("value").strip()
+    try:
+        value = shlex.split(raw)[0]
+    except (IndexError, ValueError):
+        value = raw.strip("\"'")
+    path = Path(value)
+    return path if path.is_absolute() else target / path
+
+
+def install_pre_commit_hook(target: Path, git_dir: Path) -> dict[str, Any]:
+    """Install a strict TES pre-commit gate, deferring/chaining a foreign hook.
+
+    Mirrors the pre-push installer: idempotent, single foreign backup chained
+    before the TES gate, never an orphan, BLOCKED when hooks are disabled. The
+    written gate invokes the TES commit:check gate so canary_admission_oracle
+    .precommit_evidence recognizes it as strict. This is the delivered behavior
+    that overturns the prior 'TES never auto-installs strict pre-commit' rule:
+    when Git is eligible, TES installs and verifies the strict gate.
+    """
+    hook_info = resolve_pre_commit_hook(target, git_dir)
+    if hook_info["status"] != "PASS":
+        return {"status": "BLOCKED", "reason": hook_info["reason"]}
+    hook = hook_info["hook"]
+    hook.parent.mkdir(parents=True, exist_ok=True)
+    backup_rel: str | None = None
+    backup_shell = ""
+    if hook.exists():
+        current = hook.read_text(encoding="utf-8", errors="replace")
+        if PRECOMMIT_MARKER in current:
+            backup_path = existing_precommit_backup_path(current, target)
+            if backup_path and backup_path.exists():
+                backup_rel = rel(backup_path, target)
+                backup_shell = backup_precommit_shell(backup_rel)
+        else:
+            backup = hook.with_name(f"pre-commit.before-tes-{file_stamp()}")
+            shutil.copy2(hook, backup)
+            backup.chmod(0o755)
+            backup_rel = rel(backup, target)
+            backup_shell = backup_precommit_shell(backup_rel)
+
+    hook_text = f"""#!/bin/sh
+# {PRECOMMIT_MARKER}
+set -eu
+{backup_shell}
+# Strict TES pre-commit gate: run the focused commit:check when available.
+if [ -f "package.json" ] && command -v npm >/dev/null 2>&1 && npm run | grep -q "commit:check"; then
+  npm run --silent commit:check
+elif [ -f ".tes/bin/discipline_oracle.py" ]; then
+  python3 ".tes/bin/discipline_oracle.py" --staged-only
+elif [ -f "scripts/discipline_oracle.py" ]; then
+  python3 "scripts/discipline_oracle.py" --staged-only
+fi
+exit 0
+"""
+    hook.write_text(hook_text, encoding="utf-8")
+    hook.chmod(0o755)
+    return {
+        "status": "PASS",
+        "hook": rel(hook, target),
+        "hook_mode": hook_info["mode"],
+        "backup": backup_rel,
+    }
+
+
 def install_hook(target: Path) -> dict[str, object]:
     target = target.expanduser().resolve()
     git_dir = target / ".git"
@@ -1179,6 +1347,13 @@ exit 0
     hook.write_text(hook_text, encoding="utf-8")
     hook.chmod(0o755)
 
+    # Strict pre-commit gate: when Git is eligible TES installs AND verifies it,
+    # selecting the manager deterministically (ceiling: never advisory-only when
+    # Git hooks are installable). The selection is recorded so canary admission
+    # and doctor read it as a contract field, not a cosmetic flag.
+    manager = select_hook_manager(target)
+    pre_commit = install_pre_commit_hook(target, git_dir)
+
     writes = [helper, rel(hook, target), rel(outbox_path(target), target), rel(install_id_path(target), target)]
     if scope_helper:
         writes.insert(1, scope_helper)
@@ -1186,6 +1361,10 @@ exit 0
         writes.append(exclude)
     if backup_rel:
         writes.append(backup_rel)
+    if pre_commit.get("status") == "PASS" and pre_commit.get("hook"):
+        writes.append(str(pre_commit["hook"]))
+    if pre_commit.get("backup"):
+        writes.append(str(pre_commit["backup"]))
     return {
         "version": VERSION,
         "status": "PASS",
@@ -1194,6 +1373,11 @@ exit 0
         "hook_mode": hook_info["mode"],
         "hooksPath": hook_info.get("hooksPath"),
         "backup": backup_rel,
+        "hook_manager": manager.get("manager"),
+        "hook_manager_reason": manager.get("reason"),
+        "hook_manager_deferred": manager.get("deferred"),
+        "pre_commit": pre_commit,
+        "pre_commit_installed": pre_commit.get("status") == "PASS",
         "writes": writes,
     }
 
