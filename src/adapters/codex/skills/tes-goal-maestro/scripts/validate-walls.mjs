@@ -83,6 +83,45 @@ function gm10RevertArgs() {
   return ['--installed-skill-root', skillRoot];
 }
 
+function gm12ViolateArgs() {
+  return [fixture('gm12-linear-pipeline-bad.json', JSON.stringify({
+    schema_version: 1,
+    declared_specs: ['SPEC-001', 'SPEC-002', 'SPEC-003'],
+    events: [
+      { type: 'open_spec', spec_id: 'SPEC-001', at: '2026-06-29T00:00:00Z' },
+      { type: 'implement', spec_id: 'SPEC-001', at: '2026-06-29T00:00:01Z' },
+      { type: 'evidence', spec_id: 'SPEC-002', evidence_ref: 'EV-PREOPEN', at: '2026-06-29T00:00:02Z' },
+      { type: 'implement', spec_id: 'SPEC-002', at: '2026-06-29T00:00:03Z' },
+      { type: 'open_spec', spec_id: 'SPEC-002', at: '2026-06-29T00:00:04Z' },
+    ],
+  }))];
+}
+
+function gm12RevertArgs() {
+  return [fixture('gm12-linear-pipeline-ok.json', JSON.stringify(gm12ValidFixture()))];
+}
+
+function gm12ValidFixture() {
+  const declared_specs = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
+  const events = [];
+  let second = 0;
+  for (const spec_id of declared_specs) {
+    events.push(
+      { type: 'open_spec', spec_id, at: gm12Time(second++) },
+      { type: 'implement', spec_id, at: gm12Time(second++) },
+      { type: 'evidence', spec_id, evidence_ref: `EV-${spec_id}`, at: gm12Time(second++) },
+      { type: 'oracle_result', spec_id, status: 'pass', at: gm12Time(second++) },
+      { type: 'local_commit_status', spec_id, status: 'LOCAL_COMMITTED', at: gm12Time(second++) },
+      { type: 'parent_validation', spec_id, status: 'pass', at: gm12Time(second++) },
+    );
+  }
+  return { schema_version: 1, declared_specs, events };
+}
+
+function gm12Time(second) {
+  return `2026-06-29T00:00:${String(second).padStart(2, '0')}Z`;
+}
+
 function badInstalledThermometerSkillRoot(name) {
   const root = join(tmp, name);
   mkdirSync(join(root, 'references'), { recursive: true });
@@ -408,6 +447,13 @@ const WALLS = [
     harness: 'adversarial-audit-heartbeat-contract.mjs',
     violate: () => [join(here, 'fixtures/adversarial-audit-heartbeat/invalid-no-opt-in/fixture.json')],
     revert: () => [join(here, 'fixtures/adversarial-audit-heartbeat/valid/source/fixture.json')],
+  },
+  // GM12 — SPEC-001 linear pipeline blocks future SPEC work and pre-open evidence.
+  {
+    id: 'GM12 goal-maestro-p0-linear-pipeline',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12ViolateArgs,
+    revert: gm12RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
