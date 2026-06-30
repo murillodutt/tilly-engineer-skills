@@ -156,10 +156,21 @@
 - Evidence + source committed in package (`verify_documentation_inventory.py` + admission packet refresh)
 - Stop state: NEEDS_OWNER_RESIGNOFF → propose READY after owner confirms matrix
 
+## 2026-06-30T14:25:00Z - Owner reproduction closeout
+
+- Phase: admission closeout
+- Command(s): REPAIR-ROUND-2 MATRIX bundle (oracles + strict pre-commit + `.DS_Store` count)
+- Exit code(s): all **0**; align **PASS**; git **clean** on cursor/claude/codex
+- HEAD proof: `44c80e7` / `3fe7bc2` / `6f9f118`
+- Package seal: `69d10a97` on main (inventory ancestor fix + evidence refresh)
+- Decision: **READY_FOR_GOAL_MAESTRO_CANARY** — owner reproduction confirmed
+- Stop state: none (canary admission)
+- Next action: Goal Maestro on `/Users/murillo/Dev/tes-canary/cursor`
+
 ## Final Audit Handoff
 
-- Final status: READY_FOR_GOAL_MAESTRO_CANARY (pending owner re-sign-off)
-- Remaining stop state: NEEDS_OWNER_RESIGNOFF; package `tes_init --self-test` FAIL (maintainer, not canary matrix)
+- Final status: **READY_FOR_GOAL_MAESTRO_CANARY**
+- Remaining stop state: none for canary admission; package `tes_init --self-test` still FAIL (maintainer seal only)
 - Source files changed: scripts/tes_install.py, scripts/project_context_oracle.py, scripts/tes_init.py, scripts/installed_certification_oracle.py, scripts/project_alignment_oracle.py
 - Canary files changed: rematerialized via helpers/attach/init; mesh Git HEAD sync; claude DOCUMENTATION-AUTHORITY/contracts parity copy; Git hooks; Codex absolute hook paths
 - Evidence files created: PREFLIGHT.md, FIX-PLAN.md, JOURNAL.md, SOURCE-CHANGES.md, CANARY-REPAIR.md, ORACLE-RESULTS.md, HOOK-EVIDENCE.md, GIT-GATES.md, FINAL-ADMISSION-MATRIX.md, FINAL-ADMISSION.md

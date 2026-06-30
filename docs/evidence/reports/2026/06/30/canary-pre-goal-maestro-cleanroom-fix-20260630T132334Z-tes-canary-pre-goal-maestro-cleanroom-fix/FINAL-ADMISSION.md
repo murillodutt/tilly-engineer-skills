@@ -1,8 +1,8 @@
 # FINAL-ADMISSION
 
-Status: **READY_FOR_GOAL_MAESTRO_CANARY** (pending owner re-sign-off after repair round 2)
+Status: **READY_FOR_GOAL_MAESTRO_CANARY**
 
-Prior owner verdict: **BLOCKED** — material contradictions in evidence vs canaries (2026-06-30). Repair round 2 closed those gaps; re-read `GIT-GATES.md` and `JOURNAL.md` § repair round 2 before Goal Maestro.
+Owner re-sign-off: **confirmed** (2026-06-30) — reproduction bundle green on HEADs below; prior BLOCKED contradictions closed in repair round 2 + package commit `69d10a97`.
 
 Execution host: Cursor
 
@@ -21,7 +21,7 @@ Primary target: `/Users/murillo/Dev/tes-canary/cursor`
 1. Committed cursor drift (GPS + tes_init evidence sidecars); removed `.codex/config.toml.bak-*` untracked backups on cursor/claude.
 2. Synced Identity Git HEAD mesh rows; committed mesh refresh + inventory helper on all canaries.
 3. Pre-commit hooks now call `project_alignment_oracle.py --strict` (exit 2 on `NEEDS_REVIEW`).
-4. Package fix: `verify_documentation_inventory.py` accepts Identity Git HEAD at `HEAD` or `HEAD~1` after mesh-only commits.
+4. Package fix: `verify_documentation_inventory.py` accepts Identity Git HEAD at `HEAD`, `HEAD~1`, or any Git ancestor of `HEAD` (commit `69d10a97`).
 5. Refreshed `GIT-GATES.md`, `JOURNAL.md`, matrix tail in `FINAL-ADMISSION-MATRIX.md`.
 
 ## Remaining downgrades (not canary blockers)
@@ -36,8 +36,10 @@ Primary target: `/Users/murillo/Dev/tes-canary/cursor`
 - Do not claim TES default installer creates Git or project pre-commit.
 - Do not treat pre-commit exit 0 without `--strict` as alignment proof.
 
-## Next command (after owner re-sign-off)
+## Next command
 
 ```text
 /tes-goal-maestro --execute-loop --target /Users/murillo/Dev/tes-canary/cursor
 ```
+
+Confirm cursor canary HEAD `44c80e7` and clean `git status` before launch.
