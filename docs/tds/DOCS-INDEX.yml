@@ -981,6 +981,13 @@ documents:
     consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, installed-canary operators, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-p0-harness-orchestration-feedback-fidelity-part-3.md
+    id: roadmap.goal_execution_loop_ledger_goal_maestro_p0_harness_orchestration_feedback_fidelity_part_3
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, installed-canary operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/SPEC-CONVERGENCE-CERTIFICATION-mantra-senior-manager-birth.md
     id: roadmap.spec_convergence_mantra_senior_manager_birth
     class: roadmap

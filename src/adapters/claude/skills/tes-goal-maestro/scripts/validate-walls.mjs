@@ -1,4 +1,4 @@
-// SPEC-016 — Mutation suite for executable wall fixtures.
+// SPEC-017 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -75,6 +75,8 @@ const GM12_SPEC15_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification'
 const GM12_SPEC15_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
 const GM12_SPEC16_CONTRACT = 'goal-maestro-p0-git-admission-gate';
 const GM12_SPEC16_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
+const GM12_SPEC17_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
+const GM12_SPEC17_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -526,6 +528,26 @@ function gm12Spec16AuthorizedGitInitArgs() {
 
 function gm12Spec16RevertArgs() {
   return [fixture('gm12-spec16-git-admission-ok.json', JSON.stringify(gm12Spec16Fixture('valid')))];
+}
+
+function gm12Spec17MissingClassArgs() {
+  return [fixture('gm12-spec17-evidence-tracking-missing-class.json', JSON.stringify(gm12Spec17Fixture('missing_screenshot_classification')))];
+}
+
+function gm12Spec17UntrackedUnclassifiedArgs() {
+  return [fixture('gm12-spec17-evidence-tracking-untracked-unclassified.json', JSON.stringify(gm12Spec17Fixture('untracked_unclassified')))];
+}
+
+function gm12Spec17CleanClaimUnclassifiedArgs() {
+  return [fixture('gm12-spec17-evidence-tracking-clean-claim-unclassified.json', JSON.stringify(gm12Spec17Fixture('clean_claim_unclassified')))];
+}
+
+function gm12Spec17RuntimeOnlyArgs() {
+  return [fixture('gm12-spec17-evidence-tracking-runtime-only.json', JSON.stringify(gm12Spec17Fixture('runtime_only_classified')))];
+}
+
+function gm12Spec17RevertArgs() {
+  return [fixture('gm12-spec17-evidence-tracking-ok.json', JSON.stringify(gm12Spec17Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1596,6 +1618,86 @@ function gm12Spec16Closeout(closeout, mode, gitAdmission) {
   };
 }
 
+function gm12Spec17Fixture(mode) {
+  const base = gm12Spec16Fixture('valid');
+  const evidenceTracking = gm12Spec17EvidenceTracking(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC17_CONTRACT,
+    evidence_tracking_classification_required: true,
+    evidence_tracking: evidenceTracking,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      evidence_tracking: evidenceTracking,
+    },
+    closeout: gm12Spec17Closeout(base.closeout, mode, evidenceTracking),
+  };
+}
+
+function gm12Spec17EvidenceTracking(mode) {
+  const screenshotClassification = mode === 'missing_screenshot_classification'
+    || mode === 'untracked_unclassified'
+    || mode === 'clean_claim_unclassified'
+    ? ''
+    : 'runtime_only';
+  const artifacts = [
+    {
+      artifact_class: 'ledger',
+      path: 'docs/roadmap/goals/ledgers/goal-ledger.md',
+      classification: 'tracked',
+    },
+    {
+      artifact_class: 'screenshots',
+      path: 'artifacts/browser-initial.png',
+      classification: screenshotClassification,
+    },
+    {
+      artifact_class: 'metrics',
+      path: 'artifacts/browser-metrics.json',
+      classification: 'tracked',
+    },
+    {
+      artifact_class: 'reports',
+      path: 'artifacts/closeout.md',
+      classification: 'tracked',
+    },
+    {
+      artifact_class: 'packages',
+      path: 'artifacts/package.zip',
+      classification: 'tracked',
+    },
+  ];
+  const untrackedScreenshot = {
+    artifact_class: 'screenshots',
+    path: 'artifacts/browser-initial.png',
+  };
+  if (mode === 'runtime_only_classified') {
+    untrackedScreenshot.classification = 'runtime_only';
+  }
+  return {
+    git_status: {
+      tracked_files_clean: true,
+      untracked_required_evidence: [untrackedScreenshot],
+    },
+    artifacts,
+  };
+}
+
+function gm12Spec17Closeout(closeout, mode, evidenceTracking) {
+  return {
+    ...closeout,
+    evidence_tracking: {
+      status: mode === 'clean_claim_unclassified' ? 'clean' : 'classified',
+      stop_state: mode === 'clean_claim_unclassified' ? GM12_SPEC17_STOP_STATE : 'ready_for_loop',
+      required_classes: ['ledger', 'screenshots', 'metrics', 'reports', 'packages'],
+      artifact_count: evidenceTracking.artifacts.length,
+      report_text: mode === 'clean_claim_unclassified'
+        ? 'all evidence clean; no untracked evidence remains'
+        : 'required evidence storage classifications are recorded',
+    },
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2425,6 +2527,25 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec16MissingBaselineClassificationArgs,
     revert: gm12Spec16RevertArgs,
+  },
+  // GM12S17 — SPEC-017 classifies tracked, runtime-only, ignored, and intentionally-untracked evidence.
+  {
+    id: 'GM12S17 goal-maestro-p0-evidence-tracking-class-coverage',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec17MissingClassArgs,
+    revert: gm12Spec17RevertArgs,
+  },
+  {
+    id: 'GM12S17 goal-maestro-p0-evidence-tracking-untracked-required',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec17UntrackedUnclassifiedArgs,
+    revert: gm12Spec17RuntimeOnlyArgs,
+  },
+  {
+    id: 'GM12S17 goal-maestro-p0-evidence-tracking-clean-claim',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec17CleanClaimUnclassifiedArgs,
+    revert: gm12Spec17RuntimeOnlyArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

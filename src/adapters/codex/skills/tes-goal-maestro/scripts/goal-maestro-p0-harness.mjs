@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -29,6 +29,8 @@
 // commit_enforcement_classification_required:true.
 // SPEC-016 fixtures opt into Git admission validation with
 // git_admission_gate_required:true.
+// SPEC-017 fixtures opt into evidence tracking classification validation with
+// evidence_tracking_classification_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -50,6 +52,7 @@ const BROWSER_METRICS_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
 const INSTALL_CHRONOLOGY_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
 const COMMIT_ENFORCEMENT_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
 const GIT_ADMISSION_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
+const EVIDENCE_TRACKING_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -65,6 +68,7 @@ const BROWSER_METRICS_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
 const INSTALL_CHRONOLOGY_CONTRACT = 'goal-maestro-p0-install-chronology';
 const COMMIT_ENFORCEMENT_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification';
 const GIT_ADMISSION_CONTRACT = 'goal-maestro-p0-git-admission-gate';
+const EVIDENCE_TRACKING_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -78,6 +82,9 @@ const INTERACTIVE_VISUAL_ARTIFACT_CLASSES = new Set(['browser', 'rendered_app', 
 const INTERACTIVE_VISUAL_STATES = ['initial', 'active', 'terminal'];
 const BROWSER_METRICS_STATUSES = new Set(['PASS', 'DEGRADED', 'BLOCKED']);
 const KNOWN_BROWSER_METRICS_SOURCES = new Set(['codex', 'claude', 'cursor']);
+const REQUIRED_EVIDENCE_TRACKING_CLASSES = ['ledger', 'screenshots', 'metrics', 'reports', 'packages'];
+const EVIDENCE_TRACKING_CLASSIFICATIONS = new Set(['tracked', 'runtime_only', 'ignored', 'intentionally_untracked']);
+const UNTRACKED_EVIDENCE_CLASSIFICATIONS = new Set(['runtime_only', 'ignored', 'intentionally_untracked']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -140,6 +147,7 @@ const browserMetricsSchemaRequired = requiresBrowserMetricsSchema(fixture);
 const installChronologyRequired = requiresInstallChronologyGate(fixture);
 const commitEnforcementRequired = requiresCommitEnforcementClassification(fixture);
 const gitAdmissionRequired = requiresGitAdmissionGate(fixture);
+const evidenceTrackingRequired = requiresEvidenceTrackingClassification(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -302,8 +310,13 @@ if (commitEnforcementRequired) {
 if (gitAdmissionRequired) {
   addGitAdmissionChecks();
 }
+if (evidenceTrackingRequired) {
+  addEvidenceTrackingClassificationChecks();
+}
 
-const harnessTitle = gitAdmissionRequired
+const harnessTitle = evidenceTrackingRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017 goal-maestro-p0-evidence-tracking-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE})`
+  : gitAdmissionRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016 goal-maestro-p0-git-admission-gate (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE})`
   : commitEnforcementRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015 goal-maestro-p0-commit-enforcement-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE})`
@@ -1554,6 +1567,57 @@ function addGitAdmissionChecks() {
   }
 }
 
+function addEvidenceTrackingClassificationChecks() {
+  const tracking = evidenceTrackingFromFixture(fixture);
+  const artifacts = evidenceTrackingArtifactEntries(tracking);
+  const classificationsByClass = evidenceTrackingClassificationsByClass(artifacts);
+  const missingClasses = REQUIRED_EVIDENCE_TRACKING_CLASSES.filter((artifactClass) => {
+    return !EVIDENCE_TRACKING_CLASSIFICATIONS.has(classificationsByClass.get(artifactClass));
+  });
+  const invalidArtifacts = artifacts.filter((artifact) => {
+    const classification = normalizeEvidenceTrackingClassification(evidenceTrackingClassificationFromEntry(artifact));
+    return nonEmptyString(classification) && !EVIDENCE_TRACKING_CLASSIFICATIONS.has(classification);
+  });
+  const untrackedRequiredEvidence = untrackedRequiredEvidenceFromTracking(tracking);
+  const unclassifiedUntrackedEvidence = untrackedRequiredEvidence.filter((artifact) => {
+    const classification = evidenceTrackingClassificationForEntry(artifact, classificationsByClass);
+    return !UNTRACKED_EVIDENCE_CLASSIFICATIONS.has(classification);
+  });
+  const gitTrackedClean = gitTrackedFilesCleanFromEvidenceTracking(tracking);
+  const cleanClaims = evidenceTrackingReportSurfaces(fixture, tracking).flatMap(cleanEvidenceClaimsFromSurface);
+
+  evidenceTrackingCheck(
+    'evidence tracking document is present',
+    hasNonEmptyObject(tracking),
+    'evidence_tracking classification is required',
+  );
+  evidenceTrackingCheck(
+    'required evidence classes are classified',
+    missingClasses.length === 0,
+    `missing classifications for ${formatValues(missingClasses)}`,
+  );
+  evidenceTrackingCheck(
+    'evidence tracking classifications are valid',
+    invalidArtifacts.length === 0,
+    `invalid evidence tracking classifications on ${formatEvidenceArtifactRefs(invalidArtifacts)}`,
+  );
+  evidenceTrackingCheck(
+    'untracked required evidence is classified',
+    unclassifiedUntrackedEvidence.length === 0,
+    `untracked required evidence lacks runtime-only, ignored, or intentionally-untracked classification: ${formatEvidenceArtifactRefs(unclassifiedUntrackedEvidence)}`,
+  );
+  evidenceTrackingCheck(
+    'tracked-clean git status does not hide untracked evidence',
+    !gitTrackedClean || untrackedRequiredEvidence.length === 0 || unclassifiedUntrackedEvidence.length === 0,
+    'git status clean for tracked files cannot hide unclassified required untracked evidence',
+  );
+  evidenceTrackingCheck(
+    'clean evidence claim matches tracking classification',
+    cleanClaims.length === 0 || unclassifiedUntrackedEvidence.length === 0,
+    'closeout claims clean evidence while required untracked evidence is unclassified',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1715,6 +1779,10 @@ function commitEnforcementCheck(name, pass, detail) {
 
 function gitAdmissionCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${GIT_ADMISSION_STOP_STATE}: ${detail}` });
+}
+
+function evidenceTrackingCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${EVIDENCE_TRACKING_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1914,6 +1982,13 @@ function requiresGitAdmissionGate(value) {
     || value.git_admission_required === true
     || value.harness_contract === GIT_ADMISSION_CONTRACT
     || value.contract === GIT_ADMISSION_CONTRACT;
+}
+
+function requiresEvidenceTrackingClassification(value) {
+  return value.evidence_tracking_classification_required === true
+    || value.evidence_tracking_required === true
+    || value.harness_contract === EVIDENCE_TRACKING_CONTRACT
+    || value.contract === EVIDENCE_TRACKING_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -2491,6 +2566,10 @@ function firstArray(...values) {
   return values.find(Array.isArray);
 }
 
+function arrayOfPlainObjects(value) {
+  return Array.isArray(value) ? value.filter(isPlainObject) : [];
+}
+
 function firstPlainObject(...values) {
   return values.find(isPlainObject);
 }
@@ -2861,6 +2940,170 @@ function baselineCommitClassificationFromGitAdmission(value) {
     return { commit, status };
   }
   return {};
+}
+
+function evidenceTrackingFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.evidence_tracking,
+    value.evidence_tracking_classification,
+    value.evidence_storage,
+    value.tracking_classification,
+    metrics.evidence_tracking,
+    metrics.evidence_tracking_classification,
+    metrics.evidence_storage,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return hasEvidenceTrackingShape(value) ? value : {};
+}
+
+function hasEvidenceTrackingShape(value) {
+  return isPlainObject(value) && (
+    Array.isArray(value.artifacts)
+    || Array.isArray(value.evidence_artifacts)
+    || Array.isArray(value.required_evidence)
+    || isPlainObject(value.classifications)
+    || isPlainObject(value.git_status)
+  );
+}
+
+function evidenceTrackingArtifactEntries(value) {
+  const artifacts = [
+    ...arrayOfPlainObjects(value.artifacts),
+    ...arrayOfPlainObjects(value.evidence_artifacts),
+    ...arrayOfPlainObjects(value.required_evidence),
+    ...arrayOfPlainObjects(value.required_artifacts),
+  ];
+  if (isPlainObject(value.classifications)) {
+    for (const [artifactClass, classification] of Object.entries(value.classifications)) {
+      artifacts.push({ artifact_class: artifactClass, classification });
+    }
+  }
+  for (const artifactClass of REQUIRED_EVIDENCE_TRACKING_CLASSES) {
+    const candidate = value[artifactClass];
+    if (isPlainObject(candidate)) artifacts.push({ artifact_class: artifactClass, ...candidate });
+  }
+  return artifacts;
+}
+
+function evidenceTrackingClassificationsByClass(artifacts) {
+  const byClass = new Map();
+  for (const artifact of artifacts) {
+    const artifactClass = normalizeEvidenceArtifactClass(evidenceArtifactClassFromEntry(artifact));
+    const classification = normalizeEvidenceTrackingClassification(evidenceTrackingClassificationFromEntry(artifact));
+    if (!nonEmptyString(artifactClass) || !nonEmptyString(classification)) continue;
+    if (!byClass.has(artifactClass)) byClass.set(artifactClass, classification);
+  }
+  return byClass;
+}
+
+function evidenceArtifactClassFromEntry(value) {
+  return firstNonEmptyString(
+    value.artifact_class,
+    value.evidence_class,
+    value.class,
+    value.kind,
+    value.type,
+  );
+}
+
+function normalizeEvidenceArtifactClass(value) {
+  const artifactClass = normalizeSemanticValue(value);
+  if (['ledger', 'ledgers'].includes(artifactClass)) return 'ledger';
+  if (['screenshot', 'screenshots', 'screen shot', 'screen shots'].includes(artifactClass)) return 'screenshots';
+  if (['metric', 'metrics', 'browser metrics', 'thermometer metrics'].includes(artifactClass)) return 'metrics';
+  if (['report', 'reports', 'closeout report'].includes(artifactClass)) return 'reports';
+  if (['package', 'packages', 'artifact package', 'packages artifacts'].includes(artifactClass)) return 'packages';
+  return artifactClass;
+}
+
+function evidenceTrackingClassificationFromEntry(value) {
+  return firstNonEmptyString(
+    value.classification,
+    value.tracking_classification,
+    value.storage_classification,
+    value.tracking,
+    value.storage,
+    value.status,
+  );
+}
+
+function normalizeEvidenceTrackingClassification(value) {
+  const classification = normalizeSemanticValue(value);
+  if (classification === 'tracked') return 'tracked';
+  if (['runtime only', 'runtime artifact', 'runtime'].includes(classification)) return 'runtime_only';
+  if (classification === 'ignored') return 'ignored';
+  if (['intentionally untracked', 'intentional untracked', 'untracked intentionally'].includes(classification)) return 'intentionally_untracked';
+  return classification;
+}
+
+function untrackedRequiredEvidenceFromTracking(value) {
+  return [
+    ...arrayOfPlainObjects(value.untracked_required_evidence),
+    ...arrayOfPlainObjects(value.required_untracked_evidence),
+    ...arrayOfPlainObjects(value.git_status?.untracked_required_evidence),
+    ...arrayOfPlainObjects(value.git_status?.required_untracked_evidence),
+    ...arrayOfPlainObjects(value.git_status?.untracked_files),
+  ];
+}
+
+function evidenceTrackingClassificationForEntry(entry, classificationsByClass) {
+  const ownClassification = normalizeEvidenceTrackingClassification(evidenceTrackingClassificationFromEntry(entry));
+  if (nonEmptyString(ownClassification)) return ownClassification;
+  const artifactClass = normalizeEvidenceArtifactClass(evidenceArtifactClassFromEntry(entry));
+  return classificationsByClass.get(artifactClass) ?? null;
+}
+
+function gitTrackedFilesCleanFromEvidenceTracking(value) {
+  const gitStatus = value.git_status;
+  return value.git_status_clean_for_tracked_files === true
+    || value.tracked_files_clean === true
+    || gitStatus?.tracked_files_clean === true
+    || gitStatus?.tracked_clean === true
+    || normalizeSemanticValue(gitStatus?.tracked_status) === 'clean';
+}
+
+function evidenceTrackingReportSurfaces(value, tracking) {
+  const metrics = thermometerMetricsFromFixture(value);
+  return [
+    tracking,
+    value.report,
+    value.closeout,
+    value.thermometer_report,
+    metrics.report,
+    metrics.closeout,
+    metrics.evidence_tracking,
+  ].filter(isPlainObject);
+}
+
+function cleanEvidenceClaimsFromSurface(surface) {
+  const status = normalizeSemanticValue(firstNonEmptyString(
+    surface.evidence_status,
+    surface.evidence_tracking_status,
+    surface.tracking_status,
+  ));
+  const claims = [];
+  if (['clean', 'clean evidence', 'all evidence clean', 'all evidence tracked', 'no untracked evidence'].includes(status)) {
+    claims.push(status);
+  }
+  for (const value of collectStrings(surface).map(normalizeSemanticValue).filter(nonEmptyString)) {
+    if (value.includes('clean evidence')
+      || value.includes('all evidence tracked')
+      || value.includes('no untracked evidence')
+      || value.includes('evidence is clean')) {
+      claims.push(value);
+    }
+  }
+  return claims;
+}
+
+function formatEvidenceArtifactRefs(items) {
+  const refs = items.map((item) => {
+    return firstNonEmptyString(item.ref, item.path, item.id, item.artifact_class, item.evidence_class, item.type);
+  }).filter(nonEmptyString);
+  return formatValues(refs);
 }
 
 function isMobileResponsiveEvidence(item) {
