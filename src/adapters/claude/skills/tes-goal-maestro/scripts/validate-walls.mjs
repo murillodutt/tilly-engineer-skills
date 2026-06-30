@@ -9,7 +9,7 @@
 // Exit≠0 se QUALQUER parede falhar o par (não-disparo sob violação, ou não-passe ao reverter).
 
 import { execFileSync, execSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,6 +50,11 @@ const GM12_SPEC9_CONTRACT = 'goal-maestro-p0-package-hierarchy';
 const GM12_SPEC9_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
 const GM12_SPEC9_LATEST_PACKAGE = 'execution-thermometer-run-html-002';
 const GM12_SPEC9_SUPERSEDED_PACKAGE = 'execution-thermometer-run-html-001';
+const GM12_SPEC10_CONTRACT = 'goal-maestro-p0-report-identity';
+const GM12_SPEC10_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
+const GM12_SPEC10_INSTALLED_VERSION = sourcePackageVersion();
+const GM12_SPEC10_INSTALLED_AT = '2026-06-29T00:00:00Z';
+const GM12_SPEC10_SOURCE_HASH = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -317,6 +322,30 @@ function gm12Spec9ExplicitHistoryArgs() {
 
 function gm12Spec9RevertArgs() {
   return [fixture('gm12-spec9-package-hierarchy-ok.json', JSON.stringify(gm12Spec9Fixture('valid')))];
+}
+
+function gm12Spec10VersionMismatchArgs() {
+  return [fixture('gm12-spec10-report-identity-version-mismatch.json', JSON.stringify(gm12Spec10Fixture('version_mismatch')))];
+}
+
+function gm12Spec10KnownAdapterOtherArgs() {
+  return [fixture('gm12-spec10-report-identity-known-adapter-other.json', JSON.stringify(gm12Spec10Fixture('known_adapter_other')))];
+}
+
+function gm12Spec10MissingInstalledAtArgs() {
+  return [fixture('gm12-spec10-report-identity-missing-installed-at.json', JSON.stringify(gm12Spec10Fixture('missing_installed_at')))];
+}
+
+function gm12Spec10MissingModelReasonArgs() {
+  return [fixture('gm12-spec10-report-identity-missing-model-reason.json', JSON.stringify(gm12Spec10Fixture('missing_model_reason')))];
+}
+
+function gm12Spec10MissingSourceIdentityArgs() {
+  return [fixture('gm12-spec10-report-identity-missing-source-identity.json', JSON.stringify(gm12Spec10Fixture('missing_source_identity')))];
+}
+
+function gm12Spec10RevertArgs() {
+  return [fixture('gm12-spec10-report-identity-ok.json', JSON.stringify(gm12Spec10Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -839,6 +868,88 @@ function gm12Spec9Fixture(mode) {
   };
 }
 
+function gm12Spec10Fixture(mode) {
+  const base = gm12Spec9Fixture('valid');
+  const identity = gm12Spec10Identity(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC10_CONTRACT,
+    report_identity_required: true,
+    report_identity_expectations: {
+      stop_state: GM12_SPEC10_STOP_STATE,
+      installed_version: GM12_SPEC10_INSTALLED_VERSION,
+      installed_available: true,
+      source_package_available: true,
+      known_adapter: 'codex',
+    },
+    report_identity: identity,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      identity,
+    },
+    closeout: {
+      ...base.closeout,
+      report_identity: {
+        harness_version: identity.harness.version,
+        adapter: identity.harness.adapter,
+        installed_version: identity.installed_version,
+        source_package_version: identity.source_package.version,
+      },
+    },
+  };
+}
+
+function gm12Spec10Identity(mode) {
+  const identity = {
+    schema_version: 1,
+    report_id: 'report-run-010',
+    generated_at_utc: '2026-06-29T00:00:00Z',
+    harness: {
+      name: 'tes-goal-maestro',
+      version: GM12_SPEC10_INSTALLED_VERSION,
+      adapter: 'codex',
+      command: '--execute-loop',
+      schema_version: '1',
+    },
+    model: {
+      provider: 'openai',
+      provider_source: 'host_observed',
+      identity: 'gpt-5-codex',
+      identity_source: 'host_observed',
+      reasoning_profile: 'unproven',
+      reasoning_profile_unproven_reason: 'host did not expose reasoning profile in the local report input',
+      effort_multiplier: 'unproven',
+      effort_multiplier_unproven_reason: 'host did not expose reasoning effort in the local report input',
+    },
+    installed_version: GM12_SPEC10_INSTALLED_VERSION,
+    installed_at: GM12_SPEC10_INSTALLED_AT,
+    source_package: {
+      name: 'tilly-engineer-skills',
+      version: GM12_SPEC10_INSTALLED_VERSION,
+      source_commit: 'source-anchor-1f99741c',
+      bundle_sha256: GM12_SPEC10_SOURCE_HASH,
+    },
+  };
+
+  if (mode === 'version_mismatch') {
+    identity.harness.version = '0.1.0';
+  }
+  if (mode === 'known_adapter_other') {
+    identity.harness.adapter = 'other';
+  }
+  if (mode === 'missing_installed_at') {
+    delete identity.installed_at;
+  }
+  if (mode === 'missing_model_reason') {
+    delete identity.model.reasoning_profile_unproven_reason;
+  }
+  if (mode === 'missing_source_identity') {
+    delete identity.source_package.source_commit;
+    delete identity.source_package.bundle_sha256;
+  }
+  return identity;
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -928,6 +1039,19 @@ function gm12Spec4DocumentAnalysisEvent(spec_id, at, mode) {
 
 function gm12Time(second) {
   return `2026-06-29T00:00:${String(second).padStart(2, '0')}Z`;
+}
+
+function sourcePackageVersion() {
+  const packageJsonPath = join(sourceRoot, 'package.json');
+  if (!existsSync(packageJsonPath)) return '0.3.230';
+  try {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+    return typeof packageJson.version === 'string' && packageJson.version.length > 0
+      ? packageJson.version
+      : '0.3.230';
+  } catch {
+    return '0.3.230';
+  }
 }
 
 function badInstalledThermometerSkillRoot(name) {
@@ -1432,6 +1556,37 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec9CloseoutHistoryLeakArgs,
     revert: gm12Spec9ExplicitHistoryArgs,
+  },
+  // GM12S10 — SPEC-010 makes report identity fields operational, not decorative.
+  {
+    id: 'GM12S10 goal-maestro-p0-report-identity-version',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec10VersionMismatchArgs,
+    revert: gm12Spec10RevertArgs,
+  },
+  {
+    id: 'GM12S10 goal-maestro-p0-report-identity-adapter',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec10KnownAdapterOtherArgs,
+    revert: gm12Spec10RevertArgs,
+  },
+  {
+    id: 'GM12S10 goal-maestro-p0-report-identity-installed-at',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec10MissingInstalledAtArgs,
+    revert: gm12Spec10RevertArgs,
+  },
+  {
+    id: 'GM12S10 goal-maestro-p0-report-identity-model-reason',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec10MissingModelReasonArgs,
+    revert: gm12Spec10RevertArgs,
+  },
+  {
+    id: 'GM12S10 goal-maestro-p0-report-identity-source-package',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec10MissingSourceIdentityArgs,
+    revert: gm12Spec10RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

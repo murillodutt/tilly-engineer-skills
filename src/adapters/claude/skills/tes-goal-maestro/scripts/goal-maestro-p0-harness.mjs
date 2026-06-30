@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -15,6 +15,8 @@
 // report_coherence_required:true.
 // SPEC-009 fixtures opt into Thermometer package finalization hierarchy
 // validation with package_hierarchy_required:true.
+// SPEC-010 fixtures opt into report identity/version accuracy validation
+// with report_identity_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -29,6 +31,7 @@ const THERMOMETER_FIDELITY_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
 const LEDGER_GRAMMAR_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
 const REPORT_COHERENCE_STOP_STATE = 'NEEDS_REPORT_COHERENCE';
 const PACKAGE_HIERARCHY_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
+const REPORT_IDENTITY_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -37,12 +40,14 @@ const THERMOMETER_FIDELITY_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
 const LEDGER_GRAMMAR_CONTRACT = 'goal-maestro-p0-ledger-grammar';
 const REPORT_COHERENCE_CONTRACT = 'goal-maestro-p0-report-coherence';
 const PACKAGE_HIERARCHY_CONTRACT = 'goal-maestro-p0-package-hierarchy';
+const REPORT_IDENTITY_CONTRACT = 'goal-maestro-p0-report-identity';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
 const MATERIAL_SPEC_HEADING_RE = /^### (SPEC-\d{3}) - (.+\S)$/;
 const REPORT_COHERENCE_FIELDS = ['spec_ids', 'final_status', 'report_status', 'share_status', 'evidence_hashes', 'unproven_count'];
 const PACKAGE_HIERARCHY_STATUSES = new Set(['latest', 'superseded', 'historical']);
+const KNOWN_ADAPTERS = new Set(['codex', 'claude', 'cursor']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -98,6 +103,7 @@ const thermometerFidelityRequired = requiresThermometerFidelityGate(fixture);
 const ledgerGrammarRequired = requiresLedgerGrammarGate(fixture);
 const reportCoherenceRequired = requiresReportCoherenceGate(fixture);
 const packageHierarchyRequired = requiresPackageHierarchyGate(fixture);
+const reportIdentityRequired = requiresReportIdentityGate(fixture);
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -238,8 +244,13 @@ if (thermometerFidelityRequired) {
 if (packageHierarchyRequired) {
   addPackageHierarchyChecks();
 }
+if (reportIdentityRequired) {
+  addReportIdentityChecks();
+}
 
-const harnessTitle = packageHierarchyRequired
+const harnessTitle = reportIdentityRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010 goal-maestro-p0-report-identity (${LINEAR_STOP_STATE}/${REPORT_IDENTITY_STOP_STATE})`
+  : packageHierarchyRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009 goal-maestro-p0-package-hierarchy (${LINEAR_STOP_STATE}/${PACKAGE_HIERARCHY_STOP_STATE})`
   : reportCoherenceRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008 goal-maestro-p0-report-coherence (${LINEAR_STOP_STATE}/${REPORT_COHERENCE_STOP_STATE})`
@@ -944,6 +955,128 @@ function addPackageHierarchyChecks() {
   );
 }
 
+function addReportIdentityChecks() {
+  const identity = reportIdentityFromFixture(fixture);
+  const expected = isPlainObject(fixture.report_identity_expectations) ? fixture.report_identity_expectations : {};
+  const harness = isPlainObject(identity.harness) ? identity.harness : {};
+  const model = isPlainObject(identity.model) ? identity.model : {};
+  const installedAvailable = expected.installed_available !== false;
+  const sourcePackageAvailable = expected.source_package_available !== false;
+  const installedVersion = installedVersionFromReportIdentity(identity);
+  const installedAt = installedAtFromReportIdentity(identity);
+  const expectedInstalledVersion = firstNonEmptyString(expected.installed_version, fixture.installed_version, fixture.installed_tes_version);
+  const harnessVersion = firstNonEmptyString(harness.version, identity.harness_version);
+  const adapter = normalizeAdapter(firstNonEmptyString(harness.adapter, identity.adapter));
+  const knownAdapter = normalizeAdapter(firstNonEmptyString(
+    expected.known_adapter,
+    expected.adapter,
+    expected.host_adapter,
+    fixture.known_adapter,
+    fixture.adapter,
+    fixture.host_adapter,
+  ));
+  const sourcePackage = sourcePackageIdentityFromReportIdentity(identity);
+  const sourcePackageName = firstNonEmptyString(sourcePackage.name, sourcePackage.package_name, sourcePackage.id);
+  const sourcePackageVersion = firstNonEmptyString(sourcePackage.version, sourcePackage.package_version, sourcePackage.source_version);
+  const sourcePackageRef = firstNonEmptyString(
+    sourcePackage.source_commit,
+    sourcePackage.commit,
+    sourcePackage.source_hash,
+    sourcePackage.bundle_sha256,
+    sourcePackage.hash,
+    sourcePackage.ref,
+  );
+
+  reportIdentityCheck(
+    'report identity is present',
+    hasNonEmptyObject(identity),
+    'report identity is required for complete closeout',
+  );
+  reportIdentityCheck(
+    'harness.version is present',
+    nonEmptyString(harnessVersion),
+    'identity harness.version is required',
+  );
+  if (installedAvailable) {
+    reportIdentityCheck(
+      'installed_version is present',
+      nonEmptyString(installedVersion),
+      'installed_version is required when installed TES identity is available',
+    );
+    reportIdentityCheck(
+      'installed_at is present',
+      nonEmptyString(installedAt),
+      'installed_at is required when installed TES identity is available',
+    );
+    reportIdentityCheck(
+      'installed_at is timestamp-like',
+      isTimestampLike(installedAt),
+      'installed_at must be a parseable timestamp',
+    );
+  }
+  if (nonEmptyString(installedVersion)) {
+    reportIdentityCheck(
+      'harness.version matches installed_version',
+      harnessVersion === installedVersion,
+      `harness.version ${harnessVersion ?? 'missing'} must match installed_version ${installedVersion}`,
+    );
+  }
+  if (nonEmptyString(expectedInstalledVersion)) {
+    reportIdentityCheck(
+      'installed_version matches expectation',
+      installedVersion === expectedInstalledVersion,
+      `installed_version must be ${expectedInstalledVersion}`,
+    );
+  }
+  reportIdentityCheck(
+    'adapter is present',
+    nonEmptyString(adapter),
+    'identity harness.adapter is required',
+  );
+  if (KNOWN_ADAPTERS.has(knownAdapter)) {
+    reportIdentityCheck(
+      'known host adapter is resolved',
+      adapter === knownAdapter,
+      `known host adapter ${knownAdapter} cannot report adapter ${adapter ?? 'missing'}`,
+    );
+  } else {
+    reportIdentityCheck(
+      'adapter is known or explicitly other',
+      KNOWN_ADAPTERS.has(adapter) || adapter === 'other',
+      `adapter must be codex, claude, cursor, or other; got ${adapter ?? 'missing'}`,
+    );
+  }
+  for (const field of reportModelFieldDescriptors(model)) {
+    reportIdentityCheck(
+      `${field.name} is observed or explained`,
+      modelFieldIsObservedOrExplained(field),
+      `${field.name} must be host-observed or explicit unproven with reason`,
+    );
+  }
+  if (sourcePackageAvailable) {
+    reportIdentityCheck(
+      'source package identity is present',
+      hasNonEmptyObject(sourcePackage),
+      'source package identity is required when source package identity is available',
+    );
+    reportIdentityCheck(
+      'source package name is present',
+      nonEmptyString(sourcePackageName),
+      'source package identity lacks package name',
+    );
+    reportIdentityCheck(
+      'source package version is present',
+      nonEmptyString(sourcePackageVersion),
+      'source package identity lacks package version',
+    );
+    reportIdentityCheck(
+      'source package reference is present',
+      nonEmptyString(sourcePackageRef),
+      'source package identity lacks source commit, hash, bundle sha, or ref',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1077,6 +1210,10 @@ function reportCoherenceCheck(name, pass, detail) {
 
 function packageHierarchyCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${PACKAGE_HIERARCHY_STOP_STATE}: ${detail}` });
+}
+
+function reportIdentityCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${REPORT_IDENTITY_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1229,6 +1366,13 @@ function requiresPackageHierarchyGate(value) {
     || value.contract === PACKAGE_HIERARCHY_CONTRACT;
 }
 
+function requiresReportIdentityGate(value) {
+  return value.report_identity_required === true
+    || value.report_identity_accuracy_required === true
+    || value.harness_contract === REPORT_IDENTITY_CONTRACT
+    || value.contract === REPORT_IDENTITY_CONTRACT;
+}
+
 function acceptedBoundedRepairUnitIds(value) {
   const acceptedUnits = [
     ...normalizeSpecIdArray(value.accepted_bounded_repair_units),
@@ -1286,6 +1430,52 @@ function uniqueStrings(values) {
 function thermometerMetricsFromFixture(value) {
   const metrics = value.thermometer_metrics ?? value.execution_thermometer ?? value.thermometer ?? {};
   return isPlainObject(metrics) ? metrics : {};
+}
+
+function reportIdentityFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.report_identity,
+    value.exec_identity,
+    value.execution_identity,
+    value.identity,
+    metrics.report_identity,
+    metrics.exec_identity,
+    metrics.execution_identity,
+    metrics.identity,
+  ];
+  return candidates.find(isPlainObject) ?? {};
+}
+
+function installedVersionFromReportIdentity(identity) {
+  return firstNonEmptyString(
+    identity.installed_version,
+    identity.installed_tes_version,
+    identity.installed?.version,
+    identity.package?.installed_version,
+    identity.harness?.installed_version,
+  );
+}
+
+function installedAtFromReportIdentity(identity) {
+  return firstNonEmptyString(
+    identity.installed_at,
+    identity.installed_at_utc,
+    identity.installed?.at,
+    identity.installed?.installed_at,
+    identity.package?.installed_at,
+  );
+}
+
+function sourcePackageIdentityFromReportIdentity(identity) {
+  const candidates = [
+    identity.source_package,
+    identity.source_package_identity,
+    identity.package?.source_package,
+    identity.package?.source,
+    identity.package,
+  ];
+  return candidates.find(isPlainObject) ?? {};
 }
 
 function reportCoherenceSurfaceFromFixture(surfaceName) {
@@ -1622,6 +1812,70 @@ function normalizeStringArray(value) {
     .split(/[,;\s]+/)
     .map((entry) => entry.replace(/^[`'"]|[`'"]$/g, '').trim())
     .filter(nonEmptyString);
+}
+
+function firstNonEmptyString(...values) {
+  return values.find(nonEmptyString) ?? null;
+}
+
+function normalizeAdapter(value) {
+  if (!nonEmptyString(value)) return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (normalized.includes('codex')) return 'codex';
+  if (normalized.includes('claude')) return 'claude';
+  if (normalized.includes('cursor')) return 'cursor';
+  if (normalized === 'other') return 'other';
+  return normalized;
+}
+
+function reportModelFieldDescriptors(model) {
+  return [
+    reportModelFieldDescriptor(model, 'model.provider', ['provider', 'model_provider']),
+    reportModelFieldDescriptor(model, 'model.identity', ['identity', 'name', 'model', 'model_id']),
+    reportModelFieldDescriptor(model, 'model.reasoning_profile', ['reasoning_profile', 'reasoning', 'reasoning_profile_value']),
+    reportModelFieldDescriptor(model, 'model.effort_multiplier', ['effort_multiplier', 'reasoning_effort', 'effort']),
+  ];
+}
+
+function reportModelFieldDescriptor(model, name, aliases) {
+  return {
+    name,
+    value: firstNonEmptyString(...aliases.map((alias) => model[alias])),
+    source: firstNonEmptyString(
+      ...aliases.flatMap((alias) => [model[`${alias}_source`], model[`${alias}_metadata_source`]]),
+      model.metadata_source,
+    ),
+    reason: unprovenReasonForModelField(model, aliases),
+    observed: aliases.some((alias) => model[`${alias}_observed`] === true) || model.observed === true,
+  };
+}
+
+function unprovenReasonForModelField(model, aliases) {
+  const reasons = isPlainObject(model.unproven_reasons) ? model.unproven_reasons : {};
+  return firstNonEmptyString(
+    ...aliases.flatMap((alias) => [model[`${alias}_unproven_reason`], model[`${alias}_reason`], reasons[alias]]),
+    model.unproven_reason,
+  );
+}
+
+function modelFieldIsObservedOrExplained(field) {
+  if (!nonEmptyString(field.value)) return false;
+  if (isUnprovenValue(field.value)) return nonEmptyString(field.reason);
+  return field.observed === true || isObservedMetadataSource(field.source);
+}
+
+function isUnprovenValue(value) {
+  return nonEmptyString(value) && String(value).trim().toLowerCase() === 'unproven';
+}
+
+function isObservedMetadataSource(value) {
+  if (!nonEmptyString(value)) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized.includes('observed') && !normalized.includes('declared');
+}
+
+function isTimestampLike(value) {
+  return nonEmptyString(value) && !Number.isNaN(Date.parse(value));
 }
 
 function formatPackageEntries(entries) {
