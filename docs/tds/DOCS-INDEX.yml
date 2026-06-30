@@ -1,4 +1,4 @@
-version: 0.3.230
+version: 0.3.231
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -1518,6 +1518,13 @@ documents:
     class: evidence
     status: active
     consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/2026/06/30/goal-maestro/p0-installation-canary-audit-v0.3.230/REPORT.md
+    id: evidence.goal_maestro.p0_installation_canary_audit_2026_06_30_v0_3_230
+    class: evidence
+    status: active
+    consumer: maintainers, Goal Maestro authors, installer authors, hook authors, MCP authors, and release reviewers
     source_of_truth: false
     evidence_level: L3
   - path: docs/evidence/reports/context-mesh/project-alignment-oracle-false-positive-2026-05-13/JOURNAL.md

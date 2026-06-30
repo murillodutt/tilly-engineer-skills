@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const tmp = mkdtempSync(join(tmpdir(), 'walls-'));
 const skillRoot = dirname(here);
-const sourceRoot = join(here, '../../../../../../');
+const sourceRoot = findRepoRoot(here);
 const sourcePublicContent = join(sourceRoot, 'docs/i18n/tes-public.content.json');
 const sourceAgentManual = join(sourceRoot, 'docs/install/AGENT-MANUAL.md');
 const sourceCursorRuntimeRule = join(sourceRoot, 'src/adapters/cursor/rules/tes-runtime-capabilities.mdc');
@@ -52,6 +52,7 @@ const GM12_SPEC9_LATEST_PACKAGE = 'execution-thermometer-run-html-002';
 const GM12_SPEC9_SUPERSEDED_PACKAGE = 'execution-thermometer-run-html-001';
 const GM12_SPEC10_CONTRACT = 'goal-maestro-p0-report-identity';
 const GM12_SPEC10_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
+const GM12_SOURCE_VERSION_FALLBACK = '0.0.0';
 const GM12_SPEC10_INSTALLED_VERSION = sourcePackageVersion();
 const GM12_SPEC10_INSTALLED_AT = '2026-06-29T00:00:00Z';
 const GM12_SPEC10_SOURCE_HASH = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
@@ -515,6 +516,10 @@ function gm12Spec15HonestManualArgs() {
 
 function gm12Spec15PrecommitEnforcedArgs() {
   return [fixture('gm12-spec15-commit-enforcement-precommit-enforced.json', JSON.stringify(gm12Spec15Fixture('precommit_enforced')))];
+}
+
+function gm12Spec15WeakPrecommitInstalledArgs() {
+  return [fixture('gm12-spec15-commit-enforcement-weak-precommit-installed.json', JSON.stringify(gm12Spec15Fixture('weak_precommit_installed')))];
 }
 
 function gm12Spec15RevertArgs() {
@@ -1664,13 +1669,19 @@ function gm12Spec15Fixture(mode) {
 }
 
 function gm12Spec15CommitEnforcement(mode) {
-  const classification = mode === 'precommit_enforced'
+  const classification = mode === 'precommit_enforced' || mode === 'weak_precommit_installed'
     ? {
         commit_mode: 'precommit_enforced',
         tes_recommends_precommit: true,
         precommit_evidence: {
           status: 'installed',
           hook_path: '.githooks/pre-commit',
+          hook_exists: mode === 'precommit_enforced',
+          hook_executable_or_shebang: mode === 'precommit_enforced',
+          resolved_hooks_path: '.githooks',
+          evidence_ref: mode === 'precommit_enforced'
+            ? 'ORACLE_WIRING_PROOF=lefthook run pre-commit'
+            : '',
         },
       }
     : {
@@ -2345,7 +2356,7 @@ function gm12Spec2PreEditEvent(spec_id, at) {
       forbidden_files: GM12_SPEC2_FORBIDDEN_FILES,
       forbidden_actions: GM12_SPEC2_FORBIDDEN_ACTIONS,
       required_gates: GM12_SPEC2_REQUIRED_GATES,
-      installed_tes_version: '0.3.230',
+      installed_tes_version: GM12_SPEC10_INSTALLED_VERSION,
       commit_mode: 'no-commit',
     },
   };
@@ -2418,16 +2429,27 @@ function gm12Time(second) {
   return `2026-06-29T00:00:${String(second).padStart(2, '0')}Z`;
 }
 
+function findRepoRoot(start) {
+  let current = start;
+  while (current && current !== dirname(current)) {
+    if (existsSync(join(current, 'package.json')) && existsSync(join(current, 'src/adapters'))) {
+      return current;
+    }
+    current = dirname(current);
+  }
+  return join(start, '../../../../../../');
+}
+
 function sourcePackageVersion() {
   const packageJsonPath = join(sourceRoot, 'package.json');
-  if (!existsSync(packageJsonPath)) return '0.3.230';
+  if (!existsSync(packageJsonPath)) return GM12_SOURCE_VERSION_FALLBACK;
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
     return typeof packageJson.version === 'string' && packageJson.version.length > 0
       ? packageJson.version
-      : '0.3.230';
+      : GM12_SOURCE_VERSION_FALLBACK;
   } catch {
-    return '0.3.230';
+    return GM12_SOURCE_VERSION_FALLBACK;
   }
 }
 
@@ -3136,6 +3158,12 @@ const WALLS = [
     id: 'GM12S15 goal-maestro-p0-commit-enforcement-precommit-installed',
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec15ManualClaimsEnforcedArgs,
+    revert: gm12Spec15PrecommitEnforcedArgs,
+  },
+  {
+    id: 'GM12S15 goal-maestro-p0-commit-enforcement-precommit-material-proof',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec15WeakPrecommitInstalledArgs,
     revert: gm12Spec15PrecommitEnforcedArgs,
   },
   // GM12S16 — SPEC-016 classifies Git repository admission before execution.

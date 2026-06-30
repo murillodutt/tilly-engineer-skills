@@ -1572,6 +1572,14 @@ function addCommitEnforcementClassificationChecks() {
     enforcementClaims.length === 0 || precommitStatus === 'installed',
     'report claims pre-commit enforcement without installed hook evidence',
   );
+  if (commitMode === 'precommit_enforced') {
+    const proofFailures = precommitInstalledEvidenceProofFailures(precommitEvidence);
+    commitEnforcementCheck(
+      'pre-commit enforced mode has material hook proof',
+      proofFailures.length === 0,
+      `precommit_enforced requires installed hook proof: missing ${proofFailures.join(', ')}`,
+    );
+  }
   commitEnforcementCheck(
     'manual commit mode is reported honestly',
     commitMode !== 'manual' || enforcementClaims.length === 0,
@@ -3230,6 +3238,58 @@ function normalizePrecommitEvidenceStatus(value) {
   if (status === 'installed' || status === 'hook installed' || status === 'precommit installed') return 'installed';
   if (status === 'precommit not installed' || status === 'not installed' || status === 'missing') return 'precommit_not_installed';
   return status;
+}
+
+function evidenceFlag(value, fields) {
+  if (!isPlainObject(value)) return false;
+  return fields.some((field) => {
+    const item = value[field];
+    if (item === true) return true;
+    const normalized = normalizeSemanticValue(item);
+    return ['true', 'yes', 'present', 'exists', 'observed', 'pass', 'executable', 'shebang'].includes(normalized);
+  });
+}
+
+function precommitInstalledEvidenceProofFailures(value) {
+  const failures = [];
+  if (!isPlainObject(value)) return ['precommit_evidence'];
+  const hookPath = firstNonEmptyString(
+    value.hook_path,
+    value.hookPath,
+    value.path,
+    value.installed_path,
+    value.active_entrypoint,
+  );
+  const hooksPath = firstNonEmptyString(
+    value.resolved_hooks_path,
+    value.resolvedHooksPath,
+    value.hooks_path,
+    value.hooksPath,
+    value.core_hooks_path,
+    value.coreHooksPath,
+    value.hook_dir,
+    value.hooks_dir,
+  );
+  const evidenceRef = firstNonEmptyString(
+    value.evidence_ref,
+    value.evidenceRef,
+    value.proof_ref,
+    value.proofRef,
+    value.gate_command,
+    value.gateCommand,
+    value.hook_probe_command,
+    value.hookProbeCommand,
+    value.oracle_wiring_proof,
+    value.oracleWiringProof,
+  );
+  if (!nonEmptyString(hookPath)) failures.push('hook_path');
+  if (!evidenceFlag(value, ['hook_exists', 'exists', 'precommit_exists', 'hook_installed'])) failures.push('hook_exists');
+  if (!evidenceFlag(value, ['hook_executable_or_shebang', 'hook_executable', 'executable', 'is_executable', 'shebang', 'has_shebang'])) {
+    failures.push('hook_executable_or_shebang');
+  }
+  if (!nonEmptyString(hooksPath)) failures.push('resolved_hooks_path');
+  if (!nonEmptyString(evidenceRef)) failures.push('evidence_ref_or_gate_command');
+  return failures;
 }
 
 function commitEnforcementReportSurfaces(value) {

@@ -13,9 +13,10 @@ from typing import Any
 import command_trigger_oracle
 import capsule_residue_oracle
 import mantra_gate_adoption_oracle
+import tes_install
 
 
-VERSION = "0.3.230"
+VERSION = "0.3.231"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -34,6 +35,7 @@ REPAIR_ROUTES = {
     "quality_gates_path": "Run tes_legacy_retirement.py or tes_update.py to replace retired discipline paths, then recertify.",
     "artifact_hygiene": "Remove OS residue from package source/materialized setup surfaces, rebuild materialization if authorized, then recertify.",
     "hook_config_hygiene": "Remove or regenerate stale hook config through tes_install.py attach/detach/update, then recertify.",
+    "hook_runtime_health": "Repair or intentionally detach TES hooks, then rerun tes_install.py hook-health and installed certification.",
     "pretooluse_contract_reference": "Rerun tes_install.py from the package version that owns the installed target, then recertify.",
 }
 ROOT = Path(__file__).resolve().parents[1]
@@ -165,6 +167,34 @@ def hook_config_hygiene(target: Path) -> dict[str, Any]:
     }
 
 
+def hook_runtime_health(target: Path) -> dict[str, Any]:
+    """Certify installed hook runtime health when the lock declares hooks."""
+    lock = read_json(target / LOCK_PATH)
+    attached_surfaces = lock.get("attached_surfaces") if isinstance(lock.get("attached_surfaces"), list) else []
+    if "hooks" not in attached_surfaces and not any(
+        (target / relpath).exists()
+        for relpath in (
+            ".codex/config.toml",
+            ".claude/settings.json",
+            ".cursor/hooks.json",
+            ".tes/runtime/hooks/executed.jsonl",
+            ".tes/hooks/executed.jsonl",
+        )
+    ):
+        return {"status": "NOT_APPLIED", "reason": "hooks not attached"}
+    result = tes_install.hook_health_payload(target)
+    return {
+        "status": result.get("status"),
+        "attached_surfaces": result.get("attached_surfaces", []),
+        "sentinels": result.get("sentinels", {}),
+        "agents": result.get("agents", {}),
+        "findings": result.get("findings", []),
+        "helper_contract_status": result.get("helper_contract_status"),
+        "floor_status": result.get("floor_status"),
+        "ceiling_status": result.get("ceiling_status"),
+    }
+
+
 def pretooluse_contract_reference(target: Path) -> dict[str, Any]:
     """Verify the installed PreToolUse contract copy and lock without source reads."""
     has_capsule_signal = any(
@@ -264,12 +294,13 @@ def evaluate(target: Path) -> dict[str, Any]:
         "quality_gates_path": quality,
         "artifact_hygiene": hygiene,
         "hook_config_hygiene": hook_hygiene,
+        "hook_runtime_health": hook_runtime_health(target),
         "pretooluse_contract_reference": contract_reference,
     }
     findings: list[dict[str, Any]] = []
     for name, payload in components.items():
         status = str(payload.get("status") or "UNKNOWN")
-        if status in {"PASS", "OK", "NOT_APPLIED"}:
+        if status in {"PASS", "PASS_WITH_FINDINGS", "OK", "NOT_APPLIED"}:
             continue
         findings.append(
             {
@@ -371,17 +402,43 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     (target / ".codex").mkdir(parents=True, exist_ok=True)
     codex_config = "[mcp_servers.tes-cortex]\ncommand = \"python3\"\n"
     if healthy:
-        codex_config += '\n[hooks.SessionStart]\ncommand = ".tes/bin/tes_install.py postinstall --agent codex"\n'
+        codex_config += (
+            '\n[[hooks.SessionStart]]\ncommand = "python3 .tes/bin/tes_install.py hook --agent codex --target ."\n'
+            '\n[[hooks.PreToolUse]]\ncommand = "python3 .tes/bin/tes_install.py hook --agent codex --target ."\n'
+        )
     (target / ".codex/config.toml").write_text(codex_config, encoding="utf-8")
     if healthy:
         (target / ".claude/settings.json").parent.mkdir(parents=True, exist_ok=True)
         (target / ".claude/settings.json").write_text(
-            json.dumps({"hooks": {"SessionStart": [".tes/bin/tes_install.py postinstall --agent claude"]}}) + "\n",
+            json.dumps(
+                {
+                    "hooks": {
+                        "SessionStart": [
+                            {"hooks": [{"command": "python3 .tes/bin/tes_install.py hook --agent claude --target ."}]}
+                        ],
+                        "PreToolUse": [
+                            {"matcher": "*", "hooks": [{"command": "python3 .tes/bin/tes_install.py hook --agent claude --target ."}]}
+                        ],
+                    }
+                },
+                sort_keys=True,
+            )
+            + "\n",
             encoding="utf-8",
         )
         (target / ".cursor/hooks.json").parent.mkdir(parents=True, exist_ok=True)
         (target / ".cursor/hooks.json").write_text(
-            json.dumps({"hooks": {"SessionStart": [".tes/bin/tes_install.py postinstall --agent cursor"]}}) + "\n",
+            json.dumps(
+                {
+                    "hooks": {
+                        "sessionStart": [{"command": "python3 .tes/bin/tes_install.py hook --agent cursor --target ."}],
+                        "beforeSubmitPrompt": [{"command": "python3 .tes/bin/tes_install.py hook --agent cursor --target ."}],
+                        "preToolUse": [{"command": "python3 .tes/bin/tes_install.py hook --agent cursor --target ."}],
+                    }
+                },
+                sort_keys=True,
+            )
+            + "\n",
             encoding="utf-8",
         )
     (target / ".mcp.json").write_text(json.dumps({"mcpServers": {"tes-cortex": {"command": "python3"}}}) + "\n", encoding="utf-8")
@@ -405,6 +462,28 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     }
     (target / ".tes").mkdir(parents=True, exist_ok=True)
     (target / ".tes/manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if healthy:
+        bin_dir = target / ".tes/bin"
+        bin_dir.mkdir(parents=True, exist_ok=True)
+        for helper in ("pretooluse_kernel.py", "pretooluse_session.py", "cortex_runtime.py", "cortex.py"):
+            source = ROOT / "scripts" / helper
+            if source.is_file():
+                (bin_dir / helper).write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        ledger = target / ".tes/runtime/hooks/executed.jsonl"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        records = [
+            {"agent": "codex", "event": "SessionStart", "event_canonical": "SessionStart", "mode": "session_start", "session": "healthy-codex"},
+            {"agent": "codex", "event": "PreToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "healthy-codex", "schema_version": "pretooluse_decision@2"},
+            {"agent": "claude", "event": "SessionStart", "event_canonical": "SessionStart", "mode": "session_start", "session": "healthy-claude"},
+            {"agent": "claude", "event": "PreToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "healthy-claude", "schema_version": "pretooluse_decision@2"},
+            {"agent": "cursor", "event": "sessionStart", "event_canonical": "sessionStart", "mode": "session_start", "session": "healthy-cursor"},
+            {"agent": "cursor", "event": "beforeSubmitPrompt", "event_canonical": "beforeSubmitPrompt", "mode": "before_submit_prompt", "session": "healthy-cursor"},
+            {"agent": "cursor", "event": "preToolUse", "event_canonical": "PreToolUse", "mode": "pretooluse", "session": "healthy-cursor", "schema_version": "pretooluse_decision@2"},
+        ]
+        ledger.write_text(
+            "".join(json.dumps({**record, "ts": "2026-06-30T00:00:00Z"}, sort_keys=True) + "\n" for record in records),
+            encoding="utf-8",
+        )
     contract_text = "# PreToolUse Contract\n\nFixture contract.\n"
     contract_path = target / PRETOOLUSE_CONTRACT_INSTALLED_PATH
     contract_path.parent.mkdir(parents=True, exist_ok=True)
@@ -412,6 +491,7 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     lock = {
         "schema": "tes-install-lock@1",
         "version": VERSION,
+        "attached_surfaces": ["capsule", "hooks", "mcp", "root-context", "skills"],
         "pretooluse_contract": {
             "package_path": PRETOOLUSE_CONTRACT_PACKAGE_PATH,
             "installed_path": PRETOOLUSE_CONTRACT_INSTALLED_PATH,

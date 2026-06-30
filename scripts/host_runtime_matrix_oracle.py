@@ -278,7 +278,23 @@ def _assert_install_scope(payload: dict[str, Any], failures: list[str]) -> None:
         detail = " ".join(str(part) for part in _as_list(item.get("detail")))
         if item.get("component") == "mcp_registration" and "missing tes-cortex" in detail:
             continue
+        if _is_expected_hook_runtime_evidence_gap(item):
+            continue
         failures.append(f"install: unexpected certification finding {item!r}")
+
+
+def _is_expected_hook_runtime_evidence_gap(finding: dict[str, Any]) -> bool:
+    """Keep configured-only hook evidence explicit without making matrix install fail."""
+    if finding.get("component") != "hook_runtime_health" or finding.get("status") != "NEEDS_EVIDENCE":
+        return False
+    details = _as_list(finding.get("detail"))
+    if not details:
+        return False
+    return all(
+        _as_dict(item).get("severity") == "info"
+        and _as_dict(item).get("type") == "configured_without_runtime_observation"
+        for item in details
+    )
 
 
 def _assert_installed_configs(target: Path, failures: list[str]) -> None:

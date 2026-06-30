@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.230"
+VERSION = "0.3.231"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -1416,7 +1416,7 @@ def attach(args: argparse.Namespace) -> int:
             import attach_health_oracle  # type: ignore
             health = attach_health_oracle.evaluate(target, surface)
         status = "DRY-RUN" if args.dry_run else (
-            "ATTACHED" if health.get("status") in {"PASS", "PENDING_TRUST", "PENDING_HOST_RESTART", "HOST_UNOBSERVABLE", "NOT_APPLIED"}
+            "ATTACHED" if health.get("status") in {"PASS", "PENDING_TRUST", "PENDING_HOST_RESTART", "HOST_UNOBSERVABLE"}
             else str(health.get("status"))
         )
         result = {"version": VERSION, "status": status, "target": str(target), "surface": surface, "writer": writer, "health": health}
@@ -2888,7 +2888,7 @@ def hook_ceiling_status(floor_status: str, ceiling_gaps: list[str]) -> str:
 def installed_pretooluse_helper_contract_status(target: Path) -> str:
     """Verify the installed PreToolUse helper contract without source imports."""
     bin_dir = target / ".tes/bin"
-    helper_paths = [bin_dir / "pretooluse_kernel.py", bin_dir / "pretooluse_session.py"]
+    helper_paths = [bin_dir / helper for helper in HOOK_RUNTIME_HELPERS]
     if not all(path.is_file() for path in helper_paths):
         return "MISSING"
 
@@ -2914,6 +2914,9 @@ try:
     for name in ("coordinate_pretooluse_context", "pretooluse_session_id", "pretooluse_sentinel_path"):
         if not callable(getattr(session, name, None)):
             failures.append(f"pretooluse_session missing callable {name}")
+    cortex_runtime_text = (bin_dir / "cortex_runtime.py").read_text(encoding="utf-8", errors="ignore")
+    if "def evaluate_runtime_event" not in cortex_runtime_text:
+        failures.append("cortex_runtime missing evaluate_runtime_event definition")
     hook_input = {
         "hook_event_name": "PreToolUse",
         "tool_name": "PatchFile",
@@ -2979,9 +2982,24 @@ def pretooluse_discoverability_status(records: list[dict[str, Any]]) -> str:
     return "NEEDS_EVIDENCE" if has_v2_pretooluse else "MISSING"
 
 
+def attached_surfaces_from_lock(target: Path) -> set[str]:
+    """Read the install lock's declared surfaces for health/admission checks."""
+    lock = read_json(target / LOCK_PATH)
+    surfaces = lock.get("attached_surfaces")
+    if not isinstance(surfaces, list):
+        return set()
+    return {str(surface) for surface in surfaces if isinstance(surface, str)}
+
+
+def hook_surface_attached(target: Path) -> bool:
+    return "hooks" in attached_surfaces_from_lock(target)
+
+
 def hook_health_payload(target: Path, *, current_host: str | None = None) -> dict[str, Any]:
     target = target_root(target)
     configured = configured_hook_events(target)
+    attached_surfaces = attached_surfaces_from_lock(target)
+    hooks_attached = "hooks" in attached_surfaces
     current_records = read_hook_execution_records(target, HOOK_SENTINEL_PATH)
     legacy_records = read_hook_execution_records(target, LEGACY_HOOK_SENTINEL_PATH)
     duplicate_records = duplicate_hook_records(current_records)
@@ -3063,23 +3081,57 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
         for agent in agents.values()
         for event in agent["events"]
     )
+    any_configured = any(
+        event["state"] == "CONFIGURED" or event["state"] == "OBSERVED"
+        for agent in agents.values()
+        for event in agent["events"]
+    )
+    all_not_configured = all(
+        event["state"] == "NOT_CONFIGURED"
+        for agent in agents.values()
+        for event in agent["events"]
+    )
+    if hooks_attached and all_not_configured:
+        findings.append(
+            {
+                "severity": "error",
+                "type": "attached_hooks_without_config",
+                "lock_path": LOCK_PATH.as_posix(),
+                "attached_surfaces": sorted(attached_surfaces),
+            }
+        )
     configured_only = any(
         event["state"] == "CONFIGURED"
         for agent in agents.values()
         for event in agent["events"]
     )
+    helper_contract_status = installed_pretooluse_helper_contract_status(target)
+    if hooks_attached and helper_contract_status != "PASS":
+        findings.append(
+            {
+                "severity": "error",
+                "type": "installed_hook_helper_contract_invalid",
+                "helper_contract_status": helper_contract_status,
+                "expected_helpers": list(HOOK_RUNTIME_HELPERS),
+            }
+        )
     finding_counts = {
         "error": sum(1 for finding in findings if finding.get("severity") == "error"),
         "warning": sum(1 for finding in findings if finding.get("severity") == "warning"),
         "info": sum(1 for finding in findings if finding.get("severity") == "info"),
     }
-    status_value = "PASS"
-    if unexpected or finding_counts["error"]:
+    if not hooks_attached and not any_configured and not current_records and not legacy_records:
+        status_value = "NOT_APPLIED"
+    elif unexpected or finding_counts["error"]:
         status_value = "DEGRADED"
     elif configured_only:
         status_value = "NEEDS_EVIDENCE"
+    elif not any_configured and (current_records or legacy_records):
+        status_value = "DEGRADED"
     elif findings:
         status_value = "PASS_WITH_FINDINGS"
+    else:
+        status_value = "PASS"
 
     floor_status_value = hook_floor_status(status_value, current_records)
     ceiling_evidence_scope, ceiling_gaps = pretooluse_ceiling_evidence(
@@ -3088,7 +3140,6 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
         current_host=current_host if current_host in AGENTS else None,
     )
     ceiling_status_value = hook_ceiling_status(floor_status_value, ceiling_gaps)
-    helper_contract_status = installed_pretooluse_helper_contract_status(target)
     discoverability_status = pretooluse_discoverability_status(current_records)
 
     return {
@@ -3096,6 +3147,7 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
         "legacy_schema": HOOK_HEALTH_LEGACY_SCHEMA_VERSION,
         "version": VERSION,
         "status": status_value,
+        "attached_surfaces": sorted(attached_surfaces),
         "helper_contract_status": helper_contract_status,
         "discoverability_status": discoverability_status,
         "floor_status": floor_status_value,
