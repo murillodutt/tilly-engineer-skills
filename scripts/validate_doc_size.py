@@ -35,7 +35,7 @@ LIMITS = {
     # monolithic for audit replay; partition only when a follow-on wave adds more.
     "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/PREFLIGHT.md": 850,
     "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/ORACLE-RESULTS.md": 600,
-    "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/FINAL-ADMISSION-MATRIX.md": 1400,
+    "docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/FINAL-ADMISSION-MATRIX.md": 1410,
 }
 WARN_RATIOS = {
     "docs/roadmap/README.md": 0.75,

@@ -883,6 +883,13 @@ documents:
     consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-canary-pre-goal-maestro-cleanroom-fix.md
+    id: roadmap.goal_super_spec.tes_canary_pre_goal_maestro_cleanroom_fix
+    class: roadmap
+    status: active
+    consumer: maintainers, Cursor execution agents, installer authors, oracle authors, canary operators, and Goal Maestro operators
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-ceiling-self-falsifying.md
     id: roadmap.goal_ledger_ceiling_self_falsifying
     class: roadmap
@@ -1674,3 +1681,80 @@ documents:
     consumer: maintainers, release reviewers, hook-audit operators, and public-doc reviewers
     source_of_truth: false
     evidence_level: L1
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/CANARY-REPAIR.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.canary_repair_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/FINAL-ADMISSION-MATRIX.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.final_admission_matrix_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/FINAL-ADMISSION.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.final_admission_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/FIX-PLAN.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.fix_plan_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/GIT-GATES.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.git_gates_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/HOOK-EVIDENCE.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.hook_evidence_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/JOURNAL.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.journal_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/ORACLE-RESULTS.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.oracle_results_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/PARALLEL-AUDIT-OFFICIAL.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.parallel_audit_official_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/PREFLIGHT.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.preflight_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-pre-goal-maestro-cleanroom-fix-20260630T132334Z-tes-canary-pre-goal-maestro-cleanroom-fix/SOURCE-CHANGES.md
+    id: evidence.canary_pre_goal_maestro_cleanroom_fix.source_changes_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2

@@ -1,3 +1,12 @@
+---
+tds_id: evidence.canary_pre_goal_maestro_cleanroom_fix.source_changes_20260630
+tds_class: evidence
+status: active
+consumer: maintainers, canary operators, and Goal Maestro operators
+source_of_truth: false
+evidence_level: L2
+---
+
 # SOURCE-CHANGES
 
 Portable fixes applied in `/Users/murillo/Dev/tilly-engineer-skills`:

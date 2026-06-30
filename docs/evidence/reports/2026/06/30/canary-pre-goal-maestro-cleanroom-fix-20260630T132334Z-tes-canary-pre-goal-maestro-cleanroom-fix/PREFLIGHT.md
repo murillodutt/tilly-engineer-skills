@@ -1,3 +1,12 @@
+---
+tds_id: evidence.canary_pre_goal_maestro_cleanroom_fix.preflight_20260630
+tds_class: evidence
+status: active
+consumer: maintainers, canary operators, and Goal Maestro operators
+source_of_truth: false
+evidence_level: L2
+---
+
 ## cursor
 ### git
 fatal: not a git repository (or any of the parent directories): .git

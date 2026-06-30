@@ -1610,13 +1610,28 @@ def write_alignment_fixture(target: Path) -> None:
     write(target / "README.md", "# Update Fixture\n")
     write(target / "package.json", '{"scripts":{"test":"node test.js","lint":"eslint ."}}\n')
     write_context_fixture(target)
+    write(
+        target / "docs/agents/DOCUMENTATION-AUTHORITY.md",
+        alignment_frontmatter("documentation-authority")
+        + "# Documentation Authority\n\n"
+        + "Use `docs/agents/**` as the operating mesh. Treat `PROJECT-CONTEXT.md`, "
+        + "`PROJECT-STATE.md`, and `EXECUTION-LINE.md` as the current project control surfaces.\n",
+    )
+    write(
+        target / "docs/agents/contracts/OPERATING-MESH-CONTRACT.md",
+        alignment_frontmatter("operating-mesh-contract")
+        + "# Operating Mesh Contract\n\n"
+        + "The fixture mesh must keep documentation authority, execution line, quality gates, "
+        + "boundaries, knowledge lifecycle, glossary, decisions, and retained evidence aligned.\n",
+    )
     context_path = target / "docs/agents/PROJECT-CONTEXT.md"
     context_text = read_text(context_path)
     write(
         context_path,
         alignment_frontmatter("project-context")
         + context_text
-        + "Related: [[PROJECT-STATE]], [[PROJECT-ROADMAP]], [[QUALITY-GATES]].\n",
+        + "Related: [[DOCUMENTATION-AUTHORITY]], [[PROJECT-STATE]], [[PROJECT-ROADMAP]], [[QUALITY-GATES]].\n"
+        + "Source anchor: docs/agents/DOCUMENTATION-AUTHORITY.md\n",
     )
     write(
         target / "docs/agents/PROJECT-STATE.md",
