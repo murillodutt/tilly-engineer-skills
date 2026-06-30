@@ -5,6 +5,12 @@
 
 Do not restart from zero. Use the real worktree and Git state as the source of truth.
 
+Goal Maestro enrichment contract: treat the user's mature artifact as intent,
+not as a pre-optimized execution prompt. Derive the execution tree,
+`ACTIVE_SPEC` queue, structural method, oracle packet, evidence contract, stop
+states, Execution Thermometer fields, and optional heartbeat prompt sidecar from
+the artifact plus explicit options.
+
 Main SPEC: <path/to/spec.md>
 
 Anchor artifact:
@@ -133,6 +139,7 @@ Execution Loop:
 - Certification repairs are allowed only as bounded `audit_repair` work inside the active final/audit SPEC, with local commit evidence and rerun oracles.
 - Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without new material evidence stops for owner decision or contract instability.
 - Execution Thermometer Hook: after loop close or honest stop, run default/always-on local report/package generation from the persistent ledger, record Thermometer report/share fields separately, and do not rewrite Goal Maestro execution stop states unless report generation was explicitly the active product requirement.
+- Thermometer loop semantics: one Goal Maestro loop run or honest stop is one Thermometer loop; multiple `ACTIVE_SPEC` entries inside that run remain one loop with multiple `spec_results`, while `L2`, `L3`, and later anchors require accumulated separate loop runs in the same series.
 - Final stop requires Executive Stop Audit.
 
 Negative grep semantics:

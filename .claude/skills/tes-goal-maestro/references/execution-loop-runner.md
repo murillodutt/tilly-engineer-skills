@@ -14,6 +14,8 @@ The execution loop is not default Goal Maestro behavior. It is an opt-in executi
 
 If `--execute-loop` appears together with `next_prompt_handoff=true` or `--next-prompt-handoff`, the execution loop takes precedence for internal continuation. The parent runner may generate and execute the next active-SPEC prompt only after parent validation of the current SPEC. The ordinary Next Prompt Handoff rule still applies after the loop stops or completes, and workers remain forbidden from authoritative next-prompt generation or later SPEC execution.
 
+If `--execute-loop` appears together with `--audit-heartbeat-prompt`, the execution loop remains primary. The parent emits the heartbeat prompt as a same-response read-only sidecar in the Goal Maestro response or closeout; it must not create or request a second Goal Maestro command, schedule the heartbeat, or let it execute the loop.
+
 `--execute-loop` authorizes the parent to orchestrate the loop, not to replace worker execution when worker creation is unavailable. Parent-side worker fallback requires the exact `--execute-loop-parent-fallback` flag in the current user request.
 
 ## Lifecycle
@@ -263,6 +265,17 @@ The hook must use the current loop ledger as its ledger reference. It must not
 fetch, push, publish, start a server, read runtime YAML/JSON from HTML, or open a
 remote share lane. GitHub sharing remains opt-in and belongs to the Share Gate
 and GitHub export dry-run contracts.
+
+The report is local evidence, not telemetry, not a dashboard, and not a server.
+
+A Thermometer loop is one Goal Maestro loop run or honest stop. Multiple
+`ACTIVE_SPEC` entries inside the same run remain one Thermometer loop, usually
+`L1`, with multiple `spec_results` and `spec_ids`. `L2`, `L3`, and later loop
+anchors are expected only when the report intentionally accumulates separate loop runs
+in the same series. Do not fail a single-run report because it has
+only `L1` when `spec_results` covers all executed SPECs. Do not generate a
+package after every SPEC by default; generation happens after loop close or
+honest stop.
 
 A report generation failure, sanitizer block, missing destination, declined
 share, or GitHub auth block must not rewrite Goal Maestro execution stop states.

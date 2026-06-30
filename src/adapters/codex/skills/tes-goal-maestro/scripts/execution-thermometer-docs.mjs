@@ -193,6 +193,19 @@ function runInstalledChecks(skillRoot) {
         template.includes('do not rewrite Goal Maestro execution stop states'),
     },
     {
+      name: 'installed skill documents loop-versus-SPEC accumulation semantics',
+      pass: runner.includes('A Thermometer loop is one Goal Maestro loop run or honest stop') &&
+        runner.includes('Multiple') &&
+        runner.includes('ACTIVE_SPEC') &&
+        runner.includes('remain one Thermometer loop') &&
+        runner.includes('L2') &&
+        runner.includes('separate loop runs') &&
+        runner.includes('package after every SPEC by default') &&
+        template.includes('Thermometer loop semantics:') &&
+        extractScript.includes('loop_semantics') &&
+        extractScript.includes('one_goal_maestro_run_per_thermometer_loop'),
+    },
+    {
       name: 'installed package script names package files',
       pass: packageFiles.every((file) => packageScript.includes(file)),
     },

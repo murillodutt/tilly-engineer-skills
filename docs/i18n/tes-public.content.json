@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.229 · local bundle certified",
-      "manual_meta": "User manual · v0.3.229",
-      "version": "v0.3.229",
+      "release_meta": "v0.3.230 · local bundle certified",
+      "manual_meta": "User manual · v0.3.230",
+      "version": "v0.3.230",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.229 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.229",
-      "version": "v0.3.229",
+      "release_meta": "v0.3.230 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.230",
+      "version": "v0.3.230",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.229 · bundle local certificado",
-      "manual_meta": "Manual do usuário · v0.3.229",
-      "version": "v0.3.229",
+      "release_meta": "v0.3.230 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.230",
+      "version": "v0.3.230",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -467,17 +467,17 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "non-interactive",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -497,7 +497,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.229` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
+            "text": "`#v0.3.230` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
           },
           {
             "type": "p",
@@ -513,17 +513,17 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "no interactivo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -543,7 +543,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.229` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
+            "text": "`#v0.3.230` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
           },
           {
             "type": "p",
@@ -559,17 +559,17 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "não interativo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -589,7 +589,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.229` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
+            "text": "`#v0.3.230` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
           },
           {
             "type": "p",
@@ -617,7 +617,7 @@
               },
               {
                 "title": "Run goals",
-                "body": "Use `/tes-goal-maestro` for one mature SPEC, add next-prompt handoff for staged work, request `--execute-loop` for sequential execution, or add `--audit-heartbeat-prompt` only when you need a copy-ready read-only auditor prompt."
+                "body": "Use `/tes-goal-maestro` for one mature artifact, add next-prompt handoff for staged work, request `--execute-loop` for sequential execution, or add `--audit-heartbeat-prompt` for a copy-ready read-only auditor prompt."
               },
               {
                 "title": "Audit",
@@ -645,7 +645,7 @@
               },
               {
                 "title": "Ejecutar goals",
-                "body": "Usa `/tes-goal-maestro` para una SPEC madura, suma next-prompt handoff para trabajo por etapas, pide `--execute-loop` para ejecucion secuencial o agrega `--audit-heartbeat-prompt` solo cuando necesites un prompt de auditor read-only listo para copiar."
+                "body": "Usa `/tes-goal-maestro` para un artefacto maduro, suma next-prompt handoff para trabajo por etapas, pide `--execute-loop` para ejecucion secuencial o agrega `--audit-heartbeat-prompt` para un prompt de auditor read-only listo para copiar."
               },
               {
                 "title": "Auditar",
@@ -673,7 +673,7 @@
               },
               {
                 "title": "Executar goals",
-                "body": "Use `/tes-goal-maestro` para uma SPEC madura, acrescente next-prompt handoff para trabalho em etapas, peça `--execute-loop` para execução sequencial ou adicione `--audit-heartbeat-prompt` só quando precisar de um prompt de auditoria read-only pronto para copiar."
+                "body": "Use `/tes-goal-maestro` para um artefato maduro, acrescente next-prompt handoff para trabalho em etapas, peça `--execute-loop` para execução sequencial ou adicione `--audit-heartbeat-prompt` para um prompt de auditoria read-only pronto para copiar."
               },
               {
                 "title": "Auditar",
@@ -858,12 +858,12 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -888,7 +888,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.229` is the fixed-ref install form. Runtime bundles stage under `.tes/setup/<version>/`; treat that folder as local cache."
+            "text": "`#v0.3.230` is the fixed-ref install form. Runtime bundles stage under `.tes/setup/<version>/`; treat that folder as local cache."
           },
           {
             "type": "p",
@@ -904,12 +904,12 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -934,7 +934,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.229` es la forma de ref fija. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; trata esa carpeta como cache local."
+            "text": "`#v0.3.230` es la forma de ref fija. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; trata esa carpeta como cache local."
           },
           {
             "type": "p",
@@ -950,12 +950,12 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -980,7 +980,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.229` é a forma de ref fixa. Bundles runtime são preparados em `.tes/setup/<version>/`; trate essa pasta como cache local."
+            "text": "`#v0.3.230` é a forma de ref fixa. Bundles runtime são preparados em `.tes/setup/<version>/`; trate essa pasta como cache local."
           },
           {
             "type": "p",
@@ -1003,7 +1003,7 @@
               "`/tes-map` shows where the project is, what is blocked, and the next safe move.",
               "`/tes-update` checks for updates before writing anything.",
               "`/tes-doctor` diagnoses install or runtime problems.",
-              "`/tes-goal-maestro` turns a mature plan into an execution-ready goal prompt; `--execute-loop` runs the loop and `--audit-heartbeat-prompt` only emits the read-only auditor prompt.",
+              "`/tes-goal-maestro` enriches a mature artifact into an execution-ready goal prompt; `--execute-loop` runs the loop and `--audit-heartbeat-prompt` emits the read-only auditor prompt standalone or as a same-response sidecar.",
               "`/tes-cortex` reviews or records project memory when you approve it.",
               "`/tes-mcp` repairs or registers project-scoped MCP.",
               "`/tes-field-reports` disables, enables, or inspects sanitized reports."
@@ -1032,7 +1032,7 @@
               "`/tes-map` muestra donde esta el proyecto, que esta bloqueado y el siguiente movimiento seguro.",
               "`/tes-update` revisa actualizaciones antes de escribir nada.",
               "`/tes-doctor` diagnostica problemas de instalacion o runtime.",
-              "`/tes-goal-maestro` convierte un plan maduro en un prompt goal listo para ejecutar; `--execute-loop` corre el loop y `--audit-heartbeat-prompt` solo emite el prompt auditor read-only.",
+              "`/tes-goal-maestro` enriquece un artefacto maduro en un prompt goal listo para ejecutar; `--execute-loop` corre el loop y `--audit-heartbeat-prompt` emite el prompt auditor read-only solo o como sidecar en la misma respuesta.",
               "`/tes-cortex` revisa o registra memoria del proyecto cuando lo apruebas.",
               "`/tes-mcp` repara o registra MCP con escopo de proyecto.",
               "`/tes-field-reports` desactiva, activa o inspecciona reportes sanitizados."
@@ -1061,7 +1061,7 @@
               "`/tes-map` mostra onde o projeto está, o que está bloqueado e o próximo movimento seguro.",
               "`/tes-update` confere atualizações antes de escrever qualquer coisa.",
               "`/tes-doctor` diagnostica problemas de instalação ou runtime.",
-              "`/tes-goal-maestro` transforma um plano maduro em um prompt goal pronto para executar; `--execute-loop` roda o loop e `--audit-heartbeat-prompt` só emite o prompt auditor read-only.",
+              "`/tes-goal-maestro` enriquece um artefato maduro em um prompt goal pronto para executar; `--execute-loop` roda o loop e `--audit-heartbeat-prompt` emite o prompt auditor read-only sozinho ou como sidecar na mesma resposta.",
               "`/tes-cortex` revisa ou registra memória do projeto quando você aprova.",
               "`/tes-mcp` repara ou registra MCP com escopo de projeto.",
               "`/tes-field-reports` desativa, ativa ou inspeciona relatórios sanitizados."
@@ -1432,9 +1432,9 @@
           {
             "type": "list",
             "items": [
-              "**One plan:** use `/tes-goal-maestro` when a mature SPEC or plan needs a reliable goal prompt.",
+              "**One artifact:** use `/tes-goal-maestro` when a mature ADR, PRD, SPEC, Super SPEC, plan, or contextualized objective needs a reliable goal prompt.",
               "**Long work:** ask for `--execute-loop` only when you want sequential units with local commits and a final audit.",
-              "**Audit heartbeat:** add `--audit-heartbeat-prompt` only when you want a copy-ready read-only auditor prompt; it never runs, schedules, shares, or edits.",
+              "**Audit heartbeat:** add `--audit-heartbeat-prompt` when you want a copy-ready read-only auditor prompt; with `--execute-loop`, it is emitted as a same-response sidecar and never runs, schedules, shares, or edits.",
               "**Visible work:** for UI, canvas, or 3D, expect rendered evidence, not only a green build."
             ]
           }
@@ -1452,9 +1452,9 @@
           {
             "type": "list",
             "items": [
-              "**Un plan:** usa `/tes-goal-maestro` cuando una SPEC o plan maduro necesita un goal prompt confiable.",
+              "**Un artefacto:** usa `/tes-goal-maestro` cuando una ADR, PRD, SPEC, Super SPEC, plan u objetivo contextualizado necesita un goal prompt confiable.",
               "**Trabajo largo:** pide `--execute-loop` solo cuando quieras unidades secuenciales con commits locales y auditoria final.",
-              "**Audit heartbeat:** agrega `--audit-heartbeat-prompt` solo cuando quieras un prompt auditor read-only listo para copiar; nunca ejecuta, agenda, comparte ni edita.",
+              "**Audit heartbeat:** agrega `--audit-heartbeat-prompt` cuando quieras un prompt auditor read-only listo para copiar; con `--execute-loop`, se emite como sidecar en la misma respuesta y nunca ejecuta, agenda, comparte ni edita.",
               "**Trabajo visible:** para UI, canvas o 3D, espera evidencia renderizada, no solo build verde."
             ]
           }
@@ -1472,9 +1472,9 @@
           {
             "type": "list",
             "items": [
-              "**Um plano:** use `/tes-goal-maestro` quando uma SPEC ou plano maduro precisa de um goal prompt confiável.",
+              "**Um artefato:** use `/tes-goal-maestro` quando uma ADR, PRD, SPEC, Super SPEC, plano ou objetivo contextualizado precisa de um goal prompt confiável.",
               "**Trabalho longo:** peça `--execute-loop` só quando quiser unidades sequenciais com commits locais e auditoria final.",
-              "**Audit heartbeat:** adicione `--audit-heartbeat-prompt` só quando quiser um prompt auditor read-only pronto para copiar; ele nunca executa, agenda, compartilha ou edita.",
+              "**Audit heartbeat:** adicione `--audit-heartbeat-prompt` quando quiser um prompt auditor read-only pronto para copiar; com `--execute-loop`, ele sai como sidecar na mesma resposta e nunca executa, agenda, compartilha ou edita.",
               "**Trabalho visível:** para UI, canvas ou 3D, espere evidência renderizada, não apenas build verde."
             ]
           }
@@ -1723,7 +1723,7 @@
           },
           {
             "type": "p",
-            "text": "Universal Adversarial Audit Heartbeat is separate: request `/tes-goal-maestro --audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested`, or a direct request to generate/create the heartbeat prompt. It only emits a copy-ready English prompt; broad words such as audit, monitor, or heartbeat do not activate it, and it never edits, schedules, shares, or owns Goal Maestro stop states."
+            "text": "Universal Adversarial Audit Heartbeat is separate: request `/tes-goal-maestro --audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested`, or a direct request to generate/create the heartbeat prompt. Standalone use emits only the copy-ready English prompt; with `--execute-loop`, it is emitted as a same-response read-only sidecar. broad words such as audit, monitor, or heartbeat do not activate it, and it never edits, schedules, shares, owns Goal Maestro stop states, or creates a second Goal Maestro command."
           },
           {
             "type": "p",
@@ -1754,7 +1754,7 @@
           },
           {
             "type": "p",
-            "text": "Universal Adversarial Audit Heartbeat es separado: pide `/tes-goal-maestro --audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested` o una solicitud directa para generar/crear el heartbeat prompt. Solo emite un prompt en ingles listo para copiar; palabras amplias como audit, monitor o heartbeat no lo activan, y nunca edita, agenda, comparte ni asume los stop states de Goal Maestro."
+            "text": "Universal Adversarial Audit Heartbeat es separado: pide `/tes-goal-maestro --audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested` o una solicitud directa para generar/crear el heartbeat prompt. El uso standalone solo emite un prompt en ingles listo para copiar; con `--execute-loop`, se emite como sidecar read-only en la misma respuesta. Palabras amplias como audit, monitor o heartbeat no lo activan, y nunca edita, agenda, comparte, asume los stop states de Goal Maestro ni crea un segundo comando Goal Maestro."
           },
           {
             "type": "p",
@@ -1785,7 +1785,7 @@
           },
           {
             "type": "p",
-            "text": "Universal Adversarial Audit Heartbeat é separado: peça `/tes-goal-maestro --audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested` ou uma solicitação direta para gerar/criar o heartbeat prompt. Ele só emite um prompt em inglês pronto para copiar; palavras amplas como audit, monitor ou heartbeat não ativam o recurso, e ele nunca edita, agenda, compartilha ou assume os stop states do Goal Maestro."
+            "text": "Universal Adversarial Audit Heartbeat é separado: peça `/tes-goal-maestro --audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested` ou uma solicitação direta para gerar/criar o heartbeat prompt. O uso standalone só emite um prompt em inglês pronto para copiar; com `--execute-loop`, ele sai como sidecar read-only na mesma resposta. Palavras amplas como audit, monitor ou heartbeat não ativam o recurso, e ele nunca edita, agenda, compartilha, assume os stop states do Goal Maestro ou cria um segundo comando Goal Maestro."
           },
           {
             "type": "p",

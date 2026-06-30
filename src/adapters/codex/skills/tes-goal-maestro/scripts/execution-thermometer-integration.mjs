@@ -68,8 +68,32 @@ const checks = [
     pass: runner.includes('report generation failure') && runner.includes('must not rewrite Goal Maestro execution stop states'),
   },
   {
+    name: 'runner distinguishes Thermometer loops from ACTIVE_SPEC rows',
+    pass: runner.includes('A Thermometer loop is one Goal Maestro loop run or honest stop') &&
+      runner.includes('Multiple') &&
+      runner.includes('ACTIVE_SPEC') &&
+      runner.includes('remain one Thermometer loop') &&
+      runner.includes('L2') &&
+      runner.includes('separate loop runs') &&
+      runner.includes('Do not generate a') &&
+      runner.includes('package after every SPEC by default'),
+  },
+  {
+    name: 'runner keeps combined heartbeat as same-response sidecar',
+    pass: runner.includes('--audit-heartbeat-prompt') &&
+      runner.includes('same-response read-only sidecar') &&
+      runner.includes('must not create or request a second Goal Maestro command'),
+  },
+  {
     name: 'template carries Execution Thermometer Hook',
     pass: template.includes('Execution Thermometer Hook:') && template.includes('default/always-on local report/package generation'),
+  },
+  {
+    name: 'template carries Thermometer loop-versus-SPEC semantics',
+    pass: template.includes('Thermometer loop semantics:') &&
+      template.includes('one Goal Maestro loop run or honest stop is one Thermometer loop') &&
+      template.includes('multiple `spec_results`') &&
+      template.includes('accumulated separate loop runs'),
   },
   {
     name: 'existing execution-loop lifecycle remains free of Thermometer states',
@@ -121,6 +145,13 @@ if (cursorRulePath) {
       name: 'Cursor lazy rule keeps Thermometer separate from Goal Maestro stop states',
       pass: cursorRule.includes('must not rewrite Goal Maestro execution stop states') &&
         cursorRule.includes('Thermometer report/share fields'),
+    },
+    {
+      name: 'Cursor lazy rule documents loop-versus-SPEC accumulation semantics',
+      pass: cursorRule.includes('One explicit Goal Maestro execution or honest stop is one Thermometer loop') &&
+        cursorRule.includes('multiple SPEC results') &&
+        cursorRule.includes('L2') &&
+        cursorRule.includes('separate accumulated executions'),
     },
   );
 }

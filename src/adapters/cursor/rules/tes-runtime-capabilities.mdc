@@ -164,6 +164,13 @@ auto-activate its read-only `--governance-check`. It must dry-run target
 discovery before any write and must not commit, tag, push, publish, or edit
 remotes.
 
+Goal Maestro owns prompt enrichment. A user may provide a mature ADR, PRD,
+Super SPEC, SPEC, relational project plan, accepted execution tree, or
+contextualized objective; Cursor must not require an optimized execution prompt
+from the user. The harness derives the execution tree, active-SPEC queue,
+structural method, oracle packet, evidence contract, stop states, local report
+sidecars, and optional prompt sidecars from the artifact plus explicit options.
+
 ### Goal Maestro Audit Heartbeat Prompt
 
 The Adversarial Audit Heartbeat Prompt is a Cursor lazy capability detail, not a Cursor skill package. Cursor parity for this feature means structural and materialization coverage of the prompt-generation contract, not skill parity.
@@ -172,9 +179,12 @@ Activate it only from exact opt-in in the active request or active source
 artifact: `--audit-heartbeat-prompt`, `audit_heartbeat=true`,
 `adversarial_audit_heartbeat: requested`, or a direct request to generate or
 create an adversarial audit heartbeat prompt. The output is a copy-ready English
-auditor prompt. It is read-only, may recommend risk and checkpoints, and must
-never execute the loop, mutate files, manage host jobs, share artifacts, or
-claim the authoritative Goal Maestro stop state.
+auditor prompt. Without `--execute-loop`, this is the only heartbeat output.
+With `--execute-loop`, it is a same-response read-only sidecar in the Goal
+Maestro response or closeout, not a second Goal Maestro command. It is
+read-only, may recommend risk and checkpoints, and must never execute the loop,
+mutate files, manage host jobs, share artifacts, or claim the authoritative Goal
+Maestro stop state.
 
 Cursor host-state access may be unavailable. When latest thread or execution
 state cannot be read, the heartbeat prompt must report
@@ -194,6 +204,11 @@ network behavior, and no runtime YAML/JSON reads from the HTML report.
 The sidecar must not rewrite Goal Maestro execution stop states. It may report
 only Thermometer report/share fields, and GitHub sharing remains opt-in through
 the separate Share Gate and export contract.
+
+One explicit Goal Maestro execution or honest stop is one Thermometer loop.
+Multiple ACTIVE_SPEC rows inside that execution remain one loop with multiple SPEC results.
+L2, L3, and later anchors represent separate accumulated executions in the same
+series, not individual SPEC rows inside one execution.
 
 ## tes-init Gate Flow
 

@@ -279,8 +279,12 @@ function validateCandidate(candidate) {
   checks.push(check('no new command is introduced',
     !/\/tes-(audit|heartbeat)|\/tes:(audit|heartbeat)/i.test(promptRouteText)));
 
-  checks.push(check('heartbeat reference routes to the standalone template',
+  checks.push(check('heartbeat reference routes to the heartbeat template',
     s.heartbeatReference.includes('templates/adversarial-audit-heartbeat.template.md')));
+  checks.push(check('combined execute-loop opt-in stays same-response sidecar',
+    /same-response read-only sidecar/i.test(promptRouteText) &&
+      /Do not ask the user to run a second Goal Maestro command\./.test(s.heartbeatReference) &&
+      /Do not create, request, or imply a second `\/tes-goal-maestro` command\./.test(s.rootSkill)));
   for (const placeholder of placeholders) {
     checks.push(check(`placeholder preserved: ${placeholder}`, s.heartbeatTemplate.includes(placeholder)));
   }

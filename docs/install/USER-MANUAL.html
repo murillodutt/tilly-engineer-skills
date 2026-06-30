@@ -1204,7 +1204,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark" data-ui="brand">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.229</span>
+          <span class="brand-meta">User manual · v0.3.230</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1279,8 +1279,8 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
-            <div class="pre-wrap" data-label="fixed ref form" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="fixed ref form" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.</li>
 <li>Interactive mode asks for target, agents, install mode, and final confirmation.</li>
@@ -1292,7 +1292,7 @@
 </ol>
 <aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>Do not start project work immediately after install. Codex may need hook trust, Claude Code needs the completion notice, and Cursor needs a workspace reopen. Then run <code>/tes-setup</code>, <code>/tes-align</code>, and <code>/tes-map</code>.</p></aside>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
-<p><code>#v0.3.229</code> is the fixed-ref install form. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; treat that folder as local cache.</p>
+<p><code>#v0.3.230</code> is the fixed-ref install form. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; treat that folder as local cache.</p>
 <p>Everything TES writes can be undone. If MCP or hooks still need a restart or trust step in your editor, TES reports that instead of pretending the install is complete. For isolation-only install, pass <code>--attach capsule</code>. Details are in the <a href="REVERSIBILITY.md">reversibility guide</a>.</p>
           </div>
         </section>
@@ -1310,7 +1310,7 @@
 <li><code>/tes-map</code> shows where the project is, what is blocked, and the next safe move.</li>
 <li><code>/tes-update</code> checks for updates before writing anything.</li>
 <li><code>/tes-doctor</code> diagnoses install or runtime problems.</li>
-<li><code>/tes-goal-maestro</code> turns a mature plan into an execution-ready goal prompt; <code>--execute-loop</code> runs the loop and <code>--audit-heartbeat-prompt</code> only emits the read-only auditor prompt.</li>
+<li><code>/tes-goal-maestro</code> enriches a mature artifact into an execution-ready goal prompt; <code>--execute-loop</code> runs the loop and <code>--audit-heartbeat-prompt</code> emits the read-only auditor prompt standalone or as a same-response sidecar.</li>
 <li><code>/tes-cortex</code> reviews or records project memory when you approve it.</li>
 <li><code>/tes-mcp</code> repairs or registers project-scoped MCP.</li>
 <li><code>/tes-field-reports</code> disables, enables, or inspects sanitized reports.</li>
@@ -1330,7 +1330,7 @@
             <p>Look at three things: the overall status, which files changed, and how to undo it. <code>PASS</code> means everything checked out. If you see <code>NEEDS_REVIEW</code> or <code>BLOCKED</code>, do not approve the commit — ask the agent to explain why first.</p>
 <p>Other statuses you may see: <code>RECOVERED</code> (TES recovered context it found), <code>DEGRADED</code> (it ran, but something was limited), and <code>STALE_SOURCE</code> (your install is behind — run <code>/tes-update</code>). A backup folder under <code>.tes/bk/</code> is your safety copy, kept so a rollback is always possible.</p>
 <p>When <code>/tes-goal-maestro --execute-loop</code> closes, TES also writes a local Execution Thermometer package. It is a report you can open offline, not telemetry, not a dashboard, and not a server. The package contains <code>README.md</code>, <code>context-receipt.md</code>, <code>exec_identity.yaml</code>, <code>exec_metrics.json</code>, <code>execution-thermometer.html</code>, and <code>checksums.sha256</code>.</p>
-<p>Universal Adversarial Audit Heartbeat is separate: request <code>/tes-goal-maestro --audit-heartbeat-prompt</code>, <code>audit_heartbeat=true</code>, <code>adversarial_audit_heartbeat: requested</code>, or a direct request to generate/create the heartbeat prompt. It only emits a copy-ready English prompt; broad words such as audit, monitor, or heartbeat do not activate it, and it never edits, schedules, shares, or owns Goal Maestro stop states.</p>
+<p>Universal Adversarial Audit Heartbeat is separate: request <code>/tes-goal-maestro --audit-heartbeat-prompt</code>, <code>audit_heartbeat=true</code>, <code>adversarial_audit_heartbeat: requested</code>, or a direct request to generate/create the heartbeat prompt. Standalone use emits only the copy-ready English prompt; with <code>--execute-loop</code>, it is emitted as a same-response read-only sidecar. broad words such as audit, monitor, or heartbeat do not activate it, and it never edits, schedules, shares, owns Goal Maestro stop states, or creates a second Goal Maestro command.</p>
 <p><code>UNPROVEN</code> means the metric had no local evidence. Treat it as a question to resolve, not as zero and not as success.</p>
 <p>GitHub sharing is opt-in. The agent must ask before sharing a gold report, and the approval is valid only for that run id, destination repository, branch, payload hash, and manifest hash.</p>
           </div>
@@ -1432,8 +1432,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
-            <div class="pre-wrap" data-label="ref fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="ref fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.</li>
 <li>El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.</li>
@@ -1445,7 +1445,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>No empieces trabajo de proyecto inmediatamente despues de instalar. Codex puede necesitar trust del hook, Claude Code necesita el aviso de finalizacion y Cursor necesita reabrir el workspace. Luego ejecuta <code>/tes-setup</code>, <code>/tes-align</code> y <code>/tes-map</code>.</p></aside>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--yes</code> salta el wizard; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
-<p><code>#v0.3.229</code> es la forma de ref fija. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; trata esa carpeta como cache local.</p>
+<p><code>#v0.3.230</code> es la forma de ref fija. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; trata esa carpeta como cache local.</p>
 <p>Todo lo que TES escribe se puede deshacer. Si MCP o hooks aun necesitan reinicio o trust en tu editor, TES lo reporta en vez de fingir que la instalacion termino. Para instalacion solo de aislamiento, usa <code>--attach capsule</code>. Detalles en la <a href="REVERSIBILITY.md">guia de reversibilidad</a>.</p>
           </div>
         </section>
@@ -1463,7 +1463,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <li><code>/tes-map</code> muestra donde esta el proyecto, que esta bloqueado y el siguiente movimiento seguro.</li>
 <li><code>/tes-update</code> revisa actualizaciones antes de escribir nada.</li>
 <li><code>/tes-doctor</code> diagnostica problemas de instalacion o runtime.</li>
-<li><code>/tes-goal-maestro</code> convierte un plan maduro en un prompt goal listo para ejecutar; <code>--execute-loop</code> corre el loop y <code>--audit-heartbeat-prompt</code> solo emite el prompt auditor read-only.</li>
+<li><code>/tes-goal-maestro</code> enriquece un artefacto maduro en un prompt goal listo para ejecutar; <code>--execute-loop</code> corre el loop y <code>--audit-heartbeat-prompt</code> emite el prompt auditor read-only solo o como sidecar en la misma respuesta.</li>
 <li><code>/tes-cortex</code> revisa o registra memoria del proyecto cuando lo apruebas.</li>
 <li><code>/tes-mcp</code> repara o registra MCP con escopo de proyecto.</li>
 <li><code>/tes-field-reports</code> desactiva, activa o inspecciona reportes sanitizados.</li>
@@ -1483,7 +1483,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <p>Mira tres cosas: el estado general, que archivos cambiaron y como deshacerlo. <code>PASS</code> significa que todo salio bien. Si ves <code>NEEDS_REVIEW</code> o <code>BLOCKED</code>, no apruebes el commit — pide al agente que explique por que primero.</p>
 <p>Otros estados que puedes ver: <code>RECOVERED</code> (TES recupero contexto que encontro), <code>DEGRADED</code> (corrio, pero algo quedo limitado) y <code>STALE_SOURCE</code> (tu instalacion esta atrasada — corre <code>/tes-update</code>). Una carpeta de backup en <code>.tes/bk/</code> es tu copia de seguridad, guardada para que un rollback siempre sea posible.</p>
 <p>Cuando <code>/tes-goal-maestro --execute-loop</code> termina, TES tambien escribe un paquete local Execution Thermometer. Es un reporte que puedes abrir offline, no telemetria, no dashboard y no servidor. El paquete contiene <code>README.md</code>, <code>context-receipt.md</code>, <code>exec_identity.yaml</code>, <code>exec_metrics.json</code>, <code>execution-thermometer.html</code> y <code>checksums.sha256</code>.</p>
-<p>Universal Adversarial Audit Heartbeat es separado: pide <code>/tes-goal-maestro --audit-heartbeat-prompt</code>, <code>audit_heartbeat=true</code>, <code>adversarial_audit_heartbeat: requested</code> o una solicitud directa para generar/crear el heartbeat prompt. Solo emite un prompt en ingles listo para copiar; palabras amplias como audit, monitor o heartbeat no lo activan, y nunca edita, agenda, comparte ni asume los stop states de Goal Maestro.</p>
+<p>Universal Adversarial Audit Heartbeat es separado: pide <code>/tes-goal-maestro --audit-heartbeat-prompt</code>, <code>audit_heartbeat=true</code>, <code>adversarial_audit_heartbeat: requested</code> o una solicitud directa para generar/crear el heartbeat prompt. El uso standalone solo emite un prompt en ingles listo para copiar; con <code>--execute-loop</code>, se emite como sidecar read-only en la misma respuesta. Palabras amplias como audit, monitor o heartbeat no lo activan, y nunca edita, agenda, comparte, asume los stop states de Goal Maestro ni crea un segundo comando Goal Maestro.</p>
 <p><code>UNPROVEN</code> significa que la metrica no tenia evidencia local. Tratala como una pregunta por resolver, no como cero y no como exito.</p>
 <p>Compartir en GitHub es opt-in. El agente debe pedir permiso antes de compartir un reporte gold, y la aprobacion vale solo para ese run id, repositorio destino, branch, payload hash y manifest hash.</p>
           </div>
@@ -1585,8 +1585,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositório alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessão.</p>
-            <div class="pre-wrap" data-label="ref fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.229 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="ref fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.230 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositório alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.</li>
 <li>O modo interativo pergunta target, agentes, modo de instalação e confirmacao final.</li>
@@ -1598,7 +1598,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>Não inicie trabalho no projeto imediatamente depois de instalar. Codex pode precisar de trust no hook, Claude Code precisa do aviso de conclusão e Cursor precisa reabrir o workspace. Depois rode <code>/tes-setup</code>, <code>/tes-align</code> e <code>/tes-map</code>.</p></aside>
 <p>Opções úteis: <code>--target &lt;path&gt;</code> instala fora do diretório atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> é o padrão.</p>
-<p><code>#v0.3.229</code> é a forma de ref fixa. Bundles runtime são preparados em <code>.tes/setup/&lt;version&gt;/</code>; trate essa pasta como cache local.</p>
+<p><code>#v0.3.230</code> é a forma de ref fixa. Bundles runtime são preparados em <code>.tes/setup/&lt;version&gt;/</code>; trate essa pasta como cache local.</p>
 <p>Tudo que o TES escreve pode ser desfeito. Se MCP ou hooks ainda precisarem de reinício ou trust no editor, o TES reporta isso em vez de fingir que a instalação terminou. Para instalação só de isolamento, use <code>--attach capsule</code>. Detalhes no <a href="REVERSIBILITY.md">guia de reversibilidade</a>.</p>
           </div>
         </section>
@@ -1616,7 +1616,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <li><code>/tes-map</code> mostra onde o projeto está, o que está bloqueado e o próximo movimento seguro.</li>
 <li><code>/tes-update</code> confere atualizações antes de escrever qualquer coisa.</li>
 <li><code>/tes-doctor</code> diagnostica problemas de instalação ou runtime.</li>
-<li><code>/tes-goal-maestro</code> transforma um plano maduro em um prompt goal pronto para executar; <code>--execute-loop</code> roda o loop e <code>--audit-heartbeat-prompt</code> só emite o prompt auditor read-only.</li>
+<li><code>/tes-goal-maestro</code> enriquece um artefato maduro em um prompt goal pronto para executar; <code>--execute-loop</code> roda o loop e <code>--audit-heartbeat-prompt</code> emite o prompt auditor read-only sozinho ou como sidecar na mesma resposta.</li>
 <li><code>/tes-cortex</code> revisa ou registra memória do projeto quando você aprova.</li>
 <li><code>/tes-mcp</code> repara ou registra MCP com escopo de projeto.</li>
 <li><code>/tes-field-reports</code> desativa, ativa ou inspeciona relatórios sanitizados.</li>
@@ -1636,7 +1636,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <p>Olhe três coisas: o status geral, quais arquivos mudaram e como desfazer. <code>PASS</code> significa que tudo passou. Se aparecer <code>NEEDS_REVIEW</code> ou <code>BLOCKED</code>, não aprove o commit — peça ao agente para explicar o porquê primeiro.</p>
 <p>Outros estados que você pode ver: <code>RECOVERED</code> (o TES recuperou contexto que encontrou), <code>DEGRADED</code> (rodou, mas algo ficou limitado) e <code>STALE_SOURCE</code> (sua instalação está atrasada — rode <code>/tes-update</code>). Uma pasta de backup em <code>.tes/bk/</code> é a sua cópia de segurança, guardada para que um rollback seja sempre possível.</p>
 <p>Quando <code>/tes-goal-maestro --execute-loop</code> fecha, o TES também escreve um pacote local Execution Thermometer. É um relatório que você abre offline, não telemetria, não dashboard e não servidor. O pacote contém <code>README.md</code>, <code>context-receipt.md</code>, <code>exec_identity.yaml</code>, <code>exec_metrics.json</code>, <code>execution-thermometer.html</code> e <code>checksums.sha256</code>.</p>
-<p>Universal Adversarial Audit Heartbeat é separado: peça <code>/tes-goal-maestro --audit-heartbeat-prompt</code>, <code>audit_heartbeat=true</code>, <code>adversarial_audit_heartbeat: requested</code> ou uma solicitação direta para gerar/criar o heartbeat prompt. Ele só emite um prompt em inglês pronto para copiar; palavras amplas como audit, monitor ou heartbeat não ativam o recurso, e ele nunca edita, agenda, compartilha ou assume os stop states do Goal Maestro.</p>
+<p>Universal Adversarial Audit Heartbeat é separado: peça <code>/tes-goal-maestro --audit-heartbeat-prompt</code>, <code>audit_heartbeat=true</code>, <code>adversarial_audit_heartbeat: requested</code> ou uma solicitação direta para gerar/criar o heartbeat prompt. O uso standalone só emite um prompt em inglês pronto para copiar; com <code>--execute-loop</code>, ele sai como sidecar read-only na mesma resposta. Palavras amplas como audit, monitor ou heartbeat não ativam o recurso, e ele nunca edita, agenda, compartilha, assume os stop states do Goal Maestro ou cria um segundo comando Goal Maestro.</p>
 <p><code>UNPROVEN</code> significa que a métrica não tinha evidência local. Trate como uma pergunta a resolver, não como zero e não como sucesso.</p>
 <p>Compartilhamento no GitHub é opt-in. O agente precisa pedir antes de compartilhar um relatório gold, e a aprovação vale só para aquele run id, repositório de destino, branch, payload hash e manifest hash.</p>
           </div>
@@ -1689,7 +1689,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       <footer class="footer">
 
         <div class="footer-meta">
-          <span>v0.3.229 - Generated from TDS.</span>
+          <span>v0.3.230 - Generated from TDS.</span>
           <span>bundle sha256 <code>0e824e25c1b606ba440d583699843c653623b1ee243daf0962500a68348a20b7</code></span>
           <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         </div>

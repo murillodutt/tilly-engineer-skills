@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.229"
+VERSION = "0.3.230"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -575,6 +575,7 @@ VISIBLE_SKILL_ROUTES = {
             "READY_GOAL_PROMPT",
             "NEEDS_STRUCTURAL_METHOD",
             "Engineering Method Profile",
+            "Goal Maestro owns prompt enrichment",
             "next_prompt_handoff",
             "--next-prompt-handoff",
             "--execute-loop",
@@ -584,6 +585,8 @@ VISIBLE_SKILL_ROUTES = {
             "adversarial_audit_heartbeat: requested",
             "direct request to generate or create an adversarial audit heartbeat prompt",
             "copy-ready English heartbeat prompt",
+            "same-response read-only sidecar",
+            "second `/tes-goal-maestro` command",
             "not execution, scheduling, sharing, or Goal Maestro stop-state authority",
             "Execution Cost Draft",
             "Executive Stop Audit",
@@ -626,6 +629,7 @@ VISIBLE_SKILL_ROUTES = {
             "READY_GOAL_PROMPT",
             "NEEDS_STRUCTURAL_METHOD",
             "Engineering Method Profile",
+            "Goal Maestro owns prompt enrichment",
             "next_prompt_handoff",
             "--next-prompt-handoff",
             "--execute-loop",
@@ -635,6 +639,8 @@ VISIBLE_SKILL_ROUTES = {
             "adversarial_audit_heartbeat: requested",
             "direct request to generate or create an adversarial audit heartbeat prompt",
             "copy-ready English heartbeat prompt",
+            "same-response read-only sidecar",
+            "second `/tes-goal-maestro` command",
             "not execution, scheduling, sharing, or Goal Maestro stop-state authority",
             "Execution Cost Draft",
             "Executive Stop Audit",
@@ -715,6 +721,8 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
         "direct request to generate/create an adversarial audit heartbeat prompt",
+        "same-response",
+        "second Goal Maestro command",
         "Broad words",
         "Goal Maestro stop states",
     ),
@@ -724,6 +732,8 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
         "not the execution loop parameter",
+        "combined form",
+        "same-response",
         "Goal Maestro stop states",
     ),
     "docs/install/MINI-PROMPT.md": (
@@ -731,6 +741,7 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "--audit-heartbeat-prompt",
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
+        "same-response",
         "Goal Maestro stop states",
     ),
     "docs/adapters/CODEX.md": (
@@ -739,6 +750,7 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
         "broad audit/monitor/heartbeat wording does not activate it",
+        "same-response",
         "Goal Maestro stop states",
     ),
     "docs/adapters/CLAUDE.md": (
@@ -747,6 +759,7 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
         "broad audit/monitor/heartbeat wording does not activate it",
+        "same-response",
         "Goal Maestro stop states",
     ),
     "docs/adapters/PLATFORM-DIFFERENCES.md": (
@@ -754,6 +767,7 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "--audit-heartbeat-prompt",
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
+        "same-response",
         "Goal Maestro stop states",
     ),
     "docs/i18n/tes-public.content.json": (
@@ -761,6 +775,7 @@ GOAL_MAESTRO_OPTION_DOC_TERMS = {
         "--audit-heartbeat-prompt",
         "audit_heartbeat=true",
         "adversarial_audit_heartbeat: requested",
+        "same-response",
         "broad words",
     ),
 }

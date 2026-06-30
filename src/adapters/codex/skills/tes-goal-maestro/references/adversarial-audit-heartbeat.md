@@ -2,7 +2,7 @@
 
 Use this reference only when Goal Maestro receives an explicit heartbeat prompt
 opt-in. The feature generates a copy-ready auditor prompt. It does not execute
-the audit and does not become part of the execution loop.
+the audit and does not become the execution loop.
 
 ## Core Rule
 
@@ -35,8 +35,11 @@ Do not add a new `/tes-*` command, and do not change ordinary
 
 When activated, load
 `templates/adversarial-audit-heartbeat.template.md` and emit a copy-ready
-English prompt. Ordinary Goal Maestro prompts stay unchanged when the opt-in is
-absent.
+English prompt. When activated without `--execute-loop`, this is the only
+heartbeat output. When activated with `--execute-loop`, the parent may include
+the same prompt as a same-response read-only sidecar in the Goal Maestro
+response or closeout. Do not ask the user to run a second Goal Maestro command.
+Ordinary Goal Maestro prompts stay unchanged when the opt-in is absent.
 
 The generated prompt must preserve every placeholder exactly:
 
@@ -121,7 +124,8 @@ Stop with:
 
 ## Done
 
-This reference is satisfied when exact opt-in emits the standalone heartbeat
-prompt, absent opt-in emits no heartbeat content, the host-state boundary is
-honest, the auditor authority is read-only, and Goal Maestro stop states remain
-authoritative to the parent loop.
+This reference is satisfied when exact opt-in emits the heartbeat prompt as
+standalone output or as the same-response sidecar of an opted-in execution loop,
+absent opt-in emits no heartbeat content, the host-state boundary is honest, the
+auditor authority is read-only, and Goal Maestro stop states remain authoritative
+to the parent loop.

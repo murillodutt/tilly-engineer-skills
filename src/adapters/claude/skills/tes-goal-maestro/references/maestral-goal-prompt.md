@@ -26,6 +26,12 @@ If the source artifact declares a materialization queue, the prompt must preserv
 
 A commit message is not execution evidence. The prompt must require material diff proof, focused oracles, reviewer result, post-commit status and sync status for every material unit.
 
+The user does not need to provide an optimized execution prompt. Goal Maestro
+must enrich a mature ADR, PRD, Super SPEC, SPEC, relational project plan,
+accepted execution tree, or contextualized objective into the execution tree,
+active-SPEC queue, structural method, oracle packet, stop states, evidence
+contract, and optional local sidecars required by the selected flags.
+
 ## Optional Adversarial Audit Heartbeat Prompt
 
 Adversarial Audit Heartbeat Prompt is a separate opt-in prompt-generation mode.
@@ -35,10 +41,12 @@ create an adversarial audit heartbeat prompt in the active request, active
 structured control block, or active source artifact.
 
 When activated, load `references/adversarial-audit-heartbeat.md` and
-`templates/adversarial-audit-heartbeat.template.md`, then emit only the
-copy-ready English heartbeat prompt. Do not embed a heartbeat section in an
-ordinary maestral `/goal` prompt, and do not alter Goal Maestro stop-state
-semantics. Do not embed a heartbeat section in an ordinary maestral /goal prompt.
+`templates/adversarial-audit-heartbeat.template.md`. Without `--execute-loop`,
+emit only the copy-ready English heartbeat prompt. With `--execute-loop`, emit
+the same prompt as a same-response read-only sidecar in the Goal Maestro response
+or closeout. Do not ask the user to run a second Goal Maestro command, do not
+embed a heartbeat section in an ordinary maestral `/goal` prompt, and do not
+alter Goal Maestro stop-state semantics.
 
 Do not activate from broad words such as heartbeat, monitor, audit, mentorship,
 watch this, keep an eye on it, or translated equivalents. Documentation
@@ -79,7 +87,7 @@ The final prompt must include:
 28. Tree Adversary status when `--execute-loop` or high-risk execution is in scope.
 29. Optional Next Prompt Handoff clause only when explicitly requested by `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct trigger.
 30. Optional Execution Loop boundary only when explicitly requested by `--execute-loop`.
-31. Optional Adversarial Audit Heartbeat Prompt output only when exact heartbeat prompt opt-in is present; this output uses the separate heartbeat template and is not added to ordinary `/goal` prompts.
+31. Optional Adversarial Audit Heartbeat Prompt output only when exact heartbeat prompt opt-in is present; this output uses the separate heartbeat template, is standalone without `--execute-loop`, and is a same-response sidecar when combined with `--execute-loop`.
 
 ## Template Load Contract
 
@@ -141,7 +149,7 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 26. defines final delivery;
 27. includes a Next Prompt Handoff clause only when explicitly requested, and that clause is chat-only, post-certification, non-executing, and does not write prompt/tree files without an explicit save request;
 28. includes an Execution Loop boundary only when `--execute-loop` is explicitly requested, and that boundary preserves parent authority, Pre-Edit Gate, `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence, failed-attempt recovery, mandatory persistent ledger, local-only commit sync, baseline-only comparison for reference implementations, no Super SPEC materialization as unit credit, strict sequential replay, bounded repair/audit behavior, explicit parent-fallback authorization, `bug_vs_architecture` recovery classification, structural decision ledger fields and Executive Stop Audit.
-29. emits Adversarial Audit Heartbeat Prompt content only when exact heartbeat prompt opt-in is present, and then uses the separate heartbeat template instead of altering ordinary `/goal` prompt shape.
+29. emits Adversarial Audit Heartbeat Prompt content only when exact heartbeat prompt opt-in is present, uses the separate heartbeat template instead of altering ordinary `/goal` prompt shape, and treats the combined `--execute-loop --audit-heartbeat-prompt` form as a same-response sidecar rather than a second command.
 
 ## Stop If Missing
 

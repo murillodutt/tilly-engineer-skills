@@ -31,11 +31,13 @@ Use only after explicit invocation or a direct request to generate a maestral `/
 
 `tes-goal-maestro` does not execute implementation by default. It builds an execution-grade materialization tree and, when the tree passes the internal gates, emits a ready `/goal` prompt in the same response.
 
+Goal Maestro owns prompt enrichment. The user may provide a mature ADR, PRD, Super SPEC, SPEC, relational project plan, accepted execution tree, or contextualized project objective; they are not required to pre-optimize execution prompts, metrics, lenses, oracle wording, subagent packets, thermometer fields, or heartbeat placeholders. The harness must derive the execution tree, active SPEC queue, structural method, evidence requirements, stop states, local reporting sidecars, and optional prompt sidecars from the material artifact plus explicit options.
+
 When a Super SPEC must be produced or expanded, write it as `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and summarize the path in chat. This Super SPEC artifact is the only default file write allowed by this skill. Prompt, tree, ledger or other files require explicit save or loop authority.
 
 Next Prompt Handoff is opt-in only. Activate it only when the user explicitly requests `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct trigger. Outside `--execute-loop`, it is chat-only, post-certification, non-executing, and must never write the next prompt to disk without an explicit save request.
 
-Adversarial Audit Heartbeat Prompt is opt-in only. Activate it only when the active request, active structured control block, or active source artifact contains `--audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested`, or a direct request to generate or create an adversarial audit heartbeat prompt. When activated, load `references/adversarial-audit-heartbeat.md` and `templates/adversarial-audit-heartbeat.template.md`; emit only the copy-ready English heartbeat prompt. It is read-only auditor guidance, not execution, scheduling, sharing, or Goal Maestro stop-state authority.
+Adversarial Audit Heartbeat Prompt is opt-in only. Activate it only when the active request, active structured control block, or active source artifact contains `--audit-heartbeat-prompt`, `audit_heartbeat=true`, `adversarial_audit_heartbeat: requested`, or a direct request to generate or create an adversarial audit heartbeat prompt. When activated, load `references/adversarial-audit-heartbeat.md` and `templates/adversarial-audit-heartbeat.template.md`. Without `--execute-loop`, emit only the copy-ready English heartbeat prompt. With `--execute-loop`, keep the execution loop primary and emit that heartbeat prompt as a same-response read-only sidecar in the Goal Maestro response or closeout. Do not create, request, or imply a second `/tes-goal-maestro` command. It is read-only auditor guidance, not execution, scheduling, sharing, or Goal Maestro stop-state authority.
 
 Execution Loop is opt-in only. Activate it only when the user explicitly requests `--execute-loop`. When enabled, produce `READY_GOAL_PROMPT`, then the parent runner creates an `Execution Cost Draft`, opens a mandatory Pre-Edit Gate, creates the loop ledger, opens one `ACTIVE_SPEC` at a time, requires strict sequential replay, validates local commit evidence, and closes only after Executive Stop Audit.
 
@@ -48,6 +50,8 @@ Structural Method Gate is active for code, UI, runtime scripts and generated app
 Anchor, ambition, runtime certification, tree adversary and execution context handoff gates are active for `--execute-loop` and for any generated prompt whose source artifact declares runtime, visual, integration, shared-contract or quality-ceiling risk. Load their owning references before accepting the tree.
 
 If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop` owns internal next-prompt generation. Do not include ordinary handoff language that forbids parent-runner continuation between validated active SPECs.
+
+If both Adversarial Audit Heartbeat Prompt and Execution Loop are requested, `--execute-loop` owns execution. The heartbeat prompt is generated internally as a same-response sidecar and never schedules, executes, edits, opens another loop, or changes stop-state authority.
 
 ## Mandatory Load Routing
 
@@ -188,6 +192,7 @@ Default sync is local Git commit certification. Remote sync, push, tag, publicat
 - Do not write files except the required Super SPEC artifact, explicit save requests, or required execution-loop ledger.
 - Do not include Next Prompt Handoff without an explicit handoff trigger.
 - Do not include Adversarial Audit Heartbeat Prompt behavior without exact heartbeat prompt opt-in, and never let it execute, schedule, share, mutate files, or claim Goal Maestro stop-state authority.
+- Do not turn `--audit-heartbeat-prompt` into a second `/tes-goal-maestro` command when it is combined with `--execute-loop`; emit it as a same-response read-only sidecar.
 - Do not run Execution Loop without explicit `--execute-loop` and an `Execution Cost Draft`, Pre-Edit Gate and `GOAL-EXECUTION-LOOP-LEDGER`.
 - Do not run Execution Loop unless the Tree Adversary is cleared or its objections are repaired.
 - Do not allow parent fallback without the exact `--execute-loop-parent-fallback` flag.

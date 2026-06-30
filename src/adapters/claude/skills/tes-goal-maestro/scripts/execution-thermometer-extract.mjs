@@ -66,6 +66,8 @@ const manifest = {
     project_id: projectId,
     series_id: seriesId,
     run_id: runId,
+    loop_count: 1,
+    loop_semantics: 'one_goal_maestro_run_per_thermometer_loop',
     spec_count: parsed.specs.length,
   },
   outputs: ['exec_identity.yaml', 'exec_metrics.json'],
@@ -151,11 +153,16 @@ const metrics = {
   run_summary: {
     run_id: runId,
     status: loop.status,
+    loop_count: 1,
+    loop_semantics: 'one_goal_maestro_run_per_thermometer_loop',
     ledger_hash: before.sha256,
     extraction_hash: manifestHash,
   },
   loop_summary: {
     latest_loop_id: loop.loop_id,
+    loop_count: 1,
+    accumulation_mode: 'single_run',
+    loop_semantics: 'Multiple ACTIVE_SPEC entries in one Goal Maestro run remain one Thermometer loop with multiple spec_results.',
     spec_count: specResults.length,
     unproven_metric_count: unprovenMetrics.length,
   },
@@ -170,6 +177,7 @@ const metrics = {
     signal('Protection', 'on_track', 100, 'Ledger source remains read-only and GitHub sharing is not requested.', ['EV-LEDGER', 'EV-EXTRACTION-MANIFEST']),
   ],
   lens_results: [
+    metric('extracted_loop_count', 1, 'count', 'proven', ['EV-EXTRACTION-MANIFEST'], 'One Goal Maestro run normalized as one Thermometer loop; SPECs remain in spec_results.'),
     metric('extracted_spec_count', specResults.length, 'count', 'proven', ['EV-LEDGER'], 'Count of SPEC sections found in the source ledger.'),
     metric('unproven_metric_count', unprovenMetrics.length, 'count', 'proven', ['EV-EXTRACTION-MANIFEST'], 'Count of missing evidence metrics preserved as unproven.'),
   ],
