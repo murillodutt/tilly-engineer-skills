@@ -157,3 +157,30 @@ release-identity advisory reports the typed tier **`READY_PENDING_HOST`**
 - `scripts/installed_certification_oracle.py:330-345` — 8 components, none checks Git.
 - `scripts/field_reports.py:1125-1129` — `install_hook` BLOCKED on no `.git`.
 - `scripts/canary_admission_oracle.py:127-158` — `git_admission` hard-BLOCK + strict-gate definition.
+
+## Ceiling resolution — second wave (materialized 2026-06-30, findings 21-36)
+
+A second audit surfaced 16 more tugs (the critical one: canary admission
+validated the Field Reports pre-push with the wrong predicate). All resolved to
+the same ceiling — absence of proof never PASS; query and gate are distinct
+exit-code modes; each claim proven by its own predicate. A final adversarial
+ceiling audit confirmed 36/36 findings RESOLVED with a red-capable oracle each.
+
+| # | Decision materialized | Where | Oracle |
+|---|-----------------------|-------|--------|
+| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` (gate-pre-git, blocking); neither marker proves the other | `canary_admission.prepush_evidence` | `canary_admission.self_test` (drain-only / gate-only) |
+| 22 | Strict pre-commit proven by executability (`os.access X_OK`) + a gate token in CODE (comments stripped), never a substring | `canary_admission.precommit_evidence` | `canary_admission.self_test` (comment-stub / non-exec) |
+| 23 | hook-health `--gate` exits non-zero on `NEEDS_EVIDENCE`; `--query` (default) stays 0 | `tes_install` hook-health CLI | `tes_install.self_test` |
+| 24 | `certification_tier` distinguishes `PASS_BASIC` from `PASS_CEILING`; `ceiling_evidence` surfaced (INFO, non-gating on fresh install) | `installed_certification.evaluate` | `installed_certification.self_test` |
+| 25 | Field Reports pre-push is an advisory non-blocking drain; admission gates on the drain, the project gate is observational | `canary_admission.git_admission` | `canary_admission.self_test` (gate-only BLOCKS) |
+| 26 | Expected MCP derived from the install lock — lock attached MCP but no config = FAIL, never silent PASS | `installed_certification.mcp_registration` | `installed_certification.self_test` (attached-but-absent) |
+| 27 | `attach`/`detach` transact the install lock + recertify (honor `--dry-run`, additive merge, capsule preserved) | `tes_install.transact_lock_surface` | `tes_install.self_test` (F27 lock-transaction) |
+| 28 | `doctor` separates `report_status` (capsule) from `readiness_status` (folds worst attachment); `PENDING_*`/`DEGRADED` never hidden | `tes_install.doctor` + `_fold_attachment_readiness` | `tes_install.self_test` (F28 fold) |
+| 29 | `public_bundle_oracle` validates `tes-public.structure.yml` `bundle_sha256`; `tds_surface` dist-missing is a BLOCKER (caught a real stale SHA) | `public_bundle_oracle` + `tds_surface_oracle` | live `public_bundle_oracle` run |
+| 30 | `tes-update --gate`/`status` exits non-zero on drift/`AVAILABLE`; `plan` stays query (exit 0) | `tes_update` CLI | `tes_update.self_test` |
+| 31 | Version gate scans all `scripts/**.py` `VERSION` constants with an independent-version allowlist | `validate_reference_package` | the scan itself (planted-stale RED) |
+| 32 | `tes_bump --governance-check` + `--self-test` sealed into `commit:closure` | `package.json` closure chain | closure chain |
+| 33 | `pretooluse_evidence_oracle --self-test` sealed into `commit:closure` | `package.json` closure chain | closure chain |
+| 34 | `hook_manager_awareness` + `runtime_topology` self-tests sealed into `commit:closure` | `package.json` closure chain | closure chain |
+| 35 | `tes_bundle` per-subcommand `--gate` exits non-zero on `BLOCKED`/`STALE_SOURCE`/`NEEDS_REVIEW`; default query stays 0 | `tes_bundle` shared exit map | `tes_bundle.self_test` |
+| 36 | `context_core_status=UNKNOWN` composes `PENDING`/`NEEDS_EVIDENCE`, never `READY`; ready fixtures prove the core | `tes_update.post_layer_zero_final_probe` | `tes_update.self_test` (UNKNOWN ≠ READY) |
