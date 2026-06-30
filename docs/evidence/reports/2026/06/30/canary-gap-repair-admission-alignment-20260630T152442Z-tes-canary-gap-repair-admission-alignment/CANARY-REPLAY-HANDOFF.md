@@ -15,7 +15,7 @@ done; canary admission is the next session's job.
 
 ## Exact package state
 
-- Package commit at this handoff: `89e5ea736db60d8f55761f6b68374165c7ec1715`
+- Package commit at this handoff: `b0f7cfd0989cde8682561f314b1da4f7e5fd0701`
   (HEAD), with uncommitted gap-repair changes in the working tree. The replay
   session must run against the COMMITTED package state; commit the gap-repair
   changes first (locally) so the replay input is reproducible.
@@ -26,7 +26,7 @@ done; canary admission is the next session's job.
 ```text
 version:  0.3.232  (owner-confirmed patch bump; refresh, no push/tag/publish)
 bundle:   docs/dist/0.3.232/tilly-engineer-skills-0.3.232.zip
-sha256:   9461e708f5ba1c3b16f6669653581da6dcca37989cf51d2725c4e2f54d9bcf68
+sha256:   b0f8eee3ad7b3ba115efcd2c3576042029ac2ef8b8573724758952826a88c987
 entries:  378   pycache: 0
 ```
 

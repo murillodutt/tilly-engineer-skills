@@ -35,12 +35,12 @@ public bundle refreshed. No install into the real canaries was performed here.
 
 ```text
 bundle:        docs/dist/0.3.232/tilly-engineer-skills-0.3.232.zip
-sha256:        9461e708f5ba1c3b16f6669653581da6dcca37989cf51d2725c4e2f54d9bcf68
+sha256:        b0f8eee3ad7b3ba115efcd2c3576042029ac2ef8b8573724758952826a88c987
 sha256 sidecar: matches (verified)
 entry_count:   378
 pycache:       0  (zero __pycache__/.pyc manifest entries; zero ZIP members)
-source_commit: 89e5ea736db60d8f55761f6b68374165c7ec1715
-source_tree_state: dirty (uncommitted gap-repair changes present at build time)
+source_commit: b0f7cfd0989cde8682561f314b1da4f7e5fd0701
+source_tree_state: clean (rebuilt after the gap-repair commit b0f7cfd0)
 pruned:        0.3.231 (previous bundle dir removed by publish)
 ```
 

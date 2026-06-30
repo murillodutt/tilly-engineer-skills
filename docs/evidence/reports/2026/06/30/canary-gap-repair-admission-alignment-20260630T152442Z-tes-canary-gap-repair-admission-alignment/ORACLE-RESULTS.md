@@ -113,5 +113,5 @@ npm run commit:check                            PASS  (staged_files 81)
 ```
 
 Bundle re-published after the coverage fixes:
-sha256 `9461e708f5ba1c3b16f6669653581da6dcca37989cf51d2725c4e2f54d9bcf68`
+sha256 `b0f8eee3ad7b3ba115efcd2c3576042029ac2ef8b8573724758952826a88c987`
 (supersedes the earlier b77c3183 build), 378 entries, pycache 0.

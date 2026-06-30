@@ -192,7 +192,7 @@ evidence_level: L2
   docs/install/AGENT-ORACLE-INVENTORY.md, docs/tds/DOCS-INDEX.yml, regenerated
   public HTMLs, and this evidence packet (8 files).
 - Bundle status: refreshed to 0.3.232
-  (sha 9461e708f5ba1c3b16f6669653581da6dcca37989cf51d2725c4e2f54d9bcf68),
+  (sha b0f8eee3ad7b3ba115efcd2c3576042029ac2ef8b8573724758952826a88c987),
   378 entries, pycache 0; 0.3.231 pruned.
 - Oracles passed: tes_bundle, installed_certification_oracle,
   canary_admission_oracle, public_bundle_oracle, tes_install, install_smoke,

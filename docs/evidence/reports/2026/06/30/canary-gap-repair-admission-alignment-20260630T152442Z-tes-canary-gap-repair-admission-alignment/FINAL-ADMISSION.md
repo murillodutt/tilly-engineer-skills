@@ -58,4 +58,4 @@ absence of mesh.scaffold_only post-align, READY_FOR_GOAL_MAESTRO_CANARY.
 The dedicated canary replay session, per CANARY-REPLAY-HANDOFF.md, against a
 freshly Git-initialized canary installed from
 `docs/dist/0.3.232/tilly-engineer-skills-0.3.232.zip`
-(sha256 9461e708f5ba1c3b16f6669653581da6dcca37989cf51d2725c4e2f54d9bcf68).
+(sha256 b0f8eee3ad7b3ba115efcd2c3576042029ac2ef8b8573724758952826a88c987).
