@@ -73,6 +73,9 @@ def certify_public_bundle() -> dict[str, object]:
             residue = sorted(name for name in names if tes_bundle.is_os_residue(Path(name)))
             if residue:
                 failures.extend(f"public bundle includes OS residue member: {name}" for name in residue)
+            bytecode = sorted(name for name in names if tes_bundle.is_build_artifact(Path(name)))
+            if bytecode:
+                failures.extend(f"public bundle includes Python bytecode member: {name}" for name in bytecode)
             for relpath in (
                 "scripts/install_mcp.py",
                 "scripts/tes_bundle.py",

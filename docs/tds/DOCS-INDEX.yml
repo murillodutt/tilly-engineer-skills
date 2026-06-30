@@ -1,4 +1,4 @@
-version: 0.3.231
+version: 0.3.232
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -1793,3 +1793,59 @@ documents:
     consumer: maintainers, canary operators, and Goal Maestro operators
     source_of_truth: false
     evidence_level: L1
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/JOURNAL.md
+    id: evidence.canary_gap_repair_admission_alignment.journal_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, Claude Opus execution agents, installer authors, oracle authors, canary operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/PREFLIGHT.md
+    id: evidence.canary_gap_repair_admission_alignment.preflight_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/GAP-CLASSIFICATION.md
+    id: evidence.canary_gap_repair_admission_alignment.gap_classification_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, Claude Opus execution agents, oracle authors, canary operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/SOURCE-CHANGES.md
+    id: evidence.canary_gap_repair_admission_alignment.source_changes_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, oracle authors, release authors
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/BUNDLE-READINESS.md
+    id: evidence.canary_gap_repair_admission_alignment.bundle_readiness_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, release authors
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/ORACLE-RESULTS.md
+    id: evidence.canary_gap_repair_admission_alignment.oracle_results_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, oracle authors, canary operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/CANARY-REPLAY-HANDOFF.md
+    id: evidence.canary_gap_repair_admission_alignment.canary_replay_handoff_20260630
+    class: evidence
+    status: active
+    consumer: canary replay operators, Goal Maestro operators, maintainers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/06/30/canary-gap-repair-admission-alignment-20260630T152442Z-tes-canary-gap-repair-admission-alignment/FINAL-ADMISSION.md
+    id: evidence.canary_gap_repair_admission_alignment.final_admission_20260630
+    class: evidence
+    status: active
+    consumer: maintainers, canary operators, Goal Maestro operators
+    source_of_truth: false
+    evidence_level: L2

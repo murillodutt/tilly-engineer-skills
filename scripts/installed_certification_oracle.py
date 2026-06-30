@@ -13,10 +13,11 @@ from typing import Any
 import command_trigger_oracle
 import capsule_residue_oracle
 import mantra_gate_adoption_oracle
+import tes_bundle
 import tes_install
 
 
-VERSION = "0.3.231"
+VERSION = "0.3.232"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -147,19 +148,45 @@ def target_os_residue_files(target: Path) -> list[str]:
     return sorted(set(found))
 
 
+# Delivered-skill territories whose source-of-truth is Markdown/source, never
+# bytecode. .tes/bin is intentionally excluded: it legitimately carries a
+# runtime bytecode cache (INSTALLATION-FRAMEWORK.md:64). Bytecode found here, or
+# in the manifest, or in staged setup, is delivered contamination.
+BYTECODE_GUARDED_ROOTS = (".agents/skills", ".claude/skills", ".cursor", ".tes/setup", "skills")
+
+
+def target_delivered_bytecode_files(target: Path) -> list[str]:
+    """Scan delivered-skill + staged-setup territories for Python bytecode."""
+    found: list[str] = []
+    for root_rel in BYTECODE_GUARDED_ROOTS:
+        root = target / root_rel
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if path.is_file() and tes_bundle.is_build_artifact(path.relative_to(root)):
+                found.append(rel(path, target))
+    return sorted(set(found))
+
+
 def artifact_hygiene(target: Path) -> dict[str, Any]:
     failures: list[str] = []
     residue: list[str] = []
+    bytecode: list[str] = []
     manifest = read_json(target / ".tes/manifest.json")
     for entry in manifest.get("entries", []) if isinstance(manifest.get("entries"), list) else []:
         if isinstance(entry, dict) and is_os_residue(Path(str(entry.get("path", "")))):
             residue.append(str(entry.get("path")))
+        if isinstance(entry, dict) and tes_bundle.is_build_artifact(Path(str(entry.get("path", "")))):
+            bytecode.append(str(entry.get("path")))
     for root in (target / ".tes/setup", target / ".tes/bin"):
         if root.exists():
             residue.extend(rel(path, target) for path in root.rglob("*") if path.is_file() and is_os_residue(path.relative_to(root)))
     residue.extend(target_os_residue_files(target))
+    bytecode.extend(target_delivered_bytecode_files(target))
     if residue:
         failures.extend(f"OS residue present: {path}" for path in sorted(set(residue)))
+    if bytecode:
+        failures.extend(f"delivered Python bytecode contamination: {path}" for path in sorted(set(bytecode)))
     metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
     source_tree_state = str(metadata.get("source_tree_state") or "unknown")
     sealed_claim_allowed = source_tree_state in {"clean", "unknown"} and not failures
@@ -169,6 +196,7 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
         "sealed_claim_allowed": sealed_claim_allowed,
         "release_claim_status": "SEALED_ALLOWED" if sealed_claim_allowed else "UNSEALED_OR_NEEDS_RELEASE_GATE",
         "residue": sorted(set(residue)),
+        "bytecode": sorted(set(bytecode)),
         "failures": failures,
     }
 
@@ -350,6 +378,7 @@ def evaluate(target: Path) -> dict[str, Any]:
             "vscode_not_part_of_agent_all": not (target / ".vscode/mcp.json").exists(),
             "stale_discipline_path_absent": not quality.get("failures"),
             "os_residue_absent": not hygiene.get("residue"),
+            "delivered_bytecode_absent": not hygiene.get("bytecode"),
             "stale_codex_hooks_json_absent": not hook_hygiene.get("failures"),
             "pretooluse_contract_reference_valid": not contract_reference.get("failures"),
         },
@@ -569,6 +598,38 @@ def self_test() -> dict[str, Any]:
             )
             if not hook_finding or hook_finding.get("status") != "NEEDS_EVIDENCE":
                 failures.append("hook_runtime_health NEEDS_EVIDENCE must remain visible without collapsing aggregate PASS")
+
+        # Red-capable Gap 4 fixture: hooks CONFIGURED on disk + lock declares the
+        # hooks surface, but NO runtime ledger exists -> hook_runtime_health must
+        # be NEEDS_EVIDENCE, that finding MUST stay visible in findings[], AND the
+        # aggregate must stay PASS (NEEDS_EVIDENCE never silently collapses, never
+        # escalates). The healthy fixture writes a full ledger, so its
+        # status=='NEEDS_EVIDENCE' guard above is dead; this fixture is the one
+        # that actually drives and protects the invariant. Deleting the
+        # NEEDS_EVIDENCE finding emission turns THIS assertion red.
+        needs_evidence_target = root / "healthy-hooks-configured-no-runtime"
+        write_base_fixture(needs_evidence_target, healthy=True)
+        ne_ledger = needs_evidence_target / ".tes/runtime/hooks/executed.jsonl"
+        if ne_ledger.exists():
+            ne_ledger.unlink()  # configured-but-unobserved: no host produced runtime records
+        needs_evidence_result = evaluate(needs_evidence_target)
+        ne_hook_health = needs_evidence_result["components"]["hook_runtime_health"]
+        if ne_hook_health.get("status") != "NEEDS_EVIDENCE":
+            failures.append(
+                f"configured-hooks-without-runtime fixture must drive hook_runtime_health "
+                f"NEEDS_EVIDENCE, got {ne_hook_health.get('status')}"
+            )
+        ne_finding = next(
+            (item for item in needs_evidence_result.get("findings", []) if item.get("component") == "hook_runtime_health"),
+            None,
+        )
+        if not ne_finding or ne_finding.get("status") != "NEEDS_EVIDENCE":
+            failures.append("hook_runtime_health NEEDS_EVIDENCE finding must remain visible (not silently collapsed)")
+        if needs_evidence_result["status"] != "PASS":
+            failures.append(
+                f"NEEDS_EVIDENCE hook runtime must not escalate the installed aggregate beyond PASS, "
+                f"got {needs_evidence_result['status']}"
+            )
         if not healthy_result["negative_checks"]["host_connected_not_inferred"]:
             failures.append("installed certification must never infer host_connected")
         if healthy_result["components"]["pretooluse_contract_reference"]["status"] != "PASS":
@@ -643,6 +704,32 @@ def self_test() -> dict[str, Any]:
             failures.append("stale PreToolUse contract lock must produce NEEDS_REVIEW")
         if not any(f.get("component") == "pretooluse_contract_reference" for f in stale_contract_result.get("findings", [])):
             failures.append("stale PreToolUse contract lock must be reported as a certification finding")
+
+        # Red-capable bytecode fixture (Gap 4 / canary 379-vs-378): a __pycache__
+        # cache planted under a delivered skill must surface as artifact_hygiene
+        # contamination and drive a certification finding — the exact divergence
+        # the installed canary exhibited under an overall-PASS report.
+        bytecode_target = root / "healthy-with-delivered-bytecode"
+        write_base_fixture(bytecode_target, healthy=True)
+        bytecode_cache = (
+            bytecode_target
+            / ".agents/skills/tes-engineering-discipline/scripts/__pycache__/discipline_oracle.cpython-314.pyc"
+        )
+        bytecode_cache.parent.mkdir(parents=True, exist_ok=True)
+        bytecode_cache.write_bytes(b"\x00\x00\x00\x00delivered-bytecode")
+        bytecode_result = evaluate(bytecode_target)
+        bytecode_hygiene = bytecode_result["components"]["artifact_hygiene"]
+        if bytecode_hygiene["status"] != "FAIL":
+            failures.append("delivered-skill Python bytecode must drive artifact_hygiene FAIL")
+        if not any("bytecode" in str(item) for item in bytecode_hygiene.get("failures", [])):
+            failures.append("artifact_hygiene must name the delivered bytecode contamination")
+        if not any(f.get("component") == "artifact_hygiene" for f in bytecode_result.get("findings", [])):
+            failures.append("delivered bytecode must be reported as a certification finding")
+        if not bytecode_result["negative_checks"].get("os_residue_absent", True):
+            # bytecode is a separate class; OS-residue check must not be conflated
+            pass
+        if bytecode_result["negative_checks"].get("delivered_bytecode_absent") is not False:
+            failures.append("negative_checks must expose delivered_bytecode_absent=False under contamination")
     return {
         "schema": SCHEMA,
         "version": VERSION,

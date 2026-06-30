@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.231"
+VERSION = "0.3.232"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -48,6 +48,14 @@ PACKAGE_SOURCE_MARKERS = (
 )
 OS_RESIDUE_NAMES = {".DS_Store", ".AppleDouble", ".LSOverride", "__MACOSX"}
 OS_RESIDUE_PREFIXES = ("._",)
+# Python build artifacts (bytecode caches). These are produced by running the
+# delivered helpers and MUST NEVER enter the bundle manifest, staging, or ZIP:
+# they are not source of truth, vary by interpreter, and silently inflate the
+# delivered manifest (the canary 379-vs-378 entry was exactly such a cache under
+# a delivered skill). Distinct from OS residue so certification can name the
+# contamination class precisely. Build the bundle with PYTHONDONTWRITEBYTECODE=1.
+BUILD_ARTIFACT_DIR_NAMES = {"__pycache__"}
+BUILD_ARTIFACT_SUFFIXES = (".pyc", ".pyo")
 
 REQUIRED_LAYERS = {
     "helper",
@@ -390,8 +398,27 @@ def is_os_residue(path: Path) -> bool:
     return any(part in OS_RESIDUE_NAMES or part.startswith(OS_RESIDUE_PREFIXES) for part in path.parts)
 
 
+def is_build_artifact(path: Path) -> bool:
+    """True for Python bytecode caches (__pycache__ dirs, *.pyc/*.pyo files)."""
+    if any(part in BUILD_ARTIFACT_DIR_NAMES for part in path.parts):
+        return True
+    return path.suffix in BUILD_ARTIFACT_SUFFIXES
+
+
+def is_delivery_contaminant(path: Path) -> bool:
+    """True for any path class that must never be delivered: OS residue or bytecode."""
+    return is_os_residue(path) or is_build_artifact(path)
+
+
 def purge_os_residue(root: Path) -> list[str]:
-    """Delete macOS metadata residue before materialization or ZIP creation."""
+    """Delete macOS metadata residue and Python bytecode before ZIP creation.
+
+    Both contaminant classes are purged here: OS residue (macOS metadata) and
+    build artifacts (__pycache__/*.pyc). Purging bytecode before staging is the
+    primary guard that keeps the delivered manifest interpreter-independent even
+    if a prior run wrote caches into the source tree without
+    PYTHONDONTWRITEBYTECODE.
+    """
     root = root.resolve()
     removed: list[str] = []
     excluded_roots = {
@@ -405,7 +432,7 @@ def purge_os_residue(root: Path) -> list[str]:
             relative = path.relative_to(root)
         except ValueError:
             continue
-        if not is_os_residue(relative):
+        if not is_delivery_contaminant(relative):
             continue
         if path.is_dir():
             shutil.rmtree(path)
@@ -422,7 +449,11 @@ def os_residue_files(root: Path) -> list[Path]:
 
 
 def iter_files(root: Path) -> list[Path]:
-    return sorted(path for path in root.rglob("*") if path.is_file() and not is_os_residue(path))
+    return sorted(
+        path
+        for path in root.rglob("*")
+        if path.is_file() and not is_delivery_contaminant(path)
+    )
 
 
 def layer_for_path(path: str) -> str:
@@ -605,6 +636,8 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
             failures.append("manifest entry missing path")
         if is_os_residue(Path(path)):
             failures.append(f"{path}: OS residue must not be delivered")
+        if is_build_artifact(Path(path)):
+            failures.append(f"{path}: Python bytecode must not be delivered")
         if path in paths:
             failures.append(f"duplicate manifest path: {path}")
         paths.add(path)
@@ -720,6 +753,12 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
                         "status": "FAIL",
                         "failures": [f"{archive_path}: OS residue must not be zipped"],
                     }
+                if is_build_artifact(Path(archive_path)):
+                    return {
+                        "version": VERSION,
+                        "status": "FAIL",
+                        "failures": [f"{archive_path}: Python bytecode must not be zipped"],
+                    }
                 bundle.write(source, archive_path)
 
     return {
@@ -761,6 +800,9 @@ def zip_extracted_public_bundle(out: Path) -> dict[str, Any]:
             archive_path = str(entry.get("archive_path") or "")
             if is_os_residue(Path(archive_path)):
                 failures.append(f"{archive_path}: OS residue must not be zipped")
+                continue
+            if is_build_artifact(Path(archive_path)):
+                failures.append(f"{archive_path}: Python bytecode must not be zipped")
                 continue
             source = ROOT / archive_path
             if not source.exists():
@@ -2646,6 +2688,16 @@ def self_test() -> dict[str, Any]:
         source_residue = ROOT / "src/adapters/codex/skills/tes-goal-maestro/._tes-bundle-self-test"
         source_residue.parent.mkdir(parents=True, exist_ok=True)
         source_residue.write_text("", encoding="utf-8")
+        # Red-capable bytecode fixture: a __pycache__/*.pyc cache planted under a
+        # delivered adapter skill must be purged before packaging and must never
+        # reach the staged manifest. This is the exact 379-vs-378 contamination
+        # the canary exhibited.
+        source_bytecode = (
+            ROOT
+            / "src/adapters/codex/skills/tes-goal-maestro/__pycache__/_tes-bundle-self-test.cpython-314.pyc"
+        )
+        source_bytecode.parent.mkdir(parents=True, exist_ok=True)
+        source_bytecode.write_bytes(b"\x00\x00\x00\x00bytecode-fixture")
         if source_package_available():
             built = build_bundle(bundle)
             self_test_mode = "source-package"
@@ -2660,6 +2712,39 @@ def self_test() -> dict[str, Any]:
             }
         if source_residue.exists():
             failures.append("build_bundle did not purge source OS residue before packaging")
+        if source_bytecode.exists() or source_bytecode.parent.exists():
+            failures.append("build_bundle did not purge source Python bytecode before packaging")
+        # Both branches of is_build_artifact must hold independently: the
+        # __pycache__ directory branch AND the bare .pyc/.pyo suffix branch. A
+        # loose .pyc outside any __pycache__ dir exercises ONLY the suffix branch
+        # (a .pyc inside __pycache__ would be caught by the dir branch first and
+        # leave the suffix branch unprotected against regression).
+        if not is_build_artifact(Path("a/b/loose.pyc")):
+            failures.append("is_build_artifact must catch a bare .pyc by suffix (outside __pycache__)")
+        if not is_build_artifact(Path("a/b/loose.pyo")):
+            failures.append("is_build_artifact must catch a bare .pyo by suffix")
+        if not is_build_artifact(Path("a/__pycache__/c.txt")):
+            failures.append("is_build_artifact must catch any path under __pycache__ by directory")
+        # Falsifiable manifest guard, both classes: a __pycache__ entry AND a bare
+        # .pyc entry must each be rejected.
+        for label, member in (
+            ("pycache-dir", ".agents/skills/tes-goal-maestro/scripts/__pycache__/x.cpython-314.pyc"),
+            ("bare-pyc", ".agents/skills/tes-goal-maestro/scripts/legacy_module.pyc"),
+        ):
+            bytecode_manifest = {
+                "schema": MANIFEST_NAME and "tes-bundle-manifest@2",
+                "entries": [
+                    {
+                        "path": member,
+                        "archive_path": f"adapters/codex/{member.split('/', 1)[1]}",
+                        "sha256": "0" * 64,
+                        "layer": "helper",
+                        "owner": "tes-owned",
+                    }
+                ],
+            }
+            if not any("bytecode" in failure for failure in validate_manifest(bytecode_manifest)):
+                failures.append(f"validate_manifest must reject a Python bytecode entry ({label})")
         if built.get("status") != "BUILT":
             return {"version": VERSION, "status": "FAIL", "failures": built.get("failures", ["build failed"])}
         target = temp / "target"
@@ -2723,6 +2808,13 @@ def self_test() -> dict[str, Any]:
         ]
         if residue_entries:
             failures.append(f"staged manifest included OS residue: {sorted(residue_entries)}")
+        bytecode_entries = [
+            entry.get("path")
+            for entry in manifest.get("entries", [])
+            if isinstance(entry, dict) and is_build_artifact(Path(str(entry.get("path", ""))))
+        ]
+        if bytecode_entries:
+            failures.append(f"staged manifest included Python bytecode: {sorted(bytecode_entries)}")
         setup_residue = os_residue_files(target / ".tes/setup" / VERSION)
         if setup_residue:
             failures.append(f"staged setup included OS residue: {[rel(path, target) for path in setup_residue]}")

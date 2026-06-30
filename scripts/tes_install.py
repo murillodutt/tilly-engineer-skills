@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.231"
+VERSION = "0.3.232"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -1892,7 +1892,8 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         status = certification_status
     else:
         status = "PASS"
-    advisories = collect_advisories(results) if status == "PASS" else []
+    advisory_stamp = utc_stamp()
+    advisories = collect_advisories(results, derived_at=advisory_stamp) if status == "PASS" else []
     run_payload = {
         "schema": "tes-postinstall-run@1",
         "version": VERSION,
@@ -1952,6 +1953,14 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         complete_payload["advisories"] = advisories
     else:
         complete_payload.pop("advisories", None)
+    # Record when advisories were last derived (Gap 3). On a PASS run this is the
+    # current-state proof: an empty advisory list with a fresh advisories_derived_at
+    # is positive evidence that scaffold-era advisories (mesh.scaffold_only) were
+    # re-evaluated against the aligned mesh and cleared — not merely missing.
+    if status == "PASS":
+        complete_payload["advisories_derived_at"] = advisory_stamp
+    else:
+        complete_payload.pop("advisories_derived_at", None)
     write_json(sentinel_path, complete_payload)
     result = {
         "version": VERSION,
@@ -1996,12 +2005,20 @@ def _gate_stdout_json(payload: dict[str, Any], needle: str) -> dict[str, Any]:
     return {}
 
 
-def collect_advisories(results: list[dict[str, Any]]) -> list[dict[str, str]]:
+def collect_advisories(
+    results: list[dict[str, Any]], *, derived_at: str | None = None
+) -> list[dict[str, str]]:
     """Derive post-PASS advisories from the tes_init payload already in `results`.
 
     Advisories are non-blocking nudges (GAP-1/2/4/5). They never change status;
     each rule is isolated so a malformed payload degrades to fewer advisories
     rather than raising and breaking the hook.
+
+    Each advisory is scoped to the run that produced it via `derived_at`, so a
+    historical scaffold-era advisory can never be read as current-state evidence
+    (Gap 3). The whole list is re-derived from THIS run's alignment oracle, so a
+    target that has since transitioned scaffold -> aligned drops mesh.scaffold_only
+    rather than carrying it forward.
     """
     advisories: list[dict[str, str]] = []
     payload = _tes_init_payload(results)
@@ -2052,6 +2069,12 @@ def collect_advisories(results: list[dict[str, Any]]) -> list[dict[str, str]]:
             advisories.append({"code": "field_reports.pending_high", "message": pending_advisory})
     except Exception:
         pass
+
+    # Scope every advisory to the producing run so a stale advisory can never be
+    # presented as current-state evidence (Gap 3 truthfulness).
+    if derived_at:
+        for advisory in advisories:
+            advisory["derived_at"] = derived_at
 
     return advisories
 
@@ -5280,6 +5303,20 @@ def self_test() -> int:
     }
     if collect_advisories(_tes_init_result(quiet_payload)):
         failures.append("collect_advisories must stay empty when no signal is present")
+
+    # Gap 3 truthfulness: a target that transitions scaffold -> aligned must drop
+    # mesh.scaffold_only, and advisories must be scoped to the producing run so a
+    # historical scaffold advisory can never read as current-state evidence.
+    scaffold_run = collect_advisories(_tes_init_result(firing_payload), derived_at="2026-01-01T00:00:00Z")
+    if not any(a["code"] == "mesh.scaffold_only" for a in scaffold_run):
+        failures.append("scaffold-era run must emit mesh.scaffold_only advisory")
+    if any(a.get("derived_at") != "2026-01-01T00:00:00Z" for a in scaffold_run):
+        failures.append("scaffold-era advisories must be stamped with the producing run's derived_at")
+    aligned_run = collect_advisories(_tes_init_result(quiet_payload), derived_at="2026-06-30T00:00:00Z")
+    if any(a["code"] == "mesh.scaffold_only" for a in aligned_run):
+        failures.append(
+            "after scaffold -> aligned transition, mesh.scaffold_only must NOT remain as current-state advisory"
+        )
 
     # Adversarial: missing payload / missing gates must degrade to [] (never raise).
     if collect_advisories([]) != []:

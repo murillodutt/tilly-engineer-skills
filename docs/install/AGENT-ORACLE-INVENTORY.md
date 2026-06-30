@@ -161,6 +161,18 @@ python3 scripts/attach_health_oracle.py --target /path/to/project --surface mcp
 python3 scripts/attach_health_oracle.py --self-test
 ```
 
+## Canary Admission And Installed Certification
+
+```bash
+python3 scripts/installed_certification_oracle.py --target /path/to/project    # aggregate installed cert; flags delivered bytecode contamination
+python3 scripts/installed_certification_oracle.py --self-test
+python3 scripts/public_bundle_oracle.py                                        # public ZIP + hash + bytecode/residue rejection
+python3 scripts/canary_admission_oracle.py --target /path/to/canary --json-only # BLOCKS without Git + pre-push + strict pre-commit; per-host native hook truthfulness
+python3 scripts/canary_admission_oracle.py --self-test
+```
+
+`canary_admission_oracle.py` is maintainer/canary-admission infrastructure, not delivered adopter behavior: strict pre-commit is required for a canary to claim `READY_FOR_GOAL_MAESTRO_CANARY`, but TES never auto-installs a strict pre-commit gate for adopters. A configured-but-unobserved host is `CONFIGURED_NOT_OBSERVED`, never native PASS, and one host's runtime records never fill another host's claim.
+
 ## Validation Gates
 
 ```bash
