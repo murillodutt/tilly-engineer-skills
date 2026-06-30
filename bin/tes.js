@@ -107,8 +107,8 @@ Options:
   --timeout <seconds>         Bundle download or postinstall timeout.
   --attach <surface>          Attach a project-visible surface. Repeatable.
                               Default installs a full functional TES: project
-                              skills (/tes-* commands), bootloaders, MCP, and
-                              hooks, all reversible. Use --attach all to also
+                              skills (/tes-* commands), bootloaders, MCP, hooks,
+                              and Field Reports Git gates, all reversible. Use --attach all to also
                               add the docs mesh, or --attach capsule for a
                               minimal capsule-only install.
   --help                      Show this help.
@@ -705,7 +705,7 @@ function printCompletionNotice(parsed, summary, dryRun) {
     // Functional default (or a selection that includes the command set / bootloaders).
     console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
     console.log("TES is materialized as a full, reversible workspace: project skills (/tes-* commands),");
-    console.log("engineering-discipline bootloaders, MCP, and startup hooks.");
+    console.log("engineering-discipline bootloaders, MCP, startup hooks, and Field Reports Git gates.");
     console.log("Codex, Claude Code, and Cursor may ask you to trust the project hook before it fires.");
     console.log("Every write is recorded and reversible: tilly-engineer-skills uninstall (or detach <surface>).");
     return;
@@ -978,7 +978,8 @@ async function main() {
   // ADR 0004 (amended, skills-surface line): the capsule is reversible ownership
   // and non-contamination, not a materialization cap. A fresh public install
   // therefore delivers a full, functional TES — project skills (the /tes-*
-  // command set), the engineering-discipline bootloaders, MCP, and startup hooks
+  // command set), the engineering-discipline bootloaders, MCP, startup hooks,
+  // and Field Reports Git gates
   // — with every project-visible write recorded in the manifest and reversible
   // via uninstall/detach. docs-mesh stays opt-in (it authors project docs). For a
   // minimal, isolation-only install, pass an explicit --attach selection (e.g.
@@ -989,6 +990,7 @@ async function main() {
       "--attach", "root-context",
       "--attach", "mcp",
       "--attach", "hooks",
+      "--attach", "field-reports",
     );
   }
 
