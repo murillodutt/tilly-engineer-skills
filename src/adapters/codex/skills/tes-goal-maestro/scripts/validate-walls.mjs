@@ -46,6 +46,10 @@ const GM12_SPEC8_DECLARED_SPECS = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
 const GM12_SPEC8_FINAL_STATUS = 'PASS_P0_HARNESS_ORCHESTRATION_FEEDBACK_FIDELITY';
 const GM12_SPEC8_REPORT_STATUS = 'local_package_ready';
 const GM12_SPEC8_SHARE_STATUS = 'not_requested';
+const GM12_SPEC9_CONTRACT = 'goal-maestro-p0-package-hierarchy';
+const GM12_SPEC9_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
+const GM12_SPEC9_LATEST_PACKAGE = 'execution-thermometer-run-html-002';
+const GM12_SPEC9_SUPERSEDED_PACKAGE = 'execution-thermometer-run-html-001';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -293,6 +297,26 @@ function gm12Spec8ChecksumMismatchArgs() {
 
 function gm12Spec8RevertArgs() {
   return [fixture('gm12-spec8-report-coherence-ok.json', JSON.stringify(gm12Spec8Fixture('valid')))];
+}
+
+function gm12Spec9UnsortedCandidatesArgs() {
+  return [fixture('gm12-spec9-package-hierarchy-unsorted-candidates.json', JSON.stringify(gm12Spec9Fixture('unsorted_candidates')))];
+}
+
+function gm12Spec9MissingSupersededByArgs() {
+  return [fixture('gm12-spec9-package-hierarchy-missing-superseded-by.json', JSON.stringify(gm12Spec9Fixture('missing_superseded_by')))];
+}
+
+function gm12Spec9CloseoutHistoryLeakArgs() {
+  return [fixture('gm12-spec9-package-hierarchy-closeout-history-leak.json', JSON.stringify(gm12Spec9Fixture('closeout_history_leak')))];
+}
+
+function gm12Spec9ExplicitHistoryArgs() {
+  return [fixture('gm12-spec9-package-hierarchy-explicit-history.json', JSON.stringify(gm12Spec9Fixture('explicit_history')))];
+}
+
+function gm12Spec9RevertArgs() {
+  return [fixture('gm12-spec9-package-hierarchy-ok.json', JSON.stringify(gm12Spec9Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -747,6 +771,71 @@ function gm12Spec8ChecksumValidation(mode) {
       { path: 'context-receipt.md', expected_hash: GM12_SPEC8_CHECKSUM_HASHES.receipt, actual_hash: GM12_SPEC8_CHECKSUM_HASHES.receipt },
       { path: 'execution-thermometer.html', expected_hash: GM12_SPEC8_CHECKSUM_HASHES.html, actual_hash: actualHtmlHash },
     ],
+  };
+}
+
+function gm12Spec9Fixture(mode) {
+  const base = gm12Spec8Fixture('valid');
+  const latestPackage = {
+    package_id: GM12_SPEC9_LATEST_PACKAGE,
+    path: `reports/${GM12_SPEC9_LATEST_PACKAGE}`,
+    finalization_status: 'latest',
+    package_result: 'pass',
+  };
+  const supersededPackage = {
+    package_id: GM12_SPEC9_SUPERSEDED_PACKAGE,
+    path: `reports/${GM12_SPEC9_SUPERSEDED_PACKAGE}`,
+    finalization_status: 'superseded',
+    failed: true,
+    package_result: 'failed',
+    superseded_by: GM12_SPEC9_LATEST_PACKAGE,
+  };
+  let packages = [supersededPackage, latestPackage];
+  let closeoutPackageRefs = [GM12_SPEC9_LATEST_PACKAGE];
+  let explicitPackageHistory = false;
+
+  if (mode === 'unsorted_candidates') {
+    packages = [
+      { ...supersededPackage, finalization_status: 'candidate', superseded_by: undefined },
+      { ...latestPackage, finalization_status: 'candidate' },
+    ];
+    closeoutPackageRefs = [GM12_SPEC9_SUPERSEDED_PACKAGE, GM12_SPEC9_LATEST_PACKAGE];
+  }
+  if (mode === 'missing_superseded_by') {
+    packages = [
+      { ...supersededPackage, superseded_by: undefined },
+      latestPackage,
+    ];
+  }
+  if (mode === 'closeout_history_leak') {
+    closeoutPackageRefs = [GM12_SPEC9_SUPERSEDED_PACKAGE, GM12_SPEC9_LATEST_PACKAGE];
+  }
+  if (mode === 'explicit_history') {
+    closeoutPackageRefs = [GM12_SPEC9_SUPERSEDED_PACKAGE, GM12_SPEC9_LATEST_PACKAGE];
+    explicitPackageHistory = true;
+  }
+
+  return {
+    ...base,
+    harness_contract: GM12_SPEC9_CONTRACT,
+    package_hierarchy_required: true,
+    package_hierarchy_expectations: {
+      stop_state: GM12_SPEC9_STOP_STATE,
+      latest_package_id: GM12_SPEC9_LATEST_PACKAGE,
+    },
+    thermometer_packages: packages,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      package_hierarchy: {
+        latest_package_id: GM12_SPEC9_LATEST_PACKAGE,
+        packages,
+      },
+    },
+    closeout: {
+      ...base.closeout,
+      package_refs: closeoutPackageRefs,
+      explicit_package_history: explicitPackageHistory,
+    },
   };
 }
 
@@ -1324,6 +1413,25 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec8ChecksumMismatchArgs,
     revert: gm12Spec8RevertArgs,
+  },
+  // GM12S9 — SPEC-009 prevents competing Thermometer packages for one loop.
+  {
+    id: 'GM12S9 goal-maestro-p0-package-hierarchy-unsorted-candidates',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec9UnsortedCandidatesArgs,
+    revert: gm12Spec9RevertArgs,
+  },
+  {
+    id: 'GM12S9 goal-maestro-p0-package-hierarchy-superseded-by',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec9MissingSupersededByArgs,
+    revert: gm12Spec9RevertArgs,
+  },
+  {
+    id: 'GM12S9 goal-maestro-p0-package-hierarchy-closeout-latest-only',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec9CloseoutHistoryLeakArgs,
+    revert: gm12Spec9ExplicitHistoryArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

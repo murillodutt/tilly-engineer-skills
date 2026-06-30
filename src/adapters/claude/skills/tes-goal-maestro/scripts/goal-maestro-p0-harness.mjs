@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -13,6 +13,8 @@
 // ledger_grammar_required:true.
 // SPEC-008 fixtures opt into report surface coherence validation with
 // report_coherence_required:true.
+// SPEC-009 fixtures opt into Thermometer package finalization hierarchy
+// validation with package_hierarchy_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -26,6 +28,7 @@ const SPEC_FIDELITY_STOP_STATE = 'NEEDS_SPEC_FIDELITY';
 const THERMOMETER_FIDELITY_STOP_STATE = 'NEEDS_THERMOMETER_FIDELITY';
 const LEDGER_GRAMMAR_STOP_STATE = 'NEEDS_LEDGER_GRAMMAR';
 const REPORT_COHERENCE_STOP_STATE = 'NEEDS_REPORT_COHERENCE';
+const PACKAGE_HIERARCHY_STOP_STATE = 'NEEDS_THERMOMETER_PACKAGE_HIERARCHY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -33,11 +36,13 @@ const SPEC_FIDELITY_CONTRACT = 'goal-maestro-p0-spec-fidelity';
 const THERMOMETER_FIDELITY_CONTRACT = 'goal-maestro-p0-thermometer-fidelity';
 const LEDGER_GRAMMAR_CONTRACT = 'goal-maestro-p0-ledger-grammar';
 const REPORT_COHERENCE_CONTRACT = 'goal-maestro-p0-report-coherence';
+const PACKAGE_HIERARCHY_CONTRACT = 'goal-maestro-p0-package-hierarchy';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
 const MATERIAL_SPEC_HEADING_RE = /^### (SPEC-\d{3}) - (.+\S)$/;
 const REPORT_COHERENCE_FIELDS = ['spec_ids', 'final_status', 'report_status', 'share_status', 'evidence_hashes', 'unproven_count'];
+const PACKAGE_HIERARCHY_STATUSES = new Set(['latest', 'superseded', 'historical']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -92,6 +97,7 @@ const specFidelityRequired = requiresSpecFidelityGate(fixture);
 const thermometerFidelityRequired = requiresThermometerFidelityGate(fixture);
 const ledgerGrammarRequired = requiresLedgerGrammarGate(fixture);
 const reportCoherenceRequired = requiresReportCoherenceGate(fixture);
+const packageHierarchyRequired = requiresPackageHierarchyGate(fixture);
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
 const promptEnrichmentPacketEvents = [];
@@ -229,8 +235,13 @@ if (reportCoherenceRequired) {
 if (thermometerFidelityRequired) {
   addThermometerFidelityChecks();
 }
+if (packageHierarchyRequired) {
+  addPackageHierarchyChecks();
+}
 
-const harnessTitle = reportCoherenceRequired
+const harnessTitle = packageHierarchyRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009 goal-maestro-p0-package-hierarchy (${LINEAR_STOP_STATE}/${PACKAGE_HIERARCHY_STOP_STATE})`
+  : reportCoherenceRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008 goal-maestro-p0-report-coherence (${LINEAR_STOP_STATE}/${REPORT_COHERENCE_STOP_STATE})`
   : ledgerGrammarRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007 goal-maestro-p0-ledger-grammar (${LINEAR_STOP_STATE}/${LEDGER_GRAMMAR_STOP_STATE})`
@@ -883,6 +894,56 @@ function addReportCoherenceChecks() {
   );
 }
 
+function addPackageHierarchyChecks() {
+  const packages = packageHierarchyCandidatesFromFixture(fixture);
+  const latestPackages = packages.filter((entry) => entry.status === 'latest');
+  const latestPackage = latestPackages[0] ?? null;
+  const latestIdentity = packageIdentityValues(latestPackage?.candidate);
+  const invalidStatusPackages = packages.filter((entry) => !PACKAGE_HIERARCHY_STATUSES.has(entry.status));
+  const failedSupersededPackages = packages.filter((entry) => entry.status === 'superseded' && packageWasFailed(entry.candidate));
+  const supersededByMismatches = failedSupersededPackages.filter((entry) => !packageSupersededByLatest(entry.candidate, latestIdentity));
+  const closeoutRefs = closeoutPackageRefsFromFixture(fixture);
+  const closeoutLinksLatest = closeoutRefs.some((ref) => latestIdentity.includes(ref));
+  const closeoutHistoryExplicit = closeoutExplicitlyListsPackageHistory(fixture);
+  const nonLatestCloseoutRefs = closeoutRefs.filter((ref) => !latestIdentity.includes(ref));
+
+  packageHierarchyCheck(
+    'Thermometer package candidates are present',
+    packages.length > 0,
+    'at least one Thermometer package candidate is required for finalization hierarchy',
+  );
+  packageHierarchyCheck(
+    'every package declares finalization status',
+    packages.length > 0 && invalidStatusPackages.length === 0,
+    `package status must be one of latest, superseded, historical: ${formatPackageEntries(invalidStatusPackages)}`,
+  );
+  packageHierarchyCheck(
+    'exactly one latest package is declared',
+    latestPackages.length === 1,
+    `expected exactly one latest package, got ${latestPackages.length}`,
+  );
+  packageHierarchyCheck(
+    'failed superseded packages record superseded_by',
+    failedSupersededPackages.every((entry) => nonEmptyString(entry.candidate.superseded_by)),
+    `failed repaired package(s) lack superseded_by: ${formatPackageEntries(failedSupersededPackages.filter((entry) => !nonEmptyString(entry.candidate.superseded_by)))}`,
+  );
+  packageHierarchyCheck(
+    'failed superseded packages point to latest package',
+    supersededByMismatches.length === 0,
+    `superseded_by must point to the latest package: ${formatPackageEntries(supersededByMismatches)}`,
+  );
+  packageHierarchyCheck(
+    'closeout links the latest package',
+    closeoutLinksLatest,
+    'closeout must link the latest Thermometer package',
+  );
+  packageHierarchyCheck(
+    'closeout links only latest package unless history is explicit',
+    closeoutHistoryExplicit || nonLatestCloseoutRefs.length === 0,
+    `closeout links non-latest package(s) without explicit history: ${formatValues(nonLatestCloseoutRefs)}`,
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1012,6 +1073,10 @@ function ledgerGrammarCheck(name, pass, detail) {
 
 function reportCoherenceCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${REPORT_COHERENCE_STOP_STATE}: ${detail}` });
+}
+
+function packageHierarchyCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${PACKAGE_HIERARCHY_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1155,6 +1220,13 @@ function requiresReportCoherenceGate(value) {
   return value.report_coherence_required === true
     || value.harness_contract === REPORT_COHERENCE_CONTRACT
     || value.contract === REPORT_COHERENCE_CONTRACT;
+}
+
+function requiresPackageHierarchyGate(value) {
+  return value.package_hierarchy_required === true
+    || value.thermometer_package_hierarchy_required === true
+    || value.harness_contract === PACKAGE_HIERARCHY_CONTRACT
+    || value.contract === PACKAGE_HIERARCHY_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -1425,6 +1497,135 @@ function checksumValidationEntries(validation) {
   if (isPlainObject(validation.files)) return Object.values(validation.files).filter(isPlainObject);
   if (isPlainObject(validation.entries)) return Object.values(validation.entries).filter(isPlainObject);
   return [];
+}
+
+function packageHierarchyCandidatesFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.thermometer_packages,
+    value.package_hierarchy?.packages,
+    value.package_finalization?.packages,
+    value.package_candidates,
+    value.packages,
+    metrics.package_hierarchy?.packages,
+    metrics.package_finalization?.packages,
+    metrics.thermometer_packages,
+    metrics.packages,
+  ];
+  const packageList = candidates.find(Array.isArray) ?? [];
+  return packageList
+    .filter(isPlainObject)
+    .map((candidate, index) => ({
+      candidate,
+      index,
+      id: packagePrimaryId(candidate) ?? `package#${index + 1}`,
+      status: packageHierarchyStatus(candidate),
+    }));
+}
+
+function packageHierarchyStatus(candidate) {
+  const value = [
+    candidate.finalization_status,
+    candidate.package_finalization_status,
+    candidate.hierarchy_status,
+    candidate.package_hierarchy_status,
+    candidate.package_state,
+    candidate.state,
+    candidate.status,
+  ].find(nonEmptyString);
+  return nonEmptyString(value) ? String(value).trim().toLowerCase() : null;
+}
+
+function packagePrimaryId(candidate) {
+  return packageIdentityValues(candidate)[0] ?? null;
+}
+
+function packageIdentityValues(candidate) {
+  if (!isPlainObject(candidate)) return [];
+  return uniqueStrings([
+    candidate.package_id,
+    candidate.id,
+    candidate.package_name,
+    candidate.name,
+    candidate.package_ref,
+    candidate.artifact_ref,
+    candidate.ref,
+    candidate.path,
+    candidate.href,
+    candidate.url,
+  ].filter(nonEmptyString));
+}
+
+function packageWasFailed(candidate) {
+  if (!isPlainObject(candidate)) return false;
+  if (candidate.failed === true || candidate.was_failed === true) return true;
+  return [
+    candidate.result,
+    candidate.outcome,
+    candidate.validation_status,
+    candidate.report_status,
+    candidate.package_result,
+    candidate.package_status,
+    candidate.previous_status,
+    candidate.previous_result,
+  ].filter(nonEmptyString).some((value) => /fail|failed|blocked|unproven/i.test(value));
+}
+
+function packageSupersededByLatest(candidate, latestIdentity) {
+  return nonEmptyString(candidate?.superseded_by) && latestIdentity.includes(candidate.superseded_by);
+}
+
+function closeoutPackageRefsFromFixture(value) {
+  const closeout = reportCoherenceSurfaceFromFixture('closeout');
+  if (typeof closeout === 'string') return packageRefsFromCloseoutText(closeout);
+  if (!isPlainObject(closeout)) return [];
+  return uniqueStrings([
+    ...normalizeStringArray(closeout.package_ref),
+    ...normalizeStringArray(closeout.package_refs),
+    ...normalizeStringArray(closeout.latest_package_ref),
+    ...normalizeStringArray(closeout.latest_package_refs),
+    ...normalizeStringArray(closeout.thermometer_package_ref),
+    ...normalizeStringArray(closeout.thermometer_package_refs),
+    ...normalizeStringArray(closeout.package_link),
+    ...normalizeStringArray(closeout.package_links),
+    ...normalizeStringArray(closeout.report_package),
+    ...normalizeStringArray(closeout.report_packages),
+    ...packageIdentityValues(closeout.latest_package),
+  ]);
+}
+
+function packageRefsFromCloseoutText(text) {
+  const refs = [];
+  for (const label of ['package_ref', 'package_refs', 'latest_package_ref', 'thermometer_package_ref', 'thermometer_package']) {
+    const value = readReportTextField(text, [label]);
+    refs.push(...normalizeStringArray(value));
+  }
+  return uniqueStrings(refs);
+}
+
+function closeoutExplicitlyListsPackageHistory() {
+  const closeout = reportCoherenceSurfaceFromFixture('closeout');
+  if (typeof closeout === 'string') return /\bpackage[_ -]?history\s*[:=]/i.test(closeout);
+  if (!isPlainObject(closeout)) return false;
+  return closeout.explicit_package_history === true
+    || closeout.explicit_history === true
+    || closeout.list_package_history === true
+    || closeout.list_history === true
+    || Array.isArray(closeout.package_history)
+    || Array.isArray(closeout.historical_packages);
+}
+
+function normalizeStringArray(value) {
+  if (Array.isArray(value)) return value.flatMap(normalizeStringArray);
+  if (!nonEmptyString(value)) return [];
+  return String(value)
+    .split(/[,;\s]+/)
+    .map((entry) => entry.replace(/^[`'"]|[`'"]$/g, '').trim())
+    .filter(nonEmptyString);
+}
+
+function formatPackageEntries(entries) {
+  return `[${entries.map((entry) => `${entry.id}:${entry.status ?? 'missing'}`).join(', ')}]`;
 }
 
 function textSpecIdsFromField(value) {

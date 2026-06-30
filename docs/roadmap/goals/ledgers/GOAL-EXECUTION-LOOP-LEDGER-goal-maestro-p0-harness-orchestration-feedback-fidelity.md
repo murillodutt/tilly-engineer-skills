@@ -434,19 +434,19 @@ repair_count: 0
 audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-008
 failed_attempt_recovery_decision: not_applicable
-commit: no-commit-pre-edit-gate
-oracle_status: active
+commit: f4bfe82b
+oracle_status: PASS (ledger, metrics, receipt, HTML, checksum, and closeout coherence blocked SPEC ID drift, status drift, evidence hash drift, unproven closeout PASS, and checksum mismatch with NEEDS_REPORT_COHERENCE; validate-walls GM12S8 fixtures fired and reverted)
 structural_method_id: gm-p0-harness-platform
 topology_decision: extend-source-wall-harness
 topology_decision_artifact: this-ledger
 structural_debt: none
 next_structural_constraint: preserve-report-surface-coherence-contract
-topology_probe_result: pending
+topology_probe_result: PASS
 browser_metrics_contract: not_applicable
 visual_spatial_oracle: not_applicable
 browser_attempt: not_applicable
 visual_evidence: not_applicable
-runtime_smoke_oracle: pending
+runtime_smoke_oracle: node src/adapters/codex/skills/tes-goal-maestro/scripts/goal-maestro-p0-harness.mjs validates report surface coherence across ledger, metrics, receipt, HTML, checksum, and closeout
 adversary_objection: repaired
 shared_contract_extended: yes
 extension_point_proven: yes
@@ -456,5 +456,12 @@ auditor_distinct_from_operator: not_applicable
 auditor_rewrote_no_oracle: not_applicable
 audit_remutation: not_applicable
 distinct_refuters: not_applicable
-stop_state: active
-next_allowed_action: worker_attempt
+stop_state: ready_for_next_spec
+next_allowed_action: continue_in_part_2
+
+## Partition Handoff
+
+- Partition reason: `validate_doc_size.py` reported the ledger at 460 lines, above the 425-line partition review threshold.
+- Closed range: SPEC-001 through SPEC-008.
+- Continuation ledger: docs/roadmap/goals/ledgers/GOAL-EXECUTION-LOOP-LEDGER-goal-maestro-p0-harness-orchestration-feedback-fidelity-part-2.md.
+- Next active unit: SPEC-009.
