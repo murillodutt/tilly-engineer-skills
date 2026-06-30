@@ -1,4 +1,4 @@
-// SPEC-013 — Mutation suite for executable wall fixtures.
+// SPEC-014 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -67,6 +67,10 @@ const GM12_SPEC12_INTERACTION_RESULTS = ['card selected'];
 const GM12_SPEC13_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
 const GM12_SPEC13_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
 const GM12_SPEC13_BROWSER_SOURCES = ['codex', 'claude', 'cursor'];
+const GM12_SPEC14_CONTRACT = 'goal-maestro-p0-install-chronology';
+const GM12_SPEC14_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
+const GM12_SPEC14_INSTALLED_AT = '2026-06-28T23:55:00Z';
+const GM12_SPEC14_AFTER_MATERIAL_AT = '2026-06-29T00:30:00Z';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -442,6 +446,34 @@ function gm12Spec13MissingDomainMetricsArgs() {
 
 function gm12Spec13RevertArgs() {
   return [fixture('gm12-spec13-browser-metrics-ok.json', JSON.stringify(gm12Spec13Fixture('valid')))];
+}
+
+function gm12Spec14InstallAfterMaterialArgs() {
+  return [fixture('gm12-spec14-install-chronology-after-material.json', JSON.stringify(gm12Spec14Fixture('install_after_material')))];
+}
+
+function gm12Spec14MissingInstalledVersionArgs() {
+  return [fixture('gm12-spec14-install-chronology-missing-installed-version.json', JSON.stringify(gm12Spec14Fixture('missing_installed_version')))];
+}
+
+function gm12Spec14MissingGitHeadArgs() {
+  return [fixture('gm12-spec14-install-chronology-missing-git-head.json', JSON.stringify(gm12Spec14Fixture('missing_git_head')))];
+}
+
+function gm12Spec14MissingBaselineCommitArgs() {
+  return [fixture('gm12-spec14-install-chronology-missing-baseline-commit.json', JSON.stringify(gm12Spec14Fixture('missing_baseline_commit')))];
+}
+
+function gm12Spec14MissingMaterialTimestampsArgs() {
+  return [fixture('gm12-spec14-install-chronology-missing-material-timestamps.json', JSON.stringify(gm12Spec14Fixture('missing_material_timestamps')))];
+}
+
+function gm12Spec14ClassifiedLaterReinstallArgs() {
+  return [fixture('gm12-spec14-install-chronology-classified-later-reinstall.json', JSON.stringify(gm12Spec14Fixture('classified_later_reinstall')))];
+}
+
+function gm12Spec14RevertArgs() {
+  return [fixture('gm12-spec14-install-chronology-ok.json', JSON.stringify(gm12Spec14Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1312,6 +1344,60 @@ function gm12Spec13BrowserMetric(browser_source) {
   };
 }
 
+function gm12Spec14Fixture(mode) {
+  const base = gm12Spec13Fixture('valid');
+  const installChronology = gm12Spec14InstallChronology(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC14_CONTRACT,
+    install_chronology_required: true,
+    install_chronology_json: installChronology,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      install_chronology: installChronology,
+    },
+    closeout: {
+      ...base.closeout,
+      install_chronology: {
+        status: mode === 'valid' || mode === 'classified_later_reinstall' ? 'complete' : 'claimed_complete_by_mutation',
+        installed_at: installChronology.installed_at,
+      },
+    },
+  };
+}
+
+function gm12Spec14InstallChronology(mode) {
+  const chronology = {
+    installed_version: GM12_SPEC10_INSTALLED_VERSION,
+    installed_at: mode === 'install_after_material' || mode === 'classified_later_reinstall'
+      ? GM12_SPEC14_AFTER_MATERIAL_AT
+      : GM12_SPEC14_INSTALLED_AT,
+    git_head_before_loop: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    baseline_commit: 'cc4a8bbe',
+    material_commit_timestamps: [
+      { commit: '74c4bfc2', committed_at: '2026-06-29T00:00:00Z' },
+      { commit: 'e3e85baf', committed_at: '2026-06-29T00:20:00Z' },
+    ],
+  };
+  if (mode === 'missing_installed_version') {
+    delete chronology.installed_version;
+  }
+  if (mode === 'missing_git_head') {
+    delete chronology.git_head_before_loop;
+  }
+  if (mode === 'missing_baseline_commit') {
+    delete chronology.baseline_commit;
+  }
+  if (mode === 'missing_material_timestamps') {
+    delete chronology.material_commit_timestamps;
+  }
+  if (mode === 'classified_later_reinstall') {
+    chronology.install_classification = 'unrelated_later_reinstall';
+    chronology.install_classification_reason = 'reinstall happened after material commits and did not provide the baseline used for execution';
+  }
+  return chronology;
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2060,6 +2146,43 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec13MissingDomainMetricsArgs,
     revert: gm12Spec13RevertArgs,
+  },
+  // GM12S14 — SPEC-014 proves the installed TES baseline predates material execution.
+  {
+    id: 'GM12S14 goal-maestro-p0-install-chronology-after-material',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec14InstallAfterMaterialArgs,
+    revert: gm12Spec14RevertArgs,
+  },
+  {
+    id: 'GM12S14 goal-maestro-p0-install-chronology-installed-version',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec14MissingInstalledVersionArgs,
+    revert: gm12Spec14RevertArgs,
+  },
+  {
+    id: 'GM12S14 goal-maestro-p0-install-chronology-git-head',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec14MissingGitHeadArgs,
+    revert: gm12Spec14RevertArgs,
+  },
+  {
+    id: 'GM12S14 goal-maestro-p0-install-chronology-baseline-commit',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec14MissingBaselineCommitArgs,
+    revert: gm12Spec14RevertArgs,
+  },
+  {
+    id: 'GM12S14 goal-maestro-p0-install-chronology-material-timestamps',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec14MissingMaterialTimestampsArgs,
+    revert: gm12Spec14RevertArgs,
+  },
+  {
+    id: 'GM12S14 goal-maestro-p0-install-chronology-classified-later-reinstall',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec14InstallAfterMaterialArgs,
+    revert: gm12Spec14ClassifiedLaterReinstallArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

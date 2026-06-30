@@ -23,6 +23,8 @@
 // visual_semantic_gate_required:true.
 // SPEC-013 fixtures opt into browser metrics schema validation with
 // browser_metrics_schema_required:true.
+// SPEC-014 fixtures opt into install chronology validation with
+// install_chronology_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -41,6 +43,7 @@ const REPORT_IDENTITY_STOP_STATE = 'NEEDS_REPORT_IDENTITY';
 const VISUAL_EVIDENCE_STOP_STATE = 'NEEDS_VISUAL_EVIDENCE_CONTRACT';
 const VISUAL_SEMANTIC_STOP_STATE = 'NEEDS_VISUAL_SEMANTIC_GATE';
 const BROWSER_METRICS_STOP_STATE = 'NEEDS_BROWSER_METRICS_SCHEMA';
+const INSTALL_CHRONOLOGY_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -53,6 +56,7 @@ const REPORT_IDENTITY_CONTRACT = 'goal-maestro-p0-report-identity';
 const VISUAL_EVIDENCE_CONTRACT = 'goal-maestro-p0-visual-evidence-contract';
 const VISUAL_SEMANTIC_CONTRACT = 'goal-maestro-p0-visual-semantic-gate';
 const BROWSER_METRICS_CONTRACT = 'goal-maestro-p0-browser-metrics-schema';
+const INSTALL_CHRONOLOGY_CONTRACT = 'goal-maestro-p0-install-chronology';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -125,6 +129,7 @@ const reportIdentityRequired = requiresReportIdentityGate(fixture);
 const visualEvidenceContractRequired = requiresVisualEvidenceContract(fixture);
 const visualSemanticGateRequired = requiresVisualSemanticGate(fixture);
 const browserMetricsSchemaRequired = requiresBrowserMetricsSchema(fixture);
+const installChronologyRequired = requiresInstallChronologyGate(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -278,8 +283,13 @@ if (visualSemanticGateRequired) {
 if (browserMetricsSchemaRequired) {
   addBrowserMetricsSchemaChecks();
 }
+if (installChronologyRequired) {
+  addInstallChronologyChecks();
+}
 
-const harnessTitle = browserMetricsSchemaRequired
+const harnessTitle = installChronologyRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014 goal-maestro-p0-install-chronology (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE})`
+  : browserMetricsSchemaRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013 goal-maestro-p0-browser-metrics-schema (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE})`
   : visualSemanticGateRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012 goal-maestro-p0-visual-semantic-gate (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE})`
@@ -1349,6 +1359,60 @@ function addBrowserMetricsSchemaChecks() {
   }
 }
 
+function addInstallChronologyChecks() {
+  const chronology = installChronologyFromFixture(fixture);
+  const installedVersion = installedVersionFromInstallChronology(chronology);
+  const installedAt = installedAtFromInstallChronology(chronology);
+  const gitHeadBeforeLoop = gitHeadBeforeLoopFromInstallChronology(chronology);
+  const baselineCommit = baselineCommitFromInstallChronology(chronology);
+  const materialCommitEntries = materialCommitEntriesFromInstallChronology(chronology);
+  const materialTimestamps = materialCommitEntries.map(materialCommitTimestampMillis).filter(Number.isFinite);
+  const installedMillis = timestampMillis(installedAt);
+  const installAfterMaterial = Number.isFinite(installedMillis) && materialTimestamps.some((timestamp) => timestamp < installedMillis);
+  const unrelatedLaterReinstall = installChronologyClassifiesUnrelatedLaterReinstall(chronology);
+
+  installChronologyCheck(
+    'install chronology document is present',
+    hasNonEmptyObject(chronology),
+    'install_chronology.json or equivalent fields are required',
+  );
+  installChronologyCheck(
+    'installed version is present',
+    nonEmptyString(installedVersion),
+    'installed version is required',
+  );
+  installChronologyCheck(
+    'installed timestamp is valid',
+    Number.isFinite(installedMillis),
+    'installed_at must be an ISO timestamp',
+  );
+  installChronologyCheck(
+    'git HEAD before loop is present',
+    nonEmptyString(gitHeadBeforeLoop),
+    'git_head_before_loop is required',
+  );
+  installChronologyCheck(
+    'baseline commit is present',
+    nonEmptyString(baselineCommit),
+    'baseline_commit is required',
+  );
+  installChronologyCheck(
+    'material commit timestamps are present',
+    materialCommitEntries.length > 0,
+    'material_commit_timestamps are required',
+  );
+  installChronologyCheck(
+    'material commit timestamps are valid',
+    materialCommitEntries.length > 0 && materialTimestamps.length === materialCommitEntries.length,
+    'every material commit timestamp must be valid',
+  );
+  installChronologyCheck(
+    'installation predates material commits or is classified unrelated later reinstall',
+    !installAfterMaterial || unrelatedLaterReinstall,
+    'installation evidence is after material commits without unrelated later reinstall classification',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1498,6 +1562,10 @@ function visualSemanticCheck(name, pass, detail) {
 
 function browserMetricsSchemaCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${BROWSER_METRICS_STOP_STATE}: ${detail}` });
+}
+
+function installChronologyCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${INSTALL_CHRONOLOGY_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1676,6 +1744,13 @@ function requiresBrowserMetricsSchema(value) {
     || value.browser_metrics_required === true
     || value.harness_contract === BROWSER_METRICS_CONTRACT
     || value.contract === BROWSER_METRICS_CONTRACT;
+}
+
+function requiresInstallChronologyGate(value) {
+  return value.install_chronology_required === true
+    || value.installChronologyRequired === true
+    || value.harness_contract === INSTALL_CHRONOLOGY_CONTRACT
+    || value.contract === INSTALL_CHRONOLOGY_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -2259,6 +2334,131 @@ function firstPlainObject(...values) {
 
 function hasSchemaVersion(value) {
   return isPlainObject(value) && (nonEmptyString(value.schema_version) || Number.isInteger(value.schema_version));
+}
+
+function installChronologyFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.install_chronology_json,
+    value.install_chronology,
+    value.installChronology,
+    value['install_chronology.json'],
+    metrics.install_chronology_json,
+    metrics.install_chronology,
+    metrics.installChronology,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+  }
+  return hasInstallChronologyShape(value) ? value : {};
+}
+
+function hasInstallChronologyShape(value) {
+  return isPlainObject(value) && (
+    nonEmptyString(installedVersionFromInstallChronology(value))
+    || nonEmptyString(installedAtFromInstallChronology(value))
+    || nonEmptyString(gitHeadBeforeLoopFromInstallChronology(value))
+    || nonEmptyString(baselineCommitFromInstallChronology(value))
+    || materialCommitEntriesFromInstallChronology(value).length > 0
+  );
+}
+
+function installedVersionFromInstallChronology(value) {
+  return firstNonEmptyString(
+    value.installed_version,
+    value.installedVersion,
+    value.installed?.version,
+    value.install?.version,
+    value.version,
+  );
+}
+
+function installedAtFromInstallChronology(value) {
+  return firstNonEmptyString(
+    value.installed_at,
+    value.installedAt,
+    value.install_timestamp,
+    value.installation_timestamp,
+    value.installed?.at,
+    value.install?.at,
+    value.install?.timestamp,
+  );
+}
+
+function gitHeadBeforeLoopFromInstallChronology(value) {
+  return firstNonEmptyString(
+    value.git_head_before_loop,
+    value.gitHeadBeforeLoop,
+    value.before_loop_git_head,
+    value.git?.head_before_loop,
+    value.git?.headBeforeLoop,
+    value.loop?.git_head_before_loop,
+  );
+}
+
+function baselineCommitFromInstallChronology(value) {
+  return firstNonEmptyString(
+    value.baseline_commit,
+    value.baselineCommit,
+    value.baseline?.commit,
+    value.git?.baseline_commit,
+    value.loop?.baseline_commit,
+  );
+}
+
+function materialCommitEntriesFromInstallChronology(value) {
+  const candidate = firstMaterialCommitCollection(
+    value.material_commit_timestamps,
+    value.materialCommitTimestamps,
+    value.material_commits,
+    value.materialCommits,
+    value.loop?.material_commit_timestamps,
+    value.loop?.material_commits,
+  );
+  if (Array.isArray(candidate)) return candidate;
+  if (isPlainObject(candidate)) {
+    return Object.entries(candidate).map(([commit, committed_at]) => ({ commit, committed_at }));
+  }
+  return [];
+}
+
+function firstMaterialCommitCollection(...values) {
+  return values.find((value) => Array.isArray(value) || isPlainObject(value)) ?? null;
+}
+
+function materialCommitTimestampMillis(entry) {
+  if (typeof entry === 'string' || typeof entry === 'number') return timestampMillis(entry);
+  if (!isPlainObject(entry)) return NaN;
+  return timestampMillis(firstNonEmptyString(
+    entry.committed_at,
+    entry.committedAt,
+    entry.commit_timestamp,
+    entry.commitTimestamp,
+    entry.timestamp,
+    entry.at,
+    entry.date,
+  ));
+}
+
+function timestampMillis(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (!nonEmptyString(value)) return NaN;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : NaN;
+}
+
+function installChronologyClassifiesUnrelatedLaterReinstall(value) {
+  if (value.unrelated_later_reinstall === true || value.later_reinstall_unrelated === true) return true;
+  if (value.install_event?.unrelated_later_reinstall === true || value.reinstall?.unrelated === true) return true;
+  const classifications = [
+    value.install_classification,
+    value.installation_classification,
+    value.later_reinstall_classification,
+    value.reinstall_classification,
+    value.install_event?.classification,
+    value.reinstall?.classification,
+  ].map(normalizeSemanticValue);
+  return classifications.includes('unrelated later reinstall');
 }
 
 function isMobileResponsiveEvidence(item) {
