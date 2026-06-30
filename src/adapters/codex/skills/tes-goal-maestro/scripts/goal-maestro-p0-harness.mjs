@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -31,6 +31,8 @@
 // git_admission_gate_required:true.
 // SPEC-017 fixtures opt into evidence tracking classification validation with
 // evidence_tracking_classification_required:true.
+// SPEC-018 fixtures opt into Flash-Fry operational status validation with
+// flash_fry_operational_status_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -53,6 +55,7 @@ const INSTALL_CHRONOLOGY_STOP_STATE = 'NEEDS_INSTALL_CHRONOLOGY';
 const COMMIT_ENFORCEMENT_STOP_STATE = 'NEEDS_COMMIT_ENFORCEMENT_CLASSIFICATION';
 const GIT_ADMISSION_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
 const EVIDENCE_TRACKING_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
+const FLASH_FRY_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -69,6 +72,7 @@ const INSTALL_CHRONOLOGY_CONTRACT = 'goal-maestro-p0-install-chronology';
 const COMMIT_ENFORCEMENT_CONTRACT = 'goal-maestro-p0-commit-enforcement-classification';
 const GIT_ADMISSION_CONTRACT = 'goal-maestro-p0-git-admission-gate';
 const EVIDENCE_TRACKING_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
+const FLASH_FRY_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -85,6 +89,7 @@ const KNOWN_BROWSER_METRICS_SOURCES = new Set(['codex', 'claude', 'cursor']);
 const REQUIRED_EVIDENCE_TRACKING_CLASSES = ['ledger', 'screenshots', 'metrics', 'reports', 'packages'];
 const EVIDENCE_TRACKING_CLASSIFICATIONS = new Set(['tracked', 'runtime_only', 'ignored', 'intentionally_untracked']);
 const UNTRACKED_EVIDENCE_CLASSIFICATIONS = new Set(['runtime_only', 'ignored', 'intentionally_untracked']);
+const FLASH_FRY_STATUSES = new Set(['ran', 'not_required', 'not_configured', 'blocked']);
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -148,6 +153,7 @@ const installChronologyRequired = requiresInstallChronologyGate(fixture);
 const commitEnforcementRequired = requiresCommitEnforcementClassification(fixture);
 const gitAdmissionRequired = requiresGitAdmissionGate(fixture);
 const evidenceTrackingRequired = requiresEvidenceTrackingClassification(fixture);
+const flashFryRequired = requiresFlashFryOperationalStatus(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -313,8 +319,13 @@ if (gitAdmissionRequired) {
 if (evidenceTrackingRequired) {
   addEvidenceTrackingClassificationChecks();
 }
+if (flashFryRequired) {
+  addFlashFryOperationalStatusChecks();
+}
 
-const harnessTitle = evidenceTrackingRequired
+const harnessTitle = flashFryRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018 goal-maestro-p0-flash-fry-operational-status (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE})`
+  : evidenceTrackingRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017 goal-maestro-p0-evidence-tracking-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE})`
   : gitAdmissionRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016 goal-maestro-p0-git-admission-gate (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE})`
@@ -1618,6 +1629,53 @@ function addEvidenceTrackingClassificationChecks() {
   );
 }
 
+function addFlashFryOperationalStatusChecks() {
+  const flashFry = flashFryStatusFromFixture(fixture);
+  const status = normalizeFlashFryStatus(flashFryStatusValue(flashFry));
+  const reports = flashFryReportSurfaces(fixture, flashFry);
+  const evidenceRefs = flashFryEvidenceRefs(flashFry);
+  const notRunReason = flashFryNotRunReason(flashFry, reports);
+  const protectionQualityClaims = reports.flatMap(flashFryProtectionQualityClaimsFromSurface);
+  const introducedCommand = flashFryIntroducedCommandSolelyForStatus(flashFry);
+
+  flashFryCheck(
+    'Flash-Fry operational status is present',
+    FLASH_FRY_STATUSES.has(status),
+    'flash_fry_status must be ran, not_required, not_configured, or blocked',
+  );
+  if (status === 'ran') {
+    flashFryCheck(
+      'Flash-Fry ran status cites evidence',
+      evidenceRefs.length > 0,
+      'Flash-Fry ran status requires artifact, marker, or decision packet reference',
+    );
+  }
+  if (FLASH_FRY_STATUSES.has(status) && status !== 'ran') {
+    flashFryCheck(
+      'Flash-Fry not-run status reports why',
+      nonEmptyString(notRunReason),
+      'not_required, not_configured, and blocked Flash-Fry statuses must report why',
+    );
+  }
+  flashFryCheck(
+    'Flash-Fry status does not introduce a status-only command',
+    !introducedCommand,
+    'do not introduce a new command solely to satisfy Flash-Fry status',
+  );
+  flashFryCheck(
+    'protection quality claims include Flash-Fry status',
+    protectionQualityClaims.length === 0 || FLASH_FRY_STATUSES.has(status),
+    'reports claiming protection quality must record Flash-Fry status',
+  );
+  if (status === 'not_configured') {
+    flashFryCheck(
+      'not_configured adjusts protection score',
+      flashFryProtectionScoreAdjusted(flashFry),
+      'honest not_configured status must adjust protection score',
+    );
+  }
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -1783,6 +1841,10 @@ function gitAdmissionCheck(name, pass, detail) {
 
 function evidenceTrackingCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${EVIDENCE_TRACKING_STOP_STATE}: ${detail}` });
+}
+
+function flashFryCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${FLASH_FRY_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -1989,6 +2051,13 @@ function requiresEvidenceTrackingClassification(value) {
     || value.evidence_tracking_required === true
     || value.harness_contract === EVIDENCE_TRACKING_CONTRACT
     || value.contract === EVIDENCE_TRACKING_CONTRACT;
+}
+
+function requiresFlashFryOperationalStatus(value) {
+  return value.flash_fry_operational_status_required === true
+    || value.flash_fry_status_required === true
+    || value.harness_contract === FLASH_FRY_CONTRACT
+    || value.contract === FLASH_FRY_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -3104,6 +3173,138 @@ function formatEvidenceArtifactRefs(items) {
     return firstNonEmptyString(item.ref, item.path, item.id, item.artifact_class, item.evidence_class, item.type);
   }).filter(nonEmptyString);
   return formatValues(refs);
+}
+
+function flashFryStatusFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const candidates = [
+    value.flash_fry,
+    value.flash_fry_status,
+    value.flashFry,
+    value.flash_fry_operational_status,
+    metrics.flash_fry,
+    metrics.flash_fry_status,
+    metrics.flash_fry_operational_status,
+  ];
+  for (const candidate of candidates) {
+    if (isPlainObject(candidate)) return candidate;
+    if (nonEmptyString(candidate)) return { status: candidate };
+  }
+  return hasFlashFryShape(value) ? value : {};
+}
+
+function hasFlashFryShape(value) {
+  return isPlainObject(value) && (
+    nonEmptyString(value.flash_fry_status)
+    || nonEmptyString(value.status)
+    || Array.isArray(value.flash_fry_artifacts)
+    || nonEmptyString(value.flash_fry_reason)
+  );
+}
+
+function flashFryStatusValue(value) {
+  return firstNonEmptyString(
+    value.flash_fry_status,
+    value.status,
+    value.state,
+    value.operational_status,
+    value.classification,
+  );
+}
+
+function normalizeFlashFryStatus(value) {
+  const status = normalizeSemanticValue(value);
+  if (status === 'ran') return 'ran';
+  if (['not required', 'not applicable', 'not needed'].includes(status)) return 'not_required';
+  if (['not configured', 'unconfigured'].includes(status)) return 'not_configured';
+  if (status === 'blocked') return 'blocked';
+  return status;
+}
+
+function flashFryEvidenceRefs(value) {
+  const refs = [
+    value.artifact_ref,
+    value.artifact,
+    value.marker_ref,
+    value.marker,
+    value.decision_packet_ref,
+    value.decision_packet,
+    value.evidence_ref,
+  ].filter(nonEmptyString);
+  for (const artifact of [
+    ...arrayOfPlainObjects(value.artifacts),
+    ...arrayOfPlainObjects(value.flash_fry_artifacts),
+    ...arrayOfPlainObjects(value.evidence),
+  ]) {
+    const ref = firstNonEmptyString(artifact.ref, artifact.path, artifact.id, artifact.marker, artifact.decision_packet_ref);
+    if (nonEmptyString(ref)) refs.push(ref);
+  }
+  return refs;
+}
+
+function flashFryNotRunReason(value, reports) {
+  const direct = firstNonEmptyString(
+    value.reason,
+    value.not_run_reason,
+    value.why,
+    value.blocked_reason,
+    value.not_configured_reason,
+    value.not_required_reason,
+  );
+  if (nonEmptyString(direct)) return direct;
+  for (const report of reports) {
+    const reportReason = firstNonEmptyString(
+      report.flash_fry_reason,
+      report.not_run_reason,
+      report.reason,
+      report.why,
+    );
+    if (nonEmptyString(reportReason)) return reportReason;
+    const strings = collectStrings(report).map(normalizeSemanticValue).filter(nonEmptyString);
+    const reason = strings.find((entry) => {
+      return entry.includes('not configured') || entry.includes('not required') || entry.includes('blocked');
+    });
+    if (nonEmptyString(reason)) return reason;
+  }
+  return null;
+}
+
+function flashFryReportSurfaces(value, flashFry) {
+  const metrics = thermometerMetricsFromFixture(value);
+  return [
+    flashFry,
+    value.report,
+    value.closeout,
+    value.thermometer_report,
+    metrics.report,
+    metrics.closeout,
+    metrics.flash_fry,
+  ].filter(isPlainObject);
+}
+
+function flashFryProtectionQualityClaimsFromSurface(surface) {
+  const strings = collectStrings(surface).map(normalizeSemanticValue).filter(nonEmptyString);
+  return strings.filter((entry) => {
+    return entry.includes('protection quality')
+      || entry.includes('protection score')
+      || entry.includes('protected by flash fry')
+      || entry.includes('flash fry protection');
+  });
+}
+
+function flashFryIntroducedCommandSolelyForStatus(value) {
+  if (value.command_introduced_solely_for_status === true || value.new_command_solely_for_status === true) return true;
+  if (isPlainObject(value.new_command)) {
+    return value.new_command.solely_for_status === true || value.new_command.reason === 'satisfy_flash_fry_status';
+  }
+  return false;
+}
+
+function flashFryProtectionScoreAdjusted(value) {
+  return value.protection_score_adjusted === true
+    || value.score_adjusted === true
+    || isPlainObject(value.protection_score_adjustment)
+    || isPlainObject(value.score_adjustment);
 }
 
 function isMobileResponsiveEvidence(item) {

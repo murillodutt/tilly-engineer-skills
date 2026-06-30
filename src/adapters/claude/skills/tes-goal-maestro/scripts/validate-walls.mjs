@@ -1,4 +1,4 @@
-// SPEC-017 — Mutation suite for executable wall fixtures.
+// SPEC-018 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -77,6 +77,8 @@ const GM12_SPEC16_CONTRACT = 'goal-maestro-p0-git-admission-gate';
 const GM12_SPEC16_STOP_STATE = 'NEEDS_GIT_REPOSITORY';
 const GM12_SPEC17_CONTRACT = 'goal-maestro-p0-evidence-tracking-classification';
 const GM12_SPEC17_STOP_STATE = 'NEEDS_EVIDENCE_TRACKING_CLASSIFICATION';
+const GM12_SPEC18_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
+const GM12_SPEC18_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -548,6 +550,30 @@ function gm12Spec17RuntimeOnlyArgs() {
 
 function gm12Spec17RevertArgs() {
   return [fixture('gm12-spec17-evidence-tracking-ok.json', JSON.stringify(gm12Spec17Fixture('valid')))];
+}
+
+function gm12Spec18MissingStatusArgs() {
+  return [fixture('gm12-spec18-flash-fry-missing-status.json', JSON.stringify(gm12Spec18Fixture('missing_status')))];
+}
+
+function gm12Spec18RanMissingEvidenceArgs() {
+  return [fixture('gm12-spec18-flash-fry-ran-missing-evidence.json', JSON.stringify(gm12Spec18Fixture('ran_missing_evidence')))];
+}
+
+function gm12Spec18NotConfiguredNoAdjustmentArgs() {
+  return [fixture('gm12-spec18-flash-fry-not-configured-no-adjustment.json', JSON.stringify(gm12Spec18Fixture('not_configured_no_adjustment')))];
+}
+
+function gm12Spec18NewCommandArgs() {
+  return [fixture('gm12-spec18-flash-fry-new-command.json', JSON.stringify(gm12Spec18Fixture('new_command')))];
+}
+
+function gm12Spec18NotConfiguredAdjustedArgs() {
+  return [fixture('gm12-spec18-flash-fry-not-configured-adjusted.json', JSON.stringify(gm12Spec18Fixture('not_configured_adjusted')))];
+}
+
+function gm12Spec18RevertArgs() {
+  return [fixture('gm12-spec18-flash-fry-ok.json', JSON.stringify(gm12Spec18Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -1698,6 +1724,65 @@ function gm12Spec17Closeout(closeout, mode, evidenceTracking) {
   };
 }
 
+function gm12Spec18Fixture(mode) {
+  const base = gm12Spec17Fixture('valid');
+  const flashFry = gm12Spec18FlashFry(mode);
+  return {
+    ...base,
+    harness_contract: GM12_SPEC18_CONTRACT,
+    flash_fry_operational_status_required: true,
+    flash_fry: flashFry,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      flash_fry: flashFry,
+    },
+    closeout: gm12Spec18Closeout(base.closeout, mode, flashFry),
+  };
+}
+
+function gm12Spec18FlashFry(mode) {
+  const flashFry = {
+    status: 'ran',
+    artifact_ref: 'artifacts/flash-fry-decision.json',
+    protection_score_adjusted: false,
+    command_introduced_solely_for_status: false,
+  };
+  if (mode === 'missing_status') {
+    delete flashFry.status;
+  }
+  if (mode === 'ran_missing_evidence') {
+    delete flashFry.artifact_ref;
+  }
+  if (mode === 'not_configured_no_adjustment' || mode === 'not_configured_adjusted') {
+    flashFry.status = 'not_configured';
+    delete flashFry.artifact_ref;
+    flashFry.reason = 'Flash-Fry is not configured in this target runtime';
+    flashFry.protection_score_adjusted = mode === 'not_configured_adjusted';
+  }
+  if (mode === 'new_command') {
+    flashFry.new_command = {
+      command: 'npm run flash-fry-status',
+      solely_for_status: true,
+    };
+  }
+  return flashFry;
+}
+
+function gm12Spec18Closeout(closeout, mode, flashFry) {
+  return {
+    ...closeout,
+    flash_fry: {
+      status: flashFry.status ?? 'missing',
+      stop_state: mode === 'missing_status' ? GM12_SPEC18_STOP_STATE : 'ready_for_loop',
+      reason: flashFry.reason,
+      protection_score_adjusted: flashFry.protection_score_adjusted,
+      report_text: mode === 'missing_status'
+        ? 'protection quality remains high'
+        : 'Flash-Fry operational status recorded with protection score context',
+    },
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -2546,6 +2631,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec17CleanClaimUnclassifiedArgs,
     revert: gm12Spec17RuntimeOnlyArgs,
+  },
+  // GM12S18 — SPEC-018 records Flash-Fry operational status without inventing status-only commands.
+  {
+    id: 'GM12S18 goal-maestro-p0-flash-fry-status-present',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec18MissingStatusArgs,
+    revert: gm12Spec18RevertArgs,
+  },
+  {
+    id: 'GM12S18 goal-maestro-p0-flash-fry-ran-evidence',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec18RanMissingEvidenceArgs,
+    revert: gm12Spec18RevertArgs,
+  },
+  {
+    id: 'GM12S18 goal-maestro-p0-flash-fry-not-configured-adjusted',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec18NotConfiguredNoAdjustmentArgs,
+    revert: gm12Spec18NotConfiguredAdjustedArgs,
+  },
+  {
+    id: 'GM12S18 goal-maestro-p0-flash-fry-no-status-only-command',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec18NewCommandArgs,
+    revert: gm12Spec18RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
