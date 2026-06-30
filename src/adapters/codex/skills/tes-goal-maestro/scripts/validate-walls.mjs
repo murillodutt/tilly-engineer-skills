@@ -1,4 +1,4 @@
-// SPEC-021 — Mutation suite for executable wall fixtures.
+// SPEC-022 — Mutation suite for executable wall fixtures.
 // Para cada parede, monta uma fixture de VIOLAÇÃO em /tmp, roda o harness-dono e exige
 // que ele DISPARE (exit≠0); depois monta a fixture REVERTIDA e exige PASS (exit 0).
 // Uma parede só conta como "feita" quando dispara sob violação E passa quando revertida.
@@ -86,6 +86,8 @@ const GM12_SPEC20_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
 const GM12_SPEC20_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
 const GM12_SPEC21_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
 const GM12_SPEC21_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
+const GM12_SPEC22_CONTRACT = 'goal-maestro-p0-closeout-consistency';
+const GM12_SPEC22_STOP_STATE = 'NEEDS_CLOSEOUT_CONSISTENCY';
 const GM12_SPEC8_EVIDENCE_HASHES = [
   '1111111111111111111111111111111111111111111111111111111111111111',
   '2222222222222222222222222222222222222222222222222222222222222222',
@@ -653,6 +655,26 @@ function gm12Spec21UnprovenQualifiedArgs() {
 
 function gm12Spec21RevertArgs() {
   return [fixture('gm12-spec21-llm-cache-cost-ok.json', JSON.stringify(gm12Spec21Fixture('valid')))];
+}
+
+function gm12Spec22MissingManifestArgs() {
+  return [fixture('gm12-spec22-closeout-consistency-missing-manifest.json', JSON.stringify(gm12Spec22Fixture('missing_manifest')))];
+}
+
+function gm12Spec22ReceiptUnprovenArgs() {
+  return [fixture('gm12-spec22-closeout-consistency-receipt-unproven.json', JSON.stringify(gm12Spec22Fixture('receipt_unproven')))];
+}
+
+function gm12Spec22MissingSpecArgs() {
+  return [fixture('gm12-spec22-closeout-consistency-missing-spec.json', JSON.stringify(gm12Spec22Fixture('missing_spec')))];
+}
+
+function gm12Spec22StatusDriftArgs() {
+  return [fixture('gm12-spec22-closeout-consistency-status-drift.json', JSON.stringify(gm12Spec22Fixture('status_drift')))];
+}
+
+function gm12Spec22RevertArgs() {
+  return [fixture('gm12-spec22-closeout-consistency-ok.json', JSON.stringify(gm12Spec22Fixture('valid')))];
 }
 
 function gm12ValidFixture() {
@@ -2055,6 +2077,77 @@ function gm12Spec21Closeout(closeout, mode, telemetry) {
   };
 }
 
+function gm12Spec22Fixture(mode) {
+  const base = gm12Spec21Fixture('valid');
+  const surfaces = gm12Spec22Surfaces(mode);
+  const result = {
+    ...base,
+    harness_contract: GM12_SPEC22_CONTRACT,
+    closeout_consistency_gate_required: true,
+    closeout_consistency_surfaces: surfaces,
+    package_manifest: surfaces.manifest,
+    thermometer_metrics: {
+      ...base.thermometer_metrics,
+      package_manifest: surfaces.manifest,
+    },
+    closeout: gm12Spec22Closeout(base.closeout, mode, surfaces),
+  };
+  if (mode === 'missing_manifest') {
+    delete result.closeout_consistency_surfaces.manifest;
+    delete result.package_manifest;
+    delete result.thermometer_metrics.package_manifest;
+  }
+  return result;
+}
+
+function gm12Spec22Surfaces(mode) {
+  const specIds = ['SPEC-001', 'SPEC-002', 'SPEC-003'];
+  const finalStatus = 'PASS_P0_HARNESS_ORCHESTRATION_FEEDBACK_FIDELITY';
+  const baseSurface = (name) => ({
+    surface: name,
+    spec_ids: specIds,
+    final_status: finalStatus,
+    report_status: 'local_package_ready',
+    share_status: 'not_requested',
+    unproven_count: 0,
+  });
+  const surfaces = {
+    chat: { ...baseSurface('chat'), status: 'pass', closeout_status: 'pass' },
+    ledger: baseSurface('ledger'),
+    metrics: baseSurface('metrics'),
+    receipt: baseSurface('receipt'),
+    html: baseSurface('html'),
+    manifest: baseSurface('manifest'),
+  };
+  if (mode === 'receipt_unproven') {
+    surfaces.receipt.final_status = 'UNPROVEN';
+    surfaces.receipt.unproven_count = 1;
+    surfaces.receipt.evidence_status = 'UNPROVEN';
+  }
+  if (mode === 'missing_spec') {
+    surfaces.html.spec_ids = ['SPEC-001', 'SPEC-002'];
+  }
+  if (mode === 'status_drift') {
+    surfaces.manifest.final_status = 'PASS_WITH_MANIFEST_DRIFT';
+  }
+  return surfaces;
+}
+
+function gm12Spec22Closeout(closeout, mode, surfaces) {
+  return {
+    ...closeout,
+    status: 'pass',
+    closeout_consistency: {
+      status: mode === 'valid' ? 'aligned' : 'blocked',
+      stop_state: mode === 'valid' ? 'ready_for_loop' : GM12_SPEC22_STOP_STATE,
+      surfaces: Object.keys(surfaces),
+      report_text: mode === 'valid'
+        ? 'chat, ledger, metrics, receipt, HTML, and package manifest agree'
+        : 'closeout consistency surface mismatch detected',
+    },
+  };
+}
+
 function gm12Spec2PreEditEvent(spec_id, at) {
   return {
     type: 'pre_edit_gate_artifact',
@@ -3003,6 +3096,31 @@ const WALLS = [
     harness: 'goal-maestro-p0-harness.mjs',
     violate: gm12Spec21UnqualifiedEfficiencyArgs,
     revert: gm12Spec21UnprovenQualifiedArgs,
+  },
+  // GM12S22 — SPEC-022 blocks closeout claims that outrun local evidence surfaces.
+  {
+    id: 'GM12S22 goal-maestro-p0-closeout-consistency-surfaces',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec22MissingManifestArgs,
+    revert: gm12Spec22RevertArgs,
+  },
+  {
+    id: 'GM12S22 goal-maestro-p0-closeout-consistency-unproven-receipt',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec22ReceiptUnprovenArgs,
+    revert: gm12Spec22RevertArgs,
+  },
+  {
+    id: 'GM12S22 goal-maestro-p0-closeout-consistency-spec-list',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec22MissingSpecArgs,
+    revert: gm12Spec22RevertArgs,
+  },
+  {
+    id: 'GM12S22 goal-maestro-p0-closeout-consistency-status-alignment',
+    harness: 'goal-maestro-p0-harness.mjs',
+    violate: gm12Spec22StatusDriftArgs,
+    revert: gm12Spec22RevertArgs,
   },
   // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
   // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).

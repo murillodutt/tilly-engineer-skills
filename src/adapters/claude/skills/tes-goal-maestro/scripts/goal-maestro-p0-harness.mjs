@@ -1,4 +1,4 @@
-// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021 Goal Maestro P0 execution harness.
+// SPEC-001/SPEC-002/SPEC-003/SPEC-004/SPEC-005/SPEC-006/SPEC-007/SPEC-008/SPEC-009/SPEC-010/SPEC-011/SPEC-012/SPEC-013/SPEC-014/SPEC-015/SPEC-016/SPEC-017/SPEC-018/SPEC-019/SPEC-020/SPEC-021/SPEC-022 Goal Maestro P0 execution harness.
 // Validates a synthetic execute-loop event fixture for one-active-SPEC order,
 // post-open evidence, oracle proof, local commit status, and parent validation
 // before the next SPEC can open. SPEC-002 fixtures opt into durable pre-edit
@@ -39,6 +39,8 @@
 // cloud_search_classification_required:true.
 // SPEC-021 fixtures opt into LLM cache and cost telemetry validation with
 // llm_cache_cost_telemetry_required:true.
+// SPEC-022 fixtures opt into closeout consistency validation with
+// closeout_consistency_gate_required:true.
 //
 //   node scripts/goal-maestro-p0-harness.mjs <linear-pipeline-fixture.json>
 
@@ -65,6 +67,7 @@ const FLASH_FRY_STOP_STATE = 'NEEDS_FLASH_FRY_STATUS';
 const LENS_LEDGER_STOP_STATE = 'NEEDS_LENS_LEDGER';
 const CLOUD_SEARCH_STOP_STATE = 'NEEDS_CLOUD_SEARCH_CLASSIFICATION';
 const LLM_CACHE_COST_STOP_STATE = 'NEEDS_LLM_CACHE_COST_TELEMETRY';
+const CLOSEOUT_CONSISTENCY_STOP_STATE = 'NEEDS_CLOSEOUT_CONSISTENCY';
 const PRE_EDIT_CONTRACT = 'goal-maestro-p0-pre-edit-gate';
 const PROMPT_ENRICHMENT_CONTRACT = 'goal-maestro-p0-prompt-enrichment-packet';
 const DOCUMENT_ANALYSIS_CONTRACT = 'goal-maestro-p0-document-analysis-packet';
@@ -85,6 +88,7 @@ const FLASH_FRY_CONTRACT = 'goal-maestro-p0-flash-fry-operational-status';
 const LENS_LEDGER_CONTRACT = 'goal-maestro-p0-lens-ledger';
 const CLOUD_SEARCH_CONTRACT = 'goal-maestro-p0-cloud-search-classification';
 const LLM_CACHE_COST_CONTRACT = 'goal-maestro-p0-llm-cache-cost-telemetry';
+const CLOSEOUT_CONSISTENCY_CONTRACT = 'goal-maestro-p0-closeout-consistency';
 const PRE_EDIT_EVENT_TYPE = 'pre_edit_gate_artifact';
 const PROMPT_ENRICHMENT_EVENT_TYPE = 'prompt_enrichment_packet';
 const DOCUMENT_ANALYSIS_EVENT_TYPE = 'document_analysis_packet';
@@ -122,6 +126,7 @@ const LLM_TOKEN_CACHE_FIELDS = [
   'reasoning_tokens',
   'cache_hit_estimate',
 ];
+const CLOSEOUT_CONSISTENCY_SURFACE_NAMES = ['chat', 'ledger', 'metrics', 'receipt', 'html', 'manifest'];
 const EVENT_TYPES = new Set([
   PRE_EDIT_EVENT_TYPE,
   PROMPT_ENRICHMENT_EVENT_TYPE,
@@ -189,6 +194,7 @@ const flashFryRequired = requiresFlashFryOperationalStatus(fixture);
 const lensLedgerRequired = requiresLensLedger(fixture);
 const cloudSearchRequired = requiresCloudSearchClassification(fixture);
 const llmCacheCostRequired = requiresLLMCacheCostTelemetry(fixture);
+const closeoutConsistencyRequired = requiresCloseoutConsistencyGate(fixture);
 const visualEvidenceChecksRequired = visualEvidenceContractRequired || visualSemanticGateRequired;
 const acceptedBoundedRepairUnits = acceptedBoundedRepairUnitIds(fixture);
 const preEditGateEvents = [];
@@ -366,8 +372,13 @@ if (cloudSearchRequired) {
 if (llmCacheCostRequired) {
   addLLMCacheCostTelemetryChecks();
 }
+if (closeoutConsistencyRequired) {
+  addCloseoutConsistencyChecks();
+}
 
-const harnessTitle = llmCacheCostRequired
+const harnessTitle = closeoutConsistencyRequired
+  ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021+SPEC-022 goal-maestro-p0-closeout-consistency (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE}/${CLOSEOUT_CONSISTENCY_STOP_STATE})`
+  : llmCacheCostRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020+SPEC-021 goal-maestro-p0-llm-cache-cost-telemetry (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE}/${LLM_CACHE_COST_STOP_STATE})`
   : cloudSearchRequired
   ? `SPEC-001+SPEC-002+SPEC-003+SPEC-004+SPEC-005+SPEC-006+SPEC-007+SPEC-008+SPEC-009+SPEC-010+SPEC-011+SPEC-012+SPEC-013+SPEC-014+SPEC-015+SPEC-016+SPEC-017+SPEC-018+SPEC-019+SPEC-020 goal-maestro-p0-cloud-search-classification (${LINEAR_STOP_STATE}/${VISUAL_EVIDENCE_STOP_STATE}/${VISUAL_SEMANTIC_STOP_STATE}/${BROWSER_METRICS_STOP_STATE}/${INSTALL_CHRONOLOGY_STOP_STATE}/${COMMIT_ENFORCEMENT_STOP_STATE}/${GIT_ADMISSION_STOP_STATE}/${EVIDENCE_TRACKING_STOP_STATE}/${FLASH_FRY_STOP_STATE}/${LENS_LEDGER_STOP_STATE}/${CLOUD_SEARCH_STOP_STATE})`
@@ -1853,6 +1864,49 @@ function addLLMCacheCostTelemetryChecks() {
   }
 }
 
+function addCloseoutConsistencyChecks() {
+  const surfaces = closeoutConsistencySurfacesFromFixture(fixture);
+  const missingSurfaces = CLOSEOUT_CONSISTENCY_SURFACE_NAMES.filter((name) => !closeoutSurfacePresent(surfaces[name]));
+  const snapshots = CLOSEOUT_CONSISTENCY_SURFACE_NAMES.map((name) => ({
+    name,
+    surface: surfaces[name],
+    snapshot: reportSurfaceSnapshot(name, surfaces[name]),
+  }));
+  const blockingSurfaces = snapshots.flatMap((entry) => closeoutConsistencyBlockingReasons(entry));
+  const specDriftSurfaces = snapshots.filter((entry) => {
+    return closeoutSurfacePresent(entry.surface) && !sameStringArray(entry.snapshot.spec_ids, declaredSpecs);
+  });
+  const statuses = uniqueStrings(snapshots
+    .map((entry) => normalizeCloseoutConsistencyStatus(entry.snapshot.final_status))
+    .filter(nonEmptyString));
+
+  closeoutConsistencyCheck(
+    'closeout consistency surfaces are present',
+    missingSurfaces.length === 0,
+    `missing closeout surface(s): ${formatValues(missingSurfaces)}`,
+  );
+  closeoutConsistencyCheck(
+    'complete closeout has no blocking surface status',
+    blockingSurfaces.length === 0,
+    `blocking closeout surface(s): ${formatValues(blockingSurfaces)}`,
+  );
+  closeoutConsistencyCheck(
+    'closeout surfaces carry the declared SPEC list',
+    specDriftSurfaces.length === 0,
+    `surface SPEC list drift: ${formatValues(specDriftSurfaces.map((entry) => entry.name))}`,
+  );
+  closeoutConsistencyCheck(
+    'closeout statuses are consistent across surfaces',
+    statuses.length <= 1,
+    `contradictory closeout statuses: ${formatValues(statuses)}`,
+  );
+  closeoutConsistencyCheck(
+    'chat PASS does not outrun receipt evidence',
+    !(closeoutSaysPass(surfaces.chat) && closeoutSurfaceHasBlockingVocabulary(surfaces.receipt)),
+    'chat closeout cannot report PASS while receipt remains UNPROVEN or needs ledger evidence',
+  );
+}
+
 function openSpec(eventIndex, event) {
   const specId = event.spec_id;
   const expectedSpec = declaredSpecs[nextOpenIndex];
@@ -2034,6 +2088,10 @@ function cloudSearchCheck(name, pass, detail) {
 
 function llmCacheCostCheck(name, pass, detail) {
   checks.push({ name, pass, detail: pass ? undefined : `${LLM_CACHE_COST_STOP_STATE}: ${detail}` });
+}
+
+function closeoutConsistencyCheck(name, pass, detail) {
+  checks.push({ name, pass, detail: pass ? undefined : `${CLOSEOUT_CONSISTENCY_STOP_STATE}: ${detail}` });
 }
 
 function isPlainObject(value) {
@@ -2269,6 +2327,13 @@ function requiresLLMCacheCostTelemetry(value) {
     || value.cache_cost_telemetry_required === true
     || value.harness_contract === LLM_CACHE_COST_CONTRACT
     || value.contract === LLM_CACHE_COST_CONTRACT;
+}
+
+function requiresCloseoutConsistencyGate(value) {
+  return value.closeout_consistency_gate_required === true
+    || value.closeout_consistency_required === true
+    || value.harness_contract === CLOSEOUT_CONSISTENCY_CONTRACT
+    || value.contract === CLOSEOUT_CONSISTENCY_CONTRACT;
 }
 
 function acceptedBoundedRepairUnitIds(value) {
@@ -3922,6 +3987,58 @@ function reportCoherenceSurfaceFromFixture(surfaceName) {
   if (surfaceName === 'html') return reportSurfaces.html ?? fixture.html_text ?? fixture.execution_thermometer_html ?? fixture.html ?? {};
   if (surfaceName === 'closeout') return reportSurfaces.closeout ?? fixture.chat_closeout ?? fixture.closeout_text ?? fixture.closeout ?? {};
   return reportSurfaces[surfaceName] ?? {};
+}
+
+function closeoutConsistencySurfacesFromFixture(value) {
+  const metrics = thermometerMetricsFromFixture(value);
+  const surfaces = isPlainObject(value.closeout_consistency_surfaces)
+    ? value.closeout_consistency_surfaces
+    : {};
+  return {
+    chat: surfaces.chat ?? surfaces.chat_closeout ?? reportCoherenceSurfaceFromFixture('closeout'),
+    ledger: surfaces.ledger ?? reportCoherenceSurfaceFromFixture('ledger'),
+    metrics: surfaces.metrics ?? metrics,
+    receipt: surfaces.receipt ?? reportCoherenceSurfaceFromFixture('receipt'),
+    html: surfaces.html ?? reportCoherenceSurfaceFromFixture('html'),
+    manifest: surfaces.manifest
+      ?? surfaces.package_manifest
+      ?? value.package_manifest
+      ?? value.thermometer_package_manifest
+      ?? value.manifest
+      ?? metrics.package_manifest
+      ?? {},
+  };
+}
+
+function closeoutSurfacePresent(surface) {
+  if (typeof surface === 'string') return nonEmptyString(surface);
+  return hasNonEmptyObject(surface);
+}
+
+function closeoutConsistencyBlockingReasons(entry) {
+  const reasons = [];
+  if (!closeoutSurfacePresent(entry.surface)) {
+    reasons.push(`${entry.name}:missing`);
+    return reasons;
+  }
+  if (closeoutSurfaceHasBlockingVocabulary(entry.surface)) reasons.push(`${entry.name}:blocking-status`);
+  if (!sameStringArray(entry.snapshot.spec_ids, declaredSpecs)) reasons.push(`${entry.name}:missing-spec`);
+  return reasons;
+}
+
+function closeoutSurfaceHasBlockingVocabulary(surface) {
+  return collectStrings(surface).some((value) => {
+    const normalized = normalizeSemanticValue(value);
+    return nonEmptyString(normalized) && (normalized === 'unproven'
+      || normalized.includes('needs ledger evidence')
+      || normalized.includes('unproven'));
+  });
+}
+
+function normalizeCloseoutConsistencyStatus(value) {
+  const normalized = normalizeSemanticValue(value);
+  if (['pass', 'passed', 'complete', 'completed', 'success'].includes(normalized)) return 'pass';
+  return normalized;
 }
 
 function ledgerTextFromFixture(value) {
