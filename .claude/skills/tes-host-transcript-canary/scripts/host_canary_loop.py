@@ -20,7 +20,9 @@ from typing import Any
 
 
 SCHEMA = "tes-host-canary-loop@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.5"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.6"
+CANARY_MODES = ("smoke-host-real", "product-host-real", "ceiling-replay")
+MODE_RANK = {mode: index for index, mode in enumerate(CANARY_MODES)}
 FAILURE_CLASSES = {
     "host_execution_gap",
     "transcript_gap",
@@ -229,6 +231,12 @@ def decide(
             loop_status = "NEEDS_EVIDENCE"
             next_action = "replay_original_command"
 
+    if MODE_RANK[args.claim_mode] > MODE_RANK[args.mode]:
+        blockers.append("reported claim mode exceeds selected evidence mode")
+        failure_class = failure_class or "false_green"
+        loop_status = "NEEDS_EVIDENCE"
+        next_action = "align_claim_to_mode"
+
     if host_execution.get("timed_out") or (
         host_execution.get("ran") and host_execution.get("returncode") not in (0, None)
     ):
@@ -311,6 +319,8 @@ def run_loop(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         "target_fingerprint": target_fingerprint,
         "command_fingerprint": command_fingerprint,
         "command_label": args.command_label,
+        "selected_mode": args.mode,
+        "claim_mode": args.claim_mode,
         "host_execution": host_execution,
         "oracle": oracle,
         "fix_commit": args.fix_commit,
@@ -382,14 +392,27 @@ def self_test(repo_root: Path | None) -> dict[str, Any]:
             failure_class=None,
             fix_commit=None,
             related_gates_passed=False,
+            mode="smoke-host-real",
+            claim_mode="smoke-host-real",
         )
         code1, result1 = run_loop(base)
         code2, result2 = run_loop(base)
+        ceiling_claim = argparse.Namespace(
+            **{
+                **vars(base),
+                "no_ledger": True,
+                "require_fresh": False,
+                "claim_mode": "ceiling-replay",
+            }
+        )
+        code3, result3 = run_loop(ceiling_claim)
         serialized = json.dumps([result1, result2], sort_keys=True)
         if code1 != 0 or result1.get("loop_status") != "PASS":
             failures.append("first loop should pass with a valid transcript")
         if code2 == 0 or result2.get("failure_class") != "false_green":
             failures.append("second loop should reject a stale same-command transcript")
+        if code3 == 0 or result3.get("next_action") != "align_claim_to_mode":
+            failures.append("smoke evidence should be rejected when reported as a ceiling claim")
         if secret in serialized:
             failures.append("loop output leaked raw transcript or command output content")
         if len(ledger.read_text(encoding="utf-8").splitlines()) != 2:
@@ -432,6 +455,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--failure-class", choices=sorted(FAILURE_CLASSES))
     parser.add_argument("--fix-commit", help="Optional local source commit hash that produced this replay.")
     parser.add_argument("--related-gates-passed", action="store_true")
+    parser.add_argument("--mode", choices=CANARY_MODES, default="smoke-host-real", help="Selected host-real canary mode.")
+    parser.add_argument(
+        "--claim-mode",
+        choices=CANARY_MODES,
+        default="smoke-host-real",
+        help="Highest canary mode the result is being used to claim.",
+    )
     parser.add_argument("--json-only", action="store_true")
     return parser
 

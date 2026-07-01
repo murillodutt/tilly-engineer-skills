@@ -104,6 +104,7 @@ bootloader and without tracking raw transcript content.
 | 2026-07-01 | `tes.host_transcript_canary@0.1.3`: Added compact Goal-Maestro-style architecture with routed references for host command loops, transcript evidence, canary convergence, and a sanitized report template. | Maintainer directive in current session; structural comparison with `tes-goal-maestro`. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.4`: Added `references/ceiling-breakthrough.md` so the harness rejects floor-green certification and pursues the strongest local host-real proof. | Maintainer ceiling directive in current session. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.5`: Added the agent-hooks certification reference, report template, and matrix helper so future loops can verify, fix, and certify each TES agent hook characteristic across source, installed target, and host transcript lanes. | Maintainer request to certify the complete agent hook feature list through this harness. | high |
+| 2026-07-01 | `tes.host_transcript_canary@0.1.6`: Added host-real canary modes, runtime memory canary guidance, transcript contamination classification, a runtime signal report template, and `runtime_signal_audit.py` so product-mode CORTEX memory claims can be certified without one-off audit scripts. | Runtime signal harness Super SPEC; script self-test fixtures for pass, missing ledger, missing marker, stale transcript, and manual lookup failure. | high |
 
 ## Do Not Lose
 

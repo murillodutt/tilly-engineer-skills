@@ -5,7 +5,7 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.5`.
+Operational contract: `tes.host_transcript_canary@0.1.6`.
 
 Central rule:
 
@@ -44,8 +44,12 @@ Load only the reference needed by the current loop:
 | Final canary decision, related gates, certification closeout, ledger discipline | `references/canary-convergence.md` |
 | Ceiling posture, floor-green rejection, strongest local proof, breakthrough loop | `references/ceiling-breakthrough.md` |
 | Agent hook feature matrix, source/target/host evidence lanes, fix ownership, certification states | `references/agent-hooks-certification.md` |
+| Host-real canary scope, mode evidence, and cost brake | `references/canary-modes.md` |
+| CORTEX runtime memory canary recipe and runtime signal proof shape | `references/memory-runtime-canary.md` |
+| Forbidden manual memory lookup versus benign injected marker reuse | `references/transcript-contamination.md` |
 | A retained or chat-emitted sanitized evidence report | `templates/host-canary-report.template.md` |
 | A retained agent hook certification report | `templates/agent-hooks-certification-report.template.md` |
+| A retained runtime signal certification report | `templates/runtime-signal-report.template.md` |
 
 If a claim depends on one of these behaviors, load the owning reference before
 deciding. Do not inline reference-owned detail into `SKILL.md` just to make the
@@ -65,6 +69,8 @@ python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py \
   --command-label '<safe label>' \
   --include-subagents \
   --require-tool-use \
+  --mode product-host-real \
+  --claim-mode product-host-real \
   --require-fresh \
   --enforce-same-command
 ```
@@ -97,6 +103,19 @@ python3 scripts/canary_transcript_oracle.py --target <target> --latest --include
 
 Use `--transcript <path>` when the exact JSONL is known and `--session-id` when
 the target has multiple host sessions.
+
+For runtime memory claims, run the runtime signal audit after transcript
+resolution:
+
+```bash
+python3 .agents/skills/tes-host-transcript-canary/scripts/runtime_signal_audit.py \
+  --target <target> \
+  --session-id <session-id> \
+  --expected-marker '<safe marker>' \
+  --artifact <relative artifact path> \
+  --require-first-mutation-context \
+  --json-only
+```
 
 5. Interpret statuses:
    - `PASS`: transcript exists, parses, has user and assistant events, and
@@ -185,6 +204,7 @@ python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validat
 python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .claude/skills/tes-host-transcript-canary
 diff -qr .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-transcript-canary
 python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py --self-test --repo .
+python3 .agents/skills/tes-host-transcript-canary/scripts/runtime_signal_audit.py --self-test --repo .
 python3 .agents/skills/tes-host-transcript-canary/scripts/agent_hooks_certification_matrix.py --self-test --repo .
 python3 scripts/canary_transcript_oracle.py --self-test
 ```
