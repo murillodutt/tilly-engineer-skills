@@ -17,6 +17,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import cortex
+
 
 ROOT = Path(__file__).resolve().parents[1]
 TES_INSTALL = ROOT / "scripts" / "tes_install.py"
@@ -40,6 +42,29 @@ def write_mesh(target: Path) -> None:
     (decisions / "projection.md").write_text("# Projection\n\nFixture baseline.\n", encoding="utf-8")
 
 
+def write_cortex_memory(target: Path) -> None:
+    cortex.init(target)
+    root = cortex.cortex_path(target)
+    source = root / "sources" / "projection-source.md"
+    source.write_text(
+        "# Projection Source\n\n"
+        "Cortex remembers git gate enforcement and Flash Fry marker lessons for host startup recall.\n",
+        encoding="utf-8",
+    )
+    cell = root / "cells" / "git-gate-flash-fry.md"
+    cell.write_text(
+        "# Git Gate Flash Fry\n\n"
+        "## Claim\n\n"
+        "TES must recall git gate enforcement and Flash Fry marker lessons before related host work.\n\n"
+        "## Evidence\n\n"
+        "- `sources/projection-source.md`\n",
+        encoding="utf-8",
+    )
+    cortex.append_unique_line(root / "MAP.md", "| [[git-gate-flash-fry]] | Git gate and Flash Fry host recall | |")
+    cortex.append_unique_line(root / "LINKS.md", "- [[git-gate-flash-fry]] -> `sources/projection-source.md`")
+    cortex.rebuild(target)
+
+
 def snapshot_mesh(target: Path) -> dict[str, str]:
     paths = [*(target / relpath for relpath in MESH_FILES), target / "docs/agents/DECISIONS/projection.md"]
     return {
@@ -55,9 +80,23 @@ def write_align_sentinel(target: Path) -> Path:
     return sentinel
 
 
-def run_hook(agent: str, target: Path, payload: dict[str, Any]) -> tuple[int, str, str]:
+def run_hook(
+    agent: str,
+    target: Path,
+    payload: dict[str, Any],
+    extra_args: list[str] | None = None,
+) -> tuple[int, str, str]:
     result = subprocess.run(
-        [sys.executable, str(TES_INSTALL), "hook", "--agent", agent, "--target", str(target)],
+        [
+            sys.executable,
+            str(TES_INSTALL),
+            "hook",
+            "--agent",
+            agent,
+            "--target",
+            str(target),
+            *(extra_args or []),
+        ],
         input=json.dumps(payload),
         cwd=ROOT,
         text=True,
@@ -65,6 +104,22 @@ def run_hook(agent: str, target: Path, payload: dict[str, Any]) -> tuple[int, st
         check=False,
     )
     return result.returncode, result.stdout, result.stderr
+
+
+def startup_payload(*, camel: bool = False) -> dict[str, Any]:
+    if camel:
+        return {
+            "hookEventName": "SessionStart",
+            "sessionId": "projection-startup-camel",
+            "prompt": "git gate Flash Fry",
+            "source": "startup",
+        }
+    return {
+        "hook_event_name": "SessionStart",
+        "session_id": "projection-startup",
+        "prompt": "git gate Flash Fry",
+        "source": "startup",
+    }
 
 
 def mesh_payload(target: Path, *, camel: bool = False) -> dict[str, Any]:
@@ -109,7 +164,61 @@ def evaluate() -> dict[str, Any]:
         target = Path(tempdir)
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         write_mesh(target)
+        write_cortex_memory(target)
         before = snapshot_mesh(target)
+
+        startup_claude_code, startup_claude_out, startup_claude_err = run_hook(
+            "claude",
+            target,
+            startup_payload(),
+            ["--announce-start"],
+        )
+        if startup_claude_code != 0 or startup_claude_err.strip():
+            failures.append(f"claude startup recall must allow silently on stderr, got code={startup_claude_code}")
+        try:
+            startup_claude_payload = json.loads(startup_claude_out)
+        except json.JSONDecodeError:
+            startup_claude_payload = {}
+            failures.append("claude startup recall must emit JSON")
+        startup_claude_specific = (
+            startup_claude_payload.get("hookSpecificOutput")
+            if isinstance(startup_claude_payload, dict)
+            else {}
+        )
+        startup_claude_context = (
+            startup_claude_specific.get("additionalContext")
+            if isinstance(startup_claude_specific, dict)
+            else ""
+        )
+        if "Cortex runtime: recall" not in str(startup_claude_context):
+            failures.append("claude startup must surface Cortex recall context")
+        if "docs/agents/cortex/cells/git-gate-flash-fry.md" not in str(startup_claude_context):
+            failures.append("claude startup recall must point to the matching Cortex cell")
+
+        startup_codex_code, startup_codex_out, startup_codex_err = run_hook(
+            "codex",
+            target,
+            startup_payload(camel=True),
+        )
+        if startup_codex_code != 0 or startup_codex_out.strip():
+            failures.append("codex startup recall must allow with stderr context only")
+        if "Cortex runtime: recall" not in startup_codex_err:
+            failures.append("codex startup must surface Cortex recall context")
+
+        startup_cursor_code, startup_cursor_out, startup_cursor_err = run_hook(
+            "cursor",
+            target,
+            startup_payload(),
+        )
+        if startup_cursor_code != 0 or startup_cursor_err.strip():
+            failures.append("cursor startup recall must allow with stdout JSON only")
+        try:
+            startup_cursor_payload = json.loads(startup_cursor_out)
+        except json.JSONDecodeError:
+            startup_cursor_payload = {}
+            failures.append("cursor startup recall must emit native JSON")
+        if "Cortex runtime: recall" not in str(startup_cursor_payload.get("agent_message") or ""):
+            failures.append("cursor startup must surface Cortex recall context")
 
         claude_code, claude_out, claude_err = run_hook("claude", target, mesh_payload(target))
         if claude_code != 0 or claude_err.strip():

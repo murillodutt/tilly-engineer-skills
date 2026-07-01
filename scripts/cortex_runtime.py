@@ -203,8 +203,6 @@ def _bounded_query(payload: dict[str, Any], paths: list[str], limit: int) -> str
         "prompt",
         "user_prompt",
         "message",
-        "tool_name",
-        "hook_event_name",
     ):
         value = payload.get(key)
         if isinstance(value, str):

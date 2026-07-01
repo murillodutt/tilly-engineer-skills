@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.243"
+VERSION = "0.3.244"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -3666,6 +3666,14 @@ def _join_context(*parts: str) -> str:
     return "\n".join(part for part in parts if part)
 
 
+def _one_line(value: str, limit: int) -> str:
+    """Return bounded hook context text without control characters or newlines."""
+    text = " ".join(value.replace("\x00", "").split())
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 1)].rstrip() + "…"
+
+
 def _evaluate_cortex_runtime(target: Path, agent: str, hook_input: dict[str, Any]) -> dict[str, Any]:
     try:
         import cortex_runtime  # noqa: PLC0415 - delivered sibling under .tes/bin/
@@ -3680,6 +3688,34 @@ def _evaluate_cortex_runtime(target: Path, agent: str, hook_input: dict[str, Any
 
 def _cortex_runtime_context(result: dict[str, Any], *, include_capture: bool = True) -> str:
     lines: list[str] = []
+    advisory = result.get("advisory_context") if isinstance(result.get("advisory_context"), dict) else {}
+    raw_matches = advisory.get("matches") if isinstance(advisory.get("matches"), list) else []
+    memory_matches = [
+        match for match in raw_matches
+        if isinstance(match, dict)
+        and str(match.get("path") or "").startswith("docs/agents/cortex/cells/")
+    ]
+    if not memory_matches:
+        memory_matches = [
+            match for match in raw_matches
+            if isinstance(match, dict)
+            and str(match.get("path") or "").startswith("docs/agents/cortex/sources/")
+        ]
+    recall_lines: list[str] = []
+    for match in memory_matches[:2]:
+        path = _one_line(str(match.get("path") or ""), 120)
+        title = _one_line(str(match.get("title") or ""), 80)
+        excerpt = _one_line(str(match.get("excerpt") or ""), 180)
+        if not path:
+            continue
+        parts = [f"path={path}"]
+        if title:
+            parts.append(f"title={title}")
+        if excerpt:
+            parts.append(f"excerpt={excerpt}")
+        recall_lines.append(" ".join(parts))
+    if recall_lines:
+        lines.append("Cortex runtime: recall " + " | ".join(recall_lines))
     signal = result.get("alignment_signal") if isinstance(result.get("alignment_signal"), dict) else {}
     if signal.get("status") == "NEEDS_ALIGN":
         refs = signal.get("evidence_refs") if isinstance(signal.get("evidence_refs"), list) else []
@@ -3901,6 +3937,8 @@ def hook(args: argparse.Namespace) -> int:
             print(json.dumps({"continue": True, "agent_message": cortex_context}, ensure_ascii=False, sort_keys=True))
         else:
             print("{}")
+    elif cortex_context and result.get("status") in {"SKIP", None}:
+        print(cortex_context, file=sys.stderr)
     elif result.get("status") not in {"SKIP"}:
         print(json.dumps(result, indent=2, sort_keys=True))
     return code
