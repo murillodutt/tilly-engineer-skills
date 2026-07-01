@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.244"
+VERSION = "0.3.246"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -143,6 +143,16 @@ def read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
         return ""
+
+
+def append_unique_line(path: Path, line: str) -> None:
+    text = read_text(path)
+    if line in text.splitlines():
+        return
+    if text and not text.endswith("\n"):
+        text += "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text + line + "\n", encoding="utf-8")
 
 
 def write_json(path: Path, data: dict[str, Any], dry_run: bool = False) -> dict[str, str]:
@@ -3820,13 +3830,16 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     session_context = coordinate_pretooluse_context(target, hook_input, str(decision.get("context") or ""))
     context = session_context.context
     context_suppressed = session_context.context_suppressed
-    cortex_context = ""
-    if _pretooluse_may_touch_operating_mesh(hook_input):
-        cortex_context = _cortex_runtime_context(
-            _evaluate_cortex_runtime(target, args.agent, hook_input),
-            include_capture=False,
-        )
-    combined_context = _join_context(context, cortex_context)
+    cortex_context = _cortex_runtime_context(
+        _evaluate_cortex_runtime(target, args.agent, hook_input),
+        include_capture=False,
+    )
+    visible_cortex_context = (
+        f"{_mantra_gate_marker()} {cortex_context}"
+        if cortex_context and not context
+        else cortex_context
+    )
+    combined_context = _join_context(context, visible_cortex_context)
     reason_codes = hook_reason_codes(decision.get("reason_codes"), session_context.reason_codes)
     if cortex_context:
         reason_codes = hook_reason_codes(reason_codes, "cortex_advisory_no_write")
@@ -3843,11 +3856,11 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
                 args.agent,
                 block=False,
                 context=context,
-                cortex_context=cortex_context,
+                cortex_context=visible_cortex_context,
             ),
             "decision": "allow",
             "permission_decision": "allow",
-            "marker_emitted": bool(context),
+            "marker_emitted": bool(context or cortex_context),
             "context_suppressed": context_suppressed,
             "cortex_context_emitted": bool(cortex_context),
             "surface_context": bool(combined_context),
@@ -3859,7 +3872,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             if context:
                 payload["user_message"] = context
             if cortex_context:
-                payload["agent_message"] = cortex_context
+                payload["agent_message"] = visible_cortex_context
             print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
             return 0
         if args.agent == "claude":
@@ -4819,6 +4832,120 @@ def self_test() -> int:
             failures.append("Claude Cortex PreToolUse mesh advisory must surface NEEDS_ALIGN additionalContext")
         if isinstance(claude_specific, dict) and claude_specific.get("permissionDecision") != "allow":
             failures.append("Claude Cortex PreToolUse mesh advisory must keep permissionDecision allow")
+
+        cortex_root = target / "docs/agents/cortex"
+        (cortex_root / "sources").mkdir(parents=True, exist_ok=True)
+        (cortex_root / "cells").mkdir(parents=True, exist_ok=True)
+        (cortex_root / "sources/flappy-runtime-memory.md").write_text(
+            "# Flappy Runtime Memory Source\n\n"
+            "For single-file canvas bird game canaries, runtime recall should surface "
+            "the title Cortex Recall Bird and marker cortex-recall-green-244.\n",
+            encoding="utf-8",
+        )
+        (cortex_root / "cells/flappy-runtime-memory.md").write_text(
+            "# Flappy Runtime Memory\n\n"
+            "## Claim\n\n"
+            "Single-file canvas bird game canaries should use the title Cortex Recall Bird "
+            "and marker cortex-recall-green-244 when runtime recall is available.\n\n"
+            "## Evidence\n\n"
+            "- `sources/flappy-runtime-memory.md`\n",
+            encoding="utf-8",
+        )
+        append_unique_line(cortex_root / "MAP.md", "| [[flappy-runtime-memory]] | Runtime recall can surface canary memory | |")
+        append_unique_line(cortex_root / "LINKS.md", "- [[flappy-runtime-memory]] -> `sources/flappy-runtime-memory.md`")
+        rebuild_memory = run(
+            [sys.executable, str(target / ".tes/bin/cortex.py"), "rebuild", "--target", str(target)],
+            cwd=target,
+        )
+        if rebuild_memory.returncode != 0:
+            failures.append("installed Cortex runtime memory fixture must rebuild recall")
+            failures.extend(rebuild_memory.stderr.splitlines())
+        transcript = target / ".tes/runtime/transcripts/flappy.jsonl"
+        transcript.parent.mkdir(parents=True, exist_ok=True)
+        transcript.write_text(
+            json.dumps(
+                {
+                    "type": "user",
+                    "message": {
+                        "role": "user",
+                        "content": "Build the single-file canvas bird game canary from the product spec.",
+                    },
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        claude_memory = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "claude",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "PreToolUse",
+                    "session_id": "cortex-claude-runtime-memory",
+                    "transcript_path": str(transcript),
+                    "tool_name": "Write",
+                    "tool_input": {
+                        "file_path": str(target / "index.html"),
+                        "content": (
+                            "<canvas id='game'></canvas><script>"
+                            "function drawBird(){} function drawPipes(){} const gameState='playing';"
+                            "</script>"
+                        ),
+                    },
+                }
+            ),
+        )
+        if claude_memory.returncode != 0:
+            failures.append(f"Claude Cortex runtime memory advisory must allow, got {claude_memory.returncode}")
+        try:
+            claude_memory_payload = json.loads(claude_memory.stdout)
+        except json.JSONDecodeError:
+            claude_memory_payload = {}
+            failures.append("Claude Cortex runtime memory advisory must emit JSON")
+        claude_memory_specific = (
+            claude_memory_payload.get("hookSpecificOutput")
+            if isinstance(claude_memory_payload, dict)
+            else {}
+        )
+        claude_memory_context = (
+            claude_memory_specific.get("additionalContext")
+            if isinstance(claude_memory_specific, dict)
+            else None
+        )
+        if not isinstance(claude_memory_context, str) or "cortex-recall-green-244" not in claude_memory_context:
+            failures.append("Claude Cortex runtime memory advisory must surface seeded memory")
+        if isinstance(claude_memory_context, str) and "🍳 Flash-Fry" not in claude_memory_context:
+            failures.append("Claude Cortex runtime memory advisory must include the Flash-Fry marker")
+        if isinstance(claude_memory_specific, dict) and claude_memory_specific.get("permissionDecision") != "allow":
+            failures.append("Claude Cortex runtime memory advisory must keep permissionDecision allow")
+        memory_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("agent") == "claude" and record.get("session") == "cortex-claude-runtime-memory"
+        ]
+        if not memory_records:
+            failures.append("Claude Cortex runtime memory advisory must write a runtime ledger row")
+        else:
+            memory_record = memory_records[-1]
+            if memory_record.get("cortex_context_emitted") is not True:
+                failures.append("Claude Cortex runtime memory row must set cortex_context_emitted=true")
+            if memory_record.get("marker_emitted") is not True:
+                failures.append("Claude Cortex runtime memory row must set marker_emitted=true")
+            memory_reason_codes = (
+                memory_record.get("reason_codes")
+                if isinstance(memory_record.get("reason_codes"), list)
+                else []
+            )
+            if "cortex_advisory_no_write" not in memory_reason_codes:
+                failures.append("Claude Cortex runtime memory row must persist cortex_advisory_no_write")
 
         codex_mesh = run(
             [

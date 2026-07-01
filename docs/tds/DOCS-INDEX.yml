@@ -1,4 +1,4 @@
-version: 0.3.244
+version: 0.3.246
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -379,6 +379,13 @@ documents:
     consumer: certification reviewers
     source_of_truth: true
     evidence_level: L2
+  - path: docs/canary/prompt/flappy-bird.md
+    id: evals.canary_prompt.flappy_bird
+    class: eval
+    status: active
+    consumer: maintainers, canary operators, and Goal Maestro operators
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/mesh/CONTEXT-MESH-METHOD.md
     id: mesh.context_method
     class: mesh
@@ -510,6 +517,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, release reviewers, and next-loop operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/audits/AGENT-HOOK-FUNCTIONAL-AUDIT.md
+    id: roadmap.audit.agent_hook_functional
+    class: roadmap
+    status: active
+    consumer: maintainers, hook authors, oracle authors, and canary operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/product/RC1-READINESS-ROADMAP.md

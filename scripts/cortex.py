@@ -1327,6 +1327,7 @@ def sqlite_recall(target: Path, query: str, limit: int) -> dict[str, object]:
     db_path = recall_db_path(target)
     if not db_path.exists():
         raise sqlite3.Error(f"missing recall index: {rel(db_path, target)}")
+    fts_query = sqlite_fts_query(query)
     with sqlite3.connect(db_path) as conn:
         if query == "*":
             rows = conn.execute(
@@ -1337,7 +1338,7 @@ def sqlite_recall(target: Path, query: str, limit: int) -> dict[str, object]:
             rows = conn.execute(
                 "SELECT path, layer, title, snippet(cortex_recall, 3, '[', ']', ' ... ', 16) "
                 "FROM cortex_recall WHERE cortex_recall MATCH ? LIMIT ?",
-                (query, limit),
+                (fts_query, limit),
             ).fetchall()
     return {
         "backend": "sqlite-fts5",
@@ -1346,6 +1347,14 @@ def sqlite_recall(target: Path, query: str, limit: int) -> dict[str, object]:
             for path, layer, title, excerpt in rows
         ],
     }
+
+
+def sqlite_fts_query(query: str) -> str:
+    """Return a conservative FTS5 query for natural-language recall text."""
+    tokens = re.findall(r"[A-Za-z0-9_]{2,80}", query)
+    if not tokens:
+        return query
+    return " ".join(f'"{token}"' for token in tokens[:12])
 
 
 def rg_recall(target: Path, query: str, limit: int) -> dict[str, object]:

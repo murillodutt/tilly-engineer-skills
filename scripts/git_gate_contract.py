@@ -22,7 +22,7 @@ import field_reports
 
 
 SCHEMA = "tes-git-gate-contract@1"
-VERSION = "0.3.244"
+VERSION = "0.3.246"
 
 PRECOMMIT_GATE_TOKENS = ("commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
 PREPUSH_GATE_TOKENS = ("prepush:check", "commit:check", "discipline_oracle", "project_context_oracle", "gate-pre-git")

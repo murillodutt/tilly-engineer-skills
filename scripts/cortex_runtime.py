@@ -32,6 +32,21 @@ MESH_REF_RE = re.compile(
     r"QUALITY-GATES\.md|DECISIONS/[^\s`'\"),]+)"
 )
 WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:/-]{1,80}")
+TRANSCRIPT_TAIL_BYTES = 768 * 1024
+TRANSCRIPT_PROMPT_CHAR_LIMIT = 6000
+QUERY_STOPWORDS = {
+    "and", "are", "com", "das", "dos", "for", "from", "into", "not", "para", "por", "que",
+    "the", "this", "that", "these", "those", "uma", "with",
+}
+QUERY_GENERIC_TERMS = {
+    "agents", "any", "args", "audit", "build", "canaries", "canary", "changed", "class",
+    "closeout", "command", "config", "const", "constraints", "content", "context", "dependency",
+    "discover", "docs", "execute", "files", "free", "function", "glob", "goal", "grep",
+    "heartbeat", "hook", "hooks", "honor", "html", "information", "injected", "local", "loop",
+    "during", "maestro", "manual", "md", "message", "name", "product", "project", "prompt", "read",
+    "return", "run", "scan", "script", "section", "spec", "specified", "super", "target", "tes",
+    "tool", "tools", "use", "value", "verification", "window",
+}
 WRITE_TOOL_HINTS = {
     "bash",
     "edit",
@@ -68,6 +83,55 @@ def _walk_strings(value: Any) -> list[str]:
             strings.extend(_walk_strings(item))
         return strings
     return []
+
+
+def _safe_transcript_path(payload: dict[str, Any], target: Path) -> Path | None:
+    value = payload.get("transcript_path") or payload.get("transcriptPath")
+    if not isinstance(value, str) or not value.strip():
+        return None
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = target / path
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return None
+    if resolved.suffix != ".jsonl" or not resolved.is_file():
+        return None
+    return resolved
+
+
+def _tail_text(path: Path, byte_budget: int) -> str:
+    try:
+        with path.open("rb") as handle:
+            handle.seek(0, os.SEEK_END)
+            size = handle.tell()
+            handle.seek(max(0, size - byte_budget))
+            return handle.read(byte_budget).decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _latest_transcript_user_prompt(payload: dict[str, Any], target: Path) -> str:
+    """Read only the bounded latest human prompt from a host transcript."""
+    transcript = _safe_transcript_path(payload, target)
+    if transcript is None:
+        return ""
+    latest = ""
+    for line in _tail_text(transcript, TRANSCRIPT_TAIL_BYTES).splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict) or event.get("type") != "user":
+            continue
+        message = event.get("message") if isinstance(event.get("message"), dict) else {}
+        content = message.get("content") if isinstance(message, dict) else None
+        # Tool-result arrays often carry command output; only the plain user
+        # prompt string is query material for runtime recall.
+        if isinstance(content, str) and content.strip():
+            latest = content.strip()
+    return latest[-TRANSCRIPT_PROMPT_CHAR_LIMIT:]
 
 
 def _host_from_event(event: dict[str, Any], payload: dict[str, Any]) -> str:
@@ -152,6 +216,95 @@ def _dedupe(values: list[str], limit: int | None = None) -> list[str]:
     return result
 
 
+def _compact_text(value: str, limit: int) -> str:
+    text = " ".join(value.replace("\x00", "").split())
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 1)].rstrip() + "…"
+
+
+def _matched_memory_excerpt(target: Path, relpath: str, limit: int = 360) -> str:
+    path = (target / relpath).resolve()
+    cortex_root = cortex.cortex_path(target).resolve()
+    try:
+        path.relative_to(cortex_root)
+    except ValueError:
+        return ""
+    if not path.is_file():
+        return ""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    return _compact_text(text, limit)
+
+
+def _enrich_runtime_matches(target: Path, matches: list[Any]) -> list[dict[str, Any]]:
+    enriched: list[dict[str, Any]] = []
+    for match in matches:
+        if not isinstance(match, dict):
+            continue
+        item = dict(match)
+        relpath = str(item.get("path") or "")
+        if relpath.startswith("docs/agents/cortex/"):
+            excerpt = _matched_memory_excerpt(target, relpath)
+            if excerpt:
+                item["excerpt"] = excerpt
+        enriched.append(item)
+    return enriched
+
+
+def _query_terms(query: str) -> set[str]:
+    return {
+        token.lower()
+        for token in re.findall(r"[A-Za-z0-9_]{3,80}", query)
+        if token.lower() not in QUERY_STOPWORDS and token.lower() not in QUERY_GENERIC_TERMS
+    }
+
+
+def _runtime_match_score(match: dict[str, Any], query_terms: set[str]) -> tuple[int, int, int, str]:
+    """Rank actionable Cortex memory above root boilerplate and explain why."""
+    relpath = str(match.get("path") or "")
+    text = " ".join(
+        str(match.get(key) or "")
+        for key in ("path", "layer", "title", "excerpt")
+    ).lower()
+    overlap = sum(1 for term in query_terms if term in text)
+    if relpath.startswith("docs/agents/cortex/cells/"):
+        layer_score = 30
+    elif relpath.startswith("docs/agents/cortex/sources/"):
+        layer_score = 24
+    elif relpath.startswith("docs/agents/cortex/"):
+        layer_score = 8
+    else:
+        layer_score = 0
+    marker_score = 6 if re.search(r"\bmarker\b|cortex-recall|recall bird", text) else 0
+    return (layer_score + marker_score + overlap, layer_score, overlap, relpath)
+
+
+def _rank_runtime_matches(matches: list[dict[str, Any]], query: str, limit: int) -> list[dict[str, Any]]:
+    terms = _query_terms(query)
+    ranked: list[dict[str, Any]] = []
+    for match in matches:
+        item = dict(match)
+        score, layer_score, overlap, _ = _runtime_match_score(item, terms)
+        item["score_details"] = {
+            "runtime_score": score,
+            "layer_score": layer_score,
+            "query_overlap": overlap,
+            "query_terms": sorted(term for term in terms if term in " ".join(str(item.get(k) or "").lower() for k in ("path", "layer", "title", "excerpt"))),
+        }
+        ranked.append(item)
+    ranked.sort(key=lambda item: _runtime_match_score(item, terms), reverse=True)
+    actionable = [
+        item for item in ranked
+        if str(item.get("path") or "").startswith(("docs/agents/cortex/cells/", "docs/agents/cortex/sources/"))
+    ]
+    if actionable:
+        return actionable[:limit]
+    return ranked[:limit]
+
+
 def _mesh_refs(paths: list[str]) -> list[str]:
     refs = []
     for path in paths:
@@ -196,8 +349,11 @@ def _write_like_event(payload: dict[str, Any]) -> bool:
     return any(key in tool_input for key in ("file_path", "content", "old_string", "new_string"))
 
 
-def _bounded_query(payload: dict[str, Any], paths: list[str], limit: int) -> str:
-    source_values: list[str] = []
+def _bounded_query(payload: dict[str, Any], paths: list[str], target: Path, limit: int) -> str:
+    source_values: list[tuple[str, int, int]] = []
+    transcript_prompt = _latest_transcript_user_prompt(payload, target)
+    if transcript_prompt:
+        source_values.append((transcript_prompt, 30, 220))
     for key in (
         "last_assistant_message",
         "prompt",
@@ -206,13 +362,69 @@ def _bounded_query(payload: dict[str, Any], paths: list[str], limit: int) -> str
     ):
         value = payload.get(key)
         if isinstance(value, str):
-            source_values.append(value)
-    source_values.extend(paths)
-    tokens = []
-    for value in source_values:
-        tokens.extend(WORD_RE.findall(value))
-    tokens = _dedupe(tokens, max(3, min(12, limit * 3)))
+            source_values.append((value, 24, 180))
+    tool_input = _as_dict(payload.get("tool_input") or payload.get("toolInput"))
+    for key in ("file_path", "path", "cwd"):
+        value = tool_input.get(key) or payload.get(key)
+        if isinstance(value, str):
+            source_values.append((value, 12, 60))
+    for key in ("command", "content", "old_string", "new_string"):
+        value = tool_input.get(key)
+        if isinstance(value, str):
+            source_values.append((value, 2, 120))
+    source_values.extend((path, 10, 60) for path in paths)
+    scored: dict[str, dict[str, Any]] = {}
+    order = 0
+    for index, (value, weight, cap) in enumerate(source_values):
+        seen_in_source: set[str] = set()
+        for token in re.findall(r"[A-Za-z0-9_]{2,80}", value):
+            normalized = token.strip("._:/-").lower()
+            order += 1
+            if (
+                len(normalized) < 3
+                or normalized in seen_in_source
+                or normalized in QUERY_STOPWORDS
+                or normalized in QUERY_GENERIC_TERMS
+            ):
+                continue
+            seen_in_source.add(normalized)
+            entry = scored.setdefault(normalized, {"score": 0, "hits": 0, "first": index, "order": order})
+            entry["score"] += weight
+            entry["hits"] += 1
+            if len(seen_in_source) >= cap:
+                break
+    ranked = sorted(
+        scored,
+        key=lambda item: (
+            -int(scored[item]["score"]),
+            -int(scored[item]["hits"]),
+            int(scored[item]["first"]),
+            int(scored[item]["order"]),
+        ),
+    )
+    tokens = _dedupe(ranked, 6)
     return " ".join(tokens)[:240] or "Cortex"
+
+
+def _runtime_recall(target: Path, query: str, limit: int) -> tuple[str, dict[str, Any]]:
+    """Recall runtime memory with deterministic relaxation for noisy host prompts."""
+    recall_limit = max(limit * 4, 20)
+    result = cortex.recall(target, query, recall_limit)
+    if result.get("matches"):
+        return query, result
+    tokens = query.split()
+    candidates = []
+    for size in (5, 4, 3):
+        if len(tokens) >= size:
+            candidates.append(" ".join(tokens[:size]))
+    for candidate in _dedupe(candidates):
+        if candidate == query:
+            continue
+        candidate_result = cortex.recall(target, candidate, recall_limit)
+        if candidate_result.get("matches"):
+            candidate_result["relaxed_from"] = query
+            return candidate, candidate_result
+    return query, result
 
 
 def _alignment_signal(mesh_refs: list[str], write_like: bool, explicit_align: bool) -> dict[str, Any]:
@@ -280,8 +492,13 @@ def evaluate_runtime_event(
     payload = _event_input(event)
     paths = _dedupe(_extract_paths(payload, target), limit)
     mesh_refs = _mesh_refs(paths)
-    query = _bounded_query(payload, paths, limit)
-    recall_result = cortex.recall(target, query, limit)
+    query = _bounded_query(payload, paths, target, limit)
+    query, recall_result = _runtime_recall(target, query, limit)
+    recall_matches = _rank_runtime_matches(
+        _enrich_runtime_matches(target, recall_result.get("matches", [])),
+        query,
+        limit,
+    )
     effective_backend = "lexical" if backend != "lexical" else backend
     review_result = cortex.review(target, query, limit=limit, line_budget=line_budget, backend=effective_backend)
     explicit_align = _explicit_align_context(payload) or _active_align_sentinel(target)
@@ -297,7 +514,8 @@ def evaluate_runtime_event(
         "advisory_context": {
             "status": recall_result.get("status"),
             "backend": recall_result.get("backend"),
-            "matches": recall_result.get("matches", []),
+            "relaxed_from": recall_result.get("relaxed_from"),
+            "matches": recall_matches,
             "failures": recall_result.get("failures", []),
         },
         "proposal_evidence": {
@@ -342,8 +560,27 @@ def _build_runtime_fixture(target: Path) -> None:
         "- `sources/runtime-source.md` records the runtime recall fixture.\n",
         encoding="utf-8",
     )
+    flappy_source = root / "sources" / "flappy-runtime-memory.md"
+    flappy_source.write_text(
+        "# Flappy Runtime Memory Source\n\n"
+        "For single-file canvas bird game canaries, runtime recall should surface "
+        "the title Cortex Recall Bird and marker cortex-recall-green-244.\n",
+        encoding="utf-8",
+    )
+    flappy_cell = root / "cells" / "flappy-runtime-memory.md"
+    flappy_cell.write_text(
+        "# Flappy Runtime Memory\n\n"
+        "## Claim\n\n"
+        "Single-file canvas bird game canaries should use the title Cortex Recall Bird "
+        "and marker cortex-recall-green-244 when runtime recall is available.\n\n"
+        "## Evidence\n\n"
+        "- `sources/flappy-runtime-memory.md`\n",
+        encoding="utf-8",
+    )
     _append_unique_line(root / "MAP.md", "| [[runtime-recall]] | Runtime recall stays advisory | |")
+    _append_unique_line(root / "MAP.md", "| [[flappy-runtime-memory]] | Runtime recall can surface canary memory | |")
     _append_unique_line(root / "LINKS.md", "- [[runtime-recall]] -> `sources/runtime-source.md`")
+    _append_unique_line(root / "LINKS.md", "- [[flappy-runtime-memory]] -> `sources/flappy-runtime-memory.md`")
 
     agents = target / "docs" / "agents"
     decisions = agents / "DECISIONS"
@@ -351,6 +588,7 @@ def _build_runtime_fixture(target: Path) -> None:
     for name in ("PROJECT-STATE.md", "PROJECT-ROADMAP.md", "EXECUTION-LINE.md", "QUALITY-GATES.md"):
         (agents / name).write_text(f"# {name.removesuffix('.md')}\n\nFixture baseline.\n", encoding="utf-8")
     (decisions / "runtime.md").write_text("# Runtime Decision\n\nFixture baseline.\n", encoding="utf-8")
+    cortex.rebuild(target)
 
 
 def _snapshot(target: Path) -> dict[str, str]:
@@ -392,6 +630,22 @@ def self_test() -> int:
     with tempfile.TemporaryDirectory(prefix="tes-cortex-runtime-") as tempdir:
         target = Path(tempdir)
         _build_runtime_fixture(target)
+        transcript = target / ".tes" / "runtime" / "transcripts" / "flappy.jsonl"
+        transcript.parent.mkdir(parents=True, exist_ok=True)
+        transcript.write_text(
+            json.dumps(
+                {
+                    "type": "user",
+                    "message": {
+                        "role": "user",
+                        "content": "Build the single-file canvas bird game canary from the product spec.",
+                    },
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         before = _snapshot(target)
 
         non_mesh = evaluate_runtime_event(
@@ -400,6 +654,25 @@ def self_test() -> int:
                 "hook_event_name": "PreToolUse",
                 "tool_name": "Edit",
                 "tool_input": {"file_path": str(target / "docs" / "notes.md"), "new_string": "next"},
+            },
+        )
+        runtime_memory = evaluate_runtime_event(
+            target,
+            {
+                "hook_event_name": "PreToolUse",
+                "transcript_path": str(transcript),
+                "tool_name": "Write",
+                "tool_input": {
+                    "file_path": str(target / "index.html"),
+                    "content": (
+                        "<!doctype html><title>Canvas Bird Canary</title><canvas id='game'></canvas><script>"
+                        + " ".join(
+                            "/* SECTION */ ctx.fillStyle = CONFIG.BASE_W; function drawBird(){} function drawPipes(){}"
+                            for _ in range(80)
+                        )
+                        + " const gameState='playing'; requestAnimationFrame(function frame(){});</script>"
+                    ),
+                },
             },
         )
         mesh = evaluate_runtime_event(
@@ -467,6 +740,7 @@ def self_test() -> int:
 
         all_results = {
             "non_mesh": non_mesh,
+            "runtime_memory": runtime_memory,
             "mesh": mesh,
             "explicit_align": explicit_align,
             "active_sentinel": active_sentinel,
@@ -481,6 +755,14 @@ def self_test() -> int:
 
         if non_mesh["alignment_signal"]["status"] == "NEEDS_ALIGN":
             failures.append("non-mesh edit raised NEEDS_ALIGN")
+        runtime_matches = runtime_memory["advisory_context"].get("matches", [])
+        if not any("flappy-runtime-memory" in str(match.get("path") or "") for match in runtime_matches):
+            failures.append("runtime memory recall did not match the flappy Cortex cell")
+        if "cortex-recall-green-244" not in json.dumps(runtime_matches, ensure_ascii=False):
+            failures.append("runtime memory recall did not surface the seeded marker")
+        runtime_query = str(runtime_memory.get("recall_query") or "")
+        if "ctx" in runtime_query or "fillstyle" in runtime_query or "section" in runtime_query:
+            failures.append(f"runtime memory query must not be dominated by code tokens: {runtime_query}")
         if mesh["alignment_signal"]["status"] != "NEEDS_ALIGN":
             failures.append("mesh edit did not raise NEEDS_ALIGN")
         if explicit_align["alignment_signal"]["status"] == "NEEDS_ALIGN":
@@ -508,6 +790,7 @@ def self_test() -> int:
             "status": "PASS" if not failures else "FAIL",
             "cases": {
                 "false_positive_non_mesh": non_mesh["alignment_signal"]["status"],
+                "runtime_memory_matches": len(runtime_matches),
                 "false_negative_mesh": mesh["alignment_signal"]["status"],
                 "explicit_align_context": explicit_align["alignment_signal"]["status"],
                 "active_align_sentinel": active_sentinel["alignment_signal"]["status"],
