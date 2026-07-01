@@ -23,7 +23,7 @@ import cortex_git_tap
 import tes_codex_policy
 
 
-VERSION = "0.3.253"
+VERSION = "0.3.254"
 RUNTIME_MEMORY_MARKER_RE = re.compile(r"\bmarker\s+([A-Za-z0-9][A-Za-z0-9_.:-]{2,160})", re.IGNORECASE)
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
@@ -3154,6 +3154,134 @@ def apply_host_transcript_evidence(
         record["justified_replay_change"] = True
 
 
+def transcript_session_id(transcript_path: Any) -> str:
+    raw = str(transcript_path or "").strip()
+    if not raw:
+        return ""
+    return Path(raw).stem
+
+
+def load_sanitized_host_loop_json(path: Path | None) -> dict[str, Any] | None:
+    """Load host-loop JSON without ever reading raw transcript contents."""
+    if path is None:
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"status": "NEEDS_EVIDENCE", "blockers": [f"could not read host loop JSON: {exc}"]}
+    return payload if isinstance(payload, dict) else {"status": "NEEDS_EVIDENCE", "blockers": ["host loop JSON root is not an object"]}
+
+
+def host_loop_external_evidence(
+    target: Path,
+    host: str | None,
+    payload: dict[str, Any] | None,
+    records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Validate a host-loop packet against runtime rows for one host/session."""
+    if host not in AGENTS:
+        return {"status": "NOT_PROVIDED", "blockers": ["current host is required for host-loop evidence"]}
+    if not isinstance(payload, dict):
+        return {"status": "NOT_PROVIDED", "blockers": ["host loop evidence not provided"]}
+
+    blockers: list[str] = []
+    target = target.expanduser().resolve()
+    try:
+        evidence_target = Path(str(payload.get("target") or "")).expanduser().resolve()
+    except (OSError, RuntimeError):
+        evidence_target = Path()
+    if evidence_target != target:
+        blockers.append("host loop evidence target does not match target")
+
+    host_execution = payload.get("host_execution") if isinstance(payload.get("host_execution"), dict) else {}
+    oracle = payload.get("oracle") if isinstance(payload.get("oracle"), dict) else {}
+    command_fingerprint = payload.get("command_fingerprint") or host_execution.get("command_fingerprint")
+    transcript_sha = oracle.get("transcript_sha256")
+    session_id = transcript_session_id(oracle.get("transcript_path"))
+    try:
+        tool_use_count = int(oracle.get("tool_use_count") or 0)
+    except (TypeError, ValueError):
+        tool_use_count = 0
+
+    if payload.get("loop_status") != "PASS":
+        blockers.append("host loop status is not PASS")
+    if payload.get("stale_transcript") is not False:
+        blockers.append("host loop transcript freshness is not proven")
+    if host_execution.get("ran") is not True or host_execution.get("returncode") != 0 or host_execution.get("timed_out") is True:
+        blockers.append("host command execution is not a clean successful run")
+    if oracle.get("status") != "PASS":
+        blockers.append("transcript oracle status is not PASS")
+    if not is_hex64(transcript_sha):
+        blockers.append("transcript oracle hash missing or invalid")
+    if not is_hex64(command_fingerprint):
+        blockers.append("host command fingerprint missing or invalid")
+    if tool_use_count <= 0:
+        blockers.append("transcript oracle has no tool-use evidence")
+    if not session_id:
+        blockers.append("transcript session id is missing")
+
+    matching_records = [
+        record
+        for record in records
+        if record.get("agent") == host
+        and canonical_hook_event(str(record.get("event_canonical") or record.get("event") or "")) == "PreToolUse"
+        and hook_record_provenance(record) == HOOK_PROVENANCE_HOST_REAL
+        and str(record.get("session") or "") == session_id
+    ]
+    if not matching_records:
+        blockers.append("no matching host-real PreToolUse ledger row for transcript session")
+    for record in matching_records:
+        if is_hex64(record.get("transcript_sha256")) and record.get("transcript_sha256") != transcript_sha:
+            blockers.append("runtime row transcript hash conflicts with host loop evidence")
+        if is_hex64(record.get("command_fingerprint")) and record.get("command_fingerprint") != command_fingerprint:
+            blockers.append("runtime row command fingerprint conflicts with host loop evidence")
+
+    return {
+        "status": "PASS" if not blockers else "NEEDS_EVIDENCE",
+        "blockers": sorted(set(blockers)),
+        "host": host,
+        "session": session_id,
+        "matching_host_real_pretooluse_records": len(matching_records),
+        "transcript_sha256": str(transcript_sha or "") if is_hex64(transcript_sha) else None,
+        "command_fingerprint": str(command_fingerprint or "") if is_hex64(command_fingerprint) else None,
+        "tool_use_count": tool_use_count,
+        "same_command_replay": payload.get("stale_transcript") is False,
+    }
+
+
+def records_with_external_host_loop_evidence(
+    target: Path,
+    records: list[dict[str, Any]],
+    *,
+    current_host: str | None,
+    host_loop_payload: dict[str, Any] | None,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    evidence = host_loop_external_evidence(target, current_host, host_loop_payload, records)
+    if host_loop_payload is None:
+        return records, None
+    if evidence.get("status") != "PASS":
+        return [dict(record) for record in records], evidence
+    session_id = str(evidence.get("session") or "")
+    enriched: list[dict[str, Any]] = []
+    for record in records:
+        is_current_host_pretooluse = (
+            record.get("agent") == current_host
+            and canonical_hook_event(str(record.get("event_canonical") or record.get("event") or "")) == "PreToolUse"
+            and hook_record_provenance(record) == HOOK_PROVENANCE_HOST_REAL
+        )
+        if is_current_host_pretooluse and str(record.get("session") or "") != session_id:
+            continue
+        copy = dict(record)
+        if is_current_host_pretooluse:
+            copy["transcript_sha256"] = evidence["transcript_sha256"]
+            copy["command_fingerprint"] = evidence["command_fingerprint"]
+            copy["tool_use_count"] = evidence["tool_use_count"]
+            copy["same_command_replay"] = True
+            copy["external_host_loop_evidence"] = True
+        enriched.append(copy)
+    return enriched, evidence
+
+
 def pretooluse_renderer_trace(agent: str, *, block: bool, context: str = "", cortex_context: str = "") -> dict[str, str]:
     """Name the host renderer contract without duplicating rendered output."""
     if block:
@@ -4187,7 +4315,12 @@ def hook_surface_attached(target: Path) -> bool:
     return "hooks" in attached_surfaces_from_lock(target)
 
 
-def hook_health_payload(target: Path, *, current_host: str | None = None) -> dict[str, Any]:
+def hook_health_payload(
+    target: Path,
+    *,
+    current_host: str | None = None,
+    host_loop_payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     target = target_root(target)
     configured = configured_hook_events(target)
     attached_surfaces = attached_surfaces_from_lock(target)
@@ -4349,16 +4482,22 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
     else:
         status_value = "PASS"
 
+    ceiling_records, external_host_evidence = records_with_external_host_loop_evidence(
+        target,
+        current_records,
+        current_host=current_host if current_host in AGENTS else None,
+        host_loop_payload=host_loop_payload,
+    )
     floor_status_value = hook_floor_status(status_value, current_records)
     ceiling_evidence_scope, ceiling_gaps = pretooluse_ceiling_evidence(
-        current_records,
+        ceiling_records,
         configured=configured,
         current_host=current_host if current_host in AGENTS else None,
     )
     ceiling_status_value = hook_ceiling_status(floor_status_value, ceiling_gaps)
-    discoverability_status = pretooluse_discoverability_status(current_records)
+    discoverability_status = pretooluse_discoverability_status(ceiling_records)
 
-    return {
+    result = {
         "schema": HOOK_HEALTH_SCHEMA_VERSION,
         "legacy_schema": HOOK_HEALTH_LEGACY_SCHEMA_VERSION,
         "version": VERSION,
@@ -4393,6 +4532,9 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
         "finding_counts": finding_counts,
         "findings": findings,
     }
+    if external_host_evidence is not None:
+        result["external_host_evidence"] = external_host_evidence
+    return result
 
 
 def _classify_pretooluse_risk(action: str, paths: list[str]) -> str:
@@ -4825,7 +4967,11 @@ def status(args: argparse.Namespace) -> int:
 
 
 def hook_health(args: argparse.Namespace) -> int:
-    result = hook_health_payload(args.target, current_host=getattr(args, "agent", None))
+    result = hook_health_payload(
+        args.target,
+        current_host=getattr(args, "agent", None),
+        host_loop_payload=load_sanitized_host_loop_json(getattr(args, "host_loop_json", None)),
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     # Ceiling F23: query vs gate exit codes. The DEFAULT (query) mode preserves
     # the pending-host install contract — a fresh install legitimately reports
@@ -7354,6 +7500,7 @@ def main() -> int:
     hook_health_parser = subparsers.add_parser("hook-health")
     hook_health_parser.add_argument("--target", type=Path, default=Path.cwd())
     hook_health_parser.add_argument("--agent", choices=AGENTS)
+    hook_health_parser.add_argument("--host-loop-json", type=Path, help="Sanitized host_canary_loop.py JSON for current-host ceiling evidence.")
     hook_health_parser.add_argument("--json-only", action="store_true")
     # Ceiling F23: --query (default) exits 0 on NEEDS_EVIDENCE to preserve the
     # pending-host install contract; --gate exits non-zero on NEEDS_EVIDENCE so a

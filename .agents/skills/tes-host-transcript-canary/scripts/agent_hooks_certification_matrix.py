@@ -342,7 +342,12 @@ def source_matrix(repo: Path) -> list[dict[str, Any]]:
     return [source_row(repo, check) for check in SOURCE_CHECKS]
 
 
-def target_matrix(repo: Path, target: Path | None, current_host: str | None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def target_matrix(
+    repo: Path,
+    target: Path | None,
+    current_host: str | None,
+    host_loop_json: Path | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if target is None:
         return (
             [
@@ -402,6 +407,8 @@ def target_matrix(repo: Path, target: Path | None, current_host: str | None) -> 
     ]
     if current_host:
         hook_health_argv.extend(["--agent", current_host])
+    if host_loop_json:
+        hook_health_argv.extend(["--host-loop-json", str(host_loop_json)])
     hook_health = run_process(hook_health_argv, repo)
     hook_health_json = hook_health.get("json") if isinstance(hook_health.get("json"), dict) else {}
 
@@ -476,6 +483,8 @@ def related_gates(
         hook_health = [sys.executable, "scripts/tes_install.py", "hook-health", "--target", str(target), "--json-only", "--query"]
         if current_host:
             hook_health.extend(["--agent", current_host])
+        if host_loop_json:
+            hook_health.extend(["--host-loop-json", str(host_loop_json)])
         gates["hook-health"] = run_process(hook_health, repo)
         canary_admission = [sys.executable, "scripts/canary_admission_oracle.py", "--target", str(target), "--json-only"]
         if current_host:
@@ -492,6 +501,8 @@ def related_gates(
         ]
         if current_host:
             installed_certification.extend(["--current-host", current_host])
+        if host_loop_json:
+            installed_certification.extend(["--host-loop-json", str(host_loop_json)])
         gates["installed-certification"] = run_process(installed_certification, repo)
     failed = [name for name, item in gates.items() if item.get("returncode") not in (0,)]
     # Installed target gates may intentionally return non-zero for host evidence
@@ -741,7 +752,7 @@ def build_matrix(args: argparse.Namespace) -> dict[str, Any]:
     repo = args.repo.expanduser().resolve()
     target = args.target.expanduser().resolve() if args.target else None
     source_rows = source_matrix(repo)
-    target_rows, target_evidence = target_matrix(repo, target, args.current_host)
+    target_rows, target_evidence = target_matrix(repo, target, args.current_host, args.host_loop_json)
     host_loop_json = load_json_file(args.host_loop_json)
     transcript_json = load_json_file(args.transcript_oracle_json)
     host_rows = host_matrix(host_loop_json, transcript_json, target=target, current_host=args.current_host)

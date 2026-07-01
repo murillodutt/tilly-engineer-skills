@@ -27,7 +27,7 @@ import field_reports
 import root_context
 
 
-VERSION = "0.3.253"
+VERSION = "0.3.254"
 
 # Governed surface markers (kept in sync with the installer writers).
 MCP_SERVER_NAME = "tes-cortex"

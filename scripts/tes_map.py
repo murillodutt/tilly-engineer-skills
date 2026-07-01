@@ -17,7 +17,7 @@ from typing import Any
 import tes_project_atlas
 
 
-VERSION = "0.3.253"
+VERSION = "0.3.254"
 START_MARKER = "<!-- TES-MAP:START -->"
 END_MARKER = "<!-- TES-MAP:END -->"
 ROADMAP_REL = Path("docs/agents/PROJECT-ROADMAP.md")
