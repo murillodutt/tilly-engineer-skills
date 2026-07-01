@@ -80,7 +80,7 @@ shell redirection:
 - Cursor: create or update .tes/runtime/hook-smoke/cursor/SKILL.md with the
   native Write tool. If the current Cursor host exposes StrReplace, use
   StrReplace for the second same-path mutation and verify the ledger treats it
-  as governed material work, even when anti-cry-wolf suppresses the marker.
+  as governed material work while still rendering the Flash-Fry marker.
   Report the native payload tool label from a redacted raw hook payload or from
   enough current-session ledger evidence to distinguish host labeling from TES
   classification. If a native Cursor StrReplace UI action is recorded as
@@ -93,7 +93,7 @@ shell redirection:
   risk, and marker state.
 
 Expected native result: the current host should allow the edit and surface
-`🍳 Flash-Fry` governed supervision exactly once for the session. For Codex and
+`🍳 Flash-Fry` governed supervision on every governed Mantra Gate application. For Codex and
 Cursor governed allow paths, acceptable proof is either visible hook output or
 runtime evidence that the hook emitted the marker (`marker_emitted: true` in the
 ledger, or the matching `.tes/mantra-gates/pretooluse-*.seen` sentinel plus a
@@ -101,8 +101,9 @@ current host PreToolUse ledger record). Cursor `preToolUse` deny messages are
 agent-visible, but governed allow messages may be ledger-only in the native UI;
 do not classify ledger-proven Cursor allow supervision as a finding solely
 because no visible allow banner was shown. A second native mutation of the same
-governed path in the same session should be allowed without repeating the
-marker. Remove only the smoke file you created if the test policy asks for a
+governed path in the same session should be allowed and should repeat the
+marker, with repeated context recorded as `anti_crywolf_repeated_context`.
+Remove only the smoke file you created if the test policy asks for a
 clean worktree. Do not reuse another host's report as evidence for the current
 host's native smoke.
 
@@ -237,8 +238,8 @@ It must document `same_semantic_different_timestamp_is_replay_history` and
 If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor
 batch noise non-blocking without a current v2 contradiction, and
 `current_v2_contradiction_rule` must scope the blocker to the same host/scope
-and not count anti-cry-wolf first-marker to silent-repeat renderer transitions
-as contradictions.
+and tolerate historical anti-cry-wolf first-marker to silent-repeat renderer
+transitions as compatibility evidence, while current rows should repeat the marker.
 
 Also classify PreToolUse maturity against the canonical contract:
 - `PASS_BASIC`: routine silence, governed supervision, forbidden block,
@@ -250,7 +251,7 @@ Also classify PreToolUse maturity against the canonical contract:
   drift source attribution. Required reason-code vocabulary is
   `routine_non_mutating`, `routine_non_governed`,
   `governed_surface_mutation`, `forbidden_class`,
-  `anti_crywolf_suppressed`, `host_payload_labeling`,
+  `anti_crywolf_repeated_context`, historical `anti_crywolf_suppressed`, `host_payload_labeling`,
   `patch_body_path_extracted`, `needs_discoverability_unknown_mutation`,
   `renderer_contract_projected`, and `cortex_advisory_no_write`.
 - `NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe

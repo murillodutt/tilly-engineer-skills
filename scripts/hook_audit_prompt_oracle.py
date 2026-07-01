@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
-VERSION = "0.3.241"
+VERSION = "0.3.242"
 
 
 REQUIRED_TERMS = (
@@ -32,6 +32,7 @@ REQUIRED_TERMS = (
     "`ceiling_evidence_scope.required_hosts` containing only that host",
     "If the current Cursor host exposes StrReplace",
     "use\n  StrReplace for the second same-path mutation",
+    "still rendering the Flash-Fry marker",
     "marker_emitted: true",
     "Before any native forbidden-shell test",
     "Do\nnot write helper scripts, audit harnesses, or payload files inside the target\nproject",
@@ -82,7 +83,9 @@ REQUIRED_TERMS = (
     "`same_semantic_different_timestamp_is_replay_history`",
     "`same_invocation_timestamp_different_tool_path_risk_marker_is_not_duplicate`",
     "If present, `ceiling_noise_rule` must keep historical duplicate/replay/Cursor\nbatch noise non-blocking without a current v2 contradiction",
-    "`current_v2_contradiction_rule` must scope the blocker to the same host/scope\nand not count anti-cry-wolf first-marker to silent-repeat renderer transitions\nas contradictions",
+    "`current_v2_contradiction_rule` must scope the blocker to the same host/scope\nand tolerate historical anti-cry-wolf first-marker to silent-repeat renderer\ntransitions as compatibility evidence, while current rows should repeat the marker.",
+    "current rows should repeat the marker",
+    "`anti_crywolf_repeated_context`",
     "`NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe",
     "Runtime\n  output must include `outcome=needs_discoverability`",
     "`risk=needs-discoverability`; the final hook-health JSON must expose top-level\n  `discoverability_status=NEEDS_DISCOVERABILITY` from installed evidence",
@@ -409,8 +412,8 @@ def red_capability_mutations(text: str) -> list[Mutation]:
             _remove(
                 text,
                 "`current_v2_contradiction_rule` must scope the blocker to the same host/scope\n"
-                "and not count anti-cry-wolf first-marker to silent-repeat renderer transitions\n"
-                "as contradictions",
+                "and tolerate historical anti-cry-wolf first-marker to silent-repeat renderer\n"
+                "transitions as compatibility evidence, while current rows should repeat the marker.",
             ),
             "current_v2_contradiction_rule",
         ),

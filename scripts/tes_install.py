@@ -29,7 +29,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.241"
+VERSION = "0.3.242"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -3064,7 +3064,7 @@ def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]
 
 
 def pretooluse_marker_contract(record: dict[str, Any]) -> str:
-    """Normalize marker state so anti-cry-wolf suppression is not a contradiction."""
+    """Normalize marker state while tolerating historical suppressed rows."""
     risk = str(record.get("risk") or "")
     if record.get("marker_emitted") is True or record.get("context_suppressed") is True:
         return "accounted"
@@ -3103,7 +3103,7 @@ def pretooluse_contradiction_signature(record: dict[str, Any]) -> dict[str, Any]
 def pretooluse_expected_anti_crywolf_renderer_transition(
     fields: list[str], previous_record: dict[str, Any], current_record: dict[str, Any]
 ) -> bool:
-    """Allow the documented first-marker to suppressed-repeat renderer transition."""
+    """Allow historical first-marker to suppressed-repeat renderer transitions."""
     if fields != ["renderer_output_contract"]:
         return False
     records = (previous_record, current_record)
@@ -4103,14 +4103,14 @@ def self_test() -> int:
     cursor_batch_multiedit = ceiling_record(
         "cursor",
         "cursor-batch",
-        reason_codes=["governed_surface_mutation", "renderer_contract_projected"],
+        reason_codes=["governed_surface_mutation", "anti_crywolf_repeated_context", "renderer_contract_projected"],
         outcome="allow",
         risk="material",
         tool="MultiEdit",
         path=".cursor/rules/b.mdc",
         invocation="cursor-batch-invocation",
-        marker_emitted=False,
-        context_suppressed=True,
+        marker_emitted=True,
+        context_suppressed=False,
     )
     cursor_batch_scope, cursor_batch_gaps = pretooluse_ceiling_evidence(
         [cursor_batch_write, cursor_batch_multiedit],
@@ -4162,10 +4162,14 @@ def self_test() -> int:
     anti_crywolf_first["renderer_trace"] = {"renderer": "claude_pretooluse", "output_contract": "json_hookSpecificOutput_allow"}
     anti_crywolf_repeat = {
         **anti_crywolf_first,
-        "reason_codes": ["governed_surface_mutation", "anti_crywolf_suppressed", "renderer_contract_projected"],
-        "marker_emitted": False,
-        "context_suppressed": True,
-        "renderer_trace": {"renderer": "claude_pretooluse", "output_contract": "silent_allow"},
+        "reason_codes": [
+            "governed_surface_mutation",
+            "anti_crywolf_repeated_context",
+            "renderer_contract_projected",
+        ],
+        "marker_emitted": True,
+        "context_suppressed": False,
+        "renderer_trace": {"renderer": "claude_pretooluse", "output_contract": "json_hookSpecificOutput_allow"},
     }
     anti_crywolf_scope, anti_crywolf_gaps = pretooluse_ceiling_evidence(
         [complete_claude, anti_crywolf_first, anti_crywolf_repeat],
@@ -4173,7 +4177,7 @@ def self_test() -> int:
     )
     anti_crywolf_claude = anti_crywolf_scope.get("per_host", {}).get("claude", {})
     if anti_crywolf_gaps or anti_crywolf_claude.get("status") != "PASS_CEILING":
-        failures.append("PreToolUse ceiling contradiction must ignore anti-cry-wolf renderer suppression transitions")
+        failures.append("PreToolUse ceiling evidence must accept repeated governed marker rows")
 
     claude_discoverability = ceiling_record(
         "claude",
@@ -4931,7 +4935,14 @@ def self_test() -> int:
             "tool_input": {"file_path": ".tes/runtime/hook-smoke/dedupe/SKILL.md"},
         }
         first_anti = {**dedupe_decision, "risk": "material", "marker_emitted": True, "surface_context": True}
-        second_anti = {**dedupe_decision, "risk": "material", "context_suppressed": True}
+        second_anti = {
+            **dedupe_decision,
+            "risk": "material",
+            "marker_emitted": True,
+            "context_suppressed": False,
+            "surface_context": True,
+            "reason_codes": ["anti_crywolf_repeated_context"],
+        }
         record_hook_execution(target, "cursor", anti_input, mode="pretooluse", pretooluse_decision=first_anti)
         record_hook_execution(target, "cursor", anti_input, mode="pretooluse", pretooluse_decision=second_anti)
         anti_records = [

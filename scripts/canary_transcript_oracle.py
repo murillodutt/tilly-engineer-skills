@@ -12,13 +12,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import tempfile
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.241"
+VERSION = "0.3.242"
 SCHEMA = "tes-canary-transcript@1"
 
 
@@ -36,6 +37,25 @@ def sha256_file(path: Path) -> str:
 
 def claude_project_slug(target: Path) -> str:
     return str(target.expanduser().resolve()).replace("/", "-")
+
+
+def claude_project_slug_candidates(target: Path) -> list[str]:
+    """Return known Claude project slug variants for a local target path.
+
+    Older local evidence used a slash-only replacement. Current Claude Code
+    project directories also normalize punctuation such as dots to hyphens, so
+    transcript resolution must try both before declaring host evidence absent.
+    """
+    resolved = str(target.expanduser().resolve())
+    candidates = [
+        resolved.replace("/", "-"),
+        re.sub(r"[^A-Za-z0-9_-]+", "-", resolved),
+    ]
+    unique: list[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in unique:
+            unique.append(candidate)
+    return unique
 
 
 def latest_transcript(project_dir: Path) -> Path | None:
@@ -236,19 +256,24 @@ def resolve_transcript(
             "blockers": ["provide --transcript or --target"],
         }
 
-    slug = claude_project_slug(target)
-    project_dir = projects_root / slug
+    slug_candidates = claude_project_slug_candidates(target)
+    project_dirs = [projects_root / slug for slug in slug_candidates]
     if session_id:
-        resolved = project_dir / f"{session_id}.jsonl"
+        candidates = [project_dir / f"{session_id}.jsonl" for project_dir in project_dirs]
+        resolved = next((candidate for candidate in candidates if candidate.is_file()), candidates[0])
         mode = "target-session"
     else:
-        resolved = latest_transcript(project_dir)
+        latest_candidates = [candidate for project_dir in project_dirs if (candidate := latest_transcript(project_dir))]
+        resolved = max(latest_candidates, key=lambda path: (path.stat().st_mtime_ns, path.name)) if latest_candidates else None
         mode = "target-latest"
+    project_dir = resolved.parent if resolved is not None and resolved.is_file() else project_dirs[0]
+    slug = project_dir.name
 
     return resolved, {
         "mode": mode,
         "target": str(target.expanduser().resolve()),
         "slug": slug,
+        "slug_candidates": slug_candidates,
         "project_dir": str(project_dir),
         "session_id": session_id,
         "projects_root": str(projects_root),
@@ -413,6 +438,26 @@ def self_test() -> dict[str, Any]:
         latest = evaluate(target=target, projects_root=projects_root, require_tool_use=True)
         if latest["status"] != "PASS":
             failures.append(f"target latest transcript should PASS, got {latest['status']}")
+
+        dotted_target = root / "target.with.dot"
+        dotted_project_dir = projects_root / claude_project_slug_candidates(dotted_target)[-1]
+        dotted_path = dotted_project_dir / f"{session_id}.jsonl"
+        _write_jsonl(
+            dotted_path,
+            [
+                {"type": "user", "message": {"role": "user", "content": "hello"}},
+                {
+                    "type": "assistant",
+                    "message": {
+                        "role": "assistant",
+                        "content": [{"type": "tool_use", "id": "toolu_3", "name": "Write", "input": {"file": "x"}}],
+                    },
+                },
+            ],
+        )
+        dotted = evaluate(target=dotted_target, session_id=session_id, projects_root=projects_root, require_tool_use=True)
+        if dotted["status"] != "PASS":
+            failures.append(f"punctuation-normalized target session should PASS, got {dotted['status']}")
 
         no_tool_path = project_dir / "22222222-2222-3333-4444-555555555555.jsonl"
         _write_jsonl(

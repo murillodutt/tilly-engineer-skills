@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Parity oracle for PreToolUse session suppression.
+"""Parity oracle for PreToolUse session marker repetition.
 
 The decision kernel proves allow/supervise/block classification. This oracle
 proves the sibling session coordinator preserves the installed host behavior:
-first governed context surfaces, the second same-session context is silent, and
-forbidden blocks are never suppressed by anti-cry-wolf state.
+every governed context surfaces the Mantra Gate marker, repeated same-session
+context is tracked in the ledger, and forbidden blocks always keep the marker.
 """
 
 from __future__ import annotations
@@ -91,9 +91,9 @@ def evaluate() -> dict[str, Any]:
             _assert(second_code == 0, failures, f"{agent}: second governed call must allow")
             _assert(_contains_marker(first_out, first_err), failures, f"{agent}: first governed call must surface marker")
             _assert(
-                not _contains_marker(second_out, second_err),
+                _contains_marker(second_out, second_err),
                 failures,
-                f"{agent}: second governed call must suppress marker",
+                f"{agent}: second governed call must surface marker",
             )
 
             forbidden = _forbidden_payload(agent)
@@ -114,17 +114,17 @@ def evaluate() -> dict[str, Any]:
             _assert(len(governed_rows) == 2, failures, f"{agent}: governed session must write two ledger rows")
             if len(governed_rows) == 2:
                 _assert(governed_rows[0].get("marker_emitted") is True, failures, f"{agent}: first ledger marker")
-                _assert(governed_rows[1].get("marker_emitted") is False, failures, f"{agent}: second ledger marker")
-                _assert(governed_rows[1].get("context_suppressed") is True, failures, f"{agent}: second ledger suppressed")
+                _assert(governed_rows[1].get("marker_emitted") is True, failures, f"{agent}: second ledger marker")
+                _assert(governed_rows[1].get("context_suppressed") is False, failures, f"{agent}: second ledger not suppressed")
                 _assert(
                     "governed_surface_mutation" in _reason_codes(governed_rows[0]),
                     failures,
                     f"{agent}: first governed row must persist governed_surface_mutation reason code",
                 )
                 _assert(
-                    "anti_crywolf_suppressed" in _reason_codes(governed_rows[1]),
+                    "anti_crywolf_repeated_context" in _reason_codes(governed_rows[1]),
                     failures,
-                    f"{agent}: repeated governed row must persist anti_crywolf_suppressed reason code",
+                    f"{agent}: repeated governed row must persist anti_crywolf_repeated_context reason code",
                 )
 
             forbidden_session = forbidden["session_id"]

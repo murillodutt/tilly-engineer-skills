@@ -1,5 +1,5 @@
 {
-  "version": "0.3.241",
+  "version": "0.3.242",
   "schema": "tes-public-docs@1",
   "generated_outputs": [
     "docs/index.html",
@@ -20,8 +20,8 @@
   },
   "evidence": {
     "final_report": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md",
-    "bundle_index": "dist/0.3.241/index.json",
-    "bundle_sha256": "d7173ac6fa8b11afa9f869705821494ed80bda6335527856888494fbecaddcfb"
+    "bundle_index": "dist/0.3.242/index.json",
+    "bundle_sha256": "3eb1e331e7b366e524d586171d73545f9d75862f102a3eb21b0e09b446bb0141"
   },
   "pages": {
     "index": {
@@ -36,7 +36,7 @@
       "body_class": "public-manual",
       "canonical": "https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html",
       "asset_prefix": "../",
-      "nav": ["overview", "requirements", "install", "triggers", "report", "update", "rollback", "troubleshooting"]
+      "nav": ["overview", "requirements", "install", "triggers", "skill_parameters", "report", "update", "rollback", "troubleshooting"]
     }
   }
 }

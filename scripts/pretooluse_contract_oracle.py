@@ -20,13 +20,13 @@ PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
 FRAMEWORK_PATH = ROOT / "docs/architecture/INSTALLATION-FRAMEWORK.md"
 DOCS_INDEX_PATH = ROOT / "docs/INDEX.md"
 TDS_INDEX_PATH = ROOT / "docs/tds/DOCS-INDEX.yml"
-VERSION = "0.3.241"
+VERSION = "0.3.242"
 
 
 CONTRACT_TERMS = (
     "PreToolUse is the host-real projection of the Mantra Gate before a tool executes.",
     "host-neutral PreToolUse decision kernel",
-    "session/suppression coordinator",
+    "session/repetition coordinator",
     "host-specific output renderer",
     "runtime ledger writer",
     "PASS_BASIC",

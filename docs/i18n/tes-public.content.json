@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.241 · local bundle certified",
-      "manual_meta": "User manual · v0.3.241",
-      "version": "v0.3.241",
+      "release_meta": "v0.3.242 · local bundle certified",
+      "manual_meta": "User manual · v0.3.242",
+      "version": "v0.3.242",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.241 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.241",
-      "version": "v0.3.241",
+      "release_meta": "v0.3.242 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.242",
+      "version": "v0.3.242",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.241 · bundle local certificado",
-      "manual_meta": "Manual do usuário · v0.3.241",
-      "version": "v0.3.241",
+      "release_meta": "v0.3.242 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.242",
+      "version": "v0.3.242",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -467,17 +467,17 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "non-interactive",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -497,7 +497,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.241` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
+            "text": "`#v0.3.242` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
           },
           {
             "type": "p",
@@ -513,17 +513,17 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "no interactivo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -543,7 +543,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.241` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
+            "text": "`#v0.3.242` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
           },
           {
             "type": "p",
@@ -559,17 +559,17 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "não interativo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -589,7 +589,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.241` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
+            "text": "`#v0.3.242` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
           },
           {
             "type": "p",
@@ -858,12 +858,12 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -888,7 +888,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.241` is the fixed-ref install form. Runtime bundles stage under `.tes/setup/<version>/`; treat that folder as local cache."
+            "text": "`#v0.3.242` is the fixed-ref install form. Runtime bundles stage under `.tes/setup/<version>/`; treat that folder as local cache."
           },
           {
             "type": "p",
@@ -904,12 +904,12 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -934,7 +934,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.241` es la forma de ref fija. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; trata esa carpeta como cache local."
+            "text": "`#v0.3.242` es la forma de ref fija. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; trata esa carpeta como cache local."
           },
           {
             "type": "p",
@@ -950,12 +950,12 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.241 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.242 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -980,7 +980,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.241` é a forma de ref fixa. Bundles runtime são preparados em `.tes/setup/<version>/`; trate essa pasta como cache local."
+            "text": "`#v0.3.242` é a forma de ref fixa. Bundles runtime são preparados em `.tes/setup/<version>/`; trate essa pasta como cache local."
           },
           {
             "type": "p",
@@ -1074,6 +1074,107 @@
           {
             "type": "p",
             "text": "Contrato completo do agente: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."
+          }
+        ]
+      }
+    },
+    "skill_parameters": {
+      "en": {
+        "num": "04",
+        "title": "Skill parameters and triggers",
+        "lede": "Every TES skill is intent text you type in the agent window, not a shell command. None of them has a traditional CLI parser; the \"parameters\" are the textual triggers, contract flags, and structured opt-ins each skill's contract recognizes. The table below lists what you can type per skill; where a skill takes no parameters, it activates by trigger alone.",
+        "blocks": [
+          {
+            "type": "table",
+            "headers": ["Skill", "Parameters / triggers you type", "Note"],
+            "rows": [
+              ["`/tes-init`", "no CLI parameters", "Textual trigger only. Aliases: `/tes-setup`, `initialize TES`, `install TES`, `recertify TES`."],
+              ["`/tes-setup`", "no CLI parameters", "Textual trigger only. Thin alias for `/tes-init` that shows the first-session report."],
+              ["`/tes-update`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:update`, `update TES`. Runs a read-only plan first, then asks before writing."],
+              ["`/tes-align`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:align`, `align this project`."],
+              ["`/tes-map`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:gps`, `map this project`, `project GPS`."],
+              ["`/tes-goal-maestro`", "`--execute-loop`, `--audit-heartbeat-prompt`, `--next-prompt-handoff`, `--execute-loop-parent-fallback`; structured `audit_heartbeat=true`, `next_prompt_handoff=true`, `adversarial_audit_heartbeat: requested`", "These are contract triggers of the skill, not a shell parser. By default it only materializes the tree and `/goal`; real execution starts only with `--execute-loop`. `--execute-loop-parent-fallback` needs that exact flag; synonyms do not count. Direct language `generate a maestral /goal prompt` also activates it."],
+              ["`/tes-prospect`", "no CLI parameters", "Textual trigger only, explicit invocation. Cognitive-brake words like `pause` / `continue` pause and resume it."],
+              ["`/tes-mine`", "no CLI parameters", "Textual trigger only, explicit invocation. Cognitive-brake words like `pause` / `continue` pause and resume it."],
+              ["`/tes-cortex`", "sub-commands `recall`, `learn`, `reflect`, `curate-plan`, `apply` (aliases `/tes:recall`, `/tes:learn`, `/tes:reflect`, `/tes:curate`)", "Textual trigger with named actions. Recall and inspection are read-only; writes ask for approval first."],
+              ["`/tes-curate`", "no CLI parameters", "Textual trigger only. Grouped Cortex curation intent (routes into `tes-cortex`)."],
+              ["`/tes-mcp`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:mcp`. Default activation exposes governed remember; ask for read-only when you only want inspection."],
+              ["`/tes-field-reports`", "actions `disable`, `enable`, `status` (e.g. `/tes:field-reports:disable`)", "Textual trigger with named actions to turn sanitized reports off, on, or inspect them."],
+              ["`/tes-doctor`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:doctor`, `/tes:check`, `/tes:certify`. Read-only by default."],
+              ["`/tes-adapter`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:adapter`. Ask for `codex`, `claude`, `cursor`, or `all` in the request itself."],
+              ["`/tes-bench`", "no CLI parameters", "Textual trigger only. Aliases: `/tes:bench`."],
+              ["`/tes-bump`", "`--governance-check`, `--dry-run`, `--yes`", "Contract vocabulary of the version guard. `--governance-check` is read-only; `--dry-run` previews the plan; `--yes` applies it after you authorize the write. Aliases: `/tes:bump`, `tes bump`."]
+            ]
+          },
+          {
+            "type": "p",
+            "text": "`tes-engineering-discipline` and `tes-upstream-first` have no slash and no parameters — they are always-on or design-time overlays that shape how the other skills behave, and you never invoke them directly. Full agent contract with every flag: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."
+          }
+        ]
+      },
+      "es": {
+        "num": "04",
+        "title": "Parametros y gatillos de skill",
+        "lede": "Cada skill de TES es texto de intencion que escribes en la ventana del agente, no un comando de shell. Ninguno tiene un parser CLI tradicional; los \"parametros\" son los gatillos textuales, flags de contrato y opt-ins estructurados que reconoce el contrato de cada skill. La tabla lista lo que puedes escribir por skill; donde un skill no toma parametros, se activa solo con el gatillo.",
+        "blocks": [
+          {
+            "type": "table",
+            "headers": ["Skill", "Parametros / gatillos que escribes", "Nota"],
+            "rows": [
+              ["`/tes-init`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes-setup`, `initialize TES`, `install TES`, `recertify TES`."],
+              ["`/tes-setup`", "sin parametros CLI", "Solo gatillo textual. Alias fino de `/tes-init` que muestra el reporte de primera sesion."],
+              ["`/tes-update`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:update`, `update TES`. Corre un plan read-only primero y pregunta antes de escribir."],
+              ["`/tes-align`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:align`, `align this project`."],
+              ["`/tes-map`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:gps`, `map this project`, `project GPS`."],
+              ["`/tes-goal-maestro`", "`--execute-loop`, `--audit-heartbeat-prompt`, `--next-prompt-handoff`, `--execute-loop-parent-fallback`; estructurados `audit_heartbeat=true`, `next_prompt_handoff=true`, `adversarial_audit_heartbeat: requested`", "Son gatillos de contrato del skill, no un parser de shell. Por defecto solo materializa el arbol y el `/goal`; la ejecucion real empieza solo con `--execute-loop`. `--execute-loop-parent-fallback` exige esa flag exacta; los sinonimos no valen. El lenguaje directo `gerar um /goal maestral` tambien lo activa."],
+              ["`/tes-prospect`", "sin parametros CLI", "Solo gatillo textual, invocacion explicita. Palabras de freno cognitivo como `pause` / `continue` lo pausan y reanudan."],
+              ["`/tes-mine`", "sin parametros CLI", "Solo gatillo textual, invocacion explicita. Palabras de freno cognitivo como `pause` / `continue` lo pausan y reanudan."],
+              ["`/tes-cortex`", "sub-comandos `recall`, `learn`, `reflect`, `curate-plan`, `apply` (alias `/tes:recall`, `/tes:learn`, `/tes:reflect`, `/tes:curate`)", "Gatillo textual con acciones nombradas. Recall e inspeccion son read-only; las escrituras piden aprobacion primero."],
+              ["`/tes-curate`", "sin parametros CLI", "Solo gatillo textual. Intencion de curacion de Cortex agrupada (rutea a `tes-cortex`)."],
+              ["`/tes-mcp`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:mcp`. La activacion por defecto expone remember gobernado; pide read-only cuando solo quieras inspeccion."],
+              ["`/tes-field-reports`", "acciones `disable`, `enable`, `status` (p. ej. `/tes:field-reports:disable`)", "Gatillo textual con acciones nombradas para apagar, encender o inspeccionar reportes sanitizados."],
+              ["`/tes-doctor`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:doctor`, `/tes:check`, `/tes:certify`. Read-only por defecto."],
+              ["`/tes-adapter`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:adapter`. Pide `codex`, `claude`, `cursor` o `all` en la propia solicitud."],
+              ["`/tes-bench`", "sin parametros CLI", "Solo gatillo textual. Alias: `/tes:bench`."],
+              ["`/tes-bump`", "`--governance-check`, `--dry-run`, `--yes`", "Vocabulario de contrato del guard de version. `--governance-check` es read-only; `--dry-run` previsualiza el plan; `--yes` lo aplica tras tu autorizacion. Alias: `/tes:bump`, `tes bump`."]
+            ]
+          },
+          {
+            "type": "p",
+            "text": "`tes-engineering-discipline` y `tes-upstream-first` no tienen slash ni parametros: son overlays always-on o de design-time que moldean como se comportan los demas skills, y nunca los invocas directamente. Contrato completo del agente con cada flag: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."
+          }
+        ]
+      },
+      "pt": {
+        "num": "04",
+        "title": "Parâmetros e gatilhos de skill",
+        "lede": "Cada skill do TES é texto de intenção que você digita na janela do agente, não um comando de shell. Nenhum tem parser CLI tradicional; os \"parâmetros\" são os gatilhos textuais, flags de contrato e opt-ins estruturados que o contrato de cada skill reconhece. A tabela lista o que você pode digitar por skill; onde um skill não recebe parâmetros, ele ativa só pelo gatilho.",
+        "blocks": [
+          {
+            "type": "table",
+            "headers": ["Skill", "Parâmetros / gatilhos que você digita", "Observação"],
+            "rows": [
+              ["`/tes-init`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes-setup`, `inicializar TES`, `instalar TES`, `recertificar TES`."],
+              ["`/tes-setup`", "sem parâmetros CLI", "Apenas gatilho textual. Alias fino de `/tes-init` que mostra o relatório de primeira sessão."],
+              ["`/tes-update`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:update`, `atualizar TES`. Roda um plano read-only primeiro e pergunta antes de escrever."],
+              ["`/tes-align`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:align`, `alinhar projeto`."],
+              ["`/tes-map`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:gps`, `mapear projeto`, `mapa TES`."],
+              ["`/tes-goal-maestro`", "`--execute-loop`, `--audit-heartbeat-prompt`, `--next-prompt-handoff`, `--execute-loop-parent-fallback`; estruturados `audit_heartbeat=true`, `next_prompt_handoff=true`, `adversarial_audit_heartbeat: requested`", "São gatilhos de contrato do skill, não um parser de shell. Por padrão ele só materializa a árvore e o `/goal`; a execução real começa somente com `--execute-loop`. `--execute-loop-parent-fallback` exige essa flag exata; sinônimos não valem. A linguagem direta `gerar um /goal maestral` também o ativa."],
+              ["`/tes-prospect`", "sem parâmetros CLI", "Apenas gatilho textual, invocação explícita. Palavras de freio cognitivo como `pausa` / `continua` pausam e retomam."],
+              ["`/tes-mine`", "sem parâmetros CLI", "Apenas gatilho textual, invocação explícita. Palavras de freio cognitivo como `pausa` / `continua` pausam e retomam."],
+              ["`/tes-cortex`", "sub-comandos `recall`, `learn`, `reflect`, `curate-plan`, `apply` (aliases `/tes:recall`, `/tes:learn`, `/tes:reflect`, `/tes:curate`)", "Gatilho textual com ações nomeadas. Recall e inspeção são read-only; escritas pedem aprovação antes."],
+              ["`/tes-curate`", "sem parâmetros CLI", "Apenas gatilho textual. Intenção de curadoria do Cortex agrupada (roteia para `tes-cortex`)."],
+              ["`/tes-mcp`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:mcp`. A ativação padrão expõe remember governado; peça read-only quando quiser só inspeção."],
+              ["`/tes-field-reports`", "ações `disable`, `enable`, `status` (ex.: `/tes:field-reports:disable`)", "Gatilho textual com ações nomeadas para desligar, ligar ou inspecionar relatórios sanitizados."],
+              ["`/tes-doctor`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:doctor`, `/tes:check`, `/tes:certify`. Read-only por padrão."],
+              ["`/tes-adapter`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:adapter`. Peça `codex`, `claude`, `cursor` ou `all` na própria solicitação."],
+              ["`/tes-bench`", "sem parâmetros CLI", "Apenas gatilho textual. Aliases: `/tes:bench`."],
+              ["`/tes-bump`", "`--governance-check`, `--dry-run`, `--yes`", "Vocabulário de contrato do guard de versão. `--governance-check` é read-only; `--dry-run` prevê o plano; `--yes` aplica após sua autorização. Aliases: `/tes:bump`, `tes bump`."]
+            ]
+          },
+          {
+            "type": "p",
+            "text": "`tes-engineering-discipline` e `tes-upstream-first` não têm slash nem parâmetros: são overlays always-on ou de design-time que moldam como os outros skills se comportam, e você nunca os invoca diretamente. Contrato completo do agente com cada flag: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."
           }
         ]
       }

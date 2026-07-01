@@ -2480,6 +2480,61 @@ function cursorRuntimeRuleArg() {
 
 // Cada parede: {id, harness, violate→args (deve dar exit≠0), revert→args (deve dar exit 0)}.
 const WALLS = [
+  // META - harness self-certification blocks its own false-green classes.
+  {
+    id: 'META goal-maestro-harness-certification-routed-files',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-missing-routed-file'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-unresolved-wall-harness',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-unresolved-wall-harness'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-unclassified-script',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-unclassified-script'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-contract-trigger',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-missing-contract-trigger'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-missing-wall',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-missing-wall'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-self-route',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-missing-meta-route'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-staged-wiring',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-narrow-staged-gate'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-closure-wiring',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-missing-closure-gate'],
+    revert: () => [],
+  },
+  {
+    id: 'META goal-maestro-harness-certification-tree-parity',
+    harness: 'goal-maestro-harness-certification.mjs',
+    violate: () => ['--simulate-tree-parity-drift'],
+    revert: () => [],
+  },
   // D4 — ledger placeholder
   {
     id: 'D4 ledger-no-placeholder',
@@ -2514,6 +2569,19 @@ const WALLS = [
     harness: 'runtime-import-grep.mjs',
     violate: () => [fixture('b1-bad.ts', "import { readFileSync } from 'node:fs';\n")],
     revert: () => [fixture('b1-ok.ts', "import { foo } from './local';\n")],
+  },
+  // B1P — phase-aware runtime grep rejects live-only symbols outside their allowed phase.
+  {
+    id: 'B1P runtime-phase-grep',
+    harness: 'runtime-phase-grep.mjs',
+    violate: () => [
+      fixture('b1p-fixture-phase.json', JSON.stringify({ phase: 'fixture', gated: [{ symbol: 'livePaymentProcessor', allowed_phases: ['live'] }] })),
+      fixture('b1p-bad.ts', 'await livePaymentProcessor.charge(payload);\n'),
+    ],
+    revert: () => [
+      fixture('b1p-live-phase.json', JSON.stringify({ phase: 'live', gated: [{ symbol: 'livePaymentProcessor', allowed_phases: ['live'] }] })),
+      fixture('b1p-ok.ts', 'await livePaymentProcessor.charge(payload);\n'),
+    ],
   },
   // C3 — browser boot smoke
   {

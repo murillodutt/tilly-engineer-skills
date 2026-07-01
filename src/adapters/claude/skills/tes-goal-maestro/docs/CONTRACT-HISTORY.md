@@ -30,6 +30,7 @@ The skill preserves that portable pattern without baking in project-specific exa
 | Maintainer recurring-failure audit, 2026-06-23 | `--execute-loop` needs a mechanical Pre-Edit Gate, mandatory ledger from loop start, explicit baseline-only commits and a stop when `FIRST_UNEXECUTED_UNIT` differs from `ACTIVE_SPEC`. | high |
 | Runtime field report, 2026-06-24 | Visual/browser axes, integration wiring, topology budgets, ambition ceilings, shared contracts and pre-execution adversarial review need hard gates before loop cost is spent. | high |
 | Worker transcript forensic review, 2026-06-24 | Fresh workers spent avoidable reads because parent envelopes transferred APIs through memory prose; source-derived contract handoff, API lint, canonical Node oracle blocks and research budgets are required for loop efficiency. | high |
+| Host transcript canary stress loop, 2026-07-01 | Goal Maestro's meta-harness must remutate routed files, wall resolution, script classification, contract triggers, wall coverage, self-routing, staged/closure gates and tree parity, not only inspect the happy path. | high |
 
 ## Source Search Ledger
 
@@ -126,6 +127,7 @@ The skill preserves that portable pattern without baking in project-specific exa
 
 | Date | Version | Change | Evidence | Confidence |
 |------|---------|--------|----------|------------|
+| 2026-07-01 | `tes.goal_maestro@0.5.0` / TES `0.3.242` | Added harness self-certification so declared Goal Maestro contracts, `requires*` triggers, mutation walls, routed skill surfaces, adapter parity, staged wiring and closure wiring cannot drift independently. Broadened staged execution from script-only changes to every `tes-goal-maestro` skill surface. | `goal-maestro-harness-certification.mjs`; `validate-walls.mjs`; `scripts/staged_commit_gate.py` | high |
 | 2026-06-29 | `tes.goal_maestro@0.5.0` / TES `0.3.229` | Documented universal Contract History version semantics across all skills so skill contract versions, TES package versions, and `tver` metadata are not conflated. | `docs/dist/0.3.229/tilly-engineer-skills-0.3.229.zip`; `scripts/public_bundle_oracle.py` | high |
 | 2026-05-20 | `tes.goal_maestro@0.1.0` / TES `0.3.115` | Created `tes-goal-maestro` as a neutral SPEC-to-`/goal` materialization skill. | `d8279c87` | high |
 | 2026-05-20 | `tes.goal_maestro@0.2.0` / TES `0.3.116-0.3.117` | Hardened invocation, tree acceptance, and early materialization flow. | `3db17e0e`, `e72a373a` | high |

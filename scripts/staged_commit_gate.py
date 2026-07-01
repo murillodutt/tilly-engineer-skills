@@ -19,7 +19,7 @@ from typing import Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.241"
+VERSION = "0.3.242"
 
 TEXT_SCAN_SUFFIXES = {
     ".md",
@@ -226,7 +226,7 @@ def gate_plan() -> list[Gate]:
             ["node", "src/adapters/claude/skills/tes-goal-maestro/scripts/validate-walls.mjs"],
             matcher=lambda paths: any_match(
                 paths,
-                ("*/skills/tes-goal-maestro/scripts/*.mjs",),
+                ("*/skills/tes-goal-maestro/**",),
             ),
         ),
         # Part A residual (ADR 0006): move the two audit-leaked defect classes

@@ -86,7 +86,9 @@ ledger is `.tes/runs/host-canary-loop.jsonl`, which is local and gitignored.
    - Project directory: `~/.claude/projects/<project-slug>/`
    - Main transcript: `<session-id>.jsonl`
    - Subagents: `<session-id>/subagents/*.jsonl`
-   - Slug rule: absolute target path with `/` replaced by `-`
+   - Slug resolution: use `scripts/canary_transcript_oracle.py` or an explicit
+     transcript path. Claude Code may normalize path punctuation in the project
+     slug, so do not rely on a hand-built slash-only slug.
 4. Run the source oracle from the TES package root:
 
 ```bash

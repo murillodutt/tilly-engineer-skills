@@ -2,10 +2,11 @@
 """Session coordinator for TES PreToolUse supervision.
 
 This helper owns only the anti-cry-wolf sentinel contract: a governed
-PreToolUse context is surfaced once per session/context and suppressed on
-repeat. It deliberately does not classify tools, render host protocols, write
-runtime ledgers, evaluate Cortex, or install hooks; those concerns stay in the
-decision kernel and host adapter.
+PreToolUse context records whether the same session/context was already seen,
+while the Mantra Gate marker still surfaces for every governed supervision.
+It deliberately does not classify tools, render host protocols, write runtime
+ledgers, evaluate Cortex, or install hooks; those concerns stay in the decision
+kernel and host adapter.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ from typing import Any
 
 @dataclass(frozen=True)
 class PreToolUseSessionContext:
-    """Resolved supervision context after session-level suppression."""
+    """Resolved supervision context after session-level repetition tracking."""
 
     context: str
     context_suppressed: bool
@@ -43,8 +44,8 @@ def coordinate_pretooluse_context(
     """Return the context that should be surfaced for this session.
 
     Filesystem errors preserve the previous fail-open behavior: supervision is
-    still surfaced because suppressing a real governed obligation is riskier
-    than repeating a marker when the sentinel cannot be read or written.
+    still surfaced because hiding a real governed obligation is riskier than
+    repeating a marker when the sentinel cannot be read or written.
     """
     sentinel = pretooluse_sentinel_path(target, hook_input)
     session_id = pretooluse_session_id(hook_input)
@@ -55,7 +56,13 @@ def coordinate_pretooluse_context(
         if sentinel.exists():
             seen = set(sentinel.read_text(encoding="utf-8").splitlines())
         if context in seen:
-            return PreToolUseSessionContext("", True, session_id, sentinel, ("anti_crywolf_suppressed",))
+            return PreToolUseSessionContext(
+                context,
+                False,
+                session_id,
+                sentinel,
+                ("anti_crywolf_repeated_context",),
+            )
         sentinel.parent.mkdir(parents=True, exist_ok=True)
         with sentinel.open("a", encoding="utf-8") as handle:
             handle.write(context + "\n")

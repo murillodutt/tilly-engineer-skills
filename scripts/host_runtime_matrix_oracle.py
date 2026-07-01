@@ -513,8 +513,11 @@ def _assert_hook_contracts(target: Path, failures: list[str]) -> None:
     if canonical_path not in err:
         failures.append("codex apply_patch: path extracted from patch body must surface")
     code, out, err = _run_hook(target, "codex", _camel("apply_patch", "matrix-codex-apply", command=canonical_patch))
-    if code != 0 or out.strip() or err.strip():
-        failures.append("codex apply_patch: second same-session governed mutation must be silent")
+    if code != 0 or out.strip():
+        failures.append("codex apply_patch: second same-session governed mutation must allow with stderr context")
+    _assert_marker("codex apply_patch repeat", err, failures)
+    if canonical_path not in err:
+        failures.append("codex apply_patch repeat: path extracted from patch body must surface")
 
     alias_cases: tuple[tuple[str, dict[str, Any]], ...] = (
         ("input", {"input": patch_body(".tes/runtime/hook-smoke/codex/input/SKILL.md")}),
@@ -732,12 +735,12 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     if not any(
         item.get("decision") == "allow"
         and item.get("permission_decision") == "allow"
-        and item.get("context_suppressed") is True
-        and item.get("marker_emitted") is False
-        and "anti_crywolf_suppressed" in _reason_codes(item)
+        and item.get("context_suppressed") is False
+        and item.get("marker_emitted") is True
+        and "anti_crywolf_repeated_context" in _reason_codes(item)
         for item in codex_apply
     ):
-        failures.append("ledger: codex apply_patch second governed record must persist suppression reason code")
+        failures.append("ledger: codex apply_patch second governed record must persist repeated marker reason code")
 
     for name in (
         "input",
