@@ -16,7 +16,7 @@ import tomllib
 from typing import Any
 
 
-VERSION = "0.3.251"
+VERSION = "0.3.252"
 SCHEMA = "tes-codex-policy@1"
 POLICY_PATH = Path(".tes/tes-codex.md")
 ALLOWED_ACTIONS = {"auto_promote", "propose", "review_required", "deny", "ignore"}
