@@ -8,6 +8,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,7 @@ import tes_install
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.250"
+VERSION = "0.3.251"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -302,6 +303,67 @@ def check_codex_block_boundary() -> list[str]:
     return failures
 
 
+def check_codex_feature_scope() -> list[str]:
+    """BUG-07/PREC-01 red-capable: Codex feature edits stay scoped to [features]."""
+    failures: list[str] = []
+
+    before = (
+        "[features]\n"
+        "hooks = true\n"
+        "codex_hooks = true\n"
+        "\n"
+        "[integrations.github]\n"
+        "hooks = true\n"
+        'webhook = "https://example.invalid"\n'
+        "\n"
+        "[other]\n"
+        "codex_hooks = true\n"
+    )
+    after = tes_install.remove_tes_codex_hook_text(before)
+    try:
+        parsed = tomllib.loads(after)
+    except tomllib.TOMLDecodeError as exc:
+        failures.append(f"BUG-07 scoped uninstall produced invalid TOML: {exc}")
+        parsed = {}
+    if parsed.get("features", {}).get("hooks") is True:
+        failures.append("BUG-07: canonical [features].hooks survived uninstall")
+    if parsed.get("features", {}).get("codex_hooks") is True:
+        failures.append("BUG-07: legacy [features].codex_hooks survived uninstall")
+    if parsed.get("integrations", {}).get("github", {}).get("hooks") is not True:
+        failures.append("BUG-07: user [integrations.github].hooks was removed")
+    if parsed.get("other", {}).get("codex_hooks") is not True:
+        failures.append("BUG-07: user [other].codex_hooks was removed")
+
+    cleanup = tes_install.remove_toml_feature_line(before, "codex_hooks")
+    try:
+        cleanup_parsed = tomllib.loads(cleanup)
+    except tomllib.TOMLDecodeError as exc:
+        failures.append(f"BUG-07 scoped install cleanup produced invalid TOML: {exc}")
+        cleanup_parsed = {}
+    if "codex_hooks" in cleanup_parsed.get("features", {}):
+        failures.append("BUG-07: [features].codex_hooks survived install cleanup")
+    if cleanup_parsed.get("other", {}).get("codex_hooks") is not True:
+        failures.append("BUG-07: install cleanup removed user [other].codex_hooks")
+
+    root_before = 'model = "x"\n\n[workspace]\nname = "target-project"\n'
+    root_after = tes_install.replace_or_insert_toml_feature(root_before, "hooks", "true")
+    try:
+        root_parsed = tomllib.loads(root_after)
+    except tomllib.TOMLDecodeError as exc:
+        failures.append(f"PREC-01 insertion produced invalid TOML: {exc}")
+        root_parsed = {}
+    if root_parsed.get("model") != "x":
+        failures.append("PREC-01: root model key was captured by [features]")
+    if root_parsed.get("features", {}).get("model") == "x":
+        failures.append("PREC-01: [features] contains former root model key")
+    if root_parsed.get("features", {}).get("hooks") is not True:
+        failures.append("PREC-01: [features].hooks was not inserted")
+    if root_parsed.get("workspace", {}).get("name") != "target-project":
+        failures.append("PREC-01: workspace table changed during insertion")
+
+    return failures
+
+
 def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
         return (
@@ -403,6 +465,7 @@ def probe_route(route: str) -> dict[str, Any]:
         failures.extend(init_git(target))
         failures.extend(check_user_config_preservation())  # H-02: never clobber user config
         failures.extend(check_codex_block_boundary())  # H-01/BUG-07: never swallow user's adjacent Codex block
+        failures.extend(check_codex_feature_scope())  # BUG-07/PREC-01: feature flags are [features]-scoped
 
         def finish() -> dict[str, Any]:
             status = "FAIL" if failures else "PASS"

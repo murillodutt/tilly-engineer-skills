@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Portable maturity-aware engineering discipline, Project GPS mapping, maestral goal materialization, project-stress prospecting, and code/domain knowledge mining for coding agents",
-    "version": "0.3.250"
+    "version": "0.3.251"
   },
   "plugins": [
     {
       "name": "tilly-engineer-skills",
       "source": "../",
       "description": "Engineering discipline, Project GPS mapping, maestral goal materialization, project-stress prospecting, and code/domain knowledge mining for coding agents",
-      "version": "0.3.250",
+      "version": "0.3.251",
       "author": {
         "name": "forrestchang"
       },

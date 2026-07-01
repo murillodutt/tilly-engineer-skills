@@ -19,7 +19,7 @@ from typing import Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.250"
+VERSION = "0.3.251"
 
 TEXT_SCAN_SUFFIXES = {
     ".md",

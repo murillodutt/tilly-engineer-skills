@@ -32,7 +32,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.250"
+VERSION = "0.3.251"
 RUNTIME_MEMORY_MARKER_RE = re.compile(r"\bmarker\s+([A-Za-z0-9][A-Za-z0-9_.:-]{2,160})", re.IGNORECASE)
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
@@ -308,25 +308,46 @@ def require_confirmation(args: argparse.Namespace, label: str) -> bool:
     return True
 
 
+def _toml_table_name(line: str) -> str | None:
+    stripped = line.strip()
+    if not stripped.startswith("["):
+        return None
+    header = stripped.split("#", 1)[0].strip()
+    if header.startswith("[[") and header.endswith("]]"):
+        return header[2:-2].strip()
+    if header.startswith("[") and header.endswith("]"):
+        return header[1:-1].strip()
+    return None
+
+
+def _toml_key_value(line: str) -> tuple[str, str] | None:
+    body = line.strip().split("#", 1)[0].strip()
+    if "=" not in body:
+        return None
+    key, value = body.split("=", 1)
+    return key.strip(), value.strip()
+
+
 def replace_or_insert_toml_feature(text: str, key: str, value: str) -> str:
     lines = text.splitlines()
     feature_header = None
     for index, line in enumerate(lines):
-        if line.strip() == "[features]":
+        if _toml_table_name(line) == "features":
             feature_header = index
             break
     if feature_header is None:
-        prefix = f"[features]\n{key} = {value}\n\n"
-        return prefix + (text if text.endswith("\n") or not text else text + "\n")
+        body = "\n".join(lines).rstrip()
+        feature_block = f"[features]\n{key} = {value}"
+        return f"{body}\n\n{feature_block}\n" if body else f"{feature_block}\n"
 
     end = len(lines)
     for index in range(feature_header + 1, len(lines)):
-        stripped = lines[index].strip()
-        if stripped.startswith("[") and stripped.endswith("]"):
+        if _toml_table_name(lines[index]) is not None:
             end = index
             break
     for index in range(feature_header + 1, end):
-        if lines[index].strip().startswith(f"{key} "):
+        existing = _toml_key_value(lines[index])
+        if existing and existing[0] == key:
             lines[index] = f"{key} = {value}"
             return "\n".join(lines).rstrip() + "\n"
     lines.insert(feature_header + 1, f"{key} = {value}")
@@ -334,10 +355,16 @@ def replace_or_insert_toml_feature(text: str, key: str, value: str) -> str:
 
 
 def remove_toml_feature_line(text: str, key: str) -> str:
-    lines = [
-        line for line in text.splitlines()
-        if not line.strip().startswith(f"{key} ")
-    ]
+    lines: list[str] = []
+    active_table: str | None = None
+    for line in text.splitlines():
+        table_name = _toml_table_name(line)
+        if table_name is not None:
+            active_table = table_name
+        key_value = _toml_key_value(line)
+        if active_table == "features" and key_value and key_value[0] == key:
+            continue
+        lines.append(line)
     return "\n".join(lines).rstrip() + ("\n" if lines else "")
 
 
@@ -751,12 +778,23 @@ def remove_tes_codex_hook_text(text: str) -> str:
         if ".tes/bin/tes_install.py" in block and " hook" in block:
             lines = [*lines[:index], *lines[end:]]
             break
-    # Remove TES-managed feature flag lines. `hooks` is the canonical Codex key;
-    # `codex_hooks` is kept here only as legacy cleanup for older TES installs.
-    lines = [
-        line for line in lines
-        if line.strip() not in {"hooks = true", "codex_hooks = true"}
-    ]
+    # Remove TES-managed feature flag lines only from [features]. `hooks` is the
+    # canonical Codex key; `codex_hooks` is kept here only as legacy cleanup for
+    # older TES installs. Identical keys under other tables are project-owned.
+    scoped_lines: list[str] = []
+    active_table: str | None = None
+    for line in lines:
+        table_name = _toml_table_name(line)
+        if table_name is not None:
+            active_table = table_name
+        key_value = _toml_key_value(line)
+        if (
+            active_table == "features"
+            and key_value in {("hooks", "true"), ("codex_hooks", "true")}
+        ):
+            continue
+        scoped_lines.append(line)
+    lines = scoped_lines
     body = "\n".join(lines).strip()
     return (body + "\n") if body else ""
 

@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.250"
+VERSION = "0.3.251"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
