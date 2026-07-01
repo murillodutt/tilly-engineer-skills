@@ -20,7 +20,7 @@ from typing import Any
 
 
 SCHEMA = "tes-host-canary-loop@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.2"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.3"
 FAILURE_CLASSES = {
     "host_execution_gap",
     "transcript_gap",

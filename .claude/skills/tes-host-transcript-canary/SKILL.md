@@ -5,7 +5,13 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.2`.
+Operational contract: `tes.host_transcript_canary@0.1.3`.
+
+Central rule:
+
+```text
+Root routes. References own depth. Templates preserve evidence shape. Scripts prove fragile evidence.
+```
 
 Local development surface only. Do not package, publish, materialize, or treat
 as adopter-facing TES behavior.
@@ -26,6 +32,21 @@ tool inputs, tool results, subagent metadata content, secrets, or raw JSONL.
 This skill strengthens canary replay evidence. It does not replace
 `canary_admission_oracle.py`, `installed_certification_oracle.py`,
 `git_gate_contract.py`, package validation, or host/runtime gates.
+
+## Load Routing
+
+Load only the reference needed by the current loop:
+
+| Need | Load |
+|------|------|
+| Real host command authority, same-command replay, correction ownership, stop states | `references/host-command-loop.md` |
+| Transcript sanitization, required signals, subagents, stale evidence, failure classes | `references/transcript-evidence.md` |
+| Final canary decision, related gates, certification closeout, ledger discipline | `references/canary-convergence.md` |
+| A retained or chat-emitted sanitized evidence report | `templates/host-canary-report.template.md` |
+
+If a claim depends on one of these behaviors, load the owning reference before
+deciding. Do not inline reference-owned detail into `SKILL.md` just to make the
+root feel complete.
 
 ## Scripted Loop Helper
 
@@ -161,6 +182,9 @@ diff -qr .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-trans
 python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py --self-test --repo .
 python3 scripts/canary_transcript_oracle.py --self-test
 ```
+
+When references or templates change, inspect the route map above and verify the
+changed file remains one level deep from `SKILL.md`.
 
 If the skill is used in a canary loop, also run the target-specific
 `canary_transcript_oracle.py --target ...` command and the smallest related
