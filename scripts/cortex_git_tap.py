@@ -24,7 +24,7 @@ import time
 from typing import Any
 
 
-VERSION = "0.3.247"
+VERSION = "0.3.248"
 SCHEMA = "tes-cortex-git-tap@1"
 RUNTIME_ROOT = Path(".tes/runtime/cortex/git-tap")
 EVENTS_FILE = RUNTIME_ROOT / "events.jsonl"
@@ -32,10 +32,13 @@ PENDING_FILE = RUNTIME_ROOT / "pending.jsonl"
 PROPOSALS_FILE = RUNTIME_ROOT / "proposals.jsonl"
 LOG_FILE = RUNTIME_ROOT / "git-tap.log"
 LOCK_FILE = RUNTIME_ROOT / "git-tap.lock"
+PROPOSAL_SCHEMA = "tes-cortex-git-tap-proposal@1"
+CURATION_PLAN_SCHEMA = "tes-cortex-git-tap-curate-plan@1"
 GIT_EXCLUDE_PATTERNS = (
     ".tes/runtime/cortex/git-tap/",
     ".tes/runtime/cortex/git-tap/events.jsonl",
     ".tes/runtime/cortex/git-tap/pending.jsonl",
+    ".tes/runtime/cortex/git-tap/proposals.jsonl",
     ".tes/runtime/cortex/git-tap/git-tap.log",
     ".tes/runtime/cortex/git-tap/git-tap.lock",
 )
@@ -660,12 +663,20 @@ def proposal_for_event(event: dict[str, Any]) -> dict[str, Any]:
         state = "NO_MEMORY_SIGNAL"
     evidence_hash = sha256_text(canonical_json(event))[:24]
     return {
-        "schema": "tes-cortex-git-tap-proposal@1",
+        "schema": PROPOSAL_SCHEMA,
         "created_at": utc_stamp(),
         "decision_state": state,
         "event_fingerprint": event.get("event_fingerprint") or event_fingerprint(event),
         "evidence_hash": evidence_hash,
         "memory_signal": signal,
+        "event_summary": {
+            "event": event.get("event"),
+            "changed_path_count": event.get("changed_path_count", 0),
+            "changed_path_categories": event.get("changed_path_categories", {}),
+            "changed_file_extensions": event.get("changed_file_extensions", {}),
+            "diff_stat": event.get("diff_stat", {}),
+            "privacy_status": event.get("privacy_status"),
+        },
         "proposal": None if state == "NO_MEMORY_SIGNAL" else {
             "route": "proposal-only; review before Cortex apply",
             "claim_needed": "Promote only a durable decision, reusable lesson, contract change, or runtime learning.",
@@ -703,6 +714,265 @@ def reflect_proposals(target: Path) -> dict[str, Any]:
     }
 
 
+def proposal_privacy_failures(proposal: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    for key in proposal.keys():
+        if FORBIDDEN_KEY_RE.search(str(key)):
+            failures.append(f"forbidden proposal key: {key}")
+    for path, value in iter_strings(proposal):
+        if "\n" in value:
+            failures.append(f"multiline value rejected at {path}")
+        if RAW_DIFF_RE.search(value):
+            failures.append(f"raw diff content rejected at {path}")
+        if SECRET_RE.search(value):
+            failures.append(f"secret-like content rejected at {path}")
+        if ABSOLUTE_PATH_RE.search(value):
+            failures.append(f"absolute local path rejected at {path}")
+    return sorted(set(failures))
+
+
+def validate_proposal_payload(proposal: dict[str, Any]) -> dict[str, Any]:
+    required = {
+        "schema",
+        "created_at",
+        "decision_state",
+        "event_fingerprint",
+        "evidence_hash",
+        "memory_signal",
+        "proposal",
+    }
+    failures = [f"missing field: {field}" for field in sorted(required - set(proposal.keys()))]
+    if proposal.get("schema") != PROPOSAL_SCHEMA:
+        failures.append("proposal schema mismatch")
+    if proposal.get("decision_state") not in DECISION_STATES:
+        failures.append("unsupported decision_state")
+    if proposal.get("memory_signal") not in MEMORY_SIGNALS:
+        failures.append("unsupported memory_signal")
+    failures.extend(proposal_privacy_failures(proposal))
+    status = "PASS" if not failures else (
+        "NEEDS_PRIVACY_GUARD"
+        if any("rejected" in item or "forbidden" in item for item in failures)
+        else "FAIL"
+    )
+    return {"version": VERSION, "status": status, "failures": sorted(set(failures))}
+
+
+def read_proposals(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    if not path.exists():
+        return [], []
+    records: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for line_number, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            failures.append(f"{path.name}:{line_number}: malformed JSONL")
+            continue
+        if not isinstance(payload, dict):
+            failures.append(f"{path.name}:{line_number}: JSONL record must be an object")
+            continue
+        validation = validate_proposal_payload(payload)
+        if validation["status"] != "PASS":
+            failures.extend(f"{path.name}:{line_number}: {item}" for item in validation.get("failures", []))
+        records.append(payload)
+    return records, failures
+
+
+def preferred_git_tap_command(target: Path) -> str:
+    if (target / ".tes/bin/cortex_git_tap.py").exists():
+        return "python3 .tes/bin/cortex_git_tap.py"
+    if (target / "scripts/cortex_git_tap.py").exists():
+        return "python3 scripts/cortex_git_tap.py"
+    return "python3 <tes-package>/scripts/cortex_git_tap.py"
+
+
+def proposal_cell_name(proposal: dict[str, Any]) -> str:
+    signal = str(proposal.get("memory_signal") or "memory")
+    fingerprint = str(proposal.get("event_fingerprint") or "proposal")[:12]
+    return f"git-tap-{signal.replace('_', '-')}-{fingerprint}"
+
+
+def proposal_plan_item(target: Path, proposal: dict[str, Any]) -> dict[str, Any]:
+    decision = str(proposal.get("decision_state") or "NO_MEMORY_SIGNAL")
+    fingerprint = str(proposal.get("event_fingerprint") or "")
+    cell = proposal_cell_name(proposal)
+    if decision == "BLOCKED_PRIVACY":
+        action = "blocked-privacy-review"
+        next_step = "Reject or sanitize the proposal evidence before any Cortex apply command."
+        apply_command = None
+    elif decision == "NO_MEMORY_SIGNAL":
+        action = "no-op"
+        next_step = "No durable Cortex memory action is recommended."
+        apply_command = None
+    else:
+        action = "review-then-explicit-apply"
+        next_step = "Review the proposal, write an approved durable claim, then run apply-proposal with --yes outside hook execution."
+        command = preferred_git_tap_command(target)
+        apply_command = (
+            f"{command} apply-proposal --target . "
+            f"--event-fingerprint {shlex.quote(fingerprint)} "
+            f"--cell {shlex.quote(cell)} "
+            "--claim '<approved durable claim>' --yes"
+        )
+    return {
+        "event_fingerprint": fingerprint,
+        "decision_state": decision,
+        "memory_signal": proposal.get("memory_signal"),
+        "evidence_hash": proposal.get("evidence_hash"),
+        "action": action,
+        "recommended_cell": cell,
+        "next_step": next_step,
+        "apply_command": apply_command,
+    }
+
+
+def curate_proposals_plan(target: Path) -> dict[str, Any]:
+    target = target.expanduser().resolve()
+    proposals, failures = read_proposals(target / PROPOSALS_FILE)
+    if failures:
+        return {"version": VERSION, "schema": CURATION_PLAN_SCHEMA, "status": "FAIL", "failures": failures, "writes": []}
+    plan = [proposal_plan_item(target, proposal) for proposal in proposals]
+    return {
+        "version": VERSION,
+        "schema": CURATION_PLAN_SCHEMA,
+        "status": "PASS",
+        "proposal_count": len(proposals),
+        "decision_states": counted([str(proposal.get("decision_state")) for proposal in proposals]),
+        "plan": plan,
+        "writes": [],
+    }
+
+
+def find_proposal(target: Path, event_fingerprint: str) -> tuple[dict[str, Any] | None, list[str]]:
+    proposals, failures = read_proposals(target / PROPOSALS_FILE)
+    if failures:
+        return None, failures
+    for proposal in proposals:
+        if proposal.get("event_fingerprint") == event_fingerprint:
+            return proposal, []
+    return None, [f"proposal not found: {event_fingerprint}"]
+
+
+def load_cortex_helper() -> Any:
+    import cortex as cortex_helper
+
+    return cortex_helper
+
+
+def proposal_source_rel(event_fingerprint: str) -> str:
+    safe = re.sub(r"[^a-fA-F0-9]", "", event_fingerprint)[:32]
+    return f"sources/git-tap/{safe or 'proposal'}.md"
+
+
+def proposal_source_text(proposal: dict[str, Any]) -> str:
+    summary = proposal.get("event_summary") if isinstance(proposal.get("event_summary"), dict) else {}
+    diff_stat = summary.get("diff_stat") if isinstance(summary.get("diff_stat"), dict) else {}
+    categories = canonical_json(summary.get("changed_path_categories", {}))
+    extensions = canonical_json(summary.get("changed_file_extensions", {}))
+    return (
+        "# Git Tap Proposal Evidence\n\n"
+        "## Proposal\n\n"
+        f"- Schema: `{proposal.get('schema')}`\n"
+        f"- Decision state: `{proposal.get('decision_state')}`\n"
+        f"- Memory signal: `{proposal.get('memory_signal')}`\n"
+        f"- Event fingerprint: `{proposal.get('event_fingerprint')}`\n"
+        f"- Evidence hash: `{proposal.get('evidence_hash')}`\n"
+        f"- Event: `{summary.get('event', 'unknown')}`\n"
+        f"- Changed path count: `{summary.get('changed_path_count', 0)}`\n"
+        f"- Changed path categories: `{categories}`\n"
+        f"- Changed file extensions: `{extensions}`\n"
+        f"- Diff stat digest: `{diff_stat.get('numstat_digest', '')}`\n"
+        f"- Privacy status: `{summary.get('privacy_status', 'unknown')}`\n\n"
+        "## Boundary\n\n"
+        "This source retains only sanitized Git Tap status, counts, and hashes. "
+        "It contains no raw diff, raw transcript, prompt text, tool payload, command output, secret, or local absolute path.\n"
+    )
+
+
+def apply_proposal(
+    target: Path,
+    *,
+    event_fingerprint: str,
+    cell: str,
+    claim: str,
+    summary: str | None,
+    authorized: bool,
+    update_existing: bool,
+) -> dict[str, Any]:
+    target = target.expanduser().resolve()
+    if os.environ.get("TES_CORTEX_GIT_TAP_HOOK") == "1":
+        return {
+            "version": VERSION,
+            "status": "BLOCKED",
+            "failures": ["hook-triggered execution cannot apply Cortex memory"],
+            "writes": [],
+        }
+    if not authorized:
+        return {
+            "version": VERSION,
+            "status": "NEEDS_AUTH",
+            "failures": [],
+            "writes": [],
+            "message": "apply-proposal requires --yes outside hook execution",
+        }
+    proposal, failures = find_proposal(target, event_fingerprint)
+    if failures or proposal is None:
+        return {"version": VERSION, "status": "FAIL", "failures": failures, "writes": []}
+    if proposal.get("decision_state") in {"NO_MEMORY_SIGNAL", "BLOCKED_PRIVACY"}:
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": [f"proposal is not eligible for apply: {proposal.get('decision_state')}"],
+            "writes": [],
+        }
+    cortex_helper = load_cortex_helper()
+    verify_result = cortex_helper.verify(target)
+    if verify_result.get("status") != "PASS":
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": verify_result.get("failures", []),
+            "writes": [],
+        }
+    try:
+        cell_path = cortex_helper.resolve_cell_path(target, cell)
+    except ValueError as exc:
+        return {"version": VERSION, "status": "FAIL", "failures": [str(exc)], "writes": []}
+    if cell_path.exists() and not update_existing:
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": [f"cell already exists; pass --update to replace it: {cortex_helper.rel(cell_path, target)}"],
+            "writes": [],
+        }
+    source_rel = proposal_source_rel(event_fingerprint)
+    source_path = cortex_helper.cortex_path(target) / source_rel
+    source_path.parent.mkdir(parents=True, exist_ok=True)
+    source_path.write_text(proposal_source_text(proposal), encoding="utf-8")
+    result = cortex_helper.apply_cell(
+        target,
+        cell,
+        claim,
+        [source_rel],
+        summary,
+        [],
+        authorized=True,
+        update_existing=update_existing,
+    )
+    result["version"] = VERSION
+    result["proposal"] = {
+        "event_fingerprint": event_fingerprint,
+        "decision_state": proposal.get("decision_state"),
+        "memory_signal": proposal.get("memory_signal"),
+        "evidence_hash": proposal.get("evidence_hash"),
+    }
+    if result.get("status") == "PASS" and cortex_helper.rel(source_path, target) not in result.get("writes", []):
+        result["writes"] = [cortex_helper.rel(source_path, target), *result.get("writes", [])]
+    return result
+
+
 def audit(target: Path) -> dict[str, Any]:
     target = target.expanduser().resolve()
     events, event_failures = read_jsonl(target / EVENTS_FILE)
@@ -729,9 +999,9 @@ def hook_block(target: Path, hook_name: str) -> str:
 if [ -z "${{TES_CORTEX_GIT_TAP_DISABLE:-}}" ]; then
   mkdir -p ".tes/runtime/cortex/git-tap"
   if [ -f "{helper}" ]; then
-    python3 "{helper}" capture --target . --event {capture_args} >/dev/null 2>>".tes/runtime/cortex/git-tap/git-tap.log" || true
+    TES_CORTEX_GIT_TAP_HOOK=1 python3 "{helper}" capture --target . --event {capture_args} >/dev/null 2>>".tes/runtime/cortex/git-tap/git-tap.log" || true
   elif [ -f "{source_helper}" ]; then
-    python3 "{source_helper}" capture --target . --event {capture_args} >/dev/null 2>>".tes/runtime/cortex/git-tap/git-tap.log" || true
+    TES_CORTEX_GIT_TAP_HOOK=1 python3 "{source_helper}" capture --target . --event {capture_args} >/dev/null 2>>".tes/runtime/cortex/git-tap/git-tap.log" || true
   else
     printf '%s\\n' "TES Cortex Git Tap runtime missing" >> ".tes/runtime/cortex/git-tap/git-tap.log"
   fi
@@ -1071,6 +1341,144 @@ def self_test() -> dict[str, Any]:
                     failures.append("hook-triggered path must not modify existing docs/**")
                     break
 
+        curation_target = root / "curation-loop"
+        curation_target.mkdir()
+        init_git(curation_target)
+        cortex_helper = load_cortex_helper()
+        cortex_helper.init(curation_target)
+        subprocess.run(
+            ["git", "add", "docs"],
+            cwd=curation_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "baseline cortex"],
+            cwd=curation_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
+        install_hooks(curation_target)
+        curation_helper = curation_target / ".tes/bin/cortex_git_tap.py"
+        curation_helper.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(Path(__file__).resolve(), curation_helper)
+        previous_no_background = os.environ.get("TES_CORTEX_GIT_TAP_NO_BACKGROUND")
+        os.environ["TES_CORTEX_GIT_TAP_NO_BACKGROUND"] = "1"
+        try:
+            commit_file(
+                curation_target,
+                "docs/architecture/CORTEX-GIT-TAP-CONTRACT.md",
+                "# Cortex Git Tap Contract\n\nExplicit proposal curation is required before durable memory apply.\n",
+                "contract change",
+            )
+        finally:
+            if previous_no_background is None:
+                os.environ.pop("TES_CORTEX_GIT_TAP_NO_BACKGROUND", None)
+            else:
+                os.environ["TES_CORTEX_GIT_TAP_NO_BACKGROUND"] = previous_no_background
+        docs_before_plan = docs_snapshot(curation_target)
+        curation_reflect = reflect_proposals(curation_target)
+        curation_plan = curate_proposals_plan(curation_target)
+        docs_after_plan = docs_snapshot(curation_target)
+        curation_proposals, curation_proposal_failures = read_proposals(curation_target / PROPOSALS_FILE)
+        selected_proposal = next(
+            (proposal for proposal in curation_proposals if proposal.get("decision_state") == "NEEDS_CURATION"),
+            None,
+        )
+        if curation_reflect.get("status") != "PASS" or curation_reflect.get("proposals", 0) < 1:
+            failures.append("Git Tap curation loop must produce reviewable runtime proposals")
+        if curation_plan.get("status") != "PASS" or curation_plan.get("writes") != []:
+            failures.append("Git Tap curate-plan must be deterministic and no-write")
+        if docs_before_plan != docs_after_plan:
+            failures.append("Git Tap reflect/curate-plan must not write docs/**")
+        if curation_proposal_failures:
+            failures.extend(curation_proposal_failures)
+        if selected_proposal is None:
+            failures.append("Git Tap curation loop must include a NEEDS_CURATION proposal")
+        else:
+            fingerprint = str(selected_proposal["event_fingerprint"])
+            hook_env_previous = os.environ.get("TES_CORTEX_GIT_TAP_HOOK")
+            os.environ["TES_CORTEX_GIT_TAP_HOOK"] = "1"
+            try:
+                hook_apply = apply_proposal(
+                    curation_target,
+                    event_fingerprint=fingerprint,
+                    cell="git-tap-hook-blocked",
+                    claim="Hook execution must not apply Cortex memory.",
+                    summary=None,
+                    authorized=True,
+                    update_existing=False,
+                )
+            finally:
+                if hook_env_previous is None:
+                    os.environ.pop("TES_CORTEX_GIT_TAP_HOOK", None)
+                else:
+                    os.environ["TES_CORTEX_GIT_TAP_HOOK"] = hook_env_previous
+            unauthorized_apply = apply_proposal(
+                curation_target,
+                event_fingerprint=fingerprint,
+                cell="git-tap-unauthorized",
+                claim="Unauthorized proposal apply must not write Cortex memory.",
+                summary=None,
+                authorized=False,
+                update_existing=False,
+            )
+            docs_before_apply = docs_snapshot(curation_target)
+            explicit_apply = apply_proposal(
+                curation_target,
+                event_fingerprint=fingerprint,
+                cell="git-tap-proposal-curation-loop",
+                claim="Cortex Git Tap proposals require explicit apply before durable memory writes.",
+                summary="Git Tap proposal curation requires explicit apply.",
+                authorized=True,
+                update_existing=False,
+            )
+            docs_after_apply = docs_snapshot(curation_target)
+            recall_after_apply = cortex_helper.recall(curation_target, "explicit apply durable memory writes", 5)
+            apply_writes = [str(path) for path in explicit_apply.get("writes", [])]
+            if hook_apply.get("status") != "BLOCKED":
+                failures.append("hook-triggered execution must be blocked from apply-proposal")
+            if unauthorized_apply.get("status") != "NEEDS_AUTH":
+                failures.append("apply-proposal must require explicit --yes authorization")
+            if explicit_apply.get("status") != "PASS":
+                failures.append("explicit apply-proposal must create curated Cortex memory")
+                failures.extend(str(item) for item in explicit_apply.get("failures", []))
+            if not docs_after_apply.keys() - docs_before_apply.keys():
+                failures.append("explicit apply-proposal must write approved Cortex memory docs")
+            if any(
+                not path.startswith(
+                    (
+                        "docs/agents/cortex/sources/",
+                        "docs/agents/cortex/cells/",
+                        "docs/agents/cortex/MAP.md",
+                        "docs/agents/cortex/LINKS.md",
+                        "docs/agents/cortex/TRAIL.md",
+                    )
+                )
+                for path in apply_writes
+            ):
+                failures.append("explicit apply-proposal must only report approved Cortex memory writes")
+            source_paths = [path for path in apply_writes if path.startswith("docs/agents/cortex/sources/git-tap/")]
+            if not source_paths:
+                failures.append("explicit apply-proposal must retain sanitized Git Tap source evidence")
+            else:
+                source_text = (curation_target / source_paths[0]).read_text(encoding="utf-8")
+                if "diff --git" in source_text or "/Users/" in source_text or "token=" in source_text:
+                    failures.append("Git Tap proposal evidence must stay sanitized")
+            if recall_after_apply.get("status") != "PASS" or recall_after_apply.get("backend") != "sqlite-fts5":
+                failures.append("runtime recall must use the derived recall index after explicit apply")
+            if not any(
+                str(match.get("path", "")).endswith("cells/git-tap-proposal-curation-loop.md")
+                for match in recall_after_apply.get("matches", [])
+            ):
+                failures.append("runtime recall must surface the curated Git Tap memory cell")
+            if "apply" in hook_block(curation_target, "post-commit"):
+                failures.append("Git Tap hook template must remain proposal-only and not call apply")
+
         skip_target = root / "skip"
         skip_target.mkdir()
         init_git(skip_target)
@@ -1140,6 +1548,18 @@ def main(argv: list[str] | None = None) -> int:
     reflect_parser = subparsers.add_parser("reflect-proposals")
     reflect_parser.add_argument("--target", type=Path, default=Path.cwd())
 
+    curate_parser = subparsers.add_parser("curate-plan")
+    curate_parser.add_argument("--target", type=Path, default=Path.cwd())
+
+    apply_parser = subparsers.add_parser("apply-proposal")
+    apply_parser.add_argument("--target", type=Path, default=Path.cwd())
+    apply_parser.add_argument("--event-fingerprint", required=True)
+    apply_parser.add_argument("--cell", required=True)
+    apply_parser.add_argument("--claim", required=True)
+    apply_parser.add_argument("--summary")
+    apply_parser.add_argument("--yes", action="store_true")
+    apply_parser.add_argument("--update", action="store_true")
+
     validate_parser = subparsers.add_parser("validate-event")
     validate_parser.add_argument("--event-json", required=True)
 
@@ -1168,6 +1588,18 @@ def main(argv: list[str] | None = None) -> int:
         result = audit(args.target)
     elif args.command == "reflect-proposals":
         result = reflect_proposals(args.target)
+    elif args.command == "curate-plan":
+        result = curate_proposals_plan(args.target)
+    elif args.command == "apply-proposal":
+        result = apply_proposal(
+            args.target,
+            event_fingerprint=args.event_fingerprint,
+            cell=args.cell,
+            claim=args.claim,
+            summary=args.summary,
+            authorized=args.yes,
+            update_existing=args.update,
+        )
     elif args.command == "validate-event":
         try:
             payload = json.loads(args.event_json)

@@ -38,7 +38,7 @@ This documentation layer explains the method behind the source package without t
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Documentation assets | `assets/README.md` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.247/tilly-engineer-skills-0.3.247.zip` |
+| Public installer bundle | `dist/0.3.248/tilly-engineer-skills-0.3.248.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Install reversibility (detach/uninstall/attach-health) | `install/REVERSIBILITY.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |

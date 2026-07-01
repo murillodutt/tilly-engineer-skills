@@ -99,9 +99,34 @@ blocking the Git command path.
 `reflect-proposals` reads Git Tap events and writes reviewable local proposals
 to `.tes/runtime/cortex/git-tap/proposals.jsonl`. It never writes `docs/**`.
 
-Durable Cortex memory remains governed by the approved Cortex promotion path:
-review the proposal, decide the claim, then use the explicit Cortex apply/write
-command with approval. Hook execution cannot invoke that durable write path.
+`curate-plan` reads `proposals.jsonl` and emits a deterministic review plan. It
+does not write `docs/**` and does not approve memory. Each eligible plan item
+names the proposal fingerprint, sanitized evidence hash, recommended cell name,
+and an explicit `apply-proposal --yes` command template.
+
+Durable Cortex memory remains governed by the approved Cortex promotion path.
+`apply-proposal` may write curated memory only when all of these are true:
+
+- the selected proposal already exists in `proposals.jsonl`;
+- the proposal is not `NO_MEMORY_SIGNAL` or `BLOCKED_PRIVACY`;
+- the operator supplies an approved durable claim;
+- the command is run with `--yes`;
+- the command is not running from a Git hook context.
+
+The explicit apply writes only approved Cortex memory surfaces under
+`docs/agents/cortex/**`: a sanitized `sources/git-tap/<fingerprint>.md` evidence
+file, the approved cell, `MAP.md`, `LINKS.md`, and `TRAIL.md`. The source
+evidence retains status, counts, and hashes only. It must not retain raw diffs,
+raw transcripts, prompts, tool payloads, command output, secrets, or local
+absolute paths.
+
+Runtime recall is proven through the derived Cortex recall index after explicit
+apply. The recall path must surface the curated memory cell without requiring an
+agent to scan all `docs/**` first.
+
+Hook execution cannot invoke the durable write path. The installed hook block
+sets `TES_CORTEX_GIT_TAP_HOOK=1` for capture, and `apply-proposal` blocks when
+that variable is present.
 
 ## Oracles
 
@@ -110,4 +135,6 @@ oracle. It covers schema validation, malformed JSONL, privacy rejection, hook
 preservation, idempotence, `core.hooksPath`, impossible path rejection,
 queue/lock drain, pending dedupe, curation boundary, merge/rebase/cherry-pick
 skip, file-checkout skip, self-generated runtime loop prevention, append-only
-logs, and missing-runtime hook diagnostics.
+logs, missing-runtime hook diagnostics, proposal curation planning, explicit
+apply authorization, hook apply blocking, sanitized proposal evidence, and
+runtime recall through the derived index.

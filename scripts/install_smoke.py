@@ -18,7 +18,7 @@ import tes_install
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.247"
+VERSION = "0.3.248"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
