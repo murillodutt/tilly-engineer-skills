@@ -54,7 +54,7 @@ import git_gate_contract
 import tes_install
 
 
-VERSION = "0.3.252"
+VERSION = "0.3.253"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
@@ -86,13 +86,111 @@ def git_admission(target: Path) -> dict[str, Any]:
     return git_gate_contract.canary_git_admission(target)
 
 
-def host_hook_admission(target: Path) -> dict[str, Any]:
+def load_json_file(path: Path | None) -> dict[str, Any] | None:
+    """Load sanitized optional evidence without turning parse failures into pass."""
+    if path is None:
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"status": "NEEDS_EVIDENCE", "blockers": [f"could not read host evidence JSON: {exc}"]}
+    return data if isinstance(data, dict) else {"status": "NEEDS_EVIDENCE", "blockers": ["host evidence JSON root is not an object"]}
+
+
+def transcript_session_id(transcript_path: Any) -> str:
+    """Derive the host session id from a Claude JSONL transcript path."""
+    raw = str(transcript_path or "").strip()
+    if not raw:
+        return ""
+    return Path(raw).stem
+
+
+def host_loop_external_evidence(target: Path, host: str, payload: dict[str, Any] | None) -> dict[str, Any]:
+    """Correlate post-execution host-loop evidence with the native hook ledger.
+
+    The native PreToolUse hook runs before the tool finishes, so it cannot know
+    the final transcript hash or command replay fingerprint. Ceiling admission
+    therefore accepts those fields only from an explicit host_canary_loop JSON,
+    and only when it matches a host-real PreToolUse row for the same session.
+    """
+    if not isinstance(payload, dict):
+        return {"status": "NOT_PROVIDED", "blockers": ["host loop evidence not provided"]}
+
+    blockers: list[str] = []
+    target = target.expanduser().resolve()
+    try:
+        evidence_target = Path(str(payload.get("target") or "")).expanduser().resolve()
+    except (OSError, RuntimeError):
+        evidence_target = Path()
+    if evidence_target != target:
+        blockers.append("host loop evidence target does not match canary target")
+
+    host_execution = payload.get("host_execution") if isinstance(payload.get("host_execution"), dict) else {}
+    oracle = payload.get("oracle") if isinstance(payload.get("oracle"), dict) else {}
+    command_fingerprint = payload.get("command_fingerprint") or host_execution.get("command_fingerprint")
+    transcript_sha = oracle.get("transcript_sha256")
+    session_id = transcript_session_id(oracle.get("transcript_path"))
+    try:
+        tool_use_count = int(oracle.get("tool_use_count") or 0)
+    except (TypeError, ValueError):
+        tool_use_count = 0
+
+    if payload.get("loop_status") != "PASS":
+        blockers.append("host loop status is not PASS")
+    if payload.get("stale_transcript") is not False:
+        blockers.append("host loop transcript freshness is not proven")
+    if host_execution.get("ran") is not True or host_execution.get("returncode") != 0 or host_execution.get("timed_out") is True:
+        blockers.append("host command execution is not a clean successful run")
+    if oracle.get("status") != "PASS":
+        blockers.append("transcript oracle status is not PASS")
+    if not tes_install.is_hex64(transcript_sha):
+        blockers.append("transcript oracle hash missing or invalid")
+    if not tes_install.is_hex64(command_fingerprint):
+        blockers.append("host command fingerprint missing or invalid")
+    if tool_use_count <= 0:
+        blockers.append("transcript oracle has no tool-use evidence")
+    if not session_id:
+        blockers.append("transcript session id is missing")
+
+    records = tes_install.read_hook_execution_records(target, tes_install.HOOK_SENTINEL_PATH)
+    matching_records = [
+        record
+        for record in records
+        if record.get("agent") == host
+        and tes_install.canonical_hook_event(str(record.get("event_canonical") or record.get("event") or "")) == "PreToolUse"
+        and tes_install.hook_record_provenance(record) == tes_install.HOOK_PROVENANCE_HOST_REAL
+        and str(record.get("session") or "") == session_id
+    ]
+    if not matching_records:
+        blockers.append("no matching host-real PreToolUse ledger row for transcript session")
+
+    return {
+        "status": "PASS" if not blockers else "NEEDS_EVIDENCE",
+        "blockers": blockers,
+        "host": host,
+        "session": session_id,
+        "matching_host_real_pretooluse_records": len(matching_records),
+        "transcript_sha256": str(transcript_sha or "") if tes_install.is_hex64(transcript_sha) else None,
+        "command_fingerprint": str(command_fingerprint or "") if tes_install.is_hex64(command_fingerprint) else None,
+        "tool_use_count": tool_use_count,
+        "same_command_replay": payload.get("stale_transcript") is False,
+    }
+
+
+def host_hook_admission(
+    target: Path,
+    *,
+    required_hosts: list[str] | tuple[str, ...] | None = None,
+    external_host_evidence: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Per-host native hook claim. A host is NATIVE_PASS only when its OWN runtime
     records prove firing; configured-but-unobserved is CONFIGURED_NOT_OBSERVED.
     Records from one host never fill another host's claim.
     """
     hosts: dict[str, Any] = {}
     blockers: list[str] = []
+    required = set(required_hosts or ())
+    external_host_evidence = external_host_evidence or {}
     for host in AGENTS:
         # Scope evidence to THIS host: hook_health_payload labels each host's
         # events OBSERVED/CONFIGURED/NOT_CONFIGURED from that host's own records.
@@ -104,7 +202,9 @@ def host_hook_admission(target: Path) -> dict[str, Any]:
         observed = any(event.get("state") == "OBSERVED" for event in host_events)
         configured = any(event.get("state") in {"OBSERVED", "CONFIGURED"} for event in host_events)
         native_ceiling_pass = host_ceiling.get("status") == "PASS_CEILING"
-        if observed and native_ceiling_pass:
+        external_evidence = external_host_evidence.get(host) if isinstance(external_host_evidence.get(host), dict) else {}
+        external_pass = external_evidence.get("status") == "PASS"
+        if observed and (native_ceiling_pass or external_pass):
             klass = NATIVE_PASS
         elif configured or observed:
             klass = CONFIGURED_NOT_OBSERVED
@@ -119,8 +219,12 @@ def host_hook_admission(target: Path) -> dict[str, Any]:
             "native_evidence": host_ceiling.get("native_evidence"),
             "host_real_records": host_ceiling.get("host_real_records", 0),
             "legacy_unknown_records": host_ceiling.get("legacy_unknown_records", 0),
+            "external_evidence": external_evidence or {"status": "NOT_PROVIDED"},
         }
-        if klass == CONFIGURED_NOT_OBSERVED:
+        if required:
+            if host in required and klass != NATIVE_PASS:
+                blockers.append(f"{host}: required host lacks transcript-correlated native hook evidence ({klass})")
+        elif klass == CONFIGURED_NOT_OBSERVED:
             blockers.append(f"{host}: configured or observed but no transcript-correlated native hook evidence (CONFIGURED_NOT_OBSERVED)")
     native_pass_hosts = sorted(h for h, info in hosts.items() if info["class"] == NATIVE_PASS)
     return {
@@ -128,13 +232,27 @@ def host_hook_admission(target: Path) -> dict[str, Any]:
         "hosts": hosts,
         "native_pass_hosts": native_pass_hosts,
         "blockers": blockers,
+        "required_hosts": sorted(required),
     }
 
 
-def evaluate(target: Path) -> dict[str, Any]:
+def evaluate(
+    target: Path,
+    *,
+    current_host: str | None = None,
+    host_loop_json: Path | None = None,
+) -> dict[str, Any]:
     target = target.expanduser().resolve()
     git = git_admission(target)
-    hooks = host_hook_admission(target)
+    external_evidence: dict[str, dict[str, Any]] = {}
+    host_loop_payload = load_json_file(host_loop_json)
+    if current_host and host_loop_payload is not None:
+        external_evidence[current_host] = host_loop_external_evidence(target, current_host, host_loop_payload)
+    hooks = host_hook_admission(
+        target,
+        required_hosts=[current_host] if current_host else None,
+        external_host_evidence=external_evidence,
+    )
     blockers = list(git.get("blockers", [])) + list(hooks.get("blockers", []))
     # Git admission is a hard gate; hook evidence gaps are NEEDS_EVIDENCE, not a
     # silent PASS. Overall status never claims readiness while either is unmet.
@@ -519,6 +637,59 @@ def self_test() -> dict[str, Any]:
         if hooks["native_pass_hosts"] != ["claude"]:
             failures.append(f"only Claude may be a native_pass host, got {hooks['native_pass_hosts']}")
 
+        external_target = root / "external-host-loop"
+        external_target.mkdir()
+        _init_git(external_target)
+        for host in AGENTS:
+            _configure_host_hooks(external_target, host)
+        _write_host_runtime_record(
+            external_target,
+            "claude",
+            provenance=tes_install.HOOK_PROVENANCE_HOST_REAL,
+            transcript_evidence=False,
+        )
+        host_loop = {
+            "target": str(external_target.resolve()),
+            "loop_status": "PASS",
+            "stale_transcript": False,
+            "command_fingerprint": "c" * 64,
+            "host_execution": {
+                "ran": True,
+                "returncode": 0,
+                "timed_out": False,
+                "command_fingerprint": "c" * 64,
+            },
+            "oracle": {
+                "status": "PASS",
+                "transcript_path": "/tmp/obs-claude.jsonl",
+                "transcript_sha256": "d" * 64,
+                "tool_use_count": 1,
+            },
+        }
+        external = host_loop_external_evidence(external_target.resolve(), "claude", host_loop)
+        host_specific = host_hook_admission(
+            external_target.resolve(),
+            required_hosts=["claude"],
+            external_host_evidence={"claude": external},
+        )
+        if host_specific["status"] != "PASS" or host_specific["hosts"]["claude"]["class"] != NATIVE_PASS:
+            failures.append("current-host admission must accept matching host loop evidence for host-real ledger rows")
+        if host_specific["hosts"]["codex"]["class"] == NATIVE_PASS or host_specific["hosts"]["cursor"]["class"] == NATIVE_PASS:
+            failures.append("current-host admission must not fill Codex/Cursor from Claude host-loop evidence")
+
+        mismatched_loop = {
+            **host_loop,
+            "oracle": {**host_loop["oracle"], "transcript_path": "/tmp/different-session.jsonl"},
+        }
+        mismatched_external = host_loop_external_evidence(external_target.resolve(), "claude", mismatched_loop)
+        mismatched = host_hook_admission(
+            external_target.resolve(),
+            required_hosts=["claude"],
+            external_host_evidence={"claude": mismatched_external},
+        )
+        if mismatched["status"] == "PASS" or mismatched["hosts"]["claude"]["class"] == NATIVE_PASS:
+            failures.append("host loop evidence with a different transcript session must not authorize NATIVE_PASS")
+
         for provenance, label, transcript_evidence in (
             (tes_install.HOOK_PROVENANCE_FIXTURE, "fixture", True),
             (tes_install.HOOK_PROVENANCE_MANUAL, "manual", True),
@@ -555,10 +726,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Canary admission gate (Git + per-host hook evidence).")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--target", type=Path, default=Path("."))
+    parser.add_argument("--current-host", choices=AGENTS, help="Limit native hook admission to the host exercised by this canary.")
+    parser.add_argument("--host-loop-json", type=Path, help="Sanitized JSON output from tes-host-transcript-canary host_canary_loop.py.")
     parser.add_argument("--json-only", action="store_true")
     args = parser.parse_args(argv)
 
-    result = self_test() if args.self_test else evaluate(args.target)
+    result = self_test() if args.self_test else evaluate(args.target, current_host=args.current_host, host_loop_json=args.host_loop_json)
     print(json.dumps(result, indent=2, sort_keys=True))
     if not args.json_only:
         print("[canary-admission] " + result["status"])

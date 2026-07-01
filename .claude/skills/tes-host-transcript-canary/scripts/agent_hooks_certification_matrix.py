@@ -458,7 +458,13 @@ def target_matrix(repo: Path, target: Path | None, current_host: str | None) -> 
     return rows, {"hook_health": hook_health}
 
 
-def related_gates(repo: Path, target: Path | None, current_host: str | None, run: bool) -> dict[str, Any]:
+def related_gates(
+    repo: Path,
+    target: Path | None,
+    current_host: str | None,
+    run: bool,
+    host_loop_json: Path | None = None,
+) -> dict[str, Any]:
     if not run:
         return {"status": "NOT_RUN", "gates": {}}
     gates: dict[str, Any] = {
@@ -471,14 +477,22 @@ def related_gates(repo: Path, target: Path | None, current_host: str | None, run
         if current_host:
             hook_health.extend(["--agent", current_host])
         gates["hook-health"] = run_process(hook_health, repo)
-        gates["canary-admission"] = run_process(
-            [sys.executable, "scripts/canary_admission_oracle.py", "--target", str(target), "--json-only"],
-            repo,
-        )
-        gates["installed-certification"] = run_process(
-            [sys.executable, "scripts/installed_certification_oracle.py", "--target", str(target), "--json-only"],
-            repo,
-        )
+        canary_admission = [sys.executable, "scripts/canary_admission_oracle.py", "--target", str(target), "--json-only"]
+        if current_host:
+            canary_admission.extend(["--current-host", current_host])
+        if host_loop_json:
+            canary_admission.extend(["--host-loop-json", str(host_loop_json)])
+        gates["canary-admission"] = run_process(canary_admission, repo)
+        installed_certification = [
+            sys.executable,
+            "scripts/installed_certification_oracle.py",
+            "--target",
+            str(target),
+            "--json-only",
+        ]
+        if current_host:
+            installed_certification.extend(["--current-host", current_host])
+        gates["installed-certification"] = run_process(installed_certification, repo)
     failed = [name for name, item in gates.items() if item.get("returncode") not in (0,)]
     # Installed target gates may intentionally return non-zero for host evidence
     # gaps; keep them visible without pretending the source contract failed.
@@ -619,7 +633,7 @@ def build_matrix(args: argparse.Namespace) -> dict[str, Any]:
     host_rows = host_matrix(host_loop_json, transcript_json)
     rows = [*source_rows, *target_rows, *host_rows]
     summary = summarize(rows, require_target=args.require_target, require_host_transcript=args.require_host_transcript)
-    gates = related_gates(repo, target, args.current_host, args.run_related_gates)
+    gates = related_gates(repo, target, args.current_host, args.run_related_gates, args.host_loop_json)
     status = summary["status"]
     matrix_decision = decision(summary, target=target, host_rows=host_rows)
     if gates.get("status") == "NEEDS_EVIDENCE" and status == "PASS":

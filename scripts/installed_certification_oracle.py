@@ -30,7 +30,7 @@ except ModuleNotFoundError:  # pragma: no cover - degraded environment
     _attach_health = None
 
 
-VERSION = "0.3.252"
+VERSION = "0.3.253"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -294,7 +294,7 @@ def hook_config_hygiene(target: Path) -> dict[str, Any]:
     }
 
 
-def hook_runtime_health(target: Path) -> dict[str, Any]:
+def hook_runtime_health(target: Path, *, current_host: str | None = None) -> dict[str, Any]:
     """Certify installed hook runtime health when the lock declares hooks."""
     lock = read_json(target / LOCK_PATH)
     attached_surfaces = lock.get("attached_surfaces") if isinstance(lock.get("attached_surfaces"), list) else []
@@ -309,7 +309,10 @@ def hook_runtime_health(target: Path) -> dict[str, Any]:
         )
     ):
         return {"status": "NOT_APPLIED", "reason": "hooks not attached"}
-    result = tes_install.hook_health_payload(target)
+    result = tes_install.hook_health_payload(
+        target,
+        current_host=current_host if current_host in tes_install.AGENTS else None,
+    )
     return {
         "status": result.get("status"),
         "attached_surfaces": result.get("attached_surfaces", []),
@@ -448,7 +451,7 @@ def trigger_status(target: Path) -> dict[str, Any]:
     }
 
 
-def evaluate(target: Path) -> dict[str, Any]:
+def evaluate(target: Path, *, current_host: str | None = None) -> dict[str, Any]:
     target = target.expanduser().resolve()
     quality = quality_gates_path_status(target)
     hygiene = artifact_hygiene(target)
@@ -461,7 +464,7 @@ def evaluate(target: Path) -> dict[str, Any]:
         "quality_gates_path": quality,
         "artifact_hygiene": hygiene,
         "hook_config_hygiene": hook_hygiene,
-        "hook_runtime_health": hook_runtime_health(target),
+        "hook_runtime_health": hook_runtime_health(target, current_host=current_host),
         "git_admission": git_admission_status(target),
         "pretooluse_contract_reference": contract_reference,
         "tes_codex_policy": tes_codex_policy_status(target),
@@ -1139,10 +1142,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Aggregate installed-target TES certification.")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--target", type=Path, default=Path("."))
+    parser.add_argument("--current-host", choices=tes_install.AGENTS, help="Scope hook runtime health to the host exercised by this certification run.")
     parser.add_argument("--json-only", action="store_true")
     args = parser.parse_args(argv)
 
-    result = self_test() if args.self_test else evaluate(args.target)
+    result = self_test() if args.self_test else evaluate(args.target, current_host=args.current_host)
     print(json.dumps(result, indent=2, sort_keys=True))
     if not args.json_only:
         print("[installed-certification] " + result["status"])

@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.252"
+VERSION = "0.3.253"
 SCHEMA = "tes-canary-transcript@1"
 
 

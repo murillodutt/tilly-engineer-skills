@@ -23,7 +23,7 @@ import cortex_git_tap
 import tes_codex_policy
 
 
-VERSION = "0.3.252"
+VERSION = "0.3.253"
 RUNTIME_MEMORY_MARKER_RE = re.compile(r"\bmarker\s+([A-Za-z0-9][A-Za-z0-9_.:-]{2,160})", re.IGNORECASE)
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
@@ -4284,19 +4284,27 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
                 "reasons": reasons,
             }
         )
+    status_agents = {current_host: agents[current_host]} if current_host in agents else agents
+    if current_host in agents:
+        findings = [
+            finding
+            for finding in findings
+            if not finding.get("agent") or finding.get("agent") == current_host
+        ]
+
     unexpected = any(
         event["state"] == "STALE/UNEXPECTED"
-        for agent in agents.values()
+        for agent in status_agents.values()
         for event in agent["events"]
     )
     any_configured = any(
         event["state"] == "CONFIGURED" or event["state"] == "OBSERVED"
-        for agent in agents.values()
+        for agent in status_agents.values()
         for event in agent["events"]
     )
     all_not_configured = all(
         event["state"] == "NOT_CONFIGURED"
-        for agent in agents.values()
+        for agent in status_agents.values()
         for event in agent["events"]
     )
     if hooks_attached and all_not_configured:
@@ -4310,7 +4318,7 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
         )
     configured_only = any(
         event["state"] == "CONFIGURED"
-        for agent in agents.values()
+        for agent in status_agents.values()
         for event in agent["events"]
     )
     helper_contract_status = installed_pretooluse_helper_contract_status(target)
