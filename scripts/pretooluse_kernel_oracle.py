@@ -107,6 +107,73 @@ def evaluate() -> dict[str, Any]:
         "governed trace must name governed path match",
     )
 
+    bare_skill = _decision(
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": "SKILL.md"},
+        }
+    )
+    _assert(bare_skill.get("outcome") == "supervise", failures, "bare SKILL.md Edit must supervise")
+    _assert(
+        pretooluse_kernel.is_governed_path("MYSKILL.md") is False
+        and pretooluse_kernel.is_governed_path("SKILLS.md") is False
+        and pretooluse_kernel.is_governed_path("./SKILL.md") is True
+        and pretooluse_kernel.is_governed_path("/tmp/target/docs/x/SKILL.md") is True,
+        failures,
+        "SKILL.md governed matching must be segment-exact",
+    )
+
+    shell_cases = [
+        ("append-root", {"command": "echo x >> CLAUDE.md"}, "root_agent_bootloader"),
+        ("sed-root", {"command": "sed -i s/a/b/ AGENTS.md"}, "root_agent_bootloader"),
+        ("redirect-cursor", {"command": "cat payload > .cursor/rules/x.mdc"}, "cursor_rule"),
+        ("tee-governance", {"command": "printf x | tee -a docs/governance/policy.md"}, "governance"),
+    ]
+    for name, tool_input, expected_class in shell_cases:
+        shell_decision = _decision(
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Bash",
+                "tool_input": tool_input,
+            }
+        )
+        _assert(shell_decision.get("outcome") == "supervise", failures, f"{name}: shell governed mutation must supervise")
+        _assert(shell_decision.get("risk") == "material", failures, f"{name}: shell routine risk must escalate")
+        _assert(
+            "shell_command_path_extracted" in shell_decision.get("reason_codes", []),
+            failures,
+            f"{name}: shell extraction must be traceable",
+        )
+        _assert(
+            _trace(shell_decision).get("governed_surface_class") == expected_class,
+            failures,
+            f"{name}: trace must classify governed surface",
+        )
+        _assert(
+            str(tool_input["command"]) not in str(shell_decision.get("context")),
+            failures,
+            f"{name}: context must not leak raw shell command",
+        )
+
+    unknown_shell = _decision(
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "PatchFile",
+            "tool_input": {"command": "cat payload > docs/adr/0010-future.md"},
+        }
+    )
+    _assert(
+        unknown_shell.get("outcome") == "needs_discoverability",
+        failures,
+        "unknown mutating-looking tool with shell governed payload must need discoverability",
+    )
+    _assert(
+        "needs_discoverability_unknown_mutation" in unknown_shell.get("reason_codes", []),
+        failures,
+        "unknown shell discoverability must carry reason code",
+    )
+
     cursor_replace = _decision(
         {
             "hook_event_name": "preToolUse",
@@ -184,6 +251,24 @@ def evaluate() -> dict[str, Any]:
         "forbidden Bash must carry forbidden_class reason code",
     )
     _assert(_trace(forbidden).get("forbidden_class") is True, failures, "forbidden trace must name forbidden evidence")
+
+    secret = "token=" + "abc123"
+    secret_forbidden = _decision(
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {"command": f"git push --force https://{secret}@example.invalid/repo main"},
+        }
+    )
+    forbidden_reason = str(secret_forbidden.get("reason") or "")
+    _assert(secret_forbidden.get("outcome") == "block", failures, "secret-bearing forbidden Bash must block")
+    _assert(secret not in forbidden_reason, failures, "forbidden reason must redact token-like command text")
+    _assert("https://" not in forbidden_reason, failures, "forbidden reason must not include raw URL command text")
+    _assert(
+        _trace(secret_forbidden).get("command_category") == "forbidden_git_force_push",
+        failures,
+        "forbidden trace must preserve safe command category",
+    )
 
     alias_payloads = {
         "command": {"tool_input": {"command": _patch(".tes/runtime/hook-smoke/codex/command/SKILL.md")}},

@@ -21,13 +21,17 @@ from typing import Any
 import cortex_git_tap
 import tes_codex_policy
 from pretooluse_kernel import (
+    command_category as kernel_command_category,
     decide_pretooluse,
+    governed_surface_label as kernel_governed_surface_label,
     hook_event_name as kernel_hook_event_name,
     hook_patch_paths as kernel_hook_patch_paths,
     hook_tool_command as kernel_hook_tool_command,
     hook_tool_input as kernel_hook_tool_input,
     hook_tool_name as kernel_hook_tool_name,
     hook_tool_path as kernel_hook_tool_path,
+    is_governed_path as kernel_is_governed_path,
+    path_needs_redaction as kernel_path_needs_redaction,
 )
 from pretooluse_session import coordinate_pretooluse_context
 
@@ -2730,18 +2734,12 @@ def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) ->
 
 def hook_command_category(command: str) -> str:
     """Return a redaction-safe command class for PreToolUse ledger rows."""
-    normalized = " ".join(command.strip().lower().split())
-    if not normalized:
-        return "no_command"
-    if hook_patch_paths(command):
-        return "patch_body"
-    if "push --force" in normalized or "--force-with-lease" in normalized:
-        return "forbidden_git_force_push"
-    if "git push" in normalized and (" --force" in normalized or " -f" in normalized):
-        return "forbidden_git_force_push"
-    if "--no-preserve-root" in normalized or "rm -rf /" in normalized or "rm -fr /" in normalized:
-        return "forbidden_root_wipe"
-    return "shell_command"
+    return kernel_command_category(command)
+
+
+def hook_path_hash(path: str) -> str:
+    """Stable non-sensitive identity for redacted PreToolUse path evidence."""
+    return hashlib.sha256(path.encode("utf-8")).hexdigest()[:16]
 
 
 def hook_reason_codes(*values: Any) -> list[str]:
@@ -2954,13 +2952,24 @@ def record_hook_execution(
             path = hook_tool_path(hook_input, tool_input)
             command = hook_tool_command(hook_input, tool_input)
             invocation = hook_input.get("tool_use_id") or hook_input.get("toolUseId")
+            path_redacted = bool(path and kernel_path_needs_redaction(path))
+            command_redacted = bool(command)
+            path_class = kernel_governed_surface_label(path) if path else "none"
+            redaction_count = int(command_redacted) + int(path_redacted)
             record["schema_version"] = PRETOOLUSE_LEDGER_SCHEMA_VERSION
             record["command_category"] = hook_command_category(command)
-            record["command_redacted"] = bool(command)
+            record["command_redacted"] = command_redacted
+            record["governed_surface"] = bool(path and kernel_is_governed_path(path))
+            record["path_class"] = path_class
+            record["path_redacted"] = path_redacted
+            record["redaction_count"] = redaction_count
             if tool:
                 record["tool"] = tool
             if path:
-                record["path"] = path
+                if path_redacted:
+                    record["path_hash"] = hook_path_hash(path)
+                else:
+                    record["path"] = path
             if invocation:
                 record["invocation"] = str(invocation)
             if pretooluse_decision:
@@ -2985,6 +2994,10 @@ def record_hook_execution(
                 ):
                     if key in pretooluse_decision:
                         record[key] = pretooluse_decision[key]
+                classifier_trace = pretooluse_decision.get("classifier_trace")
+                if isinstance(classifier_trace, dict):
+                    record["governed_surface"] = bool(classifier_trace.get("governed_surface"))
+                    record["path_class"] = str(classifier_trace.get("governed_surface_class") or path_class)
             if not record.get("invocation"):
                 record["invocation"] = pretooluse_synthetic_invocation(record)
         if not hook_record_already_written(sentinel, record):
@@ -3003,7 +3016,11 @@ def pretooluse_synthetic_invocation(record: dict[str, Any]) -> str:
         "session": record.get("session"),
         "tool": record.get("tool"),
         "path": record.get("path"),
+        "path_class": record.get("path_class"),
+        "path_hash": record.get("path_hash"),
+        "path_redacted": record.get("path_redacted"),
         "command_category": record.get("command_category"),
+        "governed_surface": record.get("governed_surface"),
         "risk": record.get("risk"),
         "outcome": record.get("outcome"),
         "decision": record.get("decision"),
@@ -3026,8 +3043,13 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "session",
     "tool",
     "path",
+    "path_class",
+    "path_hash",
+    "path_redacted",
     "command_category",
     "command_redacted",
+    "governed_surface",
+    "redaction_count",
     "invocation",
     "raw_tool_label",
     "normalized_tool",
@@ -3089,7 +3111,7 @@ def hook_record_identity(record: dict[str, Any]) -> dict[str, Any]:
         "invocation": str(record.get("invocation") or ""),
         "tool": str(record.get("tool") or ""),
         "risk": str(record.get("risk") or ""),
-        "path_or_command": str(record.get("path") or record.get("command_category") or ""),
+        "path_or_command": str(record.get("path") or record.get("path_class") or record.get("command_category") or ""),
         "decision": str(record.get("decision") or record.get("permission_decision") or ""),
         "marker_emitted": record.get("marker_emitted"),
         "context_suppressed": record.get("context_suppressed"),
@@ -3257,6 +3279,8 @@ def pretooluse_contradiction_key(record: dict[str, Any]) -> tuple[Any, ...]:
         str(record.get("invocation") or ""),
         str(record.get("tool") or record.get("normalized_tool") or record.get("raw_tool_label") or ""),
         str(record.get("path") or ""),
+        str(record.get("path_class") or ""),
+        str(record.get("path_hash") or ""),
         str(record.get("command_category") or ""),
         str(record.get("payload_source") or ""),
     )
@@ -3400,6 +3424,12 @@ def pretooluse_host_ceiling_gaps(
             gaps.append("raw_command_not_redacted")
         if not record.get("command_category"):
             gaps.append("missing_command_category")
+        if record.get("path_redacted") is True and not record.get("path_hash"):
+            gaps.append("missing_redacted_path_hash")
+        if "redaction_count" not in record:
+            gaps.append("missing_redaction_count")
+        if "governed_surface" not in record:
+            gaps.append("missing_governed_surface_flag")
         if not record.get("payload_source"):
             gaps.append("missing_payload_source")
         if not record.get("decision") or not record.get("permission_decision"):
@@ -4277,10 +4307,20 @@ def self_test() -> int:
             "ts": "2026-06-27T00:00:00Z",
             "tool": tool,
             "path": path,
+            "path_class": kernel_governed_surface_label(path),
+            "path_redacted": False,
+            "governed_surface": kernel_is_governed_path(path),
+            "redaction_count": int(command_redacted),
             "reason_codes": reason_codes
             if reason_codes is not None
             else ["needs_discoverability_unknown_mutation", "renderer_contract_projected"],
-            "classifier_trace": {"payload_source": "tool_input", "path_source": "tool_input.file_path"},
+            "classifier_trace": {
+                "payload_source": "tool_input",
+                "path_source": "tool_input.file_path",
+                "command_category": command_category,
+                "governed_surface": kernel_is_governed_path(path),
+                "governed_surface_class": kernel_governed_surface_label(path),
+            },
             "renderer_trace": {"renderer": f"{agent}_pretooluse", "output_contract": "stderr_context"},
             "command_category": command_category,
             "command_redacted": command_redacted,
@@ -5336,6 +5376,121 @@ def self_test() -> int:
                 failures.append("runtime hook ledger must identify the pretooluse_decision@2 schema")
             if redaction_record.get("command_redacted") is not True:
                 failures.append("runtime hook ledger must mark command text as redacted")
+            if "redaction_count" not in redaction_record:
+                failures.append("runtime hook ledger must persist redaction_count")
+
+        secret_token = "token=" + "abc123"
+        secret_forbidden_command = f"git push --force https://{secret_token}@example.invalid/repo main"
+        codex_secret_forbidden = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "PreToolUse",
+                    "session_id": "renderer-redaction-codex",
+                    "tool_name": "Bash",
+                    "tool_use_id": "renderer-redaction-codex-tool",
+                    "tool_input": {"command": secret_forbidden_command},
+                }
+            ),
+        )
+        if codex_secret_forbidden.returncode != 2:
+            failures.append(f"Codex forbidden renderer must block with exit 2, got {codex_secret_forbidden.returncode}")
+        codex_forbidden_output = codex_secret_forbidden.stdout + codex_secret_forbidden.stderr
+        if secret_token in codex_forbidden_output or "https://" in codex_forbidden_output:
+            failures.append("Codex forbidden renderer must not leak raw secret-like command text")
+        if "category=forbidden_git_force_push" not in codex_forbidden_output:
+            failures.append("Codex forbidden renderer must retain redacted command category")
+
+        cursor_secret_forbidden = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "cursor",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "preToolUse",
+                    "session_id": "renderer-redaction-cursor",
+                    "tool_name": "Bash",
+                    "tool_use_id": "renderer-redaction-cursor-tool",
+                    "tool_input": {"command": secret_forbidden_command},
+                }
+            ),
+        )
+        if cursor_secret_forbidden.returncode != 0:
+            failures.append(f"Cursor forbidden renderer must return exit 0 JSON deny, got {cursor_secret_forbidden.returncode}")
+        cursor_forbidden_output = cursor_secret_forbidden.stdout + cursor_secret_forbidden.stderr
+        if secret_token in cursor_forbidden_output or "https://" in cursor_forbidden_output:
+            failures.append("Cursor forbidden renderer must not leak raw secret-like command text")
+        try:
+            cursor_forbidden_payload = json.loads(cursor_secret_forbidden.stdout)
+        except json.JSONDecodeError:
+            cursor_forbidden_payload = {}
+            failures.append("Cursor forbidden renderer must emit JSON")
+        if cursor_forbidden_payload.get("permission") != "deny":
+            failures.append("Cursor forbidden renderer must deny the forbidden command")
+
+        secret_path_command = f"cat payload > .cursor/rules/{secret_token}/SKILL.md"
+        codex_secret_path = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+            ],
+            cwd=target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "PreToolUse",
+                    "session_id": "ledger-secret-path",
+                    "tool_name": "Bash",
+                    "tool_use_id": "ledger-secret-path-tool",
+                    "tool_input": {"command": secret_path_command},
+                }
+            ),
+        )
+        if codex_secret_path.returncode != 0:
+            failures.append(f"Codex shell governed secret-path fixture must allow with context, got {codex_secret_path.returncode}")
+        if secret_token in codex_secret_path.stderr or secret_path_command in codex_secret_path.stderr:
+            failures.append("Codex shell governed context must not leak raw secret-like path or command")
+        secret_path_records = [
+            record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+            if record.get("agent") == "codex" and record.get("session") == "ledger-secret-path"
+        ]
+        if len(secret_path_records) != 1:
+            failures.append("runtime hook ledger must record the secret path redaction fixture")
+        else:
+            secret_path_record = secret_path_records[0]
+            encoded_record = json.dumps(secret_path_record, sort_keys=True)
+            if secret_token in encoded_record or secret_path_command in encoded_record:
+                failures.append("runtime hook ledger must not persist secret-like path segments or raw shell command")
+            if "path" in secret_path_record:
+                failures.append("runtime hook ledger must omit raw path when path_redacted=true")
+            if secret_path_record.get("path_redacted") is not True or not secret_path_record.get("path_hash"):
+                failures.append("runtime hook ledger must persist redacted path hash evidence")
+            if secret_path_record.get("governed_surface") is not True:
+                failures.append("runtime hook ledger must persist governed_surface=true")
+            if int(secret_path_record.get("redaction_count") or 0) < 2:
+                failures.append("runtime hook ledger must count command and path redactions")
+            if secret_path_record.get("path_class") != "skill":
+                failures.append("runtime hook ledger must keep a non-sensitive governed path class")
         codex_discoverability = run(
             [
                 sys.executable,

@@ -93,9 +93,12 @@ REQUIRED_TERMS = (
     "`classifier_trace.unknown_mutating=true`",
     "`renderer_trace.output_contract`",
     "redacted payload evidence (`command_category`, not raw `command`)",
+    "`shell_command_path_extracted`",
     "Ceiling evidence checklist: before reporting `PASS_CEILING`",
     "evidence names `reason_codes`, `classifier_trace`, `renderer_trace`",
-    "`command_redacted=true` or `command_category`, `dedupe_contract`",
+    "`command_redacted=true` or `command_category`, `path_redacted` or `path_class`,\n`redaction_count`, `dedupe_contract`",
+    "`path_redacted` or `path_class`",
+    "`redaction_count`",
     "top-level hook-health `helper_contract_status=PASS`, `floor_status`",
     "`ceiling_status`, `ceiling_gaps`, per-host\n`ceiling_evidence_scope.current_host`, non-empty PreToolUse `invocation`, and\ntop-level hook-health `discoverability_status=NEEDS_DISCOVERABILITY` or native\nequivalent",
     "Missing checklist item is a ceiling gap, not a floor failure.",
@@ -467,7 +470,11 @@ def red_capability_mutations(text: str) -> list[Mutation]:
         ),
         Mutation(
             "without_ceiling_checklist_redaction_analytics",
-            _remove(text, "`command_redacted=true` or `command_category`, `dedupe_contract`"),
+            _remove(
+                text,
+                "`command_redacted=true` or `command_category`, `path_redacted` or `path_class`,\n"
+                "`redaction_count`, `dedupe_contract`",
+            ),
             "command_redacted",
         ),
         Mutation(

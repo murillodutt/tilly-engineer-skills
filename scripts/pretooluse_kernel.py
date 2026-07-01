@@ -11,17 +11,14 @@ cannot leak into the decision core.
 from __future__ import annotations
 
 import re
+import shlex
 from typing import Any, Callable
 
 
 PATCH_FILE_HEADER_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$")
-GOVERNED_ARTIFACT_HINTS = (
-    "AGENTS.md",
-    "CLAUDE.md",
-    "docs/adr/",
-    "docs/governance/",
-    "/SKILL.md",
-    ".cursor/rules/",
+SHELL_REDIRECT_RE = re.compile(r"(?:(?<=\s)|^)(?P<op>>>|\d?>|>)\s*(?P<path>'[^']+'|\"[^\"]+\"|[^\s;&|]+)")
+SENSITIVE_PATH_RE = re.compile(
+    r"(?i)(api[_-]?key|authorization|bearer|credential|password|secret|token)(?:\s*[:=]\s*|[-_.:@])?[A-Za-z0-9._:@+=-]*"
 )
 # Keep host-emitted mutation names here, not in renderers, so governed-path
 # supervision stays host-neutral while each adapter keeps its own output shape.
@@ -78,6 +75,157 @@ def hook_patch_paths(command: str) -> list[str]:
         if match:
             paths.append(match.group(1).strip())
     return paths
+
+
+def _shell_words(command: str) -> list[str]:
+    try:
+        return shlex.split(command, comments=False, posix=True)
+    except ValueError:
+        return []
+
+
+def _unquote_shell_path(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1]
+    return value
+
+
+def _non_option_words(words: list[str]) -> list[str]:
+    return [word for word in words if word and not word.startswith("-")]
+
+
+def hook_shell_mutations(command: str) -> list[dict[str, str]]:
+    """Extract simple shell mutation targets without interpreting shell syntax."""
+    mutations: list[dict[str, str]] = []
+    for match in SHELL_REDIRECT_RE.finditer(command):
+        operator = match.group("op")
+        path = _unquote_shell_path(match.group("path"))
+        if path:
+            mutations.append(
+                {
+                    "path": path,
+                    "source": "shell_redirect",
+                    "category": "shell_redirect_append" if ">>" in operator else "shell_redirect_write",
+                }
+            )
+
+    words = _shell_words(command)
+    if not words:
+        return mutations
+
+    separators = {"|", ";", "&&", "||"}
+    for index, word in enumerate(words):
+        if word in separators:
+            continue
+        command_name = word.rsplit("/", 1)[-1]
+        args: list[str] = []
+        for arg in words[index + 1:]:
+            if arg in separators:
+                break
+            args.append(arg)
+        if command_name == "tee":
+            category = (
+                "shell_tee_append"
+                if any(arg == "-a" or "a" in arg[1:] for arg in args if arg.startswith("-"))
+                else "shell_tee_write"
+            )
+            for path in _non_option_words(args):
+                mutations.append({"path": path, "source": "shell_operand", "category": category})
+        elif command_name == "sed" and any(arg == "-i" or arg.startswith("-i") for arg in args):
+            operands = _non_option_words(args)
+            for path in operands[1:]:
+                mutations.append({"path": path, "source": "shell_operand", "category": "shell_sed_in_place"})
+        elif command_name == "rm":
+            for path in _non_option_words(args):
+                mutations.append({"path": path, "source": "shell_operand", "category": "shell_remove"})
+        elif command_name == "cp":
+            operands = _non_option_words(args)
+            if operands:
+                mutations.append({"path": operands[-1], "source": "shell_operand", "category": "shell_copy"})
+        elif command_name == "mv":
+            for path in _non_option_words(args):
+                mutations.append({"path": path, "source": "shell_operand", "category": "shell_move"})
+
+    unique: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for mutation in mutations:
+        key = (mutation["path"], mutation["category"])
+        if key not in seen:
+            seen.add(key)
+            unique.append(mutation)
+    return unique
+
+
+def command_category(command: str) -> str:
+    """Return a redaction-safe command class for renderer and ledger evidence."""
+    normalized = " ".join(command.strip().lower().split())
+    if not normalized:
+        return "no_command"
+    if hook_patch_paths(command):
+        return "patch_body"
+    if "push --force" in normalized or "--force-with-lease" in normalized:
+        return "forbidden_git_force_push"
+    if "git push" in normalized and (" --force" in normalized or " -f" in normalized):
+        return "forbidden_git_force_push"
+    if "--no-preserve-root" in normalized or "rm -rf /" in normalized or "rm -fr /" in normalized:
+        return "forbidden_root_wipe"
+    mutations = hook_shell_mutations(command)
+    if mutations:
+        return mutations[0]["category"]
+    return "shell_command"
+
+
+def _path_parts(path: str) -> list[str]:
+    normalized = path.replace("\\", "/").strip()
+    return [part for part in normalized.split("/") if part and part != "."]
+
+
+def is_governed_path(path: str) -> bool:
+    parts = _path_parts(path)
+    if not parts:
+        return False
+    filename = parts[-1]
+    if filename in {"AGENTS.md", "CLAUDE.md", "SKILL.md"}:
+        return True
+    joined = "/".join(parts)
+    return (
+        joined.startswith("docs/adr/")
+        or "/docs/adr/" in f"/{joined}/"
+        or joined.startswith("docs/governance/")
+        or "/docs/governance/" in f"/{joined}/"
+        or joined.startswith(".cursor/rules/")
+        or "/.cursor/rules/" in f"/{joined}/"
+    )
+
+
+def governed_surface_label(path: str) -> str:
+    parts = _path_parts(path)
+    if not parts:
+        return "none"
+    filename = parts[-1]
+    if filename == "SKILL.md":
+        return "skill"
+    if filename in {"AGENTS.md", "CLAUDE.md"}:
+        return "root_agent_bootloader"
+    joined = "/".join(parts)
+    if joined.startswith("docs/adr/") or "/docs/adr/" in f"/{joined}/":
+        return "adr"
+    if joined.startswith("docs/governance/") or "/docs/governance/" in f"/{joined}/":
+        return "governance"
+    if joined.startswith(".cursor/rules/") or "/.cursor/rules/" in f"/{joined}/":
+        return "cursor_rule"
+    return "path"
+
+
+def path_needs_redaction(path: str) -> bool:
+    return bool(SENSITIVE_PATH_RE.search(path))
+
+
+def rendered_path_label(path: str, *, raw_allowed: bool) -> str:
+    if raw_allowed and not path_needs_redaction(path):
+        return path
+    return f"governed surface ({governed_surface_label(path)})"
 
 
 def _first_string_value(*values: Any) -> str:
@@ -158,7 +306,10 @@ def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> st
         return str(value)
     command = hook_tool_command(hook_input, tool_input)
     patch_paths = hook_patch_paths(command)
-    return patch_paths[0] if patch_paths else ""
+    if patch_paths:
+        return patch_paths[0]
+    shell_mutations = hook_shell_mutations(command)
+    return shell_mutations[0]["path"] if shell_mutations else ""
 
 
 def hook_tool_path_source(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> tuple[str, str, str]:
@@ -176,6 +327,9 @@ def hook_tool_path_source(hook_input: dict[str, Any], tool_input: dict[str, Any]
     patch_paths = hook_patch_paths(command)
     if patch_paths:
         return patch_paths[0], "patch_body", command_source
+    shell_mutations = hook_shell_mutations(command)
+    if shell_mutations:
+        return shell_mutations[0]["path"], "shell_command", command_source
     return "", "none", "none"
 
 
@@ -209,25 +363,40 @@ def decide_pretooluse(
     for patch_path in patch_paths:
         if patch_path and patch_path not in paths:
             paths.append(patch_path)
+    shell_mutations = hook_shell_mutations(command)
+    for mutation in shell_mutations:
+        shell_path = mutation.get("path")
+        if shell_path and shell_path not in paths:
+            paths.append(shell_path)
 
     risk = risk_classifier(action, paths)
-    governed_paths = [path for path in paths if any(hint in path for hint in GOVERNED_ARTIFACT_HINTS)]
+    governed_paths = [path for path in paths if is_governed_path(path)]
     governed = bool(governed_paths)
     mutating = tool_name in MUTATING_TOOLS or normalized_tool in MUTATING_TOOLS
-    unknown_mutating = bool(tool_name) and not mutating and looks_like_mutating_tool(tool_name)
+    shell_mutating = bool(shell_mutations)
+    unknown_mutating = bool(tool_name) and not mutating and (looks_like_mutating_tool(tool_name) or shell_mutating)
+    raw_path_allowed = path_source not in {"shell_command"} and not shell_mutating
+    governed_display = rendered_path_label(governed_paths[0], raw_allowed=raw_path_allowed) if governed_paths else ""
     reason_codes: list[str] = []
     if patch_paths:
         reason_codes.append("patch_body_path_extracted")
+    if shell_mutations:
+        reason_codes.append("shell_command_path_extracted")
     if tool_name != normalized_tool:
         reason_codes.append("host_payload_labeling")
     if risk == "routine" and governed and mutating:
         risk = "material"
+    category = command_category(command)
     classifier_trace = {
         "normalized_tool": normalized_tool,
         "payload_source": payload_source,
         "path_source": path_source,
         "path_match": "governed_surface" if governed else "none",
         "patch_body_source": patch_body_source,
+        "command_category": category,
+        "governed_surface_class": governed_surface_label(governed_paths[0]) if governed_paths else "none",
+        "shell_mutation_categories": [mutation["category"] for mutation in shell_mutations],
+        "shell_path_count": len(shell_mutations),
         "forbidden_class": risk == "forbidden",
         "governed_surface": governed,
         "mutating_tool": mutating,
@@ -249,7 +418,7 @@ def decide_pretooluse(
             "reason_codes": reason_codes + ["forbidden_class"],
             "reason": (
                 f"{marker} Mantra Gate (senior manager): forbidden-class action "
-                f"({action or tool_name}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
+                f"(category={category}). Run the hard gate (VERIFY/SCOPE/BEST_PATH/"
                 "DOCUMENT/ORACLE/RESOLVE/STATUS) and get explicit authorization before proceeding."
             ),
         }
@@ -262,7 +431,7 @@ def decide_pretooluse(
             "reason_codes": reason_codes + ["needs_discoverability_unknown_mutation"],
             "context": (
                 f"{marker} Mantra Gate discoverability: unknown mutating-looking tool "
-                f"{tool_name} touched governed artifact {governed_paths[0]}. "
+                f"{tool_name} touched {governed_display}. "
                 "outcome=needs_discoverability risk=needs-discoverability. "
                 "Add host fixture/native evidence before treating this as routine."
             ),
@@ -275,8 +444,7 @@ def decide_pretooluse(
             "outcome": "supervise",
             "reason_codes": reason_codes + ["governed_surface_mutation"],
             "context": (
-                f"{marker} Mantra Gate supervising: {risk} change to governed artifact "
-                f"{governed_paths[0] if governed_paths else file_path}. "
+                f"{marker} Mantra Gate supervising: {risk} change to {governed_display}. "
                 "Confirm the contract obligation (ADR/SPEC) and bind a falsifiable oracle before closure."
             ),
         }

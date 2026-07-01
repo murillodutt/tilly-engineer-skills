@@ -252,14 +252,16 @@ Also classify PreToolUse maturity against the canonical contract:
   `routine_non_mutating`, `routine_non_governed`,
   `governed_surface_mutation`, `forbidden_class`,
   `anti_crywolf_repeated_context`, historical `anti_crywolf_suppressed`, `host_payload_labeling`,
-  `patch_body_path_extracted`, `needs_discoverability_unknown_mutation`,
-  `renderer_contract_projected`, and `cortex_advisory_no_write`.
+  `patch_body_path_extracted`, `shell_command_path_extracted`,
+  `needs_discoverability_unknown_mutation`, `renderer_contract_projected`,
+  and `cortex_advisory_no_write`.
 - `NEEDS_DISCOVERABILITY`: host payload semantics or a new tool name are safe
   but not yet classifiable with enough evidence.
 
 Ceiling evidence checklist: before reporting `PASS_CEILING`, verify installed
 evidence names `reason_codes`, `classifier_trace`, `renderer_trace`,
-`command_redacted=true` or `command_category`, `dedupe_contract`,
+`command_redacted=true` or `command_category`, `path_redacted` or `path_class`,
+`redaction_count`, `dedupe_contract`,
 top-level hook-health `helper_contract_status=PASS`, `floor_status`,
 `ceiling_status`, `ceiling_gaps`, per-host
 `ceiling_evidence_scope.current_host`, non-empty PreToolUse `invocation`, and

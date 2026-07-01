@@ -36,6 +36,9 @@ CONTRACT_TERMS = (
     "classifier trace",
     "host payload evidence",
     "discoverability gate",
+    "shell_command_path_extracted",
+    "raw shell commands",
+    "redacted path class/hash",
     "renderer parity",
     "ledger analytics contract",
     "stable synthetic invocation",
@@ -108,6 +111,11 @@ def red_capability_mutations(contract_text: str) -> list[Mutation]:
         Mutation("without_reason_codes", _remove(contract_text, "decision reason codes"), "decision reason codes"),
         Mutation("without_classifier_trace", _remove(contract_text, "classifier trace"), "classifier trace"),
         Mutation("without_host_payload_evidence", _remove(contract_text, "host payload evidence"), "host payload evidence"),
+        Mutation(
+            "without_shell_command_path_extracted",
+            _remove(contract_text, "shell_command_path_extracted"),
+            "shell_command_path_extracted",
+        ),
         Mutation("without_renderer_parity", _remove(contract_text, "renderer parity"), "renderer parity"),
         Mutation("without_drift_detection", _remove(contract_text, "drift detection"), "drift detection"),
     ]
