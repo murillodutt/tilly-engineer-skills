@@ -5,7 +5,7 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.4`.
+Operational contract: `tes.host_transcript_canary@0.1.5`.
 
 Central rule:
 
@@ -43,7 +43,9 @@ Load only the reference needed by the current loop:
 | Transcript sanitization, required signals, subagents, stale evidence, failure classes | `references/transcript-evidence.md` |
 | Final canary decision, related gates, certification closeout, ledger discipline | `references/canary-convergence.md` |
 | Ceiling posture, floor-green rejection, strongest local proof, breakthrough loop | `references/ceiling-breakthrough.md` |
+| Agent hook feature matrix, source/target/host evidence lanes, fix ownership, certification states | `references/agent-hooks-certification.md` |
 | A retained or chat-emitted sanitized evidence report | `templates/host-canary-report.template.md` |
+| A retained agent hook certification report | `templates/agent-hooks-certification-report.template.md` |
 
 If a claim depends on one of these behaviors, load the owning reference before
 deciding. Do not inline reference-owned detail into `SKILL.md` just to make the
@@ -181,6 +183,7 @@ python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validat
 python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .claude/skills/tes-host-transcript-canary
 diff -qr .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-transcript-canary
 python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py --self-test --repo .
+python3 .agents/skills/tes-host-transcript-canary/scripts/agent_hooks_certification_matrix.py --self-test --repo .
 python3 scripts/canary_transcript_oracle.py --self-test
 ```
 

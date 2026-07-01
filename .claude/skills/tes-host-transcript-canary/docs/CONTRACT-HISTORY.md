@@ -103,6 +103,7 @@ bootloader and without tracking raw transcript content.
 | 2026-07-01 | `tes.host_transcript_canary@0.1.2`: Added `scripts/host_canary_loop.py` to record sanitized replay ledgers and enforce same-command/fresh-transcript checks. | Maintainer directive in current session; helper self-test. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.3`: Added compact Goal-Maestro-style architecture with routed references for host command loops, transcript evidence, canary convergence, and a sanitized report template. | Maintainer directive in current session; structural comparison with `tes-goal-maestro`. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.4`: Added `references/ceiling-breakthrough.md` so the harness rejects floor-green certification and pursues the strongest local host-real proof. | Maintainer ceiling directive in current session. | high |
+| 2026-07-01 | `tes.host_transcript_canary@0.1.5`: Added the agent-hooks certification reference, report template, and matrix helper so future loops can verify, fix, and certify each TES agent hook characteristic across source, installed target, and host transcript lanes. | Maintainer request to certify the complete agent hook feature list through this harness. | high |
 
 ## Do Not Lose
 
