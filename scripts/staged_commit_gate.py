@@ -98,6 +98,11 @@ def touched_dev_skills(staged: list[Path]) -> set[str]:
     return skills
 
 
+def is_generated_python_artifact(path: Path) -> bool:
+    """Return true for bytecode caches that must not affect source parity."""
+    return any(part == "__pycache__" for part in path.parts) or path.suffix in {".pyc", ".pyo"}
+
+
 def local_skill_parity_failures(skills: set[str]) -> list[str]:
     failures: list[str] = []
     for skill in sorted(skills):
@@ -114,12 +119,12 @@ def local_skill_parity_failures(skills: set[str]) -> list[str]:
         codex_files = {
             path.relative_to(codex_root): path
             for path in codex_root.rglob("*")
-            if path.is_file() and path.name != ".DS_Store"
+            if path.is_file() and path.name != ".DS_Store" and not is_generated_python_artifact(path)
         }
         claude_files = {
             path.relative_to(claude_root): path
             for path in claude_root.rglob("*")
-            if path.is_file() and path.name != ".DS_Store"
+            if path.is_file() and path.name != ".DS_Store" and not is_generated_python_artifact(path)
         }
         for relpath in sorted(codex_files.keys() - claude_files.keys()):
             failures.append(f"{skill}: missing Claude parity file: {relpath}")

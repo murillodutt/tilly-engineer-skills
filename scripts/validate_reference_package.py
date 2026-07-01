@@ -827,6 +827,11 @@ def benchmark_fixture_deletion_test_failures() -> list[str]:
     return []
 
 
+def is_generated_python_artifact(path: Path) -> bool:
+    """Return true for bytecode caches that must not affect source parity."""
+    return any(part == "__pycache__" for part in path.parts) or path.suffix in {".pyc", ".pyo"}
+
+
 def local_development_skill_parity_failures() -> list[str]:
     failures: list[str] = []
     for skill in LOCAL_DEVELOPMENT_SKILL_PARITY:
@@ -842,12 +847,12 @@ def local_development_skill_parity_failures() -> list[str]:
         codex_files = {
             path.relative_to(codex_root): path
             for path in codex_root.rglob("*")
-            if path.is_file() and path.name != ".DS_Store"
+            if path.is_file() and path.name != ".DS_Store" and not is_generated_python_artifact(path)
         }
         claude_files = {
             path.relative_to(claude_root): path
             for path in claude_root.rglob("*")
-            if path.is_file() and path.name != ".DS_Store"
+            if path.is_file() and path.name != ".DS_Store" and not is_generated_python_artifact(path)
         }
 
         for relpath in sorted(codex_files.keys() - claude_files.keys()):
@@ -877,12 +882,12 @@ def goal_maestro_scripts_parity_failures() -> list[str]:
     claude_files = {
         path.relative_to(claude_root): path
         for path in claude_root.rglob("*")
-        if path.is_file() and path.name != ".DS_Store"
+        if path.is_file() and path.name != ".DS_Store" and not is_generated_python_artifact(path)
     }
     codex_files = {
         path.relative_to(codex_root): path
         for path in codex_root.rglob("*")
-        if path.is_file() and path.name != ".DS_Store"
+        if path.is_file() and path.name != ".DS_Store" and not is_generated_python_artifact(path)
     }
 
     for relpath in sorted(claude_files.keys() - codex_files.keys()):

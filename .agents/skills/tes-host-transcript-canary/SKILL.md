@@ -5,7 +5,7 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.1`.
+Operational contract: `tes.host_transcript_canary@0.1.2`.
 
 Local development surface only. Do not package, publish, materialize, or treat
 as adopter-facing TES behavior.
@@ -26,6 +26,29 @@ tool inputs, tool results, subagent metadata content, secrets, or raw JSONL.
 This skill strengthens canary replay evidence. It does not replace
 `canary_admission_oracle.py`, `installed_certification_oracle.py`,
 `git_gate_contract.py`, package validation, or host/runtime gates.
+
+## Scripted Loop Helper
+
+Use `scripts/host_canary_loop.py` when the loop needs deterministic replay
+memory, command fingerprinting, stale-transcript rejection, or a local
+gitignored JSONL ledger:
+
+```bash
+python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py \
+  --repo . \
+  --target <target> \
+  --command '<host command>' \
+  --command-label '<safe label>' \
+  --include-subagents \
+  --require-tool-use \
+  --require-fresh \
+  --enforce-same-command
+```
+
+Add `--execute` only when the command is authorized to run. The helper captures
+return codes, output byte counts, and output hashes only; it does not write raw
+commands, stdout, stderr, prompts, tool inputs, or tool results. Its default
+ledger is `.tes/runs/host-canary-loop.jsonl`, which is local and gitignored.
 
 ## Workflow
 
@@ -103,8 +126,8 @@ Failure classes:
 
 ```text
 framed -> host_executed -> transcript_resolved -> sanitized_oracle_run ->
-failure_classified -> correction_applied -> original_command_replayed ->
-related_gates_run -> canary_decision
+loop_ledger_recorded -> failure_classified -> correction_applied ->
+original_command_replayed -> related_gates_run -> canary_decision
 ```
 
 - `produce_and_continue`: transcript path can be derived or the target can be
@@ -122,6 +145,7 @@ Keep the chat closeout short:
 - host command or reason no host command ran
 - transcript oracle status
 - transcript hash and event/tool counts when available
+- local loop ledger path when `host_canary_loop.py` wrote one
 - loop count, last failure class, and original replay status when in loop mode
 - related gates run
 - blockers or next concrete fix
@@ -134,6 +158,7 @@ When this skill changes, run:
 python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-host-transcript-canary
 python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .claude/skills/tes-host-transcript-canary
 diff -qr .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-transcript-canary
+python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py --self-test --repo .
 python3 scripts/canary_transcript_oracle.py --self-test
 ```
 
@@ -144,9 +169,9 @@ canary/package gate.
 ## Done
 
 Done means a future window can reconstruct the host-backed canary method from
-this skill, raw transcript content remains unstaged, the transcript oracle ran
-or the blocker is classified, and the canary decision still depends on the
-primary TES gates.
+this skill, raw transcript content remains unstaged, the transcript oracle or
+scripted loop helper ran or the blocker is classified, and the canary decision
+still depends on the primary TES gates.
 
 ## Locks
 
@@ -155,3 +180,5 @@ primary TES gates.
 - Do not let transcript evidence bypass Git, install, package, or host gates.
 - Do not update bootloaders for this workflow unless the owner explicitly asks.
 - Do not promote project-specific transcript paths into tracked content.
+- Do not stage `.tes/runs/host-canary-loop.jsonl`; promote only portable rules
+  back into this skill, source oracles, fixtures, or docs.
