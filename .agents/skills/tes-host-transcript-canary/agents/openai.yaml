@@ -1,4 +1,4 @@
 interface:
   display_name: "TES Host Transcript Canary"
-  short_description: "Audit host CLI transcripts for canaries."
-  default_prompt: "Use $tes-host-transcript-canary to run a host-backed canary replay and summarize the sanitized transcript evidence."
+  short_description: "Run transcript-backed canary loops."
+  default_prompt: "Use $tes-host-transcript-canary to run a persistent host-backed canary loop, audit the sanitized Claude transcript, and decide the next corrective step."

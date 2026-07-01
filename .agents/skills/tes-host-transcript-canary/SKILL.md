@@ -1,11 +1,11 @@
 ---
 name: tes-host-transcript-canary
-description: Local-only Tilly development workflow for host-backed canary execution with Claude CLI/host transcripts. Use when Codex must run or audit a TES canary through the real host, inspect Claude Code local JSONL transcripts, convert host execution history into sanitized evidence, preserve execution continuity across windows, or prove that a canary claim is backed by host-real transcript evidence.
+description: Local-only Tilly development workflow for persistent host-backed canary execution with Claude CLI/host transcripts. Use when Codex must run or audit a TES canary through the real host, inspect Claude Code local JSONL transcripts, convert host execution history into sanitized evidence, preserve execution continuity across windows, run analytical/corrective replay loops, or prove that a canary claim is backed by host-real transcript evidence.
 ---
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.0`.
+Operational contract: `tes.host_transcript_canary@0.1.1`.
 
 Local development surface only. Do not package, publish, materialize, or treat
 as adopter-facing TES behavior.
@@ -15,7 +15,8 @@ as adopter-facing TES behavior.
 Use this chain:
 
 ```text
-host command -> local transcript JSONL -> sanitized oracle -> evidence pack -> canary decision
+host command -> local transcript JSONL -> sanitized oracle ->
+analysis -> minimal correction -> same host command replay -> canary decision
 ```
 
 The raw transcript stays local. Tracked evidence may contain paths, statuses,
@@ -59,11 +60,51 @@ the target has multiple host sessions.
 7. Combine transcript evidence with canary admission, installed certification,
    Git gate, package, and public-bundle gates before claiming convergence.
 
+## Persistent Loop
+
+Use a loop when the host command exposes a defect, gap, stale helper, false
+green, missing evidence, or unexplained drift:
+
+```text
+run host command -> audit transcript -> classify failure -> patch source ->
+rerun same host command -> audit new transcript -> rerun related gates
+```
+
+Loop rules:
+
+- Keep one active hypothesis per iteration.
+- Prefer replaying the same host command before broadening the gate set.
+- Patch package source or local development skill source, not installed canary
+  mirrors, unless the task is explicitly target-only evidence collection.
+- Treat `PASS` without a fresh transcript hash as stale evidence.
+- Treat a new transcript with fewer material events, no tool-use evidence, or
+  malformed JSONL as `NEEDS_EVIDENCE`/`FAIL`, not progress.
+- Continue while each loop produces a new classified failure or a smaller
+  correction target.
+- Stop as `BLOCKED` when the same blocker repeats after three attempts, the
+  next action needs authority, or host truth cannot be observed.
+- Stop as `CERTIFIED` only after the original host command replay, transcript
+  oracle, and related TES gates all support the claim.
+
+Failure classes:
+
+- `host_execution_gap`: command did not run, did not attach to the expected
+  target, or produced no usable host transcript.
+- `transcript_gap`: JSONL absent, stale, malformed, or missing required tool
+  evidence.
+- `oracle_gap`: transcript exists but the source oracle cannot express the
+  evidence needed for the canary decision.
+- `product_gap`: TES source behavior caused the failed canary result.
+- `evidence_gap`: reports or summaries do not connect command, transcript hash,
+  correction, and replay.
+- `false_green`: a gate passed without proving host-real execution.
+
 ## State Model
 
 ```text
 framed -> host_executed -> transcript_resolved -> sanitized_oracle_run ->
-evidence_recorded -> canary_decision
+failure_classified -> correction_applied -> original_command_replayed ->
+related_gates_run -> canary_decision
 ```
 
 - `produce_and_continue`: transcript path can be derived or the target can be
@@ -81,6 +122,7 @@ Keep the chat closeout short:
 - host command or reason no host command ran
 - transcript oracle status
 - transcript hash and event/tool counts when available
+- loop count, last failure class, and original replay status when in loop mode
 - related gates run
 - blockers or next concrete fix
 
