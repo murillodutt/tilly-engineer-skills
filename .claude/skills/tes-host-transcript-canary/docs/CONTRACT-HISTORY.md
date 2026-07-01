@@ -25,6 +25,7 @@ bootloader and without tracking raw transcript content.
 | Maintainer directive, 2026-07-01 | Build this model as a development-layer skill instead of changing the bootloader. | high |
 | Maintainer directive, 2026-07-01 | Turn the successful Claude-command loop pattern into an executable helper with a sanitized local ledger. | high |
 | Maintainer directive, 2026-07-01 | Apply the `tes-goal-maestro` architecture pattern at compact scale: root routes, references own depth, templates preserve emitted shape, scripts prove fragile behavior. | high |
+| Maintainer directive, 2026-07-01 | The harness must never optimize for the floor; it must pursue ceiling-grade host-real proof and reject floor-green certification. | high |
 
 ## Source Search Ledger
 
@@ -35,6 +36,7 @@ bootloader and without tracking raw transcript content.
 | 2026-07-01 | Claude command execution loops in current TES work | host command, transcript oracle, source patch, same-command replay, package/canary gates | The skill must preserve persistent analytical/corrective replay behavior, not only one-shot transcript auditing. |
 | 2026-07-01 | `.tes/runs/` gitignore and skill `scripts/` support | local ignored run ledgers; bundled deterministic skill helpers | The loop helper can record replay memory locally without creating adopter-facing package behavior. |
 | 2026-07-01 | `tes-goal-maestro` structure | `SKILL.md`, `references/`, `templates/`, `scripts/`, and contract history split responsibilities by loading cost and execution fragility | `tes-host-transcript-canary` should reuse the architecture, not the volume, so future windows can load only the needed host-loop depth. |
+| 2026-07-01 | Maintainer ceiling directive in current session | "never the floor, always break through the ceiling" for this harness | Add a routed ceiling reference so future canary loops reject superficial passes without expanding scope. |
 
 ## Contracts Preserved
 
@@ -48,6 +50,8 @@ bootloader and without tracking raw transcript content.
   fingerprinting, stale-transcript rejection, and a local JSONL replay ledger.
 - Keep `SKILL.md` as a router and move detailed host-command, transcript, and
   convergence behavior into one-level references.
+- Load `references/ceiling-breakthrough.md` when a result looks merely green
+  but the canary claim needs ceiling-grade host-real proof.
 - Use `templates/host-canary-report.template.md` when a retained or chat
   evidence report needs a stable sanitized shape.
 - Keep raw Claude Code JSONL local and unstaged.
@@ -74,6 +78,8 @@ bootloader and without tracking raw transcript content.
 - Inflating `SKILL.md` until every loop pays the full context cost.
 - Copying the full `tes-goal-maestro` volume instead of transferring its
   modular architecture.
+- Certifying floor-green evidence when host-real replay, fresh transcript,
+  source ownership, or related gates remain weak.
 - Broadening to package closure before classifying the host/transcript failure.
 - Patching only a canary target while the source oracle or workflow remains
   stale.
@@ -96,6 +102,7 @@ bootloader and without tracking raw transcript content.
 | 2026-07-01 | `tes.host_transcript_canary@0.1.1`: Added persistent analytical/corrective loop semantics: same host command replay, failure classes, stale transcript rejection, and convergence criteria. | Maintainer reflection in current session after successful Claude-command canary loops. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.2`: Added `scripts/host_canary_loop.py` to record sanitized replay ledgers and enforce same-command/fresh-transcript checks. | Maintainer directive in current session; helper self-test. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.3`: Added compact Goal-Maestro-style architecture with routed references for host command loops, transcript evidence, canary convergence, and a sanitized report template. | Maintainer directive in current session; structural comparison with `tes-goal-maestro`. | high |
+| 2026-07-01 | `tes.host_transcript_canary@0.1.4`: Added `references/ceiling-breakthrough.md` so the harness rejects floor-green certification and pursues the strongest local host-real proof. | Maintainer ceiling directive in current session. | high |
 
 ## Do Not Lose
 
@@ -104,5 +111,6 @@ real host execution to sanitized oracle evidence, failure classification,
 minimal correction, original-command replay, ledger-backed continuity, and a
 canary decision that still depends on primary TES gates. The root skill should
 route; detailed loop behavior belongs in references, report shape belongs in a
-template, and fragile proof belongs in scripts. Keep the bootloader thin until
-this workflow becomes a mandatory routing rule.
+template, fragile proof belongs in scripts, and ceiling posture belongs in a
+routed reference. Keep the bootloader thin until this workflow becomes a
+mandatory routing rule.

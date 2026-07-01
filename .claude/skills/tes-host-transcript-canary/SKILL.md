@@ -5,7 +5,7 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.3`.
+Operational contract: `tes.host_transcript_canary@0.1.4`.
 
 Central rule:
 
@@ -42,6 +42,7 @@ Load only the reference needed by the current loop:
 | Real host command authority, same-command replay, correction ownership, stop states | `references/host-command-loop.md` |
 | Transcript sanitization, required signals, subagents, stale evidence, failure classes | `references/transcript-evidence.md` |
 | Final canary decision, related gates, certification closeout, ledger discipline | `references/canary-convergence.md` |
+| Ceiling posture, floor-green rejection, strongest local proof, breakthrough loop | `references/ceiling-breakthrough.md` |
 | A retained or chat-emitted sanitized evidence report | `templates/host-canary-report.template.md` |
 
 If a claim depends on one of these behaviors, load the owning reference before
