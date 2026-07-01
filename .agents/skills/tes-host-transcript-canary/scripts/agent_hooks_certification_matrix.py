@@ -513,7 +513,108 @@ def load_json_file(path: Path | None) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else {"status": "FAIL", "blockers": [f"JSON root is not an object: {path}"]}
 
 
-def host_matrix(host_loop_json: dict[str, Any] | None, transcript_json: dict[str, Any] | None) -> list[dict[str, Any]]:
+def transcript_session_id(transcript_path: Any) -> str:
+    raw = str(transcript_path or "").strip()
+    if not raw:
+        return ""
+    return Path(raw).stem
+
+
+def read_runtime_hook_records(target: Path | None) -> list[dict[str, Any]]:
+    if target is None:
+        return []
+    ledger = target / ".tes/runtime/hooks/executed.jsonl"
+    if not ledger.is_file():
+        return []
+    records: list[dict[str, Any]] = []
+    for line in ledger.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            records.append(payload)
+    return records
+
+
+def host_runtime_rows(target: Path | None, current_host: str | None, host_loop_json: dict[str, Any] | None) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if target is None or current_host is None or host_loop_json is None:
+        return rows
+    oracle = host_loop_json.get("oracle") if isinstance(host_loop_json.get("oracle"), dict) else {}
+    session_id = transcript_session_id(oracle.get("transcript_path"))
+    records = [
+        record
+        for record in read_runtime_hook_records(target)
+        if record.get("agent") == current_host
+        and str(record.get("event_canonical") or record.get("event") or "") == "PreToolUse"
+        and str(record.get("session") or "") == session_id
+    ]
+    host_real_records = [record for record in records if record.get("provenance") == "host-real"]
+    supervised = [
+        record
+        for record in host_real_records
+        if record.get("governed_surface") is True
+        and record.get("outcome") == "supervise"
+        and isinstance(record.get("renderer_trace"), dict)
+        and record["renderer_trace"].get("output_contract")
+    ]
+    redacted_shell = [
+        record
+        for record in host_real_records
+        if record.get("command_redacted") is True
+        and str(record.get("command_category") or "") not in {"", "no_command"}
+    ]
+    rows.extend(
+        [
+            {
+                "id": "host-runtime-session-correlated",
+                "label": "Host runtime ledger has a host-real PreToolUse row for the transcript session.",
+                "lane": "host",
+                "status": "PASS" if host_real_records else "NEEDS_EVIDENCE",
+                "owner": ".tes/runtime/hooks/executed.jsonl",
+                "observed": {
+                    "session": session_id,
+                    "records": len(records),
+                    "host_real_records": len(host_real_records),
+                },
+            },
+            {
+                "id": "host-runtime-governed-supervision",
+                "label": "Host runtime ledger proves governed-surface supervision with renderer projection.",
+                "lane": "host",
+                "status": "PASS" if supervised else "NEEDS_EVIDENCE",
+                "owner": ".tes/runtime/hooks/executed.jsonl",
+                "observed": {
+                    "session": session_id,
+                    "records": len(supervised),
+                    "outcomes": sorted({str(record.get("outcome") or "") for record in supervised}),
+                },
+            },
+            {
+                "id": "host-runtime-shell-redaction",
+                "label": "Host runtime ledger proves shell command classification and redaction.",
+                "lane": "host",
+                "status": "PASS" if redacted_shell else "NEEDS_EVIDENCE",
+                "owner": ".tes/runtime/hooks/executed.jsonl",
+                "observed": {
+                    "session": session_id,
+                    "records": len(redacted_shell),
+                    "command_categories": sorted({str(record.get("command_category") or "") for record in redacted_shell}),
+                },
+            },
+        ]
+    )
+    return rows
+
+
+def host_matrix(
+    host_loop_json: dict[str, Any] | None,
+    transcript_json: dict[str, Any] | None,
+    *,
+    target: Path | None = None,
+    current_host: str | None = None,
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if host_loop_json is None and transcript_json is None:
         return [
@@ -560,6 +661,7 @@ def host_matrix(host_loop_json: dict[str, Any] | None, transcript_json: dict[str
                 },
             }
         )
+        rows.extend(host_runtime_rows(target, current_host, host_loop_json))
 
     if transcript_json is not None:
         main = transcript_json.get("main") if isinstance(transcript_json.get("main"), dict) else {}
@@ -620,6 +722,18 @@ def decision(summary: dict[str, Any], *, target: Path | None, host_rows: list[di
         return "SOURCE_CERTIFIED"
     if all(row.get("lane") != "host" or row.get("status") == "NOT_RUN" for row in host_rows):
         return "TARGET_CERTIFIED"
+    host_ceiling_ids = {
+        "host-runtime-session-correlated",
+        "host-runtime-governed-supervision",
+        "host-runtime-shell-redaction",
+    }
+    host_ceiling_statuses = {
+        str(row.get("id")): str(row.get("status"))
+        for row in host_rows
+        if row.get("id") in host_ceiling_ids
+    }
+    if host_ceiling_statuses and all(host_ceiling_statuses.get(row_id) == "PASS" for row_id in host_ceiling_ids):
+        return "HOST_CEILING_CERTIFIED"
     return "HOST_CERTIFIED"
 
 
@@ -630,7 +744,7 @@ def build_matrix(args: argparse.Namespace) -> dict[str, Any]:
     target_rows, target_evidence = target_matrix(repo, target, args.current_host)
     host_loop_json = load_json_file(args.host_loop_json)
     transcript_json = load_json_file(args.transcript_oracle_json)
-    host_rows = host_matrix(host_loop_json, transcript_json)
+    host_rows = host_matrix(host_loop_json, transcript_json, target=target, current_host=args.current_host)
     rows = [*source_rows, *target_rows, *host_rows]
     summary = summarize(rows, require_target=args.require_target, require_host_transcript=args.require_host_transcript)
     gates = related_gates(repo, target, args.current_host, args.run_related_gates, args.host_loop_json)
