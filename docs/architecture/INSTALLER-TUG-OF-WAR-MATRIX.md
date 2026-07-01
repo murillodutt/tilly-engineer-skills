@@ -38,9 +38,9 @@ Install reads PASS; the downstream gate hard-BLOCKs on exactly what install hid.
 
 | # | Tug | Order A | Order B | Current behavior | Visible today? | Required downstream | Sev |
 |---|-----|---------|---------|------------------|----------------|---------------------|-----|
-| 1 | **git-repo-absence** | TES must never `git init` / touch adopter repo (INSTALL.md:276) | Admission REQUIRES a Git work tree, BLOCKs otherwise | no-Git installs to INSTALLED/PASS; `field_reports` BLOCKED reason never flips `status` | Buried — reason rides in payload `details`, not the verdict | `canary_admission.git_admission` hard-BLOCK | TRUTH |
-| 2 | **pre-push-absence** | On no-`.git` / `hooksPath=/dev/null`, pre-push not installed; install stays advisory | Admission REQUIRES the Field Reports pre-push gate present + marker | BLOCKED swallowed like #1; `tes_field_reports_pre_push` flag is display-only, gates nothing | Cosmetic flag only | `canary_admission.prepush_evidence` BLOCK | TRUTH |
-| 3 | **strict-pre-commit-absence** | TES does NOT auto-install strict pre-commit for adopters | Admission REQUIRES a strict pre-commit gate file, BLOCKs when absent | No install path ever writes pre-commit; zero signal it will be demanded | None — invisible until canary | `canary_admission.precommit_evidence` BLOCK | BLOCK |
+| 1 | **git-repo-absence** | TES must never `git init` / touch adopter repo (INSTALL.md:276) | Admission REQUIRES a Git work tree, BLOCKs otherwise | no-Git installs to INSTALLED/PASS; `field_reports` BLOCKED reason never flips `status` | Buried — reason rides in payload `details`, not the verdict | `git_gate_contract.canary_git_admission` hard-BLOCK | TRUTH |
+| 2 | **pre-push-absence** | On no-`.git` / `hooksPath=/dev/null`, pre-push not installed; install stays advisory | Admission REQUIRES the Field Reports pre-push gate present + marker | BLOCKED swallowed like #1; `tes_field_reports_pre_push` flag is display-only, gates nothing | Cosmetic flag only | `git_gate_contract.canary_prepush_evidence` BLOCK | TRUTH |
+| 3 | **strict-pre-commit-absence** | TES does NOT auto-install strict pre-commit for adopters | Admission REQUIRES a strict pre-commit gate file, BLOCKs when absent | No install path ever writes pre-commit; zero signal it will be demanded | None — invisible until canary | `git_gate_contract.canary_precommit_evidence` BLOCK | BLOCK |
 | 4 | **artifact-hygiene-git-info-exclude** | `.git/info/exclude` hygiene only on a Git repo; no-op otherwise | `installed_certification.artifact_hygiene` is the hygiene oracle | The oracle EXCLUDES `.git` from its scan → certifies hygiene PASS over the surface docs name as hygiene | None — self-blinding | (hygiene contract itself) | TRUTH |
 | 5 | **config-present-counts-as-registered** (MCP) | MCP config written = registered | Config presence is NOT host connection; only `initialize`→`tools/list` proves it | `mcp_registration` returns PASS on a substring match; real handshake oracle exists but cert path never calls it; `host_connected_not_inferred=True` hardcoded | Partial — handshake verdict exists elsewhere, unused | recognition ladder / attach_health | TRUTH |
 | 6 | **sealed_claim-unknown-as-clean** | — | Missing provenance must not certify sealed | `source_tree_state == "unknown"` grouped with `"clean"` → fail-open | `release_claim_status` emitted but unknown→allowed | release seal | TRUTH |
@@ -125,7 +125,7 @@ manager is respected; otherwise husky for Node/TS/npm-first, pre-commit when a
 | # | Decision materialized | Where | Oracle |
 |---|-----------------------|-------|--------|
 | 1 | Hooks attached + no Git → headline `NEEDS_GIT` (exit 0, reversible); never a green hiding field-reports BLOCKED | `tes_install.git_readiness` + `aggregate_install_status` | `python3 scripts/tes_install.py --self-test` |
-| 2 | Pre-push installed/verified when Git exists; the gate is a contract field (canary + doctor), not a cosmetic flag | `field_reports.install_hook` / `canary_admission.prepush_evidence` | `python3 scripts/canary_admission_oracle.py --self-test`; `python3 scripts/hook_manager_awareness_oracle.py --self-test` |
+| 2 | Pre-push installed/verified when Git exists; the gate is a contract field (canary + doctor), not a cosmetic flag | `field_reports.install_hook` / `git_gate_contract.hook_gate_evidence` | `python3 scripts/git_gate_contract.py --self-test`; `python3 scripts/canary_admission_oracle.py --self-test`; `python3 scripts/hook_manager_awareness_oracle.py --self-test` |
 | 3 | **Strict pre-commit installed & verified** (manager chosen by project type), overturning the advisory-only contract | `field_reports.select_hook_manager` + `install_pre_commit_hook` | `python3 scripts/hook_manager_awareness_oracle.py --self-test` |
 | 4 | Artifact hygiene no longer self-blinds wholesale (scoped) | `installed_certification_oracle` hygiene scan | `python3 scripts/installed_certification_oracle.py --self-test` |
 | 5 | MCP registration ladder: config written → host recognizes → handshake proves; `host_connected` measured, not hardcoded | `installed_certification.mcp_registration` (real handshake) | `python3 scripts/installed_certification_oracle.py --self-test` |
@@ -154,9 +154,10 @@ release-identity advisory reports the typed tier **`READY_PENDING_HOST`**
 
 - `scripts/tes_init.py:2474-2528` — status computed from gates only; field-report BLOCKED rides in details/payload.
 - `scripts/tes_install.py:1282-1303` — `aggregate_install_status` reads only apply + certification.
-- `scripts/installed_certification_oracle.py:330-345` — 8 components, none checks Git.
+- `scripts/git_gate_contract.py` — canonical Git-gate evidence, command-invocation proof, standardized fixtures, and expected-state matrix.
+- `scripts/installed_certification_oracle.py` — installed certification consumes `git_gate_contract.installed_git_admission_status`.
 - `scripts/field_reports.py:1125-1129` — `install_hook` BLOCKED on no `.git`.
-- `scripts/canary_admission_oracle.py:127-158` — `git_admission` hard-BLOCK + strict-gate definition.
+- `scripts/canary_admission_oracle.py` — canary admission consumes `git_gate_contract.canary_git_admission`.
 
 ## Ceiling resolution — second wave (materialized 2026-06-30, findings 21-36)
 
@@ -168,11 +169,11 @@ ceiling audit confirmed 36/36 findings RESOLVED with a red-capable oracle each.
 
 | # | Decision materialized | Where | Oracle |
 |---|-----------------------|-------|--------|
-| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` / `prepush_enforced` (blocking quality gate); drain-only never proves pre-push enforcement | `canary_admission.prepush_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
-| 22 | Strict pre-commit proven by executability (`os.access X_OK`) + a gate token in CODE (comments stripped), never a substring | `canary_admission.precommit_evidence` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 21 | `field_reports_prepush_drain` (HOOK_MARKER, advisory) separated from `project_prepush_gate` / `prepush_enforced` (blocking quality gate); drain-only never proves pre-push enforcement | `git_gate_contract.canary_prepush_evidence` | `python3 scripts/git_gate_contract.py --self-test`; `python3 scripts/canary_admission_oracle.py --self-test` |
+| 22 | Strict pre-commit proven by executability plus a resolved command invocation, never a substring/comment/echo token | `git_gate_contract.canary_precommit_evidence` | `python3 scripts/git_gate_contract.py --self-test`; `python3 scripts/canary_admission_oracle.py --self-test` |
 | 23 | hook-health `--gate` exits non-zero on `NEEDS_EVIDENCE`; `--query` (default) stays 0 | `tes_install` hook-health CLI | `python3 scripts/tes_install.py --self-test` |
 | 24 | `certification_tier` distinguishes `PASS_BASIC` from `PASS_CEILING`; `ceiling_evidence` surfaced (INFO, non-gating on fresh install) | `installed_certification.evaluate` | `python3 scripts/installed_certification_oracle.py --self-test` |
-| 25 | Field Reports pre-push is an advisory non-blocking drain; admission requires a resolved pre-push quality gate (`prepush_enforced=true`) plus the drain | `canary_admission.git_admission` | `python3 scripts/canary_admission_oracle.py --self-test` |
+| 25 | Field Reports pre-push is an advisory non-blocking drain; admission requires a resolved pre-push quality gate (`prepush_enforced=true`) plus the drain | `git_gate_contract.canary_git_admission` | `python3 scripts/git_gate_contract.py --self-test`; `python3 scripts/canary_admission_oracle.py --self-test` |
 | 26 | Expected MCP derived from the install lock — lock attached MCP but no config = FAIL, never silent PASS | `installed_certification.mcp_registration` | `python3 scripts/installed_certification_oracle.py --self-test` |
 | 27 | `attach`/`detach` transact the install lock + recertify (honor `--dry-run`, additive merge, capsule preserved) | `tes_install.transact_lock_surface` | `python3 scripts/tes_install.py --self-test` |
 | 28 | `doctor` separates `report_status` (capsule) from `readiness_status` (folds worst attachment); `PENDING_*`/`DEGRADED` never hidden | `tes_install.doctor` + `_fold_attachment_readiness` | `python3 scripts/tes_install.py --self-test` |

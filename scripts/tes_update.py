@@ -31,7 +31,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.237"
+VERSION = "0.3.238"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -56,6 +56,7 @@ HELPER_FILES = (
     "checkpoint.py",
     "consolidation_gate.py",
     "field_reports.py",
+    "git_gate_contract.py",
     "mantra_gate.py",
     "mantra_gate_adoption_oracle.py",
     "tes_install.py",
@@ -76,6 +77,7 @@ HELPER_FILES = (
 )
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
+    "git_gate_contract.py": ('SCHEMA = "tes-git-gate-contract@1"',),
     "mantra_gate_adoption_oracle.py": ('SCHEMA = "tes-mantra-gate-adoption@1"',),
 }
 CONTEXT_CORE_PATHS = (

@@ -6,14 +6,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 from typing import Any
 
-import field_reports
+import git_gate_contract
 import command_trigger_oracle
 import capsule_residue_oracle
 import mantra_gate_adoption_oracle
@@ -30,7 +29,7 @@ except ModuleNotFoundError:  # pragma: no cover - degraded environment
     _attach_health = None
 
 
-VERSION = "0.3.237"
+VERSION = "0.3.238"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -330,190 +329,12 @@ def _hooks_attached(target: Path) -> bool:
     )
 
 
-def _is_git_work_tree(target: Path) -> bool:
-    result = subprocess.run(
-        ["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    return result.returncode == 0 and result.stdout.strip() == "true"
-
-
-def _strip_shell_comments(text: str) -> str:
-    out: list[str] = []
-    for line in text.splitlines():
-        stripped = line.lstrip()
-        if stripped.startswith("#"):
-            continue
-        in_single = in_double = False
-        cut = None
-        for i, ch in enumerate(line):
-            if ch == "'" and not in_double:
-                in_single = not in_single
-            elif ch == '"' and not in_single:
-                in_double = not in_double
-            elif ch == "#" and not in_single and not in_double and (i == 0 or line[i - 1].isspace()):
-                cut = i
-                break
-        out.append(line[:cut] if cut is not None else line)
-    return "\n".join(out)
-
-
-def _package_has_script(target: Path, script_name: str) -> bool:
-    try:
-        data = json.loads((target / "package.json").read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        return False
-    scripts = data.get("scripts") if isinstance(data, dict) else None
-    return isinstance(scripts, dict) and isinstance(scripts.get(script_name), str)
-
-
-def _resolve_husky_entrypoint(target: Path, hooks_path: object, hook_name: str) -> Path | None:
-    if not hooks_path:
-        return None
-    configured = Path(str(hooks_path)).expanduser()
-    hooks_dir = configured if configured.is_absolute() else target / configured
-    if hooks_dir.name == "_" and hooks_dir.parent.name == ".husky":
-        return hooks_dir / hook_name
-    return None
-
-
-def _resolved_git_gate_commands(target: Path, code: str, *, hook_type: str) -> tuple[list[dict[str, str]], list[str], list[str]]:
-    tokens = ("commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
-    if hook_type == "pre-push":
-        tokens = ("prepush:check", "commit:check", "discipline_oracle", "project_context_oracle", "gate-pre-git")
-    matched = [token for token in tokens if token in code]
-    resolved: list[dict[str, str]] = []
-    rejected: list[str] = []
-    if hook_type == "pre-push" and "prepush:check" in code:
-        if not _package_has_script(target, "prepush:check"):
-            rejected.append("package.json scripts.prepush:check absent")
-        elif shutil.which("npm") is None:
-            rejected.append("npm unavailable for scripts.prepush:check")
-        else:
-            resolved.append({"kind": "npm-prepush", "command": "npm run --silent prepush:check"})
-    if "commit:check" in code:
-        if not _package_has_script(target, "commit:check"):
-            rejected.append("package.json scripts.commit:check absent")
-        elif shutil.which("npm") is None:
-            rejected.append("npm unavailable for scripts.commit:check")
-        else:
-            resolved.append({"kind": "npm", "command": "npm run --silent commit:check"})
-    if "discipline_oracle" in code:
-        matched_path = False
-        for relpath in (CANONICAL_DISCIPLINE_PATH, CLAUDE_DISCIPLINE_PATH):
-            if relpath in code:
-                matched_path = True
-                if (target / relpath).is_file():
-                    resolved.append({"kind": "tes-discipline", "command": f"python3 {relpath} --self-test"})
-                else:
-                    rejected.append(f"{relpath} absent")
-        if not matched_path:
-            rejected.append("discipline_oracle token without canonical path")
-    if "project_context_oracle" in code:
-        matched_path = False
-        for relpath in (".tes/bin/project_context_oracle.py", "scripts/project_context_oracle.py"):
-            if relpath in code:
-                matched_path = True
-                if (target / relpath).is_file():
-                    resolved.append({"kind": "project-context", "command": f"python3 {relpath} --target ."})
-                else:
-                    rejected.append(f"{relpath} absent")
-        if not matched_path:
-            rejected.append("project_context_oracle token without runnable path")
-    if hook_type == "pre-push" and field_reports.has_gate_pre_git_push(code):
-        if (target / ".gate-pre-git/bin/gate-pre-git").is_file():
-            resolved.append({"kind": "gate-pre-git", "command": ".gate-pre-git/bin/gate-pre-git push --target <repo-root>"})
-        else:
-            rejected.append(".gate-pre-git/bin/gate-pre-git absent")
-    return resolved, rejected, matched
-
-
 def _git_hook_gate_evidence(target: Path, hook_type: str) -> dict[str, Any]:
-    git_dir = target / ".git"
-    resolver = field_reports.resolve_pre_push_hook if hook_type == "pre-push" else field_reports.resolve_pre_commit_hook
-    hook_info = resolver(target, git_dir)
-    if hook_info.get("status") != "PASS":
-        return {"installed": False, "enforced": False, "reason": str(hook_info.get("reason") or "hook resolution blocked")}
-    hook_path = Path(str(hook_info.get("hook")))
-    active = _resolve_husky_entrypoint(target, hook_info.get("hooksPath"), hook_type) or hook_path
-    if not hook_path.is_file():
-        return {"installed": False, "enforced": False, "reason": f"{hook_type} hook file absent", "hook": str(hook_path)}
-    text = hook_path.read_text(encoding="utf-8", errors="ignore")
-    if not active.is_file():
-        return {
-            "installed": False,
-            "enforced": False,
-            "field_reports_prepush_drain": field_reports.HOOK_MARKER in text if hook_type == "pre-push" else None,
-            "reason": f"active {hook_type} entrypoint absent",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active),
-        }
-    if not os.access(active, os.X_OK):
-        return {
-            "installed": False,
-            "enforced": False,
-            "field_reports_prepush_drain": field_reports.HOOK_MARKER in text if hook_type == "pre-push" else None,
-            "reason": f"active {hook_type} entrypoint present but not executable",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active),
-            "executable": False,
-        }
-    code = _strip_shell_comments(text)
-    resolved, rejected, matched = _resolved_git_gate_commands(target, code, hook_type=hook_type)
-    payload: dict[str, Any] = {
-        "installed": True,
-        "enforced": bool(resolved),
-        "hook": str(hook_path),
-        "active_entrypoint": str(active),
-        "mode": hook_info.get("mode"),
-        "executable": True,
-        "gate_tokens": matched,
-        "resolved_gates": resolved,
-        "unresolved_gates": rejected,
-        "reason": None if resolved else f"{hook_type} has no resolved quality gate",
-    }
-    if hook_type == "pre-push":
-        payload["field_reports_prepush_drain"] = field_reports.HOOK_MARKER in text
-        payload["project_prepush_gate"] = bool(matched)
-    return payload
+    return git_gate_contract.installed_hook_evidence(target, hook_type)
 
 
 def git_admission_status(target: Path) -> dict[str, Any]:
-    """Installed-target Git gate certification; Field Reports drain is additive."""
-    if not _hooks_attached(target):
-        return {"status": "NOT_APPLIED", "reason": "hooks not attached"}
-    if not _is_git_work_tree(target):
-        return {
-            "status": "NEEDS_REVIEW",
-            "git_work_tree": False,
-            "failures": ["target is not a Git work tree; Git gates cannot be certified"],
-        }
-    pre_push = _git_hook_gate_evidence(target, "pre-push")
-    pre_commit = _git_hook_gate_evidence(target, "pre-commit")
-    failures: list[str] = []
-    if not pre_commit.get("enforced"):
-        failures.append(f"strict pre-commit gate absent: {pre_commit.get('reason')}")
-    if not pre_push.get("installed"):
-        failures.append(f"pre-push hook absent or inactive: {pre_push.get('reason')}")
-    if not pre_push.get("field_reports_prepush_drain"):
-        failures.append(f"Field Reports pre-push drain absent: {pre_push.get('reason')}")
-    if not pre_push.get("enforced"):
-        failures.append(f"strict pre-push quality gate absent: {pre_push.get('reason')}")
-    return {
-        "status": "PASS" if not failures else "NEEDS_REVIEW",
-        "git_work_tree": True,
-        "precommit_enforced": bool(pre_commit.get("enforced")),
-        "prepush_installed": bool(pre_push.get("installed")),
-        "field_reports_prepush_drain": bool(pre_push.get("field_reports_prepush_drain")),
-        "prepush_enforced": bool(pre_push.get("enforced")),
-        "project_prepush_gate": bool(pre_push.get("project_prepush_gate")),
-        "prepush_resolved_gates": pre_push.get("resolved_gates", []),
-        "precommit": pre_commit,
-        "prepush": pre_push,
-        "failures": failures,
-    }
+    return git_gate_contract.installed_git_admission_status(target, hooks_attached=_hooks_attached(target))
 
 
 def pretooluse_contract_reference(target: Path) -> dict[str, Any]:
@@ -762,39 +583,11 @@ def write_installed_trigger_surfaces(target: Path, *, include_portuguese_goal: b
 
 
 def write_git_gate_fixture(target: Path, *, drain_only: bool = False) -> None:
-    subprocess.run(["git", "init", "-q"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.email", "t@t"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False)
-    oracle = target / CANONICAL_DISCIPLINE_PATH
-    oracle.parent.mkdir(parents=True, exist_ok=True)
-    oracle.write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
-    oracle.chmod(0o755)
-    hooks = target / ".git/hooks"
-    hooks.mkdir(parents=True, exist_ok=True)
-    pre_commit = hooks / "pre-commit"
-    pre_commit.write_text(
-        "#!/bin/sh\n"
-        "python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test\n",
-        encoding="utf-8",
+    git_gate_contract.write_git_gate_fixture(
+        target,
+        precommit="strict",
+        prepush="drain-only" if drain_only else "full",
     )
-    pre_commit.chmod(0o755)
-    pre_push = hooks / "pre-push"
-    if drain_only:
-        pre_push.write_text(
-            f"#!/bin/sh\n# {field_reports.HOOK_MARKER}\n"
-            "python3 .tes/bin/field_reports.py drain --target . --trigger pre-push >/dev/null 2>&1 || true\n"
-            "exit 0\n",
-            encoding="utf-8",
-        )
-    else:
-        pre_push.write_text(
-            f"#!/bin/sh\n# {field_reports.HOOK_MARKER}\n"
-            + field_reports.strict_pre_push_shell()
-            + "\npython3 .tes/bin/field_reports.py drain --target . --trigger pre-push >/dev/null 2>&1 || true\n"
-            + "exit 0\n",
-            encoding="utf-8",
-        )
-    pre_push.chmod(0o755)
 
 
 def write_mcp_server_stub(target: Path) -> None:

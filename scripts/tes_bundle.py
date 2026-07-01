@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.237"
+VERSION = "0.3.238"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -86,6 +86,7 @@ HELPER_FILES = (
     "checkpoint.py",
     "consolidation_gate.py",
     "field_reports.py",
+    "git_gate_contract.py",
     "installed_certification_oracle.py",
     "mantra_gate.py",
     "mantra_gate_adoption_oracle.py",

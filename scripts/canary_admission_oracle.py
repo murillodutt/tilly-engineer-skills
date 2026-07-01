@@ -43,18 +43,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
 
 import field_reports
+import git_gate_contract
 import tes_install
 
 
-VERSION = "0.3.237"
+VERSION = "0.3.238"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
@@ -66,408 +65,24 @@ NOT_CONFIGURED = "NOT_CONFIGURED"
 
 
 def is_git_work_tree(target: Path) -> bool:
-    result = subprocess.run(
-        ["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    return result.returncode == 0 and result.stdout.strip() == "true"
+    return git_gate_contract.is_git_work_tree(target)
 
 
 def git_is_clean(target: Path) -> bool | None:
     """True/False for clean/dirty; None when target is not a Git work tree."""
-    if not is_git_work_tree(target):
-        return None
-    result = subprocess.run(
-        ["git", "-C", str(target), "status", "--porcelain", "--untracked-files=all"],
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        return None
-    return result.stdout.strip() == ""
+    return git_gate_contract.git_is_clean(target)
 
 
 def prepush_evidence(target: Path) -> dict[str, Any]:
-    """Three distinct pre-push claims, proven by active hook evidence.
-
-    The pre-push surface carries two structurally different things that earlier
-    code conflated:
-      - field_reports_prepush_drain: the Field Reports drain the installer writes,
-        identified ONLY by HOOK_MARKER. It is an ADVISORY, non-blocking drain
-        (exit 0 by design); its presence proves Field Reports is active.
-      - prepush_enforced / project_prepush_gate: a blocking quality gate,
-        identified only when a concrete command resolves in this target.
-
-    Field Reports drain presence never proves enforcement. `prepush_installed`
-    means the active pre-push hook can fire; `prepush_enforced` means that hook
-    resolves a quality command that can block the push.
-    """
-    git_dir = target / ".git"
-    if not git_dir.exists():
-        return {
-            "prepush_installed": False,
-            "field_reports_prepush_drain": False,
-            "prepush_enforced": False,
-            "project_prepush_gate": False,
-            "resolved_gates": [],
-            "reason": "no .git directory",
-        }
-    hook_info = field_reports.resolve_pre_push_hook(target, git_dir)
-    if hook_info.get("status") != "PASS":
-        return {
-            "prepush_installed": False,
-            "field_reports_prepush_drain": False,
-            "prepush_enforced": False,
-            "project_prepush_gate": False,
-            "resolved_gates": [],
-            "reason": str(hook_info.get("reason") or "hook resolution blocked"),
-        }
-    hook = hook_info.get("hook")
-    hook_path = Path(str(hook)) if hook else None
-    if not hook_path or not hook_path.is_file():
-        return {
-            "prepush_installed": False,
-            "field_reports_prepush_drain": False,
-            "prepush_enforced": False,
-            "project_prepush_gate": False,
-            "resolved_gates": [],
-            "reason": "pre-push hook file absent",
-            "hook": str(hook_path or ""),
-        }
-    text = hook_path.read_text(encoding="utf-8", errors="ignore")
-    active_entrypoint = _resolve_husky_active_entrypoint(target, hook_info.get("hooksPath"), "pre-push") or hook_path
-    if not active_entrypoint.is_file():
-        return {
-            "prepush_installed": False,
-            "field_reports_prepush_drain": field_reports.HOOK_MARKER in text,
-            "prepush_enforced": False,
-            "project_prepush_gate": False,
-            "resolved_gates": [],
-            "reason": "active pre-push entrypoint absent",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active_entrypoint),
-        }
-    if not os.access(active_entrypoint, os.X_OK):
-        return {
-            "prepush_installed": False,
-            "field_reports_prepush_drain": field_reports.HOOK_MARKER in text,
-            "prepush_enforced": False,
-            "project_prepush_gate": False,
-            "resolved_gates": [],
-            "reason": "active pre-push entrypoint present but not executable (cannot fire as a gate)",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active_entrypoint),
-            "executable": False,
-        }
-    code = _strip_shell_comments(text)
-    drain_present = field_reports.HOOK_MARKER in text  # advisory drain claim
-    matched = [token for token in PREPUSH_GATE_TOKENS if token in code]
-    resolved, rejected = _resolved_prepush_gate_commands(target, code)
-    prepush_enforced = bool(resolved)
-    project_gate_present = bool(matched)
-    reasons = []
-    if not drain_present:
-        reasons.append("Field Reports drain absent")
-    if not prepush_enforced:
-        reasons.append("pre-push present but no referenced quality gate command resolves in target")
-    return {
-        "prepush_installed": True,
-        "field_reports_prepush_drain": drain_present,
-        "prepush_enforced": prepush_enforced,
-        "project_prepush_gate": project_gate_present,
-        "hook": str(hook_path),
-        "active_entrypoint": str(active_entrypoint),
-        "executable": True,
-        "mode": hook_info.get("mode"),
-        "gate_tokens": matched,
-        "resolved_gates": resolved,
-        "unresolved_gates": rejected,
-        "reason": None if not reasons else "; ".join(reasons),
-    }
-
-
-PRECOMMIT_GATE_TOKENS = ("commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
-PREPUSH_GATE_TOKENS = ("prepush:check", "commit:check", "discipline_oracle", "project_context_oracle", "gate-pre-git")
-CANONICAL_DISCIPLINE_ORACLES = (
-    ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
-    ".claude/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
-)
-PROJECT_CONTEXT_ORACLES = (
-    ".tes/bin/project_context_oracle.py",
-    "scripts/project_context_oracle.py",
-)
-
-
-def _strip_shell_comments(text: str) -> str:
-    """Drop full-line and trailing `#` comments so a token in a comment never
-    counts as a real gate invocation (ceiling F22: prove the command, not a note).
-
-    Conservative: removes from an unquoted `#` to end of line. A `#` inside a
-    quote is rare in hook bodies and erring toward stripping only makes the proof
-    stricter, never falsely positive.
-    """
-    out: list[str] = []
-    for line in text.splitlines():
-        stripped = line.lstrip()
-        if stripped.startswith("#"):
-            continue  # full comment / shebang line
-        # Trailing comment: cut at the first ' #' not inside an obvious quote.
-        in_single = in_double = False
-        cut = None
-        for i, ch in enumerate(line):
-            if ch == "'" and not in_double:
-                in_single = not in_single
-            elif ch == '"' and not in_single:
-                in_double = not in_double
-            elif ch == "#" and not in_single and not in_double and (i == 0 or line[i - 1].isspace()):
-                cut = i
-                break
-        out.append(line[:cut] if cut is not None else line)
-    return "\n".join(out)
-
-
-def _package_has_script(target: Path, script_name: str) -> bool:
-    try:
-        data = json.loads((target / "package.json").read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        return False
-    scripts = data.get("scripts") if isinstance(data, dict) else None
-    return isinstance(scripts, dict) and isinstance(scripts.get(script_name), str)
-
-
-def _package_has_commit_check(target: Path) -> bool:
-    return _package_has_script(target, "commit:check")
-
-
-def _resolve_husky_active_entrypoint(target: Path, hooks_path: object, hook_name: str = "pre-commit") -> Path | None:
-    if not hooks_path:
-        return None
-    configured = Path(str(hooks_path)).expanduser()
-    hooks_dir = configured if configured.is_absolute() else target / configured
-    if hooks_dir.name == "_" and hooks_dir.parent.name == ".husky":
-        return hooks_dir / hook_name
-    return None
-
-
-def _resolved_precommit_gate_commands(target: Path, code: str) -> tuple[list[dict[str, str]], list[str]]:
-    """Resolve strict-gate commands against files/tools present in this target.
-
-    Token presence is only a hint. Enforcement proof requires the branch's
-    command to be runnable in this installed target: a real package script with
-    npm available, or a materialized TES oracle at the path the hook invokes.
-    """
-    resolved: list[dict[str, str]] = []
-    rejected: list[str] = []
-    if "commit:check" in code:
-        if not _package_has_commit_check(target):
-            rejected.append("package.json scripts.commit:check absent")
-        elif shutil.which("npm") is None:
-            rejected.append("npm unavailable for scripts.commit:check")
-        else:
-            resolved.append({"kind": "npm", "command": "npm run --silent commit:check"})
-    if "discipline_oracle" in code:
-        matched_path = False
-        for relpath in CANONICAL_DISCIPLINE_ORACLES:
-            if relpath in code:
-                matched_path = True
-                oracle = target / relpath
-                if oracle.is_file():
-                    resolved.append({"kind": "tes-discipline", "command": f"python3 {relpath} --self-test"})
-                else:
-                    rejected.append(f"{relpath} absent")
-        if ".tes/bin/discipline_oracle.py" in code or "scripts/discipline_oracle.py" in code:
-            matched_path = True
-            rejected.append("stale/non-delivered discipline_oracle.py path")
-        if not matched_path:
-            rejected.append("discipline_oracle token without canonical path")
-    if "project_context_oracle" in code:
-        matched_path = False
-        for relpath in PROJECT_CONTEXT_ORACLES:
-            if relpath in code:
-                matched_path = True
-                oracle = target / relpath
-                if oracle.is_file():
-                    resolved.append({"kind": "project-context", "command": f"python3 {relpath} --target ."})
-                else:
-                    rejected.append(f"{relpath} absent")
-        if not matched_path:
-            rejected.append("project_context_oracle token without runnable path")
-    return resolved, rejected
-
-
-def _resolved_prepush_gate_commands(target: Path, code: str) -> tuple[list[dict[str, str]], list[str]]:
-    """Resolve pre-push quality gates; Field Reports drain is intentionally absent."""
-    resolved: list[dict[str, str]] = []
-    rejected: list[str] = []
-    if "prepush:check" in code:
-        if not _package_has_script(target, "prepush:check"):
-            rejected.append("package.json scripts.prepush:check absent")
-        elif shutil.which("npm") is None:
-            rejected.append("npm unavailable for scripts.prepush:check")
-        else:
-            resolved.append({"kind": "npm-prepush", "command": "npm run --silent prepush:check"})
-    if "commit:check" in code:
-        if not _package_has_commit_check(target):
-            rejected.append("package.json scripts.commit:check absent")
-        elif shutil.which("npm") is None:
-            rejected.append("npm unavailable for scripts.commit:check")
-        else:
-            resolved.append({"kind": "npm", "command": "npm run --silent commit:check"})
-    if "discipline_oracle" in code:
-        matched_path = False
-        for relpath in CANONICAL_DISCIPLINE_ORACLES:
-            if relpath in code:
-                matched_path = True
-                oracle = target / relpath
-                if oracle.is_file():
-                    resolved.append({"kind": "tes-discipline", "command": f"python3 {relpath} --self-test"})
-                else:
-                    rejected.append(f"{relpath} absent")
-        if ".tes/bin/discipline_oracle.py" in code or "scripts/discipline_oracle.py" in code:
-            matched_path = True
-            rejected.append("stale/non-delivered discipline_oracle.py path")
-        if not matched_path:
-            rejected.append("discipline_oracle token without canonical path")
-    if "project_context_oracle" in code:
-        matched_path = False
-        for relpath in PROJECT_CONTEXT_ORACLES:
-            if relpath in code:
-                matched_path = True
-                oracle = target / relpath
-                if oracle.is_file():
-                    resolved.append({"kind": "project-context", "command": f"python3 {relpath} --target ."})
-                else:
-                    rejected.append(f"{relpath} absent")
-        if not matched_path:
-            rejected.append("project_context_oracle token without runnable path")
-    if field_reports.has_gate_pre_git_push(code):
-        gate = target / ".gate-pre-git/bin/gate-pre-git"
-        if gate.is_file():
-            resolved.append({"kind": "gate-pre-git", "command": ".gate-pre-git/bin/gate-pre-git push --target <repo-root>"})
-        else:
-            rejected.append(".gate-pre-git/bin/gate-pre-git absent")
-    return resolved, rejected
+    return git_gate_contract.canary_prepush_evidence(target)
 
 
 def precommit_evidence(target: Path) -> dict[str, Any]:
-    """Proof of a strict pre-commit gate by active path and command resolution.
-
-    Ceiling F22/F37: comments, stale fallback paths, or unreachable branches must
-    never set precommit_enforced=true. The proof is: active hook path resolved,
-    active entrypoint executable, hook body contains gate code, and at least one
-    referenced gate command resolves in the installed target.
-    """
-    git_dir = target / ".git"
-    if not git_dir.exists():
-        return {"precommit_enforced": False, "reason": "no .git directory"}
-    hook_info = field_reports.resolve_pre_commit_hook(target, git_dir)
-    if hook_info.get("status") != "PASS":
-        return {"precommit_enforced": False, "reason": str(hook_info.get("reason") or "hook resolution blocked")}
-    hook_path = Path(str(hook_info.get("hook")))
-    active_entrypoint = _resolve_husky_active_entrypoint(target, hook_info.get("hooksPath")) or hook_path
-    if not hook_path.is_file():
-        return {"precommit_enforced": False, "reason": "pre-commit hook file absent", "hook": str(hook_path)}
-    if not active_entrypoint.is_file():
-        return {
-            "precommit_enforced": False,
-            "reason": "active pre-commit entrypoint absent",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active_entrypoint),
-        }
-    runnable = os.access(active_entrypoint, os.X_OK)
-    if not runnable:
-        return {
-            "precommit_enforced": False,
-            "reason": "active pre-commit entrypoint present but not executable (cannot fire as a gate)",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active_entrypoint),
-            "executable": False,
-        }
-    code = _strip_shell_comments(hook_path.read_text(encoding="utf-8", errors="ignore"))
-    matched = [token for token in PRECOMMIT_GATE_TOKENS if token in code]
-    if not matched:
-        return {
-            "precommit_enforced": False,
-            "reason": "pre-commit present and executable but invokes no strict TES gate (token only in comments, or absent)",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active_entrypoint),
-            "executable": True,
-        }
-    resolved, rejected = _resolved_precommit_gate_commands(target, code)
-    if not resolved:
-        return {
-            "precommit_enforced": False,
-            "reason": "pre-commit gate tokens present but no referenced gate command resolves in target",
-            "hook": str(hook_path),
-            "active_entrypoint": str(active_entrypoint),
-            "executable": True,
-            "gate_tokens": matched,
-            "unresolved_gates": rejected,
-        }
-    return {
-        "precommit_enforced": True,
-        "hook": str(hook_path),
-        "active_entrypoint": str(active_entrypoint),
-        "executable": True,
-        "gate_tokens": matched,
-        "resolved_gates": resolved,
-    }
+    return git_gate_contract.canary_precommit_evidence(target)
 
 
 def git_admission(target: Path) -> dict[str, Any]:
-    """Block readiness unless Git, strict pre-push, Field Reports drain, and
-    strict pre-commit are proven.
-
-    Field Reports pre-push is an advisory drain and stays non-blocking. It is an
-    additive pre-push behavior, not the quality gate that admits Git readiness.
-    """
-    blockers: list[str] = []
-    if not is_git_work_tree(target):
-        # No Git: every Git claim is false, and admission is BLOCKED, not skipped.
-        return {
-            "status": "BLOCKED",
-            "readiness": "NEEDS_GIT",
-            "headline": "NEEDS_GIT: target is not a Git work tree; canary admission requires Git",
-            "git_work_tree": False,
-            "git_clean": False,
-            "prepush_installed": False,
-            "field_reports_prepush_drain": False,
-            "prepush_enforced": False,
-            "project_prepush_gate": False,
-            "precommit_enforced": False,
-            "prepush_resolved_gates": [],
-            "blockers": ["target is not a Git work tree; canary admission requires Git"],
-        }
-    clean = git_is_clean(target)
-    pre_push = prepush_evidence(target)
-    pre_commit = precommit_evidence(target)
-    if not pre_push.get("prepush_installed"):
-        blockers.append(f"pre-push hook absent or inactive: {pre_push.get('reason')}")
-    if not pre_push.get("field_reports_prepush_drain"):
-        blockers.append(f"Field Reports pre-push drain absent: {pre_push.get('reason')}")
-    if not pre_push.get("prepush_enforced"):
-        blockers.append(f"strict pre-push quality gate absent: {pre_push.get('reason')}")
-    if not pre_commit.get("precommit_enforced"):
-        blockers.append(f"strict pre-commit gate absent: {pre_commit.get('reason')}")
-    if clean is False:
-        blockers.append("Git work tree is dirty")
-    return {
-        "status": "BLOCKED" if blockers else "PASS",
-        "git_work_tree": True,
-        "git_clean": bool(clean),
-        "prepush_installed": bool(pre_push.get("prepush_installed")),
-        "field_reports_prepush_drain": bool(pre_push.get("field_reports_prepush_drain")),
-        "prepush_enforced": bool(pre_push.get("prepush_enforced")),
-        "project_prepush_gate": bool(pre_push.get("project_prepush_gate")),
-        "prepush_resolved_gates": pre_push.get("resolved_gates", []),
-        "precommit_enforced": bool(pre_commit.get("precommit_enforced")),
-        "prepush": pre_push,
-        "precommit": pre_commit,
-        "blockers": blockers,
-    }
+    return git_gate_contract.canary_git_admission(target)
 
 
 def host_hook_admission(target: Path) -> dict[str, Any]:
@@ -713,10 +328,7 @@ def self_test() -> dict[str, Any]:
         # 3) Git + pre-push + strict pre-commit, clean tree -> git_admission PASS
         #    with all three claims true on material evidence.
         full = root / "full"
-        full.mkdir()
-        _init_git(full)
-        _write_prepush(full)
-        _write_strict_precommit(full)
+        git_gate_contract.write_git_gate_fixture(full, precommit="strict", prepush="full")
         subprocess.run(["git", "add", "."], cwd=full, text=True, capture_output=True, check=False)
         subprocess.run(["git", "commit", "-m", "fixture gate"], cwd=full, text=True, capture_output=True, check=False)
         full_git = git_admission(full.resolve())
@@ -731,13 +343,7 @@ def self_test() -> dict[str, Any]:
         #     gate-only pre-push proves only a configured gate token. Neither
         #     marker proves enforcement without a resolved command.
         drain_only = root / "drain-only"
-        drain_only.mkdir()
-        _init_git(drain_only)
-        po = drain_only / ".git/hooks/pre-push"
-        po.parent.mkdir(parents=True, exist_ok=True)
-        po.write_text(f"#!/bin/sh\n# {field_reports.HOOK_MARKER}\nexit 0\n", encoding="utf-8")
-        po.chmod(0o755)
-        _write_strict_precommit(drain_only)
+        git_gate_contract.write_git_gate_fixture(drain_only, precommit="strict", prepush="drain-only")
         subprocess.run(["git", "add", "."], cwd=drain_only, text=True, capture_output=True, check=False)
         subprocess.run(["git", "commit", "-m", "fixture drain only"], cwd=drain_only, text=True, capture_output=True, check=False)
         drain_ev = prepush_evidence(drain_only.resolve())
@@ -755,12 +361,7 @@ def self_test() -> dict[str, Any]:
         elif not any("strict pre-push quality gate" in item for item in drain_only_admission.get("blockers", [])):
             failures.append("F38: drain-only blocker must name the missing strict pre-push quality gate")
         gate_only = root / "gate-only"
-        gate_only.mkdir()
-        _init_git(gate_only)
-        go = gate_only / ".git/hooks/pre-push"
-        go.parent.mkdir(parents=True, exist_ok=True)
-        go.write_text(field_reports.gate_pre_git_push_shell(), encoding="utf-8")  # gate-pre-git, no HOOK_MARKER
-        go.chmod(0o755)
+        git_gate_contract.write_git_gate_fixture(gate_only, precommit="none", prepush="unresolved-gate-only")
         gate_ev = prepush_evidence(gate_only.resolve())
         if gate_ev.get("field_reports_prepush_drain") or not gate_ev.get("project_prepush_gate") or gate_ev.get("prepush_enforced"):
             failures.append(

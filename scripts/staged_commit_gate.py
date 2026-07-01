@@ -19,7 +19,7 @@ from typing import Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.237"
+VERSION = "0.3.238"
 
 TEXT_SCAN_SUFFIXES = {
     ".md",
@@ -315,6 +315,27 @@ def gate_plan() -> list[Gate]:
                     ".github/workflows/field-report-governance.yml",
                     "scripts/field_reports.py",
                     "scripts/field_reports_*.py",
+                ),
+            ),
+        ),
+        Gate(
+            "git-gate-contract",
+            ["python3", "scripts/git_gate_convergence_loop.py"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "scripts/git_gate_contract.py",
+                    "scripts/git_gate_convergence_loop.py",
+                    "scripts/canary_admission_oracle.py",
+                    "scripts/installed_certification_oracle.py",
+                    "scripts/field_reports.py",
+                    "scripts/hook_manager_awareness_oracle.py",
+                    "scripts/tes_install.py",
+                    "scripts/tes_bundle.py",
+                    "scripts/tes_update.py",
+                    "docs/architecture/INSTALLATION-FRAMEWORK.md",
+                    "docs/architecture/INSTALLER-TUG-OF-WAR-MATRIX.md",
+                    "package.json",
                 ),
             ),
         ),

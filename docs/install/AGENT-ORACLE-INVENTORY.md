@@ -164,6 +164,8 @@ python3 scripts/attach_health_oracle.py --self-test
 ## Canary Admission And Installed Certification
 
 ```bash
+python3 scripts/git_gate_contract.py --self-test                         # canonical Git gate matrix and fixtures
+python3 scripts/git_gate_convergence_loop.py                              # short recursive Git gate loop
 python3 scripts/installed_certification_oracle.py --target /path/to/project    # aggregate installed cert; flags delivered bytecode contamination
 python3 scripts/installed_certification_oracle.py --self-test
 python3 scripts/public_bundle_oracle.py                                        # public ZIP + hash + bytecode/residue rejection
@@ -171,7 +173,7 @@ python3 scripts/canary_admission_oracle.py --target /path/to/canary --json-only 
 python3 scripts/canary_admission_oracle.py --self-test
 ```
 
-`canary_admission_oracle.py` is maintainer/canary-admission infrastructure that verifies delivered adopter behavior: on Git-eligible targets TES installs a strict pre-commit wrapper and admission requires proof that the active hook resolves a real gate (`commit:check` or a materialized TES discipline oracle). A configured-but-unobserved host is `CONFIGURED_NOT_OBSERVED`, never native PASS, and one host's runtime records never fill another host's claim.
+`git_gate_contract.py` owns the Git gate evidence rules and the quantitative expected-state matrix. `canary_admission_oracle.py` and `installed_certification_oracle.py` consume that contract for their different aggregate statuses. On Git-eligible targets TES installs a strict pre-commit wrapper and admission requires proof that the active hooks resolve real command invocations (`prepush:check`, `commit:check`, gate-pre-git, or a materialized TES discipline oracle). A configured-but-unobserved host is `CONFIGURED_NOT_OBSERVED`, never native PASS, and one host's runtime records never fill another host's claim.
 
 ## Validation Gates
 
