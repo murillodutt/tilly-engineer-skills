@@ -234,7 +234,7 @@ def decide(
     if MODE_RANK[args.claim_mode] > MODE_RANK[args.mode]:
         blockers.append("reported claim mode exceeds selected evidence mode")
         failure_class = failure_class or "false_green"
-        loop_status = "NEEDS_EVIDENCE"
+        loop_status = "NEEDS_COST_BRAKE"
         next_action = "align_claim_to_mode"
 
     if host_execution.get("timed_out") or (
@@ -402,6 +402,7 @@ def self_test(repo_root: Path | None) -> dict[str, Any]:
                 **vars(base),
                 "no_ledger": True,
                 "require_fresh": False,
+                "mode": "product-host-real",
                 "claim_mode": "ceiling-replay",
             }
         )
@@ -411,8 +412,8 @@ def self_test(repo_root: Path | None) -> dict[str, Any]:
             failures.append("first loop should pass with a valid transcript")
         if code2 == 0 or result2.get("failure_class") != "false_green":
             failures.append("second loop should reject a stale same-command transcript")
-        if code3 == 0 or result3.get("next_action") != "align_claim_to_mode":
-            failures.append("smoke evidence should be rejected when reported as a ceiling claim")
+        if code3 == 0 or result3.get("loop_status") != "NEEDS_COST_BRAKE":
+            failures.append("product evidence should stop as NEEDS_COST_BRAKE when reported as a ceiling claim")
         if secret in serialized:
             failures.append("loop output leaked raw transcript or command output content")
         if len(ledger.read_text(encoding="utf-8").splitlines()) != 2:
@@ -427,6 +428,7 @@ def self_test(repo_root: Path | None) -> dict[str, Any]:
             "same-command fingerprint",
             "fresh transcript enforcement",
             "oracle wrapper",
+            "cost brake claim alignment",
         ],
         "failures": failures,
     }
