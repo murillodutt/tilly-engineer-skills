@@ -5,17 +5,18 @@ per-host native hook evidence is absent or unproven.
 This is MAINTAINER/canary-admission infrastructure that VERIFIES the delivered
 Git-gate behavior. Ceiling decision (tug-of-war matrix F1/F2/F3): when a project
 is Git-eligible, TES installs, chooses and verifies its Git gates — it installs
-the Field Reports pre-push gate AND a strict pre-commit gate (selecting the hook
-manager deterministically: husky for Node/TS, pre-commit when a config exists,
-lefthook as the polyglot default, deferring to any existing owner). This oracle
-is the gate a canary REPLAY session runs against a candidate target before it
-may claim READY_FOR_GOAL_MAESTRO_CANARY; its evidence functions
-(prepush_evidence / precommit_evidence) define the contract the delivered
-installer (field_reports.install_hook) must satisfy. It exists because no prior
-surface materially proved Git admission or refused cross-host native hook
-claims: installed_certification_oracle had zero Git checks, and hook runtime
-evidence is host-local (no host keeps a native ledger; only the hook's own
-runtime record proves firing — Claude/Codex/Cursor confirmed).
+a strict pre-push quality gate, keeps the Field Reports pre-push drain additive,
+and installs a strict pre-commit gate (selecting the hook manager
+deterministically: husky for Node/TS, pre-commit when a config exists, lefthook
+as the polyglot default, deferring to any existing owner). This oracle is the
+gate a canary REPLAY session runs against a candidate target before it may claim
+READY_FOR_GOAL_MAESTRO_CANARY; its evidence functions (prepush_evidence /
+precommit_evidence) define the contract the delivered installer
+(field_reports.install_hook) must satisfy. It exists because no prior surface
+materially proved Git admission or refused cross-host native hook claims:
+installed_certification_oracle had zero Git checks, and hook runtime evidence is
+host-local (no host keeps a native ledger; only the hook's own runtime record
+proves firing — Claude/Codex/Cursor confirmed).
 
 NOTE — overturned contract: an earlier contract stated "TES does NOT auto-install
 a strict pre-commit gate for adopters" (INSTALL.md:276 advisory-only). The
@@ -53,7 +54,7 @@ import git_gate_contract
 import tes_install
 
 
-VERSION = "0.3.240"
+VERSION = "0.3.241"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
