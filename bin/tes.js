@@ -24,7 +24,7 @@ const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinst
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
-const TES_VERSION = "0.3.239";
+const TES_VERSION = "0.3.240";
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",

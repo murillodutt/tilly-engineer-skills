@@ -171,9 +171,12 @@ python3 scripts/installed_certification_oracle.py --self-test
 python3 scripts/public_bundle_oracle.py                                        # public ZIP + hash + bytecode/residue rejection
 python3 scripts/canary_admission_oracle.py --target /path/to/canary --json-only # BLOCKS without Git + pre-push + strict pre-commit; per-host native hook truthfulness
 python3 scripts/canary_admission_oracle.py --self-test
+python3 scripts/canary_transcript_oracle.py --target /path/to/canary --latest --include-subagents --require-tool-use --json-only # sanitized Claude Code transcript sidecar
+python3 scripts/canary_transcript_oracle.py --self-test
 ```
 
 `git_gate_contract.py` owns the Git gate evidence rules and the quantitative expected-state matrix. `canary_admission_oracle.py` and `installed_certification_oracle.py` consume that contract for their different aggregate statuses. On Git-eligible targets TES installs a strict pre-commit wrapper and admission requires proof that the active hooks resolve real command invocations (`prepush:check`, `commit:check`, gate-pre-git, or a materialized TES discipline oracle). A configured-but-unobserved host is `CONFIGURED_NOT_OBSERVED`, never native PASS, and one host's runtime records never fill another host's claim.
+`canary_transcript_oracle.py` is a host-real Claude Code evidence sidecar: it reads local JSONL transcripts and emits hashes, counts, statuses, and safe tool names only. It never emits message text, tool inputs, tool results, or subagent metadata, and it does not replace `canary_admission_oracle.py`.
 
 ## Validation Gates
 

@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = ROOT / "docs/install/HOOK-AUDIT-PROMPT.md"
-VERSION = "0.3.239"
+VERSION = "0.3.240"
 
 
 REQUIRED_TERMS = (

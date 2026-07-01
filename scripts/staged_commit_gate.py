@@ -19,7 +19,7 @@ from typing import Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.239"
+VERSION = "0.3.240"
 
 TEXT_SCAN_SUFFIXES = {
     ".md",
@@ -335,6 +335,19 @@ def gate_plan() -> list[Gate]:
                     "scripts/tes_update.py",
                     "docs/architecture/INSTALLATION-FRAMEWORK.md",
                     "docs/architecture/INSTALLER-TUG-OF-WAR-MATRIX.md",
+                    "package.json",
+                ),
+            ),
+        ),
+        Gate(
+            "canary-transcript",
+            ["python3", "scripts/canary_transcript_oracle.py", "--self-test"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "scripts/canary_transcript_oracle.py",
+                    "docs/install/AGENT-ORACLE-INVENTORY.md",
+                    "docs/architecture/INSTALLATION-FRAMEWORK.md",
                     "package.json",
                 ),
             ),
