@@ -65,6 +65,7 @@ Portable learning belongs in the product/source layer first when it changes deli
 | Need | Source |
 |------|--------|
 | Maintainer governance authority | `AGENTS.md` (identical governance body) |
+| Host-backed Claude canary execution | `.claude/skills/tes-host-transcript-canary/SKILL.md` |
 | Project map | `docs/INDEX.md` |
 | Repository structure | `docs/architecture/PROJECT-STRUCTURE.md` |
 | PreToolUse ceiling contract | `docs/architecture/PRETOOLUSE-CONTRACT.md` |
