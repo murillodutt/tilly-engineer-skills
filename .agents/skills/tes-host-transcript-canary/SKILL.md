@@ -1,0 +1,115 @@
+---
+name: tes-host-transcript-canary
+description: Local-only Tilly development workflow for host-backed canary execution with Claude CLI/host transcripts. Use when Codex must run or audit a TES canary through the real host, inspect Claude Code local JSONL transcripts, convert host execution history into sanitized evidence, preserve execution continuity across windows, or prove that a canary claim is backed by host-real transcript evidence.
+---
+
+# TES Host Transcript Canary
+
+Operational contract: `tes.host_transcript_canary@0.1.0`.
+
+Local development surface only. Do not package, publish, materialize, or treat
+as adopter-facing TES behavior.
+
+## Contract
+
+Use this chain:
+
+```text
+host command -> local transcript JSONL -> sanitized oracle -> evidence pack -> canary decision
+```
+
+The raw transcript stays local. Tracked evidence may contain paths, statuses,
+counts, hashes, safe tool names, and blockers; it must not contain prompt text,
+tool inputs, tool results, subagent metadata content, secrets, or raw JSONL.
+
+This skill strengthens canary replay evidence. It does not replace
+`canary_admission_oracle.py`, `installed_certification_oracle.py`,
+`git_gate_contract.py`, package validation, or host/runtime gates.
+
+## Workflow
+
+1. Frame the canary target, host, command, expected transcript evidence, and
+   stop condition. Stop before destructive, remote, secret-bearing, or
+   credentialed commands unless Murillo explicitly authorizes that action.
+2. Execute the real host command only when the request requires execution. For
+   Claude Code, prefer the real CLI/host surface over simulated logs when the
+   claim is host-real behavior.
+3. Resolve the local Claude Code transcript:
+   - Project directory: `~/.claude/projects/<project-slug>/`
+   - Main transcript: `<session-id>.jsonl`
+   - Subagents: `<session-id>/subagents/*.jsonl`
+   - Slug rule: absolute target path with `/` replaced by `-`
+4. Run the source oracle from the TES package root:
+
+```bash
+python3 scripts/canary_transcript_oracle.py --target <target> --latest --include-subagents --require-tool-use --json-only
+```
+
+Use `--transcript <path>` when the exact JSONL is known and `--session-id` when
+the target has multiple host sessions.
+
+5. Interpret statuses:
+   - `PASS`: transcript exists, parses, has user and assistant events, and
+     satisfies requested tool-use evidence.
+   - `NEEDS_EVIDENCE`: no transcript, no tool-use evidence when required, or
+     insufficient host evidence. Do not promote the canary claim.
+   - `FAIL`: malformed JSONL or corrupted evidence. Classify before retrying.
+6. Record only the sanitized oracle result or a concise summary. Include the
+   transcript SHA-256 and command context when useful; never stage raw JSONL.
+7. Combine transcript evidence with canary admission, installed certification,
+   Git gate, package, and public-bundle gates before claiming convergence.
+
+## State Model
+
+```text
+framed -> host_executed -> transcript_resolved -> sanitized_oracle_run ->
+evidence_recorded -> canary_decision
+```
+
+- `produce_and_continue`: transcript path can be derived or the target can be
+  re-run locally without destructive or remote effects.
+- `hard_stop`: the next step needs destructive state, remotes, secrets, raw
+  transcript staging, or a host/runtime truth that the oracle cannot observe.
+- `post_run_learning`: repeated transcript gaps, stale sessions, missing
+  subagent evidence, or useful host command patterns should be promoted to a
+  source oracle, fixture, docs, or this skill only after material proof.
+
+## Output
+
+Keep the chat closeout short:
+
+- host command or reason no host command ran
+- transcript oracle status
+- transcript hash and event/tool counts when available
+- related gates run
+- blockers or next concrete fix
+
+## Validation
+
+When this skill changes, run:
+
+```bash
+python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-host-transcript-canary
+python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .claude/skills/tes-host-transcript-canary
+diff -qr .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-transcript-canary
+python3 scripts/canary_transcript_oracle.py --self-test
+```
+
+If the skill is used in a canary loop, also run the target-specific
+`canary_transcript_oracle.py --target ...` command and the smallest related
+canary/package gate.
+
+## Done
+
+Done means a future window can reconstruct the host-backed canary method from
+this skill, raw transcript content remains unstaged, the transcript oracle ran
+or the blocker is classified, and the canary decision still depends on the
+primary TES gates.
+
+## Locks
+
+- Do not put raw Claude JSONL transcripts in tracked files.
+- Do not claim host-real evidence from agent memory alone.
+- Do not let transcript evidence bypass Git, install, package, or host gates.
+- Do not update bootloaders for this workflow unless the owner explicitly asks.
+- Do not promote project-specific transcript paths into tracked content.

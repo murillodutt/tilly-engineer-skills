@@ -43,6 +43,7 @@ LOCAL_DEVELOPMENT_SKILL_PARITY = (
     "tes-landing-authoring",
     "tes-manual-authoring",
     "tes-mine",
+    "tes-host-transcript-canary",
     "tes-predictive-operations",
     "tes-prospect",
     "tes-sync",

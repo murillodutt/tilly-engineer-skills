@@ -1,0 +1,75 @@
+# TES Host Transcript Canary Contract History
+
+## Purpose
+
+`tes-host-transcript-canary` preserves the local development workflow for using
+real host execution transcripts as sanitized canary evidence.
+
+## Why This Skill Exists
+
+The TES canary loop became materially stronger when a host command could be run
+through the real Claude surface and then audited through the local Claude Code
+JSONL transcript. The workflow must persist across windows without inflating the
+bootloader and without tracking raw transcript content.
+
+## Origin Signals
+
+| Source | Signal | Confidence |
+|--------|--------|------------|
+| `scripts/canary_transcript_oracle.py` | Source oracle reads Claude Code JSONL and emits sanitized hashes, counts, statuses, and safe tool names. | high |
+| `docs/install/AGENT-ORACLE-INVENTORY.md` | Canary inventory documents transcript evidence as a sidecar, not a replacement for admission. | high |
+| `docs/architecture/INSTALLATION-FRAMEWORK.md` | Installation framework classifies transcript evidence as host-real canary side evidence. | high |
+| Commit `ab10ea68` | Added the canary transcript evidence oracle and wired it into source gates. | high |
+| Commit `c31d1f2e` | Published local bundle `0.3.240` after the transcript oracle was added. | high |
+| Maintainer directive, 2026-07-01 | Build this model as a development-layer skill instead of changing the bootloader. | high |
+
+## Source Search Ledger
+
+| Window | Query | Occurrences | Meaning |
+|--------|-------|-------------|---------|
+| 2026-07-01 | `canary_transcript_oracle.py` across scripts/docs/package gates | source oracle, docs inventory, install framework, commit closure | The host transcript method already has a source oracle and should be persisted as workflow guidance. |
+| 2026-07-01 | `.agents/skills` and `.claude/skills` local skill layout | mirrored local development skills with `SKILL.md`, `agents/openai.yaml`, and `docs/CONTRACT-HISTORY.md` | The new workflow belongs in local development skills, not root bootloaders. |
+
+## Contracts Preserved
+
+- Use host-real execution when a canary claim depends on host behavior.
+- Use `canary_transcript_oracle.py` as the transcript evidence oracle.
+- Keep raw Claude Code JSONL local and unstaged.
+- Record only sanitized hashes, counts, statuses, safe tool names, and blockers.
+- Treat transcript evidence as side evidence, never as a replacement for
+  `canary_admission_oracle.py`, `installed_certification_oracle.py`,
+  `git_gate_contract.py`, package validation, or host/runtime gates.
+- Keep this workflow in `.agents/skills/**` and `.claude/skills/**` until the
+  owner explicitly asks for a bootloader routing line.
+
+## Known Failure Modes Prevented
+
+- Losing the host transcript method when a new window starts.
+- Claiming canary execution from agent memory without transcript evidence.
+- Staging raw JSONL transcripts or subagent metadata.
+- Treating a transcript hash as sufficient canary admission.
+- Patching only a canary target while the source oracle or workflow remains
+  stale.
+- Inflating the root bootloader with a workflow that belongs in local skills.
+
+## Relationship To Other Skills
+
+- `tes-engineering-discipline` owns scope, maturity, and falsifiable closure.
+- `tilly-build-test-fail-fix` owns persistent canary loops.
+- `tilly-local-git-arsenal` owns local commit closeout.
+- `tilly-skill-construction` owns the skill packaging and contract-history
+  standard.
+- `tes-host-transcript-canary` owns the host transcript evidence workflow only.
+
+## Changelog
+
+| Date | Change | Evidence | Confidence |
+|------|--------|----------|------------|
+| 2026-07-01 | Created local development skill for host-backed transcript canary execution, mirrored across Codex and Claude skill folders. | Maintainer directive in current session; `scripts/canary_transcript_oracle.py`; commits `ab10ea68` and `c31d1f2e`. | high |
+
+## Do Not Lose
+
+The decisive behavior is not the transcript path itself; it is the chain from
+real host execution to sanitized oracle evidence to a canary decision that still
+depends on primary TES gates. Keep the bootloader thin until this workflow
+becomes a mandatory routing rule.
