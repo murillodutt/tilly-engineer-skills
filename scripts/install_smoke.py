@@ -19,7 +19,7 @@ import tes_install
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.254"
+VERSION = "0.3.255"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -551,6 +551,8 @@ def capsule_install_probe() -> dict[str, Any]:
         # Capsule must be present.
         if not (target / ".tes").exists():
             failures.append("capsule-only install did not write .tes/**")
+        if not (target / ".tes/tes-codex.md").is_file():
+            failures.append("capsule-only install did not materialize .tes/tes-codex.md")
 
         # No project-visible surface may be written by a capsule-only install.
         forbidden = ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".mcp.json", ".cursor/mcp.json",

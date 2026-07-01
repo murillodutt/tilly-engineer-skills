@@ -22,10 +22,11 @@ from typing import Any
 import context_distill_coverage_oracle as context_distill
 import materialize_adapter
 import root_context
+import tes_codex_policy
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.254"
+VERSION = "0.3.255"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -2693,8 +2694,18 @@ def apply_staged_bundle(
         installed_path.parent.mkdir(parents=True, exist_ok=True)
         installed_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
+    policy_result = tes_codex_policy.materialize_policy(target, dry_run=dry_run)
+    actions.append(
+        {
+            "path": str(policy_result.get("path") or tes_codex_policy.POLICY_PATH.as_posix()),
+            "layer": "runtime_policy",
+            "action": str(policy_result.get("action") or "materialize-policy"),
+            "status": str(policy_result.get("status") or "UNKNOWN"),
+        }
+    )
+
     status = "DRY-RUN" if dry_run else ("CLEAN_APPLIED" if mode == "clean-runtime" else "APPLIED")
-    if obsolete_cleanup.get("status") == "NEEDS_REVIEW" or composition_failures:
+    if obsolete_cleanup.get("status") == "NEEDS_REVIEW" or composition_failures or policy_result.get("status") == "NEEDS_REVIEW":
         status = "NEEDS_REVIEW"
 
     return {
@@ -2705,9 +2716,10 @@ def apply_staged_bundle(
         "backup_id": backup_id,
         "clean_backup": clean_backup_result,
         "obsolete_cleanup": obsolete_cleanup,
+        "tes_codex_policy": policy_result,
         "actions": actions,
         "installed_manifest": rel(target / INSTALLED_MANIFEST, target),
-        "failures": [*obsolete_cleanup.get("failures", []), *composition_failures],
+        "failures": [*obsolete_cleanup.get("failures", []), *composition_failures, *policy_result.get("failures", [])],
     }
 
 
@@ -2983,6 +2995,8 @@ def self_test() -> dict[str, Any]:
             failures.append("staged manifest missing")
         if not (target / ".tes/bin/tes_open_obsidian.py").exists():
             failures.append("helper tes_open_obsidian.py missing after apply")
+        if not (target / ".tes/tes-codex.md").is_file():
+            failures.append("bundle apply did not materialize target-local TES Codex policy")
         if not (target / ".agents/skills/tes-open-obsidian/SKILL.md").exists():
             failures.append("runtime tes-open-obsidian skill missing after apply")
         for relpath in (".agents/plugins", ".claude-plugin", "plugins/tilly-engineer-skills", "skills"):
