@@ -37,7 +37,8 @@ if (entries.length === 0) {
 // Agrupa por tx e exige balanço zero por transação (em centavos, para evitar float).
 const byTx = {};
 for (const e of entries) {
-  (byTx[e.tx] || (byTx[e.tx] = [])).push(e);
+  byTx[e.tx] ??= [];
+  byTx[e.tx].push(e);
 }
 for (const [tx, rows] of Object.entries(byTx)) {
   const debit = rows.reduce((s, r) => s + Math.round((r.debit || 0) * 100), 0);

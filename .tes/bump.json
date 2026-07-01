@@ -79,6 +79,11 @@
       "pattern": "VERSION = \"{{VERSION}}\""
     },
     {
+      "path": "scripts/cortex_git_tap.py",
+      "type": "regex",
+      "pattern": "VERSION = \"{{VERSION}}\""
+    },
+    {
       "path": "scripts/cortex_mcp.py",
       "type": "regex",
       "pattern": "VERSION = \"{{VERSION}}\""
@@ -190,6 +195,11 @@
     },
     {
       "path": "scripts/tes_bundle.py",
+      "type": "regex",
+      "pattern": "VERSION = \"{{VERSION}}\""
+    },
+    {
+      "path": "scripts/tes_codex_policy.py",
       "type": "regex",
       "pattern": "VERSION = \"{{VERSION}}\""
     },

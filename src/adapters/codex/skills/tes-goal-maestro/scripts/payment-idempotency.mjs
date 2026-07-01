@@ -37,7 +37,8 @@ if (charges.length === 0) {
 // Para cada idempotency_key, todos os charge_id devem ser iguais (replay = mesma cobrança).
 const byKey = {};
 for (const c of charges) {
-  (byKey[c.idempotency_key] || (byKey[c.idempotency_key] = new Set())).add(c.charge_id);
+  byKey[c.idempotency_key] ??= new Set();
+  byKey[c.idempotency_key].add(c.charge_id);
 }
 for (const [key, ids] of Object.entries(byKey)) {
   const single = ids.size === 1;

@@ -261,7 +261,7 @@ function parseSimpleYaml(text) {
       stack.pop();
     }
     const parent = stack.at(-1).value;
-    if (Object.prototype.hasOwnProperty.call(parent, key)) {
+    if (Object.hasOwn(parent, key)) {
       throw new Error(`line ${index + 1}: duplicate key "${key}"`);
     }
 

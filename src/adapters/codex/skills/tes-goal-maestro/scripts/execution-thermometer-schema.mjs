@@ -240,16 +240,22 @@ function validateMetrics(value, target) {
   }
 
   if (Array.isArray(value?.sources)) {
-    value.sources.forEach((source, index) => validateEvidenceSource(source, `metrics.sources[${index}]`, target));
+    value.sources.forEach((source, index) => {
+      validateEvidenceSource(source, `metrics.sources[${index}]`, target);
+    });
   }
   if (Array.isArray(value?.loops)) {
-    value.loops.forEach((loop, index) => validateLoop(loop, `metrics.loops[${index}]`, target));
+    value.loops.forEach((loop, index) => {
+      validateLoop(loop, `metrics.loops[${index}]`, target);
+    });
   }
   if (isPlainObject(value?.latest_loop)) {
     validateLoop(value.latest_loop, 'metrics.latest_loop', target);
   }
   if (Array.isArray(value?.spec_results)) {
-    value.spec_results.forEach((result, index) => validateSpecResult(result, `metrics.spec_results[${index}]`, target));
+    value.spec_results.forEach((result, index) => {
+      validateSpecResult(result, `metrics.spec_results[${index}]`, target);
+    });
   }
   validateFiveSignals(value?.five_signals, target);
   validateGoldAnalysis(value?.gold_analysis, target);
@@ -375,7 +381,9 @@ function validateFinalStatus(finalStatus, target) {
 
 function validateEvidenceRefs(value, path, declaredRefs, target) {
   if (Array.isArray(value)) {
-    value.forEach((item, index) => validateEvidenceRefs(item, `${path}[${index}]`, declaredRefs, target));
+    value.forEach((item, index) => {
+      validateEvidenceRefs(item, `${path}[${index}]`, declaredRefs, target);
+    });
     return;
   }
   if (!isPlainObject(value)) {
@@ -399,7 +407,9 @@ function validateEvidenceRefs(value, path, declaredRefs, target) {
 
 function validateMetricsRecursively(value, path, declaredRefs, target) {
   if (Array.isArray(value)) {
-    value.forEach((item, index) => validateMetricsRecursively(item, `${path}[${index}]`, declaredRefs, target));
+    value.forEach((item, index) => {
+      validateMetricsRecursively(item, `${path}[${index}]`, declaredRefs, target);
+    });
     return;
   }
   if (!isPlainObject(value)) {
@@ -553,7 +563,7 @@ function expectTimestamp(value, path, target) {
 }
 
 function hasOwn(value, key) {
-  return Object.prototype.hasOwnProperty.call(Object(value), key);
+  return Object.hasOwn(Object(value), key);
 }
 
 function isPlainObject(value) {

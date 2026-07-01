@@ -1085,7 +1085,7 @@ function addPackageHierarchyChecks() {
   const invalidStatusPackages = packages.filter((entry) => !PACKAGE_HIERARCHY_STATUSES.has(entry.status));
   const failedSupersededPackages = packages.filter((entry) => entry.status === 'superseded' && packageWasFailed(entry.candidate));
   const supersededByMismatches = failedSupersededPackages.filter((entry) => !packageSupersededByLatest(entry.candidate, latestIdentity));
-  const closeoutRefs = closeoutPackageRefsFromFixture(fixture);
+  const closeoutRefs = closeoutPackageRefsFromFixture();
   const closeoutLinksLatest = closeoutRefs.some((ref) => latestIdentity.includes(ref));
   const closeoutHistoryExplicit = closeoutExplicitlyListsPackageHistory(fixture);
   const nonLatestCloseoutRefs = closeoutRefs.filter((ref) => !latestIdentity.includes(ref));
@@ -4641,7 +4641,7 @@ function packageSupersededByLatest(candidate, latestIdentity) {
   return nonEmptyString(candidate?.superseded_by) && latestIdentity.includes(candidate.superseded_by);
 }
 
-function closeoutPackageRefsFromFixture(value) {
+function closeoutPackageRefsFromFixture() {
   const closeout = reportCoherenceSurfaceFromFixture('closeout');
   if (typeof closeout === 'string') return packageRefsFromCloseoutText(closeout);
   if (!isPlainObject(closeout)) return [];

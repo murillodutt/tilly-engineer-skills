@@ -32,7 +32,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.249"
+VERSION = "0.3.250"
 RUNTIME_MEMORY_MARKER_RE = re.compile(r"\bmarker\s+([A-Za-z0-9][A-Za-z0-9_.:-]{2,160})", re.IGNORECASE)
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)

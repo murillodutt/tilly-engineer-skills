@@ -26,7 +26,7 @@ from typing import Any
 import tes_codex_policy
 
 
-VERSION = "0.3.249"
+VERSION = "0.3.250"
 SCHEMA = "tes-cortex-git-tap@1"
 RUNTIME_ROOT = Path(".tes/runtime/cortex/git-tap")
 EVENTS_FILE = RUNTIME_ROOT / "events.jsonl"

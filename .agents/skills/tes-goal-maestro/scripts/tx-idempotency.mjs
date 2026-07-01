@@ -21,7 +21,8 @@ function hash(s) {
 // Insert idempotente por chave: se a chave já existe, no-op.
 function applyInsert(state, ins) {
   const next = structuredClone(state);
-  const arr = next[ins.table] || (next[ins.table] = []);
+  next[ins.table] ??= [];
+  const arr = next[ins.table];
   const exists = arr.some((r) => r[ins.key] === ins.value[ins.key]);
   if (!exists) arr.push(ins.value);
   return { next, wasNoop: exists };
