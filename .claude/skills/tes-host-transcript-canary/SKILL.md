@@ -5,7 +5,7 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.6`.
+Operational contract: `tes.host_transcript_canary@0.1.7`.
 
 Central rule:
 
@@ -33,6 +33,20 @@ This skill strengthens canary replay evidence. It does not replace
 `canary_admission_oracle.py`, `installed_certification_oracle.py`,
 `git_gate_contract.py`, package validation, or host/runtime gates.
 
+## Mandatory TES Construction Rule
+
+For TES construction work, this harness is mandatory, not optional. Any work
+that changes or certifies TES Platform behavior, installed targets, hooks,
+Cortex runtime, Field Reports, adapter materialization, generated surfaces,
+agent skills, or canary claims must use this harness and must pass the
+post-execution gate before claiming `PASS`, `CERTIFIED`, `PASS_CEILING`, or a
+product/runtime convergence status.
+
+If host-real truth cannot be observed, stop with `NEEDS_HOST_TRANSCRIPT_CANARY`,
+`NEEDS_RUNTIME_SIGNAL_AUDIT`, `NEEDS_POST_EXECUTION_GATE`, or a deliberately
+limited non-host claim. Do not present a deterministic source smoke as a TES
+construction ceiling claim.
+
 ## Load Routing
 
 Load only the reference needed by the current loop:
@@ -47,6 +61,7 @@ Load only the reference needed by the current loop:
 | Host-real canary scope, mode evidence, and cost brake | `references/canary-modes.md` |
 | CORTEX runtime memory canary recipe and runtime signal proof shape | `references/memory-runtime-canary.md` |
 | Forbidden manual memory lookup versus benign injected marker reuse | `references/transcript-contamination.md` |
+| Mandatory TES construction closeout, post-execution questions, limited-claim downgrades | `references/post-execution-gate.md` |
 | A retained or chat-emitted sanitized evidence report | `templates/host-canary-report.template.md` |
 | A retained agent hook certification report | `templates/agent-hooks-certification-report.template.md` |
 | A retained runtime signal certification report | `templates/runtime-signal-report.template.md` |
@@ -127,6 +142,18 @@ python3 .agents/skills/tes-host-transcript-canary/scripts/runtime_signal_audit.p
    transcript SHA-256 and command context when useful; never stage raw JSONL.
 7. Combine transcript evidence with canary admission, installed certification,
    Git gate, package, and public-bundle gates before claiming convergence.
+8. Run the post-execution gate before the final answer for TES construction
+   work:
+
+```bash
+python3 .agents/skills/tes-host-transcript-canary/scripts/post_execution_gate.py \
+  --evidence <sanitized-evidence.json> \
+  --json-only
+```
+
+The gate must answer whether execution only produced a signal or proved that
+the signal became runtime-usable product behavior through the host-backed
+canary lane.
 
 ## Persistent Loop
 
@@ -202,10 +229,11 @@ When this skill changes, run:
 ```bash
 python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-host-transcript-canary
 python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .claude/skills/tes-host-transcript-canary
-diff -qr .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-transcript-canary
+diff -qr --exclude=.DS_Store .agents/skills/tes-host-transcript-canary .claude/skills/tes-host-transcript-canary
 python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py --self-test --repo .
 python3 .agents/skills/tes-host-transcript-canary/scripts/runtime_signal_audit.py --self-test --repo .
 python3 .agents/skills/tes-host-transcript-canary/scripts/agent_hooks_certification_matrix.py --self-test --repo .
+python3 .agents/skills/tes-host-transcript-canary/scripts/post_execution_gate.py --self-test
 python3 scripts/canary_transcript_oracle.py --self-test
 ```
 
@@ -220,8 +248,9 @@ canary/package gate.
 
 Done means a future window can reconstruct the host-backed canary method from
 this skill, raw transcript content remains unstaged, the transcript oracle or
-scripted loop helper ran or the blocker is classified, and the canary decision
-still depends on the primary TES gates.
+scripted loop helper ran or the blocker is classified, the post-execution gate
+passed or downgraded the claim, and the canary decision still depends on the
+primary TES gates.
 
 ## Locks
 

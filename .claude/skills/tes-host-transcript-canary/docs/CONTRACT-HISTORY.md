@@ -26,6 +26,7 @@ bootloader and without tracking raw transcript content.
 | Maintainer directive, 2026-07-01 | Turn the successful Claude-command loop pattern into an executable helper with a sanitized local ledger. | high |
 | Maintainer directive, 2026-07-01 | Apply the `tes-goal-maestro` architecture pattern at compact scale: root routes, references own depth, templates preserve emitted shape, scripts prove fragile behavior. | high |
 | Maintainer directive, 2026-07-01 | The harness must never optimize for the floor; it must pursue ceiling-grade host-real proof and reject floor-green certification. | high |
+| Maintainer directive, 2026-07-01 | The harness is mandatory for TES construction and must own a post-execution gate so signal-only passes cannot masquerade as runtime convergence. | high |
 
 ## Source Search Ledger
 
@@ -52,6 +53,8 @@ bootloader and without tracking raw transcript content.
   convergence behavior into one-level references.
 - Load `references/ceiling-breakthrough.md` when a result looks merely green
   but the canary claim needs ceiling-grade host-real proof.
+- Run the post-execution gate before closing TES construction work; downgrade
+  missing host, runtime, or post-execution proof instead of claiming pass.
 - Use `templates/host-canary-report.template.md` when a retained or chat
   evidence report needs a stable sanitized shape.
 - Keep raw Claude Code JSONL local and unstaged.
@@ -80,6 +83,9 @@ bootloader and without tracking raw transcript content.
   modular architecture.
 - Certifying floor-green evidence when host-real replay, fresh transcript,
   source ownership, or related gates remain weak.
+- Certifying a signal-only execution as runtime convergence without asking the
+  post-execution questions.
+- Treating `tes-host-transcript-canary` as optional during TES construction.
 - Broadening to package closure before classifying the host/transcript failure.
 - Patching only a canary target while the source oracle or workflow remains
   stale.
@@ -105,6 +111,7 @@ bootloader and without tracking raw transcript content.
 | 2026-07-01 | `tes.host_transcript_canary@0.1.4`: Added `references/ceiling-breakthrough.md` so the harness rejects floor-green certification and pursues the strongest local host-real proof. | Maintainer ceiling directive in current session. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.5`: Added the agent-hooks certification reference, report template, and matrix helper so future loops can verify, fix, and certify each TES agent hook characteristic across source, installed target, and host transcript lanes. | Maintainer request to certify the complete agent hook feature list through this harness. | high |
 | 2026-07-01 | `tes.host_transcript_canary@0.1.6`: Added host-real canary modes, runtime memory canary guidance, transcript contamination classification, a runtime signal report template, and `runtime_signal_audit.py` so product-mode CORTEX memory claims can be certified without one-off audit scripts. | Runtime signal harness Super SPEC; script self-test fixtures for pass, missing ledger, missing marker, stale transcript, manual lookup failure, and `NEEDS_COST_BRAKE` claim alignment. | high |
+| 2026-07-01 | `tes.host_transcript_canary@0.1.7`: Added mandatory TES construction semantics plus a post-execution gate reference and `post_execution_gate.py` so closeouts cannot call signal capture product/runtime convergence without host transcript, runtime signal, related gate, and post-execution proof. | Maintainer directive in current session; post-execution gate self-test. | high |
 
 ## Do Not Lose
 
@@ -114,5 +121,5 @@ minimal correction, original-command replay, ledger-backed continuity, and a
 canary decision that still depends on primary TES gates. The root skill should
 route; detailed loop behavior belongs in references, report shape belongs in a
 template, fragile proof belongs in scripts, and ceiling posture belongs in a
-routed reference. Keep the bootloader thin until this workflow becomes a
-mandatory routing rule.
+routed reference. The workflow is now mandatory for TES construction; keep the
+bootloader thin while making the routing obligation explicit.
