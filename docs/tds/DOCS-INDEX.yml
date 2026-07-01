@@ -694,6 +694,34 @@ documents:
     consumer: maintainers, host-canary harness authors, oracle authors, installed-canary operators, and execution agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-agent-hooks-shell-intent-and-redaction.md
+    id: roadmap.goal_super_spec_agent_hooks_shell_intent_and_redaction
+    class: roadmap
+    status: proposed
+    consumer: maintainers, hook authors, oracle authors, canary operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-agent-hooks-host-real-provenance.md
+    id: roadmap.goal_super_spec_agent_hooks_host_real_provenance
+    class: roadmap
+    status: proposed
+    consumer: maintainers, hook authors, oracle authors, installed-certification authors, canary operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-agent-hooks-codex-config-preservation.md
+    id: roadmap.goal_super_spec_agent_hooks_codex_config_preservation
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, hook authors, oracle authors, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-agent-hooks-fail-observable-and-reconcile.md
+    id: roadmap.goal_super_spec_agent_hooks_fail_observable_and_reconcile
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, hook authors, oracle authors, canary operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-certification.md
     id: roadmap.goal_super_spec_tes_host_hook_ceiling_certification
     class: roadmap
