@@ -53,7 +53,7 @@ import git_gate_contract
 import tes_install
 
 
-VERSION = "0.3.238"
+VERSION = "0.3.239"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 

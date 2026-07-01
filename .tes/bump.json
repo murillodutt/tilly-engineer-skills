@@ -109,6 +109,11 @@
       "pattern": "VERSION = \"{{VERSION}}\""
     },
     {
+      "path": "scripts/git_gate_contract.py",
+      "type": "regex",
+      "pattern": "VERSION = \"{{VERSION}}\""
+    },
+    {
       "path": "scripts/field_reports_github_oracle.py",
       "type": "regex",
       "pattern": "VERSION = \"{{VERSION}}\""
