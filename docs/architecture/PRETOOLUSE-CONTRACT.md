@@ -51,7 +51,7 @@ PreToolUse reaches `PASS_CEILING` only when it proves the floor contract and add
 - patch-body evidence: Codex `apply_patch` path extraction treats `tool_input.command` as canonical and accepts defensive aliases `input`, `patch`, flat string `arguments`, and `arguments.command`/`arguments.input`/`arguments.patch`;
 - discoverability gate: observed or exposed host tool names that look mutating must not be silently classified as routine; ambiguous host semantics produce `NEEDS_DISCOVERABILITY` until fixture or native evidence resolves them;
 - renderer parity: host-specific renderers are certified by fixtures that prove Claude Code, Codex, and Cursor contracts without flattening them into one protocol;
-- ledger analytics contract: current v2 PreToolUse rows carry a non-empty invocation, using a stable synthetic invocation when a host or simulation payload omits a tool id; external dedup and analytics use tool, risk, path or redacted path class/hash, command category, session/mode, and marker state, not only invocation plus timestamp; historical anti-cry-wolf renderer transitions from first marker to silent repeat are compatibility evidence, while current rows should repeat the marker and record `anti_crywolf_repeated_context` when the same governed context repeats;
+- ledger analytics contract: current v2 PreToolUse rows carry a non-empty invocation, using a stable synthetic invocation when a host or simulation payload omits a tool id; external dedup and analytics use tool, risk, path or redacted path class/hash, command category, session/mode, marker state, and `context_repeated`, not only invocation plus timestamp; historical anti-cry-wolf renderer transitions from first marker to silent repeat are compatibility evidence, while current rows repeat the marker and record `context_repeated=true` plus `anti_crywolf_repeated_context` when the same governed context repeats;
 - current-host provenance: per-host native audits expose `ceiling_evidence_scope.claim_scope=current_host`, `ceiling_evidence_scope.current_host=<host>`, and required host evidence limited to that host;
 - drift detection: the next audit can identify whether a regression came from host payload shape, kernel classification, session suppression, renderer output, or ledger write;
 - red-capable oracle coverage: the source package has an oracle that fails when the canonical contract loses the floor/ceiling distinction, reason-code requirement, discoverability gate, or host-payload evidence rule.
@@ -85,14 +85,14 @@ Anti-cry-wolf is a session-repetition dimension, not a second classifier. Its
 job is to track repeated governed session/context evidence without suppressing
 the `🍳 Flash-Fry` marker. Current rows preserve `risk=material`,
 `outcome=supervise`, `governed_surface_mutation`, and marker visibility on every
-visible Mantra Gate application; repeated context adds
-`anti_crywolf_repeated_context`. Historical duplicate rows, replay residue,
+visible Mantra Gate application; repeated context adds `context_repeated=true`
+and `anti_crywolf_repeated_context`. Historical duplicate rows, replay residue,
 Cursor batch projections, and older first-marker to silent-repeat renderer
-transitions are ledger-health noise unless current `pretooluse_decision@2`
-rows contradict decision, risk, redaction, or marker state outside that
-compatibility path. Adding a separate anti-cry-wolf filter now would duplicate
-the session coordinator and increase the chance that repetition state hides
-classification evidence.
+transitions that used `context_suppressed` are ledger-health noise unless
+current `pretooluse_decision@2` rows contradict decision, risk, redaction, or
+marker state outside that compatibility path. Adding a separate anti-cry-wolf
+filter now would duplicate the session coordinator and increase the chance that
+repetition state hides classification evidence.
 
 Discoverability is an honest unknown-state dimension, not a new block policy.
 When a tool name, payload shape, or host semantic looks mutating but lacks
@@ -117,7 +117,7 @@ real second consumer or contradiction that cannot be represented by the current
 record: a host-native payload shape that cannot be expressed through
 `classifier_trace`, a renderer output that cannot be represented through
 `renderer_trace`, a repetition state that cannot be represented through
-`anti_crywolf_repeated_context`, or a discoverability case that cannot be
+`context_repeated`/`anti_crywolf_repeated_context`, or a discoverability case that cannot be
 represented through `NEEDS_DISCOVERABILITY`. Without that evidence, the right action is to
 document, test, and canary the current dimensions, not add new filters.
 

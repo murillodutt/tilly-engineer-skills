@@ -752,7 +752,7 @@ def _assert_runtime_ledger(target: Path, failures: list[str]) -> dict[str, Any]:
     if not any(
         item.get("decision") == "allow"
         and item.get("permission_decision") == "allow"
-        and item.get("context_suppressed") is False
+        and item.get("context_repeated") is True
         and item.get("marker_emitted") is True
         and "anti_crywolf_repeated_context" in _reason_codes(item)
         for item in codex_apply
@@ -1086,6 +1086,7 @@ print(json.dumps({
     "risk": decision.get("risk"),
     "reason_codes": decision.get("reason_codes"),
     "session_context_suppressed": session_context.context_suppressed,
+    "session_context_repeated": session_context.context_repeated,
     "sentinel_path": str(session_context.sentinel_path),
 }, sort_keys=True))
 '''
@@ -1105,6 +1106,8 @@ print(json.dumps({
         helper_failures.append("installed helper probe must preserve discoverability reason code")
     if payload.get("session_context_suppressed") is not False:
         helper_failures.append("installed helper session probe must surface first context")
+    if payload.get("session_context_repeated") is not False:
+        helper_failures.append("installed helper session probe must mark first context as non-repeated")
 
     failures.extend(helper_failures)
     return {

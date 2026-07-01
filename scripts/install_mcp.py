@@ -38,6 +38,7 @@ SERVER_FILES = (
     "install_mcp_hosts/vscode.py",
     "cortex.py",
     "cortex_runtime.py",
+    "cortex_git_tap.py",
     "tes_codex_policy.py",
     "pretooluse_kernel.py",
     "pretooluse_session.py",

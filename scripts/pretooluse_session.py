@@ -25,6 +25,7 @@ class PreToolUseSessionContext:
     session_id: str
     sentinel_path: Path
     reason_codes: tuple[str, ...] = ()
+    context_repeated: bool = False
 
 
 def pretooluse_session_id(hook_input: dict[str, Any]) -> str:
@@ -43,8 +44,8 @@ def coordinate_pretooluse_context(
 ) -> PreToolUseSessionContext:
     """Return the context that should be surfaced for this session.
 
-    Filesystem errors preserve the previous fail-open behavior: supervision is
-    still surfaced because hiding a real governed obligation is riskier than
+    Filesystem and decode errors preserve the fail-open behavior: supervision
+    is still surfaced because hiding a real governed obligation is riskier than
     repeating a marker when the sentinel cannot be read or written.
     """
     sentinel = pretooluse_sentinel_path(target, hook_input)
@@ -62,10 +63,17 @@ def coordinate_pretooluse_context(
                 session_id,
                 sentinel,
                 ("anti_crywolf_repeated_context",),
+                True,
             )
         sentinel.parent.mkdir(parents=True, exist_ok=True)
         with sentinel.open("a", encoding="utf-8") as handle:
             handle.write(context + "\n")
-    except OSError:
-        return PreToolUseSessionContext(context, False, session_id, sentinel)
+    except (OSError, UnicodeError):
+        return PreToolUseSessionContext(
+            context,
+            False,
+            session_id,
+            sentinel,
+            ("anti_crywolf_sentinel_unavailable",),
+        )
     return PreToolUseSessionContext(context, False, session_id, sentinel)

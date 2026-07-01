@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import os
 import re
@@ -20,20 +21,6 @@ from typing import Any
 
 import cortex_git_tap
 import tes_codex_policy
-from pretooluse_kernel import (
-    command_category as kernel_command_category,
-    decide_pretooluse,
-    governed_surface_label as kernel_governed_surface_label,
-    hook_event_name as kernel_hook_event_name,
-    hook_patch_paths as kernel_hook_patch_paths,
-    hook_tool_command as kernel_hook_tool_command,
-    hook_tool_input as kernel_hook_tool_input,
-    hook_tool_name as kernel_hook_tool_name,
-    hook_tool_path as kernel_hook_tool_path,
-    is_governed_path as kernel_is_governed_path,
-    path_needs_redaction as kernel_path_needs_redaction,
-)
-from pretooluse_session import coordinate_pretooluse_context
 
 
 VERSION = "0.3.251"
@@ -64,6 +51,9 @@ HOOK_RUNTIME_HELPERS = (
     "pretooluse_kernel.py",
     "pretooluse_session.py",
 )
+HELPER_INVENTORY_PATH = Path(".tes/bin/.tes-helper-inventory.json")
+HELPER_INVENTORY_SCHEMA = "tes-helper-inventory@1"
+HELPER_INVENTORY_SET_HOOK_RUNTIME = "hook_runtime"
 OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/PROJECT-STATE.md",
     "docs/agents/PROJECT-ROADMAP.md",
@@ -72,6 +62,7 @@ OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/DECISIONS/",
 )
 PRETOOLUSE_LEDGER_SCHEMA_VERSION = "pretooluse_decision@2"
+PRETOOLUSE_DEGRADED_REASON_CODE = "SUPERVISION_DEGRADED"
 PRETOOLUSE_CEILING_AGGREGATION_POLICY = "per_host_no_cross_fill"
 PRETOOLUSE_CEILING_HOST_ORDER = ("claude", "codex", "cursor")
 PRETOOLUSE_LEGACY_POLICY = "historical_context_only"
@@ -90,9 +81,200 @@ HOOK_PROVENANCE_STATES = {
 HOOK_DEDUPE_CONTRACT_SCHEMA = "tes-hook-dedupe@1"
 HOOK_HEALTH_SCHEMA_VERSION = "tes-hook-health@2"
 HOOK_HEALTH_LEGACY_SCHEMA_VERSION = "tes-hook-health@1"
+HOOK_DEGRADED_BREADCRUMB_SCHEMA = "tes-hook-degraded@1"
+HOOK_DEGRADED_BREADCRUMB_PATH = Path(".tes/runtime/hook-degraded.jsonl")
+HOOK_DEGRADED_BREADCRUMB_FALLBACK_PATH = Path(".tes/hook-degraded.jsonl")
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 HEX64_RE = re.compile(r"^[a-fA-F0-9]{64}$")
+
+_PRETOOLUSE_KERNEL_MODULE: Any | None = None
+_PRETOOLUSE_KERNEL_ERROR: BaseException | None = None
+_PRETOOLUSE_SESSION_MODULE: Any | None = None
+_PRETOOLUSE_SESSION_ERROR: BaseException | None = None
+FALLBACK_PATCH_FILE_HEADER_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$")
+FALLBACK_SENSITIVE_PATH_RE = re.compile(
+    r"(?i)(api[_-]?key|authorization|bearer|credential|password|secret|token)(?:\s*[:=]\s*|[-_.:@])?[A-Za-z0-9._:@+=-]*"
+)
+
+
+def _pretooluse_import_error(exc: BaseException | None) -> dict[str, str] | None:
+    if exc is None:
+        return None
+    return {"type": type(exc).__name__}
+
+
+def _import_pretooluse_kernel() -> Any | None:
+    """Lazy-load the kernel so a broken helper degrades inside the hook path."""
+    global _PRETOOLUSE_KERNEL_MODULE, _PRETOOLUSE_KERNEL_ERROR
+    if _PRETOOLUSE_KERNEL_MODULE is not None:
+        return _PRETOOLUSE_KERNEL_MODULE
+    if _PRETOOLUSE_KERNEL_ERROR is not None:
+        return None
+    try:
+        _PRETOOLUSE_KERNEL_MODULE = importlib.import_module("pretooluse_kernel")
+    except Exception as exc:  # noqa: BLE001 - hook import failures must degrade observably
+        _PRETOOLUSE_KERNEL_ERROR = exc
+        return None
+    return _PRETOOLUSE_KERNEL_MODULE
+
+
+def _import_pretooluse_session() -> Any | None:
+    """Lazy-load the session helper for the same degraded-hook path."""
+    global _PRETOOLUSE_SESSION_MODULE, _PRETOOLUSE_SESSION_ERROR
+    if _PRETOOLUSE_SESSION_MODULE is not None:
+        return _PRETOOLUSE_SESSION_MODULE
+    if _PRETOOLUSE_SESSION_ERROR is not None:
+        return None
+    try:
+        _PRETOOLUSE_SESSION_MODULE = importlib.import_module("pretooluse_session")
+    except Exception as exc:  # noqa: BLE001 - hook import failures must degrade observably
+        _PRETOOLUSE_SESSION_ERROR = exc
+        return None
+    return _PRETOOLUSE_SESSION_MODULE
+
+
+def pretooluse_helper_import_status() -> dict[str, Any]:
+    kernel = _import_pretooluse_kernel()
+    session = _import_pretooluse_session()
+    failures: list[dict[str, str]] = []
+    if kernel is None:
+        failures.append({"helper": "pretooluse_kernel.py", **(_pretooluse_import_error(_PRETOOLUSE_KERNEL_ERROR) or {})})
+    if session is None:
+        failures.append({"helper": "pretooluse_session.py", **(_pretooluse_import_error(_PRETOOLUSE_SESSION_ERROR) or {})})
+    return {"status": "PASS" if not failures else "FAIL", "failures": failures}
+
+
+def _fallback_hook_event_name(hook_input: dict[str, Any], default: str = "SessionStart") -> str:
+    value = hook_input.get("hook_event_name") or hook_input.get("hookEventName") or hook_input.get("event")
+    return str(value or default)
+
+
+def _fallback_hook_tool_name(hook_input: dict[str, Any]) -> str:
+    value = hook_input.get("tool_name") or hook_input.get("toolName")
+    if isinstance(value, str):
+        return value
+    tool = hook_input.get("tool")
+    return tool if isinstance(tool, str) else ""
+
+
+def _fallback_hook_tool_input(hook_input: dict[str, Any]) -> dict[str, Any]:
+    value = hook_input.get("tool_input")
+    if value is None:
+        value = hook_input.get("toolInput")
+    return value if isinstance(value, dict) else {}
+
+
+def _fallback_hook_patch_paths(command: str) -> list[str]:
+    paths: list[str] = []
+    for line in command.splitlines():
+        match = FALLBACK_PATCH_FILE_HEADER_RE.match(line.strip())
+        if match:
+            paths.append(match.group(1).strip())
+    return paths
+
+
+def _fallback_hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
+    for value in (tool_input.get("command"), tool_input.get("input"), tool_input.get("patch")):
+        if isinstance(value, str) and value:
+            return value
+    arguments = tool_input.get("arguments")
+    if isinstance(arguments, str) and arguments:
+        return arguments
+    if isinstance(arguments, dict):
+        for value in (arguments.get("command"), arguments.get("input"), arguments.get("patch")):
+            if isinstance(value, str) and value:
+                return value
+    return ""
+
+
+def _fallback_hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
+    value = (
+        tool_input.get("file_path")
+        or tool_input.get("path")
+        or tool_input.get("filePath")
+        or hook_input.get("file_path")
+        or hook_input.get("path")
+        or hook_input.get("filePath")
+    )
+    if value:
+        return str(value)
+    command = _fallback_hook_tool_command(hook_input, tool_input)
+    patch_paths = _fallback_hook_patch_paths(command)
+    return patch_paths[0] if patch_paths else ""
+
+
+def kernel_command_category(command: str) -> str:
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None and callable(getattr(kernel, "command_category", None)):
+        return str(kernel.command_category(command))
+    normalized = " ".join(command.strip().lower().split())
+    if not normalized:
+        return "no_command"
+    if hook_patch_paths(command):
+        return "patch_body"
+    if "push --force" in normalized or "--force-with-lease" in normalized:
+        return "forbidden_git_force_push"
+    if "git push" in normalized and (" --force" in normalized or " -f" in normalized):
+        return "forbidden_git_force_push"
+    if "--no-preserve-root" in normalized or "rm -rf /" in normalized or "rm -fr /" in normalized:
+        return "forbidden_root_wipe"
+    return "shell_command"
+
+
+def kernel_path_needs_redaction(path: str) -> bool:
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None and callable(getattr(kernel, "path_needs_redaction", None)):
+        return bool(kernel.path_needs_redaction(path))
+    return bool(FALLBACK_SENSITIVE_PATH_RE.search(path))
+
+
+def _fallback_path_parts(path: str) -> list[str]:
+    normalized = path.replace("\\", "/").strip()
+    return [part for part in normalized.split("/") if part and part != "."]
+
+
+def kernel_is_governed_path(path: str) -> bool:
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None and callable(getattr(kernel, "is_governed_path", None)):
+        return bool(kernel.is_governed_path(path))
+    parts = _fallback_path_parts(path)
+    if not parts:
+        return False
+    filename = parts[-1]
+    if filename in {"AGENTS.md", "CLAUDE.md", "SKILL.md"}:
+        return True
+    joined = "/".join(parts)
+    return (
+        joined.startswith("docs/adr/")
+        or "/docs/adr/" in f"/{joined}/"
+        or joined.startswith("docs/governance/")
+        or "/docs/governance/" in f"/{joined}/"
+        or joined.startswith(".cursor/rules/")
+        or "/.cursor/rules/" in f"/{joined}/"
+    )
+
+
+def kernel_governed_surface_label(path: str) -> str:
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None and callable(getattr(kernel, "governed_surface_label", None)):
+        return str(kernel.governed_surface_label(path))
+    parts = _fallback_path_parts(path)
+    if not parts:
+        return "none"
+    filename = parts[-1]
+    if filename == "SKILL.md":
+        return "skill"
+    if filename in {"AGENTS.md", "CLAUDE.md"}:
+        return "root_agent_bootloader"
+    joined = "/".join(parts)
+    if joined.startswith("docs/adr/") or "/docs/adr/" in f"/{joined}/":
+        return "adr"
+    if joined.startswith("docs/governance/") or "/docs/governance/" in f"/{joined}/":
+        return "governance"
+    if joined.startswith(".cursor/rules/") or "/.cursor/rules/" in f"/{joined}/":
+        return "cursor_rule"
+    return "path"
 
 
 def python_executable() -> str:
@@ -985,8 +1167,98 @@ def source_helper_path(script_name: str) -> Path | None:
     return None
 
 
+def helper_inventory_payload(target: Path) -> dict[str, Any]:
+    payload = read_json(target / HELPER_INVENTORY_PATH)
+    sets = payload.get("sets")
+    if not isinstance(sets, dict):
+        payload["sets"] = {}
+    return payload
+
+
+def helper_inventory_entries(payload: dict[str, Any], set_name: str) -> list[dict[str, Any]]:
+    sets = payload.get("sets") if isinstance(payload.get("sets"), dict) else {}
+    helper_set = sets.get(set_name) if isinstance(sets, dict) else None
+    entries = helper_set.get("helpers") if isinstance(helper_set, dict) else []
+    return [entry for entry in entries if isinstance(entry, dict)]
+
+
+def write_hook_runtime_helper_inventory(
+    target: Path,
+    entries: list[dict[str, Any]],
+    dry_run: bool,
+) -> dict[str, str]:
+    payload = helper_inventory_payload(target)
+    sets = payload["sets"]
+    sets[HELPER_INVENTORY_SET_HOOK_RUNTIME] = {
+        "helpers": entries,
+        "helper_count": len(entries),
+    }
+    payload.update(
+        {
+            "schema": HELPER_INVENTORY_SCHEMA,
+            "version": VERSION,
+            "updated_at": utc_stamp(),
+        }
+    )
+    return write_json(target / HELPER_INVENTORY_PATH, payload, dry_run=dry_run)
+
+
+def prune_helper_pycache(target: Path, helper_name: str, dry_run: bool) -> list[dict[str, Any]]:
+    actions: list[dict[str, Any]] = []
+    pycache = target / ".tes/bin/__pycache__"
+    if not pycache.is_dir():
+        return actions
+    stem = Path(helper_name).stem
+    for path in sorted(pycache.glob(f"{stem}.*.pyc")):
+        if dry_run:
+            actions.append({"path": rel(path, target), "action": "would-prune-helper-pycache", "helper": helper_name})
+            continue
+        path.unlink()
+        actions.append({"path": rel(path, target), "action": "prune-helper-pycache", "helper": helper_name})
+    try:
+        if not dry_run and pycache.exists() and not any(pycache.iterdir()):
+            pycache.rmdir()
+    except OSError:
+        pass
+    return actions
+
+
+def prune_retired_hook_runtime_helpers(target: Path, previous_inventory: dict[str, Any], dry_run: bool) -> list[dict[str, Any]]:
+    actions: list[dict[str, Any]] = []
+    previous = helper_inventory_entries(previous_inventory, HELPER_INVENTORY_SET_HOOK_RUNTIME)
+    if not previous:
+        return actions
+    desired = set(HOOK_RUNTIME_HELPERS)
+    for entry in previous:
+        helper_name = str(entry.get("helper") or "")
+        relpath = str(entry.get("path") or "")
+        expected_sha = str(entry.get("sha256") or "")
+        if not helper_name or helper_name in desired or not relpath.startswith(".tes/bin/") or not expected_sha:
+            continue
+        path = target / relpath
+        if not path.is_file():
+            continue
+        try:
+            actual_sha = sha256_file(path)
+        except OSError:
+            continue
+        if actual_sha != expected_sha:
+            actions.append({"path": rel(path, target), "action": "skip-prune-modified-helper", "helper": helper_name})
+            continue
+        if dry_run:
+            actions.append({"path": rel(path, target), "action": "would-prune-retired-helper", "helper": helper_name})
+        else:
+            path.unlink()
+            actions.append({"path": rel(path, target), "action": "prune-retired-helper", "helper": helper_name})
+        actions.extend(prune_helper_pycache(target, helper_name, dry_run))
+    return actions
+
+
 def install_hook_runtime_helpers(target: Path, dry_run: bool) -> list[dict[str, Any]]:
     actions: list[dict[str, Any]] = []
+    previous_inventory = helper_inventory_payload(target)
+    actions.extend(prune_retired_hook_runtime_helpers(target, previous_inventory, dry_run))
+    inventory_entries: list[dict[str, Any]] = []
     for script_name in HOOK_RUNTIME_HELPERS:
         destination = target / ".tes/bin" / script_name
         source = source_helper_path(script_name)
@@ -1002,6 +1274,12 @@ def install_hook_runtime_helpers(target: Path, dry_run: bool) -> list[dict[str, 
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         actions.append({"path": rel(destination, target), "action": "copy-helper", "helper": script_name})
+        inventory_entries.append({"helper": script_name, "path": rel(destination, target), "sha256": sha256_file(destination)})
+    for script_name in HOOK_RUNTIME_HELPERS:
+        destination = target / ".tes/bin" / script_name
+        if destination.is_file() and not any(entry.get("helper") == script_name for entry in inventory_entries):
+            inventory_entries.append({"helper": script_name, "path": rel(destination, target), "sha256": sha256_file(destination)})
+    actions.append(write_hook_runtime_helper_inventory(target, inventory_entries, dry_run))
     return actions
 
 
@@ -2722,27 +3000,45 @@ def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any
 
 
 def hook_event_name(hook_input: dict[str, Any], default: str = "SessionStart") -> str:
-    return kernel_hook_event_name(hook_input, default)
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None:
+        return kernel.hook_event_name(hook_input, default)
+    return _fallback_hook_event_name(hook_input, default)
 
 
 def hook_tool_name(hook_input: dict[str, Any]) -> str:
-    return kernel_hook_tool_name(hook_input)
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None:
+        return kernel.hook_tool_name(hook_input)
+    return _fallback_hook_tool_name(hook_input)
 
 
 def hook_tool_input(hook_input: dict[str, Any]) -> dict[str, Any]:
-    return kernel_hook_tool_input(hook_input)
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None:
+        return kernel.hook_tool_input(hook_input)
+    return _fallback_hook_tool_input(hook_input)
 
 
 def hook_tool_path(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
-    return kernel_hook_tool_path(hook_input, tool_input)
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None:
+        return kernel.hook_tool_path(hook_input, tool_input)
+    return _fallback_hook_tool_path(hook_input, tool_input)
 
 
 def hook_patch_paths(command: str) -> list[str]:
-    return kernel_hook_patch_paths(command)
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None:
+        return kernel.hook_patch_paths(command)
+    return _fallback_hook_patch_paths(command)
 
 
 def hook_tool_command(hook_input: dict[str, Any], tool_input: dict[str, Any]) -> str:
-    return kernel_hook_tool_command(hook_input, tool_input)
+    kernel = _import_pretooluse_kernel()
+    if kernel is not None:
+        return kernel.hook_tool_command(hook_input, tool_input)
+    return _fallback_hook_tool_command(hook_input, tool_input)
 
 
 def hook_command_category(command: str) -> str:
@@ -3010,6 +3306,43 @@ def ensure_hook_runtime_excluded(target: Path) -> None:
         return
 
 
+def write_hook_degraded_breadcrumb(
+    target: Path,
+    agent: str,
+    hook_input: dict[str, Any],
+    *,
+    mode: str,
+    reason: str,
+    error: BaseException,
+) -> dict[str, Any]:
+    """Write sanitized degraded hook evidence when the main ledger is unavailable."""
+    event = hook_event_name(hook_input, "")
+    payload = {
+        "schema": HOOK_DEGRADED_BREADCRUMB_SCHEMA,
+        "ts": utc_stamp(),
+        "agent": agent,
+        "event_canonical": canonical_hook_event(event),
+        "mode": mode,
+        "reason": reason,
+        "error_type": type(error).__name__,
+        "provenance": "host-real",
+    }
+    for relpath in (
+        Path(".tes/runtime/hooks/degraded.jsonl"),
+        HOOK_DEGRADED_BREADCRUMB_PATH,
+        HOOK_DEGRADED_BREADCRUMB_FALLBACK_PATH,
+    ):
+        path = target / relpath
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload, sort_keys=True) + "\n")
+            return {"status": "DEGRADED", "breadcrumb": relpath.as_posix(), "reason": reason}
+        except OSError:
+            continue
+    return {"status": "UNRECORDED", "breadcrumb": None, "reason": reason}
+
+
 def record_hook_execution(
     target: Path,
     agent: str,
@@ -3019,7 +3352,7 @@ def record_hook_execution(
     pretooluse_decision: dict[str, Any] | None = None,
     provenance: str | None = None,
     host_transcript_evidence: dict[str, Any] | None = None,
-) -> None:
+) -> dict[str, Any]:
     """ADR 0004 SPEC-005: prove the hook actually fired.
 
     Append a capsule-scoped sentinel record on every real hook invocation. The
@@ -3089,9 +3422,12 @@ def record_hook_execution(
                     "decision",
                     "permission_decision",
                     "marker_emitted",
-                    "context_suppressed",
+                    "context_repeated",
                     "cortex_context_emitted",
                     "surface_context",
+                    "supervision_state",
+                    "degraded_reason",
+                    "helper_import_status",
                 ):
                     if key in pretooluse_decision:
                         record[key] = pretooluse_decision[key]
@@ -3104,8 +3440,16 @@ def record_hook_execution(
         if not hook_record_already_written(sentinel, record):
             with sentinel.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(record, sort_keys=True) + "\n")
-    except OSError:
-        pass
+        return {"status": "PASS", "breadcrumb": None, "reason": None}
+    except OSError as exc:
+        return write_hook_degraded_breadcrumb(
+            target,
+            agent,
+            hook_input,
+            mode=mode,
+            reason="hook_ledger_write_failed",
+            error=exc,
+        )
 
 
 def pretooluse_synthetic_invocation(record: dict[str, Any]) -> str:
@@ -3127,7 +3471,7 @@ def pretooluse_synthetic_invocation(record: dict[str, Any]) -> str:
         "decision": record.get("decision"),
         "permission_decision": record.get("permission_decision"),
         "marker_emitted": record.get("marker_emitted"),
-        "context_suppressed": record.get("context_suppressed"),
+        "context_repeated": record.get("context_repeated"),
     }
     digest = hashlib.sha256(json.dumps(parts, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
     agent = str(record.get("agent") or "agent")
@@ -3170,9 +3514,11 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "decision",
     "permission_decision",
     "marker_emitted",
-    "context_suppressed",
+    "context_repeated",
     "cortex_context_emitted",
     "surface_context",
+    "supervision_state",
+    "degraded_reason",
 )
 PRETOOLUSE_CONTRADICTION_FIELDS = (
     "decision",
@@ -3221,7 +3567,7 @@ def hook_record_identity(record: dict[str, Any]) -> dict[str, Any]:
         "path_or_command": str(record.get("path") or record.get("path_class") or record.get("command_category") or ""),
         "decision": str(record.get("decision") or record.get("permission_decision") or ""),
         "marker_emitted": record.get("marker_emitted"),
-        "context_suppressed": record.get("context_suppressed"),
+        "context_repeated": record.get("context_repeated"),
     }
 
 
@@ -3321,6 +3667,33 @@ def read_hook_execution_records(target: Path, relpath: Path) -> list[dict[str, A
         if isinstance(payload, dict):
             payload.setdefault("sentinel_path", relpath.as_posix())
             records.append(payload)
+    return records
+
+
+def read_hook_degraded_records(target: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    seen_paths: set[Path] = set()
+    for relpath in (
+        Path(".tes/runtime/hooks/degraded.jsonl"),
+        HOOK_DEGRADED_BREADCRUMB_PATH,
+        HOOK_DEGRADED_BREADCRUMB_FALLBACK_PATH,
+    ):
+        path = target / relpath
+        if path in seen_paths or not path.is_file():
+            continue
+        seen_paths.add(path)
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeError):
+            continue
+        for line in lines:
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, dict):
+                payload.setdefault("sentinel_path", relpath.as_posix())
+                records.append(payload)
     return records
 
 
@@ -3821,6 +4194,7 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
     hooks_attached = "hooks" in attached_surfaces
     current_records = read_hook_execution_records(target, HOOK_SENTINEL_PATH)
     legacy_records = read_hook_execution_records(target, LEGACY_HOOK_SENTINEL_PATH)
+    degraded_records = read_hook_degraded_records(target)
     duplicate_records = duplicate_hook_records(current_records)
     findings: list[dict[str, Any]] = []
     agents: dict[str, Any] = {}
@@ -3895,6 +4269,21 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
                 "records": duplicate_records,
             }
         )
+    if degraded_records:
+        reasons = sorted(
+            {
+                str(record.get("reason") or "hook_execution_degraded")
+                for record in degraded_records
+            }
+        )
+        findings.append(
+            {
+                "severity": "error",
+                "type": "hook_execution_degraded",
+                "records": len(degraded_records),
+                "reasons": reasons,
+            }
+        )
     unexpected = any(
         event["state"] == "STALE/UNEXPECTED"
         for agent in agents.values()
@@ -3939,7 +4328,7 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
         "warning": sum(1 for finding in findings if finding.get("severity") == "warning"),
         "info": sum(1 for finding in findings if finding.get("severity") == "info"),
     }
-    if not hooks_attached and not any_configured and not current_records and not legacy_records:
+    if not hooks_attached and not any_configured and not current_records and not legacy_records and not degraded_records:
         status_value = "NOT_APPLIED"
     elif unexpected or finding_counts["error"]:
         status_value = "DEGRADED"
@@ -3985,6 +4374,11 @@ def hook_health_payload(target: Path, *, current_host: str | None = None) -> dic
                 "path": LEGACY_HOOK_SENTINEL_PATH.as_posix(),
                 "records": len(legacy_records),
                 "status": "STALE/RESIDUE" if legacy_records else "ABSENT",
+            },
+            "degraded": {
+                "path": HOOK_DEGRADED_BREADCRUMB_PATH.as_posix(),
+                "records": len(degraded_records),
+                "status": "OBSERVED" if degraded_records else "ABSENT",
             },
         },
         "agents": agents,
@@ -4128,7 +4522,10 @@ def _append_claude_additional_context(output: dict[str, Any], event_name: str, c
 
 def _pretooluse_decision(hook_input: dict[str, Any]) -> dict[str, Any]:
     """Compatibility wrapper around the host-neutral PreToolUse kernel."""
-    return decide_pretooluse(
+    kernel = _import_pretooluse_kernel()
+    if kernel is None:
+        raise RuntimeError("pretooluse_kernel unavailable")
+    return kernel.decide_pretooluse(
         hook_input,
         risk_classifier=_classify_pretooluse_risk,
         marker=_mantra_gate_marker(),
@@ -4146,6 +4543,73 @@ def _pretooluse_may_touch_operating_mesh(hook_input: dict[str, Any]) -> bool:
     return any(hint in text for hint in OPERATING_MESH_PRETOOLUSE_HINTS)
 
 
+def pretooluse_degraded_context(status: dict[str, Any]) -> str:
+    failures = status.get("failures") if isinstance(status.get("failures"), list) else []
+    helpers = [
+        str(item.get("helper"))
+        for item in failures
+        if isinstance(item, dict) and item.get("helper")
+    ]
+    helper_text = ", ".join(helpers) if helpers else "pretooluse helper"
+    return (
+        f"{PRETOOLUSE_DEGRADED_REASON_CODE}: PreToolUse helper import failed "
+        f"({helper_text}); host execution allowed with degraded hook evidence."
+    )
+
+
+def hook_pretooluse_degraded(
+    args: argparse.Namespace,
+    hook_input: dict[str, Any],
+    status: dict[str, Any],
+) -> int:
+    target = target_root(args.target)
+    context = pretooluse_degraded_context(status)
+    reason_codes = hook_reason_codes(PRETOOLUSE_DEGRADED_REASON_CODE, "pretooluse_helper_import_failure", "renderer_contract_projected")
+    record_hook_execution(
+        target,
+        args.agent,
+        hook_input,
+        mode="pretooluse",
+        pretooluse_decision={
+            "schema_version": PRETOOLUSE_LEDGER_SCHEMA_VERSION,
+            "reason_codes": reason_codes,
+            "renderer_trace": pretooluse_renderer_trace(args.agent, block=False, context=context),
+            "risk": "degraded",
+            "outcome": "supervision_degraded",
+            "block": False,
+            "decision": "allow",
+            "permission_decision": "allow",
+            "marker_emitted": True,
+            "context_repeated": False,
+            "cortex_context_emitted": False,
+            "surface_context": True,
+            "supervision_state": PRETOOLUSE_DEGRADED_REASON_CODE,
+            "degraded_reason": "pretooluse_helper_import_failure",
+            "helper_import_status": status,
+        },
+    )
+    if args.agent == "cursor":
+        print(json.dumps({"continue": True, "permission": "allow", "agent_message": context}, ensure_ascii=False, sort_keys=True))
+        return 0
+    if args.agent == "claude":
+        print(
+            json.dumps(
+                {
+                    "hookSpecificOutput": {
+                        "hookEventName": "PreToolUse",
+                        "permissionDecision": "allow",
+                        "additionalContext": context,
+                    }
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+        )
+        return 0
+    print(context, file=sys.stderr)
+    return 0
+
+
 def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int:
     """PreToolUse handler — the per-host pre-action projection of the senior manager.
 
@@ -4159,6 +4623,9 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     A materializer that assumed exit-2 everywhere would break silently on Cursor.
     """
     target = target_root(args.target)
+    helper_status = pretooluse_helper_import_status()
+    if helper_status["status"] != "PASS":
+        return hook_pretooluse_degraded(args, hook_input, helper_status)
     decision = _pretooluse_decision(hook_input)
 
     if decision["block"]:
@@ -4176,7 +4643,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
                 "decision": "block",
                 "permission_decision": "deny",
                 "marker_emitted": True,
-                "context_suppressed": False,
+                "context_repeated": False,
                 "cortex_context_emitted": False,
                 "surface_context": True,
             },
@@ -4188,9 +4655,12 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         print(reason, file=sys.stderr)
         return 2
 
-    session_context = coordinate_pretooluse_context(target, hook_input, str(decision.get("context") or ""))
+    session_module = _import_pretooluse_session()
+    if session_module is None:
+        return hook_pretooluse_degraded(args, hook_input, pretooluse_helper_import_status())
+    session_context = session_module.coordinate_pretooluse_context(target, hook_input, str(decision.get("context") or ""))
     context = session_context.context
-    context_suppressed = session_context.context_suppressed
+    context_repeated = bool(getattr(session_context, "context_repeated", False))
     cortex_result = _evaluate_cortex_runtime(target, args.agent, hook_input)
     cortex_context = _cortex_runtime_context(cortex_result, include_capture=False)
     cortex_policy = cortex_result.get("policy") if isinstance(cortex_result.get("policy"), dict) else {}
@@ -4223,7 +4693,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             "decision": "allow",
             "permission_decision": "allow",
             "marker_emitted": bool(context or cortex_context),
-            "context_suppressed": context_suppressed,
+            "context_repeated": context_repeated,
             "cortex_context_emitted": bool(cortex_context),
             "policy_loaded": bool(cortex_policy.get("loaded")),
             "policy_status": cortex_policy.get("state"),
@@ -4454,7 +4924,7 @@ def self_test() -> int:
         path: str = "docs/adr/0010-future.md",
         invocation: str | None = None,
         marker_emitted: bool = True,
-        context_suppressed: bool = False,
+        context_repeated: bool = False,
         provenance: str | None = HOOK_PROVENANCE_HOST_REAL,
         transcript_evidence: bool = True,
     ) -> dict[str, Any]:
@@ -4491,7 +4961,7 @@ def self_test() -> int:
             "permission_decision": "allow",
             "outcome": outcome,
             "marker_emitted": marker_emitted,
-            "context_suppressed": context_suppressed,
+            "context_repeated": context_repeated,
         }
         if provenance is not None:
             record["provenance"] = provenance
@@ -4560,7 +5030,7 @@ def self_test() -> int:
         path=".cursor/rules/b.mdc",
         invocation="cursor-batch-invocation",
         marker_emitted=True,
-        context_suppressed=False,
+        context_repeated=True,
     )
     cursor_batch_scope, cursor_batch_gaps = pretooluse_ceiling_evidence(
         [cursor_batch_write, cursor_batch_multiedit],
@@ -4646,7 +5116,7 @@ def self_test() -> int:
         path=".tes/runtime/hook-smoke/claude/SKILL.md",
         invocation="anti-crywolf-renderer",
         marker_emitted=True,
-        context_suppressed=False,
+        context_repeated=False,
     )
     anti_crywolf_first["renderer_trace"] = {"renderer": "claude_pretooluse", "output_contract": "json_hookSpecificOutput_allow"}
     anti_crywolf_repeat = {
@@ -4657,7 +5127,7 @@ def self_test() -> int:
             "renderer_contract_projected",
         ],
         "marker_emitted": True,
-        "context_suppressed": False,
+        "context_repeated": True,
         "renderer_trace": {"renderer": "claude_pretooluse", "output_contract": "json_hookSpecificOutput_allow"},
     }
     anti_crywolf_scope, anti_crywolf_gaps = pretooluse_ceiling_evidence(
@@ -5143,6 +5613,119 @@ def self_test() -> int:
                 f"Claude PreToolUse gate must install exactly one TES handler, got {len(pretooluse_tes)} "
                 "(idempotency: reinstall must not duplicate)"
             )
+
+        import_fail_target = Path(tempdir) / "pretooluse-import-fail"
+        import_fail_bin = import_fail_target / ".tes/bin"
+        import_fail_bin.mkdir(parents=True)
+        for helper in ("tes_install.py", "cortex_git_tap.py", "tes_codex_policy.py"):
+            helper_source = source_helper_path(helper)
+            if helper_source is None:
+                failures.append(f"import failure fixture missing source helper: {helper}")
+                continue
+            shutil.copy2(helper_source, import_fail_bin / helper)
+        import_fail = run(
+            [
+                sys.executable,
+                str(import_fail_bin / "tes_install.py"),
+                "hook",
+                "--agent",
+                "codex",
+                "--target",
+                str(import_fail_target),
+            ],
+            cwd=import_fail_target,
+            input=json.dumps(
+                {
+                    "hook_event_name": "PreToolUse",
+                    "session_id": "import-fail",
+                    "tool_name": "Edit",
+                    "tool_input": {"file_path": "AGENTS.md"},
+                }
+            ),
+        )
+        if import_fail.returncode != 0:
+            failures.append("PreToolUse helper import failure must degrade without crashing")
+        if PRETOOLUSE_DEGRADED_REASON_CODE not in import_fail.stderr:
+            failures.append("PreToolUse helper import failure must surface SUPERVISION_DEGRADED on Codex stderr")
+        import_fail_records = read_hook_execution_records(import_fail_target, HOOK_SENTINEL_PATH)
+        if not any(
+            record.get("supervision_state") == PRETOOLUSE_DEGRADED_REASON_CODE
+            and PRETOOLUSE_DEGRADED_REASON_CODE in hook_reason_codes(record.get("reason_codes"))
+            for record in import_fail_records
+        ):
+            failures.append("PreToolUse helper import failure must write degraded runtime evidence")
+
+        ledger_fail_target = Path(tempdir) / "pretooluse-ledger-fail"
+        (ledger_fail_target / ".tes/runtime").mkdir(parents=True)
+        (ledger_fail_target / ".tes/runtime/hooks").write_text("not a directory\n", encoding="utf-8")
+        ledger_status = record_hook_execution(
+            ledger_fail_target,
+            "codex",
+            {
+                "hook_event_name": "PreToolUse",
+                "session_id": "ledger-fail",
+                "tool_name": "Edit",
+                "tool_input": {"file_path": "AGENTS.md"},
+            },
+            mode="pretooluse",
+            pretooluse_decision={
+                "risk": "material",
+                "outcome": "allow",
+                "block": False,
+                "decision": "allow",
+                "permission_decision": "allow",
+                "marker_emitted": True,
+                "context_repeated": False,
+                "cortex_context_emitted": False,
+                "surface_context": True,
+                "reason_codes": ["governed_surface_mutation"],
+            },
+        )
+        ledger_health = hook_health_payload(ledger_fail_target)
+        if ledger_status.get("status") != "DEGRADED" or ledger_status.get("reason") != "hook_ledger_write_failed":
+            failures.append("runtime hook ledger write failure must return a degraded breadcrumb status")
+        if ledger_health.get("status") != "DEGRADED":
+            failures.append("hook-health must distinguish hook ledger write failure from hook never ran")
+        degraded_sentinel = ledger_health.get("sentinels", {}).get("degraded", {})
+        if degraded_sentinel.get("records") != 1:
+            failures.append("hook-health must count degraded hook breadcrumb records")
+
+        retired_target = Path(tempdir) / "retired-helper-inventory"
+        retired_helper = retired_target / ".tes/bin/retired_hook_helper.py"
+        retired_helper.parent.mkdir(parents=True)
+        retired_helper.write_text('VERSION = "retired"\n', encoding="utf-8")
+        retired_pycache = retired_target / ".tes/bin/__pycache__/retired_hook_helper.cpython-311.pyc"
+        retired_pycache.parent.mkdir(parents=True)
+        retired_pycache.write_bytes(b"pyc")
+        write_json(
+            retired_target / HELPER_INVENTORY_PATH,
+            {
+                "schema": HELPER_INVENTORY_SCHEMA,
+                "sets": {
+                    HELPER_INVENTORY_SET_HOOK_RUNTIME: {
+                        "helpers": [
+                            {
+                                "helper": "retired_hook_helper.py",
+                                "path": ".tes/bin/retired_hook_helper.py",
+                                "sha256": sha256_file(retired_helper),
+                            }
+                        ]
+                    }
+                },
+            },
+        )
+        retired_actions = install_hook_runtime_helpers(retired_target, dry_run=False)
+        if retired_helper.exists():
+            failures.append("hook runtime helper inventory must prune retired TES-owned helpers")
+        if retired_pycache.exists():
+            failures.append("hook runtime helper inventory must prune retired helper bytecode")
+        if not any(action.get("action") == "prune-retired-helper" for action in retired_actions):
+            failures.append("hook runtime helper inventory must report retired helper pruning")
+        helper_inventory = read_json(retired_target / HELPER_INVENTORY_PATH)
+        helper_entries = helper_inventory_entries(helper_inventory, HELPER_INVENTORY_SET_HOOK_RUNTIME)
+        helper_names = {str(entry.get("helper")) for entry in helper_entries}
+        if helper_names != set(HOOK_RUNTIME_HELPERS):
+            failures.append("hook runtime helper inventory must record the materialized desired helper set")
         start_notice = run(
             [
                 sys.executable,
@@ -5493,7 +6076,7 @@ def self_test() -> int:
             "decision": "allow",
             "permission_decision": "allow",
             "marker_emitted": False,
-            "context_suppressed": False,
+            "context_repeated": False,
             "cortex_context_emitted": False,
             "surface_context": False,
         }
@@ -5557,7 +6140,7 @@ def self_test() -> int:
             **dedupe_decision,
             "risk": "material",
             "marker_emitted": True,
-            "context_suppressed": False,
+            "context_repeated": True,
             "surface_context": True,
             "reason_codes": ["anti_crywolf_repeated_context"],
         }

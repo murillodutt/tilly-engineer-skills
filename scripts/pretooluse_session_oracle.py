@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import mantra_gate  # noqa: E402
 import tes_install  # noqa: E402
+import pretooluse_session  # noqa: E402
 
 
 def _invoke(agent: str, target: Path, payload: dict[str, Any]) -> tuple[int, str, str]:
@@ -115,7 +116,8 @@ def evaluate() -> dict[str, Any]:
             if len(governed_rows) == 2:
                 _assert(governed_rows[0].get("marker_emitted") is True, failures, f"{agent}: first ledger marker")
                 _assert(governed_rows[1].get("marker_emitted") is True, failures, f"{agent}: second ledger marker")
-                _assert(governed_rows[1].get("context_suppressed") is False, failures, f"{agent}: second ledger not suppressed")
+                _assert(governed_rows[1].get("context_repeated") is True, failures, f"{agent}: second ledger repeated state")
+                _assert("context_suppressed" not in governed_rows[1], failures, f"{agent}: current ledger must not write context_suppressed")
                 _assert(
                     "governed_surface_mutation" in _reason_codes(governed_rows[0]),
                     failures,
@@ -138,6 +140,18 @@ def evaluate() -> dict[str, Any]:
                     failures,
                     f"{agent}: forbidden row #{index} must persist forbidden_class reason code",
                 )
+
+        corrupt_target = target / "corrupt-sentinel"
+        corrupt_path = pretooluse_session.pretooluse_sentinel_path(corrupt_target, {"session_id": "corrupt"})
+        corrupt_path.parent.mkdir(parents=True, exist_ok=True)
+        corrupt_path.write_bytes(b"\xff\xfe")
+        corrupt_context = pretooluse_session.coordinate_pretooluse_context(corrupt_target, {"session_id": "corrupt"}, "ctx")
+        _assert(corrupt_context.context == "ctx", failures, "corrupt sentinel must fail open with context")
+        _assert(
+            "anti_crywolf_sentinel_unavailable" in tuple(corrupt_context.reason_codes),
+            failures,
+            "corrupt sentinel must record unavailable reason code",
+        )
 
     return {
         "oracle": "pretooluse-session",

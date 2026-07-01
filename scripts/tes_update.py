@@ -49,8 +49,12 @@ HELPER_FILES = (
     "install_mcp_hosts/vscode.py",
     "cortex.py",
     "cortex_runtime.py",
+    "cortex_git_tap.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
+    "tes_codex_policy.py",
+    "pretooluse_kernel.py",
+    "pretooluse_session.py",
     "scope_contract.py",
     "event_ledger.py",
     "checkpoint.py",
@@ -75,6 +79,8 @@ HELPER_FILES = (
     "tes_bundle.py",
     "materialize_adapter.py",
 )
+HELPER_INVENTORY_PATH = Path(".tes/bin/.tes-helper-inventory.json")
+HELPER_INVENTORY_SCHEMA = "tes-helper-inventory@1"
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
     "git_gate_contract.py": ('SCHEMA = "tes-git-gate-contract@1"',),
@@ -776,17 +782,39 @@ def remote_facts(args: argparse.Namespace, helper_required: bool = True) -> dict
 
 def installed_helper_records(target: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
+    inventory = read_json(target / HELPER_INVENTORY_PATH)
+    inventory_entries: dict[str, dict[str, Any]] = {}
+    for helper_set in (inventory.get("sets") if isinstance(inventory.get("sets"), dict) else {}).values():
+        entries = helper_set.get("helpers") if isinstance(helper_set, dict) else []
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            path = entry.get("path")
+            if isinstance(path, str):
+                inventory_entries[path] = entry
+    seen_paths: set[str] = set()
     for bin_dir in (".tes/bin", ".tilly/bin"):
         for name in HELPER_FILES:
             path = target / bin_dir / name
             if not path.exists() or not path.is_file():
                 continue
+            relpath = rel(path, target)
+            seen_paths.add(relpath)
             text = read_text(path)
+            inventory_entry = inventory_entries.get(relpath)
+            inventory_sha = (
+                str(inventory_entry.get("sha256"))
+                if isinstance(inventory_entry, dict) and isinstance(inventory_entry.get("sha256"), str)
+                else None
+            )
             records.append(
                 {
                     "name": name,
-                    "path": rel(path, target),
+                    "path": relpath,
                     "sha256": sha256_file(path),
+                    "inventory_sha256": inventory_sha,
                     "markers": {
                         marker: marker in text
                         for marker in HELPER_CONTRACT_MARKERS.get(name, ())
@@ -801,6 +829,23 @@ def installed_helper_records(target: Path) -> list[dict[str, Any]]:
                 "path": rel(legacy_update, target),
                 "sha256": sha256_file(legacy_update),
                 "legacy_name": "tilly_update.py",
+                "markers": {},
+            }
+        )
+    for relpath, entry in sorted(inventory_entries.items()):
+        if relpath in seen_paths or not relpath.startswith(".tes/bin/"):
+            continue
+        path = target / relpath
+        expected_sha = entry.get("sha256")
+        if not path.is_file() or not isinstance(expected_sha, str):
+            continue
+        records.append(
+            {
+                "name": str(entry.get("helper") or Path(relpath).name),
+                "path": relpath,
+                "sha256": sha256_file(path),
+                "inventory_sha256": expected_sha,
+                "inventory_orphan": True,
                 "markers": {},
             }
         )
@@ -835,7 +880,14 @@ def helper_contract(target: Path, remote_helpers: dict[str, Any], installed: lis
         remote = expected.get(name)
         record_failures: list[str] = []
         status = "PASS"
-        if not isinstance(remote, dict) or not remote.get("sha256"):
+        inventory_sha = record.get("inventory_sha256")
+        if record.get("inventory_orphan"):
+            status = "STALE_HELPER"
+            record_failures.append("retired helper remains in TES-owned inventory")
+        elif isinstance(inventory_sha, str) and inventory_sha and record["sha256"] != inventory_sha:
+            status = "STALE_HELPER"
+            record_failures.append("installed helper hash differs from TES-owned inventory")
+        elif not isinstance(remote, dict) or not remote.get("sha256"):
             status = "UNKNOWN"
             record_failures.append("remote helper hash missing")
         elif record["sha256"] != remote["sha256"]:
@@ -2188,6 +2240,59 @@ def self_test() -> dict[str, Any]:
         if "layer_zero_helpers" not in stale_phases:
             failures.append("stale helper continuation plan must require Layer Zero helpers")
         assert_project_start_gate(result, failures, "stale helper fixture")
+
+    with tempfile.TemporaryDirectory(prefix="tes-update-helper-inventory-orphan-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        write(target / "AGENTS.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-update/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
+        orphan = target / ".tes/bin/retired_hook_helper.py"
+        write(orphan, 'VERSION = "retired"\n')
+        write(
+            target / HELPER_INVENTORY_PATH,
+            json.dumps(
+                {
+                    "schema": HELPER_INVENTORY_SCHEMA,
+                    "sets": {
+                        "hook_runtime": {
+                            "helpers": [
+                                {
+                                    "helper": "retired_hook_helper.py",
+                                    "path": ".tes/bin/retired_hook_helper.py",
+                                    "sha256": sha256_file(orphan),
+                                }
+                            ]
+                        }
+                    },
+                },
+                indent=2,
+            )
+            + "\n",
+        )
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="i" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="codex",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["helper_contract_status"] != "STALE_HELPERS":
+            failures.append("TES-owned helper inventory orphan must report STALE_HELPERS")
+        orphan_records = [
+            record
+            for record in result.get("installed_helper_records", [])
+            if record.get("inventory_orphan")
+        ]
+        if not orphan_records:
+            failures.append("tes_update must expose retired helpers from TES-owned inventory")
+        elif "retired helper remains in TES-owned inventory" not in orphan_records[0].get("failures", []):
+            failures.append("tes_update inventory orphan must name retired-helper failure")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-trigger-drift-") as tempdir:
         target = Path(tempdir)
