@@ -666,6 +666,13 @@ documents:
     consumer: maintainers, runtime authors, hook authors, installer authors, adapter authors, oracle authors, release reviewers, execution agents, and audit agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-transcript-canary-runtime-signal-harness.md
+    id: roadmap.goal_super_spec.tes_host_transcript_canary_runtime_signal_harness
+    class: roadmap
+    status: active
+    consumer: maintainers, host-canary harness authors, oracle authors, installed-canary operators, and execution agents
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-host-hook-ceiling-certification.md
     id: roadmap.goal_super_spec_tes_host_hook_ceiling_certification
     class: roadmap

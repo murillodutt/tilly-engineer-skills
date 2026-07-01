@@ -14,6 +14,7 @@ from typing import Any
 import field_reports
 import project_context_oracle
 import tes_init
+import tes_install
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -186,6 +187,121 @@ def install_field_reports(target: Path) -> list[str]:
     return failures
 
 
+def check_user_config_preservation() -> list[str]:
+    """H-02 red-capable: the hook installers must never destroy user config.
+
+    Two contracts, exercised directly against the four hook installers:
+    (1) a MALFORMED user settings.json/hooks.json is refused (UserConfigParseError)
+        and left byte-for-byte intact — never coerced to {} and overwritten;
+    (2) a VALID user config is preserved (permissions/env/foreign hooks survive)
+        while the TES hook is still added.
+    Runs in isolated temp dirs, independent of install route. See audit H-02.
+    """
+    failures: list[str] = []
+    malformed_claude = '{"permissions":{"allow":["Bash"]},"env":{"USER_SECRET":"keepme"},}'
+    malformed_cursor = '{"version":1,"hooks":{"sessionStart":[{"command":"USER_HOOK"}]},}'
+    cases = (
+        (".claude/settings.json", malformed_claude, "USER_SECRET", tes_install.install_claude_hook),
+        (".claude/settings.json", malformed_claude, "USER_SECRET", tes_install.install_claude_pretooluse_hook),
+        (".cursor/hooks.json", malformed_cursor, "USER_HOOK", tes_install.install_cursor_hook),
+        (".cursor/hooks.json", malformed_cursor, "USER_HOOK", tes_install.install_cursor_pretooluse_hook),
+    )
+    for rel, malformed, marker, installer in cases:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(malformed, encoding="utf-8")
+            try:
+                installer(Path(tmp), dry_run=False)
+            except tes_install.UserConfigParseError:
+                if path.read_text(encoding="utf-8") != malformed:
+                    failures.append(f"{installer.__name__}: refused write but altered the user file")
+                continue
+            except Exception as exc:  # noqa: BLE001 - any other error is also a failure to guard
+                failures.append(f"{installer.__name__}: wrong error on malformed config: {exc!r}")
+                continue
+            after = path.read_text(encoding="utf-8")
+            if marker not in after:
+                failures.append(f"{installer.__name__}: H-02 CLOBBER — user config ({marker}) lost")
+
+    # Valid config must be preserved while the TES hook is added.
+    with tempfile.TemporaryDirectory() as tmp:
+        p = Path(tmp) / ".claude/settings.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({"permissions": {"allow": ["Bash"]}, "env": {"KEEP": "yes"}}), encoding="utf-8")
+        try:
+            tes_install.install_claude_pretooluse_hook(Path(tmp), dry_run=False)
+            after = json.loads(p.read_text(encoding="utf-8"))
+            if after.get("env", {}).get("KEEP") != "yes":
+                failures.append("valid claude config: user env dropped")
+            if "Bash" not in after.get("permissions", {}).get("allow", []):
+                failures.append("valid claude config: user permissions dropped")
+            if "PreToolUse" not in after.get("hooks", {}):
+                failures.append("valid claude config: TES hook not added")
+        except Exception as exc:  # noqa: BLE001
+            failures.append(f"valid claude install raised: {exc!r}")
+    return failures
+
+
+def check_codex_block_boundary() -> list[str]:
+    """H-01/BUG-07 red-capable: Codex uninstall/refresh must not swallow the user's
+    own adjacent [[hooks.SessionStart]]/[[hooks.PreToolUse]] table.
+
+    (A) LEGACY (block without end marker): the boundary heuristic must stop at the
+        SECOND same-section array table (a new user block), not eat it.
+    (B) NEW (block with end marker emitted by the installer): a refresh with a
+        user block appended must preserve it, and the round-trip must stay
+        idempotent and produce valid TOML. See audit H-01/BUG-07.
+    """
+    failures: list[str] = []
+
+    def legacy(section: str, start_marker: str, user_marker: str) -> list[str]:
+        return (
+            f"{start_marker}\n"
+            f"[[{section}]]\nmatcher = \"startup|resume\"\n\n"
+            f"[[{section}.hooks]]\ntype = \"command\"\ncommand = \"tes\"\ntimeout = 120\n\n"
+            f"[[{section}]]\nmatcher = \"user-custom\"\n\n"
+            f"[[{section}.hooks]]\ntype = \"command\"\ncommand = \"{user_marker}\"\n"
+        ).splitlines()
+
+    legacy_cases = (
+        (tes_install.CODEX_SESSIONSTART_START, "hooks.SessionStart", tes_install.CODEX_SESSIONSTART_END, "USER_SESSION_HOOK"),
+        (tes_install.CODEX_PRETOOLUSE_START, "hooks.PreToolUse", tes_install.CODEX_PRETOOLUSE_END, "USER_PRETOOL_HOOK"),
+    )
+    for start_marker, section, end_marker, um in legacy_cases:
+        out = tes_install._remove_codex_marked_block(legacy(section, start_marker, um), start_marker, section, end_marker)
+        if not any(um in line for line in out):
+            failures.append(f"H-01 legacy {section}: user block ({um}) swallowed")
+        if any(line.strip() == start_marker for line in out):
+            failures.append(f"H-01 legacy {section}: TES block not removed")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        cfg = Path(tmp) / ".codex/config.toml"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        tes_install.install_codex_hook(Path(tmp), dry_run=False)
+        base = cfg.read_text(encoding="utf-8")
+        if tes_install.CODEX_SESSIONSTART_END not in base:
+            failures.append("H-01 new: installer did not emit SessionStart end marker")
+        user_block = (
+            '\n[[hooks.SessionStart]]\nmatcher = "user-x"\n\n'
+            '[[hooks.SessionStart.hooks]]\ntype = "command"\ncommand = "USER_ADJACENT"\n'
+        )
+        cfg.write_text(base.rstrip() + "\n" + user_block, encoding="utf-8")
+        tes_install.install_codex_hook(Path(tmp), dry_run=False)
+        after = cfg.read_text(encoding="utf-8")
+        if "USER_ADJACENT" not in after:
+            failures.append("H-01 new: refresh swallowed adjacent user block (USER_ADJACENT)")
+        if after.count(tes_install.CODEX_SESSIONSTART_START) != 1:
+            failures.append("H-01 new: refresh not idempotent (duplicate SessionStart block)")
+        try:
+            import tomllib
+
+            tomllib.loads(after)
+        except Exception as exc:  # noqa: BLE001
+            failures.append(f"H-01 new: refresh produced invalid TOML: {exc!r}")
+    return failures
+
+
 def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
         return (
@@ -284,6 +400,8 @@ def probe_route(route: str) -> dict[str, Any]:
         target = Path(tempdir)
         failures: list[str] = []
         failures.extend(init_git(target))
+        failures.extend(check_user_config_preservation())  # H-02: never clobber user config
+        failures.extend(check_codex_block_boundary())  # H-01/BUG-07: never swallow user's adjacent Codex block
 
         def finish() -> dict[str, Any]:
             status = "FAIL" if failures else "PASS"

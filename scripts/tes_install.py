@@ -127,12 +127,50 @@ def sha256_file(path: Path) -> str:
 
 
 def read_json(path: Path) -> dict[str, Any]:
+    """Tolerant reader for TES-owned internal state (lock, manifest, sentinel).
+
+    A corrupt internal file legitimately reads as {} so the installer can rebuild
+    it. Do NOT use this to read user-owned config that will be written back — an
+    unparseable file would coerce to {} and clobber the user's content on write.
+    Use read_user_config_json for that (fail-closed). See audit H-02.
+    """
     if not path.exists():
         return {}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
+    return data if isinstance(data, dict) else {}
+
+
+class UserConfigParseError(ValueError):
+    """A user-owned config file exists but could not be parsed.
+
+    Raised instead of coercing to {} so the installer never overwrites a file it
+    could not read (audit H-02): coercing a malformed settings.json/hooks.json to
+    {} and writing back a TES-only document destroys the user's permissions/env/
+    foreign hooks. Fail-closed: refuse the write, surface a clear diagnostic.
+    """
+
+
+def read_user_config_json(path: Path) -> dict[str, Any]:
+    """Fail-closed reader for user-owned config the installer merges into.
+
+    Distinguishes 'absent' (return {} — a fresh file is fine) from 'present but
+    invalid' (raise UserConfigParseError — never coerce to {} and clobber). This
+    is the C2 'refuse-on-unparseable' contract (Ansible/tomlkit/cargo model).
+    """
+    if not path.exists():
+        return {}
+    raw = path.read_text(encoding="utf-8")
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise UserConfigParseError(
+            f"malformed user config at {path}: {exc}. "
+            "Refusing to overwrite it — fix the JSON (or move it aside) and re-run. "
+            "TES will not coerce an unparseable config to empty and discard your settings."
+        ) from exc
     return data if isinstance(data, dict) else {}
 
 
@@ -322,9 +360,20 @@ def codex_hook_command(target: Path) -> str:
     )
 
 
+# Explicit END markers delimit each TES-owned Codex block (audit H-01/BUG-07).
+# The C2 managed-block contract (Ansible blockinfile / ssh-config markers): a
+# block is bounded by a start AND an end comment, so removal never has to guess
+# the boundary from the section prefix — which used to swallow a user's own
+# adjacent [[hooks.SessionStart]]/[[hooks.PreToolUse]] table.
+CODEX_SESSIONSTART_START = "# TES first-session post-install hook."
+CODEX_SESSIONSTART_END = "# TES end first-session post-install hook."
+CODEX_PRETOOLUSE_START = "# TES PreToolUse senior-manager gate."
+CODEX_PRETOOLUSE_END = "# TES end PreToolUse senior-manager gate."
+
+
 def codex_hook_snippet(target: Path) -> str:
     command = codex_hook_command(target)
-    return f"""# TES first-session post-install hook.
+    return f"""{CODEX_SESSIONSTART_START}
 [[hooks.SessionStart]]
 matcher = "startup|resume"
 
@@ -333,12 +382,13 @@ type = "command"
 command = {command_literal(command)}
 timeout = 120
 statusMessage = "Checking TES post-install"
+{CODEX_SESSIONSTART_END}
 """
 
 
 def codex_pretooluse_snippet(target: Path) -> str:
     command = codex_hook_command(target)
-    return f"""# TES PreToolUse senior-manager gate.
+    return f"""{CODEX_PRETOOLUSE_START}
 [[hooks.PreToolUse]]
 matcher = "{CLAUDE_PRETOOLUSE_MATCHER}"
 
@@ -346,6 +396,7 @@ matcher = "{CLAUDE_PRETOOLUSE_MATCHER}"
 type = "command"
 command = {command_literal(command)}
 timeout = 10
+{CODEX_PRETOOLUSE_END}
 """
 
 
@@ -558,23 +609,57 @@ def remove_tes_codex_json_hooks(data: dict[str, Any]) -> None:
         hooks[event] = retained_groups
 
 
-def _remove_codex_marked_block(lines: list[str], marker: str, section_prefix: str) -> list[str]:
-    """Remove one marked TES TOML block (marker comment -> next block boundary).
+def _remove_codex_marked_block(
+    lines: list[str], marker: str, section_prefix: str, end_marker: str | None = None
+) -> list[str]:
+    """Remove one marked TES TOML block, without swallowing a user's own adjacent
+    same-section table (audit H-01/BUG-07).
 
-    The block ends at the first header that does not belong to this block's
-    section, OR at the next TES marker comment (so removing one block never eats
-    the following TES block's marker comment), OR EOF.
+    Boundary resolution, in priority order:
+      1. END MARKER (blocks written by the post-fix installer): if `end_marker`
+         is present after the start marker, the block is exactly start..end_marker
+         inclusive. Unambiguous — a user's adjacent [[hooks.SessionStart]] below
+         the end marker is structurally outside the block.
+      2. NEXT TES START MARKER: never eat the following TES block's marker.
+      3. LEGACY heuristic (blocks written before the end marker existed): stop at
+         the first `[[...]]` array-of-tables header that is NOT this block's own
+         first table or its `.hooks` child — i.e. the SECOND `[[section_prefix]]`
+         (a new user block) is a boundary, not a continuation. This is the exact
+         repair for the swallow bug: the old code treated every same-prefix header
+         as part of the TES block.
+      4. Any header outside this section, or EOF.
     """
     try:
         start = next(i for i, line in enumerate(lines) if line.strip() == marker)
     except StopIteration:
         return lines
+
+    # 1. Explicit end marker: cut start..end_marker inclusive.
+    if end_marker:
+        for idx in range(start + 1, len(lines)):
+            if lines[idx].strip() == end_marker:
+                return [*lines[:start], *lines[idx + 1:]]
+
     end = len(lines)
+    seen_own_table = False  # the block's own first [[section_prefix]] table
+    array_header = f"[[{section_prefix}]]"
+    hooks_child = f"[[{section_prefix}.hooks]]"
     for idx in range(start + 1, len(lines)):
         stripped = lines[idx].strip()
+        # 2. Next TES start marker ends this block.
         if stripped.startswith("# TES ") and stripped != marker:
             end = idx
             break
+        # 3. Legacy: the SECOND same-section array table is a new (user) block.
+        if stripped == array_header:
+            if seen_own_table:
+                end = idx
+                break
+            seen_own_table = True
+            continue
+        if stripped == hooks_child:
+            continue
+        # 4. Any header outside this section ends the block.
         if (stripped.startswith("[") and stripped.endswith("]")
                 and not stripped.lstrip("[").startswith(section_prefix)
                 and not stripped.lstrip("[").startswith(f"{section_prefix}.hooks")):
@@ -616,11 +701,11 @@ def _remove_codex_legacy_tes_hook_block(lines: list[str], section_prefix: str) -
 def refresh_codex_tes_hook_blocks(text: str) -> str:
     """Replace TES-owned Codex hook blocks with the current source templates."""
     lines = text.splitlines()
-    for marker, section_prefix in (
-        ("# TES first-session post-install hook.", "hooks.SessionStart"),
-        ("# TES PreToolUse senior-manager gate.", "hooks.PreToolUse"),
+    for marker, section_prefix, end_marker in (
+        (CODEX_SESSIONSTART_START, "hooks.SessionStart", CODEX_SESSIONSTART_END),
+        (CODEX_PRETOOLUSE_START, "hooks.PreToolUse", CODEX_PRETOOLUSE_END),
     ):
-        lines = _remove_codex_marked_block(lines, marker, section_prefix)
+        lines = _remove_codex_marked_block(lines, marker, section_prefix, end_marker)
         lines = _remove_codex_legacy_tes_hook_block(lines, section_prefix)
     body = "\n".join(lines).strip()
     return (body + "\n") if body else ""
@@ -632,10 +717,10 @@ def remove_tes_codex_hook_text(text: str) -> str:
     """
     lines = text.splitlines()
     lines = _remove_codex_marked_block(
-        lines, "# TES first-session post-install hook.", "hooks.SessionStart"
+        lines, CODEX_SESSIONSTART_START, "hooks.SessionStart", CODEX_SESSIONSTART_END
     )
     lines = _remove_codex_marked_block(
-        lines, "# TES PreToolUse senior-manager gate.", "hooks.PreToolUse"
+        lines, CODEX_PRETOOLUSE_START, "hooks.PreToolUse", CODEX_PRETOOLUSE_END
     )
     # Legacy fallback: a SessionStart block whose marker comment was lost.
     for index, line in enumerate(lines):
@@ -733,7 +818,7 @@ def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False, backup: bo
 
 def install_claude_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".claude/settings.json"
-    data = read_json(path)
+    data = read_user_config_json(path)  # H-02: fail-closed, never clobber user config
     remove_tes_claude_sessionstart_hooks(data)
     for entry in hook_entries("claude"):
         ensure_hook_group(data, "SessionStart", CLAUDE_SESSIONSTART_MATCHER, entry)
@@ -743,7 +828,7 @@ def install_claude_hook(target: Path, dry_run: bool) -> dict[str, str]:
 
 def install_cursor_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".cursor/hooks.json"
-    data = read_json(path)
+    data = read_user_config_json(path)  # H-02: fail-closed, never clobber user config
     data.setdefault("version", 1)
     hooks = data.setdefault("hooks", {})
     if not isinstance(hooks, dict):
@@ -798,7 +883,7 @@ def remove_tes_claude_event_hooks(data: dict[str, Any], event: str) -> None:
 
 def install_claude_pretooluse_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".claude/settings.json"
-    data = read_json(path)
+    data = read_user_config_json(path)  # H-02: fail-closed, never clobber user config
     remove_tes_claude_event_hooks(data, "PreToolUse")
     ensure_hook_group(data, "PreToolUse", CLAUDE_PRETOOLUSE_MATCHER, pretooluse_hook_entry("claude"))
     text = json.dumps(data, indent=2, sort_keys=True) + "\n"
@@ -807,7 +892,7 @@ def install_claude_pretooluse_hook(target: Path, dry_run: bool) -> dict[str, str
 
 def install_cursor_pretooluse_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".cursor/hooks.json"
-    data = read_json(path)
+    data = read_user_config_json(path)  # H-02: fail-closed, never clobber user config
     data.setdefault("version", 1)
     hooks = data.setdefault("hooks", {})
     if not isinstance(hooks, dict):

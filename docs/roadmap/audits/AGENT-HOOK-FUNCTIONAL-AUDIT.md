@@ -22,7 +22,7 @@ evidence_level: L2
 
 | Sev | Findings | Tema |
 |---|---|---|
-| **HIGH** | H-01, H-02 | **Perda de config do usuário** na superfície instalada (uninstall Codex engole bloco adjacente; `read_json` clobbera settings malformado). |
+| **HIGH** | ~~H-01~~ ✅, ~~H-02~~ ✅ | **Perda de config do usuário** na superfície instalada (uninstall Codex engolia bloco adjacente; `read_json` clobberava settings malformado). **Ambos RESOLVIDOS 2026-07-01.** (BUG-07, feature-flag TOML cross-tabela, segue aberto — finding distinto.) |
 | **HIGH** | H-03 | **Bypass de governança via shell**: `echo/tee/sed/rm/cat` em superfície governada → `allow` silencioso (reproduzido). |
 | **HIGH** | H-04 | **Evidência host-real forjável**: `provenance="host-real"` incondicional; qualquer chamador satisfaz ceiling. |
 | MEDIUM | BUG-01…07, PREC-01 | fail-open de import, perda silenciosa de ledger, vazamento de segredo em reason/path, ramos de supervisão mortos p/ shell, corrupção de TOML alheio. |
@@ -82,7 +82,7 @@ O sufixo `(H-0X)`/`(BUG-0X)`/`(PREC-0X)` na coluna Capacidade aponta o limite co
 | # | Afirmação auditada | Fonte (`scripts/`) | Veredito | Capacidade técnica (— limite) | Consumidor |
 |---|---|---|---|---|---|
 | 1 | Hosts: `codex`, `claude`, `cursor` | `tes_install.py:5327` | ✅ | Enumera os 3 hosts adaptáveis | harness |
-| 2 | Configs: `.codex/config.toml` / `.claude/settings.json` / `.cursor/hooks.json` | `tes_install.py:352,734,744` | ✅ | Escreve config de host — clobbera config malformada (H-02); uninstall engole bloco adjacente (H-01/BUG-07) | harness |
+| 2 | Configs: `.codex/config.toml` / `.claude/settings.json` / `.cursor/hooks.json` | `tes_install.py:352,734,744` | ✅ | Escreve config de host — ~~clobbera config malformada (H-02)~~ ✅; ~~uninstall engole bloco adjacente (H-01)~~ ✅; feature-flag cross-tabela (BUG-07, aberto) | harness |
 | 3 | Entrypoint comum `.tes/bin/tes_install.py hook --agent <host> --target ...` | `tes_install.py:382,408,428` | ✅ | Comando único que o host invoca por evento | harness |
 | 4 | Helpers entregues: `cortex_runtime.py`, `pretooluse_kernel.py`, `pretooluse_session.py` | `tes_install.py:52` | ✅ | Materializa runtime em `.tes/bin` — sem poda de órfão (DEBT-01); import não-guardado (BUG-01); fora do drift manifest (F1, §4) | harness (→LLM em runtime) |
 | 5 | Eventos Codex: `SessionStart`, `PreToolUse` | `HOOK_HEALTH_CONTRACTS` L2693; snippets L325/339 | ✅ | Registra 2 gatilhos no host Codex | harness |
@@ -138,17 +138,22 @@ Placar de verificação: **16 findings sobreviveram** à refutação adversarial
 
 ### Prioridade 0 — HIGH (perda de dado do usuário / bypass de governança / evidência forjada)
 
-#### H-01 — [BUG · REPRO] Uninstall/refresh Codex deleta bloco `[[hooks.SessionStart]]` adjacente do próprio usuário
-- **Arquivo:** `scripts/tes_install.py:561-583` (`_remove_codex_marked_block`).
-- **Evidência:** a varredura de fim-de-bloco (L578-580) só trata um header como fronteira se ele **não** começar com `section_prefix`. Um `[[hooks.SessionStart]]` do usuário logo abaixo do bloco TES começa com o mesmo prefixo → é engolido.
-- **Cenário (reproduzido):** config com bloco TES + bloco `[[hooks.SessionStart]]` do usuário adjacente → `_remove_codex_marked_block` retornou **lista vazia**: o hook do usuário foi silenciosamente deletado.
-- **Ação:** delimitar o bloco TES ao **primeiro** header array-of-tables que não seja o filho `.hooks` imediato da tabela TES recém-aberta, em vez de consumir todo header sob o mesmo `section_prefix`. `[ADV✓]` HIGH.
+#### H-01 — [BUG · REPRO] ~~Uninstall/refresh Codex deleta bloco `[[hooks.SessionStart]]` adjacente do próprio usuário~~ ✅ **RESOLVIDO**
+- **Status:** ✅ **FIXED** (2026-07-01). Red-capable vermelho antes (legado swallow SessionStart+PreToolUse); fix aplicado; verde depois; red-capacidade do oráculo provada por reversão. Install/uninstall/idempotência + TOML válido preservados.
+- **Arquivo:** `scripts/tes_install.py` `_remove_codex_marked_block`.
+- **Evidência (original):** a varredura de fim-de-bloco só tratava um header como fronteira se ele **não** começasse com `section_prefix`. Um `[[hooks.SessionStart]]` do usuário logo abaixo começa com o mesmo prefixo → era engolido (reproduzido: bloco do usuário virou lista vazia).
+- **Fix aplicado (contrato C2 managed-block, Ansible/ssh-config):** **END-marker explícito** por bloco (`CODEX_SESSIONSTART_END`/`CODEX_PRETOOLUSE_END`), emitido pelos snippets. `_remove_codex_marked_block` reparado em prioridade: (1) corta `start→end-marker` inclusive quando o marker existe (configs novos); (2) sem end-marker (configs **legados** pré-fix), a heurística para no **segundo** `[[section_prefix]]` (= novo bloco do usuário), não o engole. Aplicado nos dois consumidores (`refresh_codex_tes_hook_blocks` e `remove_tes_codex_hook_text`). Compatível com configs já instalados.
+- **Oráculo:** `check_codex_block_boundary()` em `scripts/install_smoke.py` — cenário legado (SessionStart+PreToolUse) + cenário novo (refresh preserva bloco adjacente, idempotente, TOML válido). Red-capacidade verificada revertendo a função. `install_smoke --route codex/all` + `codex_plugin_oracle` + `host_runtime_matrix`/`mantra_gate_adoption`/`pretooluse_contract` self-tests = PASS.
+- **Release-identity:** delivered behavior (instalador/uninstaller Codex) → bump de patch + correlação na próxima sync. O end-marker é uma mudança de formato do bloco gerado — anotar.
 
-#### H-02 — [BUG · REPRO] `read_json` engole config malformado e o install clobbera todo o `settings.json`/`hooks.json` do usuário
+#### H-02 — [BUG · REPRO] ~~`read_json` engole config malformado e o install clobbera todo o `settings.json`/`hooks.json` do usuário~~ ✅ **RESOLVIDO**
+- **Status:** ✅ **FIXED** (2026-07-01). Red-capable escrito e vermelho antes; fix aplicado; verde depois; red-capacidade do oráculo provada por reversão.
 - **Arquivo:** `scripts/tes_install.py:129-136` (`read_json`), consumido por `install_claude_hook`/`install_claude_pretooluse_hook`/`install_cursor_hook`.
-- **Evidência:** `read_json` captura `JSONDecodeError` e retorna `{}` (L134-135), indistinguível de "arquivo ausente". O install então escreve `json.dumps(data)` por cima.
-- **Cenário (reproduzido):** `.claude/settings.json` com trailing-comma (`{"permissions":...,"env":...,}`) → `read_json` retorna `{}` → install escreve arquivo **só com o hook TES**; `permissions` e `env` do usuário **perdidos** no caminho vivo.
-- **Ação:** não coagir config ilegível a `{}`. Em `JSONDecodeError`, abortar a escrita daquela superfície com erro claro (distinguir "ausente" de "presente mas inválido"). `[ADV✓]` HIGH.
+- **Evidência (original):** `read_json` capturava `JSONDecodeError` e retornava `{}` (L134-135), indistinguível de "arquivo ausente". O install escrevia `json.dumps(data)` por cima.
+- **Cenário (reproduzido):** `.claude/settings.json` com trailing-comma → `read_json` retornava `{}` → install escrevia arquivo **só com o hook TES**; `permissions`/`env` do usuário perdidos. Provado nos 4 installers.
+- **Fix aplicado:** nova `read_user_config_json` fail-closed (ausente→`{}`; **inválido→`UserConfigParseError`**, subclasse de `ValueError`), com docstring de contrato. Trocada nos **4** call-sites de config do usuário (Claude/Cursor × SessionStart/PreToolUse); `read_json` tolerante intacto para os 30 call-sites de estado interno do TES (lock/manifest/sentinel). Escopo cirúrgico.
+- **Oráculo:** `check_user_config_preservation()` em `scripts/install_smoke.py` (roda em toda rota). Assere: malformado → recusado + arquivo intacto; válido → `permissions`/`env`/hooks do usuário preservados + hook TES adicionado. Red-capacidade verificada revertendo `read_user_config_json`→`read_json` (pega os 4 clobbers). `install_smoke --route claude/cursor/audit` = PASS.
+- **Release-identity:** delivered behavior mudou (instalador) → requer bump de patch + correlação (`MAINTAINER-CORRELATION-RULE.md`) na próxima sync.
 
 #### H-03 — [BUG · REPRO] Escrita shell em superfície governada não extrai path → governança nunca engaja (allow silencioso)
 - **Arquivo:** `scripts/pretooluse_kernel.py:148-161, 208, 214-216`.
@@ -196,9 +201,43 @@ Placar de verificação: **16 findings sobreviveram** à refutação adversarial
 - **Ação:** política de redação em `path` simétrica ao `command` — categoria/basename-hash/flag de superfície governada, ou scrub de segredo. `[ADV✓]`
 
 #### BUG-07 — [BUG · REPRO] Uninstall Codex remove qualquer linha `hooks = true` / `codex_hooks = true` independente da tabela
-- **Arquivo:** `scripts/tes_install.py:661-664`. Remoção sem contexto de tabela (o install é table-scoped; o uninstall não).
+- **Arquivo:** `scripts/tes_install.py` — `remove_tes_codex_hook_text`, filtro plano de linhas (atualmente ~L744-749; a âncora deslocou dos 661-664 originais após os fixes H-01/H-02 — usar a referência simbólica).
 - **Cenário:** usuário tem `hooks = true` sob outra tabela TOML não-relacionada → uninstall deleta a linha, mudando a semântica da tabela alheia.
 - **Ação:** escopar a remoção do flag à tabela `[features]` (rastrear header ativo ao varrer), espelhando `replace_or_insert_toml_feature`. `[ADV✓]`
+
+> **Plano de fix (spec executável — método aplicado, sem codificar nesta fase).**
+> Preparado para que a execução futura seja mecânica: red-capable já validado manualmente, contrato-alvo definido, retrocompatibilidade e oráculo especificados.
+>
+> **Causa-raiz (reproduzida).** A inserção do flag é *table-scoped* — `replace_or_insert_toml_feature` (`tes_install.py:301`) só escreve `hooks = true` entre o header `[features]` e o próximo header. A remoção é **plana e cega à tabela**:
+> ```python
+> lines = [line for line in lines
+>          if line.strip() not in {"hooks = true", "codex_hooks = true"}]
+> ```
+> Apaga *toda* linha com esse texto, em qualquer tabela. Prova (uninstall sobre config do usuário):
+> ```
+> [features]                    [features]
+> hooks = true            →     (removido — correto)
+>
+> [integrations.github]         [integrations.github]
+> hooks = true                  (DELETADO — bug: linha do usuário)
+> webhook = "https://..."       webhook = "https://..."
+> ```
+> `hooks = true` é chave de nome genérico; nada garante que só o TES a use.
+>
+> **Contrato-alvo.** *Remoção simétrica à inserção: só apagar o flag quando ele está dentro de `[features]`.* Rastrear o header de tabela ativo ao varrer; remover `hooks`/`codex_hooks` apenas enquanto o header ativo for `[features]`; qualquer ocorrência sob outra tabela fica intocada. Espelha exatamente a lógica table-scoped que a inserção já usa.
+>
+> **Red-capable proposto** (fica vermelho antes; vive em `install_smoke.py`, ao lado de `check_user_config_preservation`/`check_codex_block_boundary`):
+> - **(a) preserva flag do usuário:** config com `[features]\nhooks=true` + `[integrations.github]\nhooks=true` → após `remove_tes_codex_hook_text`, o `hooks=true` sob `[integrations.github]` **sobrevive** e o de `[features]` sai.
+> - **(b) caminho feliz:** uninstall normal do TES ainda remove o flag da `[features]` (sem resíduo).
+> - **(c) legado `codex_hooks`:** mesma regra aplicada ao flag legado.
+> - **(d) TOML válido** após o round-trip (`tomllib.loads`).
+> - **Red-capacidade:** reverter para o filtro plano deve fazer (a) falhar.
+>
+> **Retrocompatibilidade.** Configs já instalados têm o flag na `[features]` (é onde a inserção sempre escreveu) → o fix os limpa igual. Nenhum estado instalado quebra. Escopo esperado: ~10 linhas, trocar o list-comprehension por um scan com estado de tabela.
+>
+> **Severidade honesta:** MEDIUM, não HIGH — exige a coincidência de o usuário ter `hooks = true` numa tabela própria (H-01/H-02 atingiam qualquer install). Mesmo *tipo* de dano (destruir config do usuário silenciosamente), menor *probabilidade*.
+>
+> **Release-identity:** delivered behavior (uninstaller Codex) → bump de patch + correlação (`MAINTAINER-CORRELATION-RULE.md`) quando executado.
 
 #### PREC-01 — [PRECISION] `replace_or_insert_toml_feature` pode inserir `[features]` no meio do arquivo, capturando keys de raiz
 - **Arquivo:** `scripts/tes_install.py:270-284`.
