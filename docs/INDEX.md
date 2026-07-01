@@ -18,6 +18,7 @@ This documentation layer explains the method behind the source package without t
 |------|----------|
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
 | PreToolUse canonical contract | `architecture/PRETOOLUSE-CONTRACT.md` |
+| Cortex Git Tap contract | `architecture/CORTEX-GIT-TAP-CONTRACT.md` |
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | Archived TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
 | Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
@@ -37,7 +38,7 @@ This documentation layer explains the method behind the source package without t
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Documentation assets | `assets/README.md` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.246/tilly-engineer-skills-0.3.246.zip` |
+| Public installer bundle | `dist/0.3.247/tilly-engineer-skills-0.3.247.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Install reversibility (detach/uninstall/attach-health) | `install/REVERSIBILITY.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |

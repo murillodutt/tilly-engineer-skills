@@ -90,6 +90,8 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`. `sr
 
 `scripts/field_reports.py` installs the local Field Reports `pre-push` drain at the active Git hook path (`core.hooksPath` aware) and records sanitized operational facts under `.tes/field-reports/**`. That directory is local transport state, not repository truth.
 
+`scripts/cortex_git_tap.py` installs marked `pre-commit`, `post-commit`, and `post-checkout` Git hook blocks at the active Git hook path (`core.hooksPath` aware) and records privacy-safe Cortex observation events under `.tes/runtime/cortex/git-tap/**`. It is an observation/proposal runtime only; hooks must not write curated memory into `docs/**`.
+
 `.github/ISSUE_TEMPLATE/tes-field-report.yml` and `.github/workflows/field-report-governance.yml` govern the central GitHub receiver for those reports. The local oracle is `scripts/field_reports_github_oracle.py`. GitHub automation readiness, including Dependabot ecosystem and directory sanity when `.github/dependabot.yml` exists, is checked by `scripts/github_readiness_oracle.py`.
 
 `scripts/install_smoke.py`, `scripts/claude_plugin_oracle.py`, `scripts/github_readiness_oracle.py`, `scripts/retention_metadata.py`, and `scripts/validate_reference_graph.py` provide deterministic closure gates for assisted installation, local Claude plugin shape, GitHub automation readiness, portable project-context fixtures, evidence retention policy, and governed link drift.

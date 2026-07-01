@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import cortex_git_tap
 from pretooluse_kernel import (
     decide_pretooluse,
     hook_event_name as kernel_hook_event_name,
@@ -29,7 +30,7 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.246"
+VERSION = "0.3.247"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -49,7 +50,7 @@ DEFAULT_POSTINSTALL_COMMANDS = (
     ("project_context_oracle.py", ("--target", "{target}")),
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
-HOOK_RUNTIME_HELPERS = ("cortex_runtime.py", "pretooluse_kernel.py", "pretooluse_session.py")
+HOOK_RUNTIME_HELPERS = ("cortex_runtime.py", "cortex_git_tap.py", "pretooluse_kernel.py", "pretooluse_session.py")
 OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/PROJECT-STATE.md",
     "docs/agents/PROJECT-ROADMAP.md",
@@ -920,8 +921,8 @@ def source_helper_path(script_name: str) -> Path | None:
     return None
 
 
-def install_hook_runtime_helpers(target: Path, dry_run: bool) -> list[dict[str, str]]:
-    actions: list[dict[str, str]] = []
+def install_hook_runtime_helpers(target: Path, dry_run: bool) -> list[dict[str, Any]]:
+    actions: list[dict[str, Any]] = []
     for script_name in HOOK_RUNTIME_HELPERS:
         destination = target / ".tes/bin" / script_name
         source = source_helper_path(script_name)
@@ -940,8 +941,8 @@ def install_hook_runtime_helpers(target: Path, dry_run: bool) -> list[dict[str, 
     return actions
 
 
-def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[str, str]]:
-    actions: list[dict[str, str]] = install_hook_runtime_helpers(target, dry_run)
+def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[str, Any]]:
+    actions: list[dict[str, Any]] = install_hook_runtime_helpers(target, dry_run)
     for agent in agents:
         if agent == "codex":
             actions.append({**install_codex_hook(target, dry_run), "agent": agent})
@@ -951,6 +952,12 @@ def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[s
         elif agent == "cursor":
             actions.append({**install_cursor_hook(target, dry_run), "agent": agent})
             actions.append({**install_cursor_pretooluse_hook(target, dry_run), "agent": agent, "event": "preToolUse"})
+    git_tap_result = (
+        {"version": VERSION, "status": "DRY-RUN", "action": "would-install-cortex-git-tap-hooks"}
+        if dry_run
+        else cortex_git_tap.install_hooks(target)
+    )
+    actions.append({**git_tap_result, "surface": "cortex-git-tap"})
     return actions
 
 

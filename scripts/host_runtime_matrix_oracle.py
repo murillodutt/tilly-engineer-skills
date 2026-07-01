@@ -13,6 +13,7 @@ smoke remains the per-host audit step in `docs/install/HOOK-AUDIT-PROMPT.md`.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -44,6 +45,14 @@ HOST_FIXTURES = (
     "negative-flat-contract.json",
 )
 PRETOOLUSE_HELPERS = ("pretooluse_kernel.py", "pretooluse_session.py")
+GIT_ENV_BLOCKLIST = {
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_DIR",
+    "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_PREFIX",
+    "GIT_WORK_TREE",
+}
 
 
 def _parse_first_json(text: str) -> dict[str, Any]:
@@ -57,6 +66,13 @@ def _parse_first_json(text: str) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def isolated_git_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    env = {key: value for key, value in os.environ.items() if key not in GIT_ENV_BLOCKLIST}
+    if overrides:
+        env.update(overrides)
+    return env
+
+
 def _run(command: list[str], *, cwd: Path | None = None, stdin: dict[str, Any] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
@@ -65,6 +81,7 @@ def _run(command: list[str], *, cwd: Path | None = None, stdin: dict[str, Any] |
         text=True,
         capture_output=True,
         check=False,
+        env=isolated_git_env(),
     )
 
 
@@ -232,7 +249,7 @@ def _write_fixture_project(target: Path) -> None:
     (target / "README.md").write_text("# Host Runtime Matrix Fixture\n", encoding="utf-8")
     (target / "src").mkdir()
     (target / "src/app.py").write_text("print('fixture')\n", encoding="utf-8")
-    subprocess.run(["git", "init"], cwd=target, capture_output=True, check=False)
+    subprocess.run(["git", "init"], cwd=target, capture_output=True, check=False, env=isolated_git_env())
 
 
 def _install_hooks(target: Path, failures: list[str]) -> dict[str, Any]:

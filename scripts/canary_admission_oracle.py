@@ -54,7 +54,7 @@ import git_gate_contract
 import tes_install
 
 
-VERSION = "0.3.246"
+VERSION = "0.3.247"
 SCHEMA = "tes-canary-admission@1"
 AGENTS = tes_install.AGENTS  # ("codex", "claude", "cursor")
 
@@ -164,9 +164,10 @@ def evaluate(target: Path) -> dict[str, Any]:
 
 
 def _init_git(target: Path) -> None:
-    subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.email", "t@t"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False)
+    git_env = git_gate_contract.isolated_git_env()
+    subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
 
 
 def _write_prepush(target: Path) -> None:
@@ -330,8 +331,15 @@ def self_test() -> dict[str, Any]:
         #    with all three claims true on material evidence.
         full = root / "full"
         git_gate_contract.write_git_gate_fixture(full, precommit="strict", prepush="full")
-        subprocess.run(["git", "add", "."], cwd=full, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "commit", "-m", "fixture gate"], cwd=full, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "add", "."], cwd=full, text=True, capture_output=True, check=False, env=git_gate_contract.isolated_git_env())
+        subprocess.run(
+            ["git", "commit", "-m", "fixture gate"],
+            cwd=full,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=git_gate_contract.isolated_git_env(),
+        )
         full_git = git_admission(full.resolve())
         if full_git["status"] != "PASS":
             failures.append(f"fully-gated Git target must PASS git_admission, got {full_git['status']}: {full_git['blockers']}")
@@ -345,8 +353,17 @@ def self_test() -> dict[str, Any]:
         #     marker proves enforcement without a resolved command.
         drain_only = root / "drain-only"
         git_gate_contract.write_git_gate_fixture(drain_only, precommit="strict", prepush="drain-only")
-        subprocess.run(["git", "add", "."], cwd=drain_only, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "commit", "-m", "fixture drain only"], cwd=drain_only, text=True, capture_output=True, check=False)
+        subprocess.run(
+            ["git", "add", "."], cwd=drain_only, text=True, capture_output=True, check=False, env=git_gate_contract.isolated_git_env()
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "fixture drain only"],
+            cwd=drain_only,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=git_gate_contract.isolated_git_env(),
+        )
         drain_ev = prepush_evidence(drain_only.resolve())
         if not drain_ev.get("prepush_installed"):
             failures.append("F38: drain-only pre-push must still report prepush_installed=true")
@@ -407,11 +424,22 @@ def self_test() -> dict[str, Any]:
         if install.get("status") != "PASS":
             failures.append(f"F37: install_hook should install the fail-closed hook, got {install.get('status')}")
         hook = no_real_gate / ".git/hooks/pre-commit"
-        hook_run = subprocess.run([str(hook)], cwd=no_real_gate, text=True, capture_output=True, check=False)
+        hook_run = subprocess.run(
+            [str(hook)], cwd=no_real_gate, text=True, capture_output=True, check=False, env=git_gate_contract.isolated_git_env()
+        )
         if hook_run.returncode == 0:
             failures.append("F37: TES-installed pre-commit with no real gate must fail closed, not exit 0")
-        subprocess.run(["git", "add", "."], cwd=no_real_gate, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "commit", "--no-verify", "-m", "fixture install"], cwd=no_real_gate, text=True, capture_output=True, check=False)
+        subprocess.run(
+            ["git", "add", "."], cwd=no_real_gate, text=True, capture_output=True, check=False, env=git_gate_contract.isolated_git_env()
+        )
+        subprocess.run(
+            ["git", "commit", "--no-verify", "-m", "fixture install"],
+            cwd=no_real_gate,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=git_gate_contract.isolated_git_env(),
+        )
         no_gate_precommit = precommit_evidence(no_real_gate.resolve())
         if no_gate_precommit.get("precommit_enforced"):
             failures.append("F37: canary admission must not mark a no-real-gate hook as precommit_enforced")

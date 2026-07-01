@@ -22,7 +22,15 @@ import field_reports
 
 
 SCHEMA = "tes-git-gate-contract@1"
-VERSION = "0.3.246"
+VERSION = "0.3.247"
+GIT_ENV_BLOCKLIST = {
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_DIR",
+    "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_PREFIX",
+    "GIT_WORK_TREE",
+}
 
 PRECOMMIT_GATE_TOKENS = ("commit:check", "commit:closure", "discipline_oracle", "project_context_oracle")
 PREPUSH_GATE_TOKENS = ("prepush:check", "commit:check", "discipline_oracle", "project_context_oracle", "gate-pre-git")
@@ -36,12 +44,20 @@ PROJECT_CONTEXT_ORACLES = (
 )
 
 
+def isolated_git_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    env = {key: value for key, value in os.environ.items() if key not in GIT_ENV_BLOCKLIST}
+    if overrides:
+        env.update(overrides)
+    return env
+
+
 def is_git_work_tree(target: Path) -> bool:
     result = subprocess.run(
         ["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
         text=True,
         capture_output=True,
         check=False,
+        env=isolated_git_env(),
     )
     return result.returncode == 0 and result.stdout.strip() == "true"
 
@@ -54,6 +70,7 @@ def git_is_clean(target: Path) -> bool | None:
         text=True,
         capture_output=True,
         check=False,
+        env=isolated_git_env(),
     )
     if result.returncode != 0:
         return None
@@ -428,9 +445,10 @@ def installed_git_admission_status(target: Path, *, hooks_attached: bool) -> dic
 
 
 def _init_git(target: Path) -> None:
-    subprocess.run(["git", "init", "-q"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.email", "t@t"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False)
+    git_env = isolated_git_env()
+    subprocess.run(["git", "init", "-q"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
 
 
 def _write_discipline_oracle(target: Path) -> None:
@@ -704,8 +722,9 @@ CONTRACT_MATRIX: tuple[dict[str, Any], ...] = (
 
 
 def _commit_fixture(target: Path) -> None:
-    subprocess.run(["git", "add", "."], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "commit", "--no-verify", "-m", "fixture"], cwd=target, text=True, capture_output=True, check=False)
+    git_env = isolated_git_env()
+    subprocess.run(["git", "add", "."], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "commit", "--no-verify", "-m", "fixture"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
 
 
 def evaluate_contract_matrix() -> dict[str, Any]:
@@ -830,8 +849,8 @@ def self_test() -> dict[str, Any]:
         _init_git(full)
         _write_precommit(full)
         _write_prepush(full, drain=True, quality=True)
-        subprocess.run(["git", "add", "."], cwd=full, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "commit", "-m", "fixture"], cwd=full, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "add", "."], cwd=full, text=True, capture_output=True, check=False, env=isolated_git_env())
+        subprocess.run(["git", "commit", "-m", "fixture"], cwd=full, text=True, capture_output=True, check=False, env=isolated_git_env())
         full_result = canary_git_admission(full)
         cases.append({"case": "full", "status": full_result["status"]})
         if full_result["status"] != "PASS":

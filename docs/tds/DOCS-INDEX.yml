@@ -1,4 +1,4 @@
-version: 0.3.246
+version: 0.3.247
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -34,6 +34,13 @@ documents:
     class: architecture
     status: active
     consumer: maintainers, hook authors, installer authors, oracle authors, and hook auditors
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/architecture/CORTEX-GIT-TAP-CONTRACT.md
+    id: architecture.cortex_git_tap_contract
+    class: architecture
+    status: active
+    consumer: maintainers, Cortex runtime authors, installer authors, hook authors, oracle authors, and release reviewers
     source_of_truth: true
     evidence_level: L2
   - path: docs/architecture/INSTALLER-TUG-OF-WAR-MATRIX.md

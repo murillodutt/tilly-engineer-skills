@@ -29,7 +29,7 @@ except ModuleNotFoundError:  # pragma: no cover - degraded environment
     _attach_health = None
 
 
-VERSION = "0.3.246"
+VERSION = "0.3.247"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -725,7 +725,7 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     if healthy:
         bin_dir = target / ".tes/bin"
         bin_dir.mkdir(parents=True, exist_ok=True)
-        for helper in ("pretooluse_kernel.py", "pretooluse_session.py", "cortex_runtime.py", "cortex.py"):
+        for helper in ("pretooluse_kernel.py", "pretooluse_session.py", "cortex_runtime.py", "cortex_git_tap.py", "cortex.py"):
             source = ROOT / "scripts" / helper
             if source.is_file():
                 (bin_dir / helper).write_text(source.read_text(encoding="utf-8"), encoding="utf-8")

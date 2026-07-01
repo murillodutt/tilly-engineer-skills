@@ -74,11 +74,18 @@ def write_setup_files(target: Path, setup: dict[str, Any]) -> None:
 
 
 def configure_target(target: Path, fixture: dict[str, Any]) -> None:
-    subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
+    subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False, env=field_reports.isolated_git_env())
     setup = fixture.get("setup") if isinstance(fixture.get("setup"), dict) else {}
     configured = setup.get("core_hooks_path")
     if configured is not None:
-        subprocess.run(["git", "config", "core.hooksPath", str(configured)], cwd=target, text=True, capture_output=True, check=False)
+        subprocess.run(
+            ["git", "config", "core.hooksPath", str(configured)],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=field_reports.isolated_git_env(),
+        )
     write_setup_files(target, setup)
 
 
@@ -144,7 +151,14 @@ def validate_fixture(path: Path, fixture: dict[str, Any]) -> list[str]:
                 failures.append(f"{rel(path)}: active entrypoint missing: {active}")
             else:
                 entrypoint.chmod(0o755)
-                run = subprocess.run([str(entrypoint)], cwd=target, text=True, capture_output=True, check=False)
+                run = subprocess.run(
+                    [str(entrypoint)],
+                    cwd=target,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                    env=field_reports.isolated_git_env(),
+                )
                 if run.returncode != 0:
                     failures.append(f"{rel(path)}: active entrypoint returned {run.returncode}")
         if host == "git-project-owned" and not (target / "project-owned.log").exists():
@@ -158,9 +172,10 @@ def validate_fixture(path: Path, fixture: dict[str, Any]) -> list[str]:
 
 
 def _init_git(target: Path) -> None:
-    subprocess.run(["git", "init", "-q"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.email", "t@t.com"], cwd=target, text=True, capture_output=True, check=False)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False)
+    git_env = field_reports.isolated_git_env()
+    subprocess.run(["git", "init", "-q"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "config", "user.email", "t@t.com"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
 
 
 def _write_installed_discipline_oracle(target: Path) -> None:
@@ -216,7 +231,7 @@ def validate_selection_and_precommit() -> list[str]:
         if res.get("status") != "PASS":
             failures.append(f"precommit-no-gate: install_hook status {res.get('status')} on eligible Git target")
         hp = t / ".git/hooks/pre-commit"
-        run = subprocess.run([str(hp)], cwd=t, text=True, capture_output=True, check=False)
+        run = subprocess.run([str(hp)], cwd=t, text=True, capture_output=True, check=False, env=field_reports.isolated_git_env())
         if run.returncode == 0:
             failures.append("precommit-no-gate: installed pre-commit must fail closed without a real gate")
         pc = cao.precommit_evidence(t)
@@ -234,7 +249,9 @@ def validate_selection_and_precommit() -> list[str]:
             failures.append(f"precommit: install_hook status {res.get('status')} on eligible Git target")
         if not res.get("pre_commit_installed"):
             failures.append("precommit: pre_commit_installed is falsy after install on eligible Git target")
-        hook_run = subprocess.run([str(t / ".git/hooks/pre-commit")], cwd=t, text=True, capture_output=True, check=False)
+        hook_run = subprocess.run(
+            [str(t / ".git/hooks/pre-commit")], cwd=t, text=True, capture_output=True, check=False, env=field_reports.isolated_git_env()
+        )
         if hook_run.returncode != 0:
             failures.append(f"precommit: canonical installed oracle hook returned {hook_run.returncode}")
         pc = cao.precommit_evidence(t)
@@ -278,7 +295,14 @@ def validate_selection_and_precommit() -> list[str]:
     with tempfile.TemporaryDirectory(prefix="tes-hm-disabled-") as d:
         t = Path(d)
         _init_git(t)
-        subprocess.run(["git", "config", "core.hooksPath", "/dev/null"], cwd=t, text=True, capture_output=True, check=False)
+        subprocess.run(
+            ["git", "config", "core.hooksPath", "/dev/null"],
+            cwd=t,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=field_reports.isolated_git_env(),
+        )
         if field_reports.install_hook(t).get("status") != "BLOCKED":
             failures.append("disabled-hooks: install_hook did not BLOCK on core.hooksPath=/dev/null")
 

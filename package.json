@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.246",
+  "version": "0.3.247",
   "private": true,
   "description": "Portable engineering discipline and context-mesh method for coding agents.",
   "license": "MIT",
@@ -100,6 +100,7 @@
     "cortex:forget": "python3 scripts/cortex.py forget",
     "cortex:self-test": "python3 scripts/cortex.py --self-test",
     "cortex:runtime:self-test": "python3 scripts/cortex_runtime.py --self-test",
+    "cortex:git-tap:self-test": "python3 scripts/cortex_git_tap.py --self-test",
     "cortex:host-contract:self-test": "python3 scripts/cortex_host_contract_oracle.py --self-test",
     "cortex:operator:self-test": "python3 scripts/cortex_operator_oracle.py --self-test",
     "cortex:quality:self-test": "python3 scripts/cortex_quality_oracle.py --self-test",

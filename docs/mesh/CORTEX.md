@@ -138,6 +138,10 @@ Scope is coordination metadata. It is not a Cortex cell, not durable memory, not
 
 `docs/mesh/EVENT-LEDGER.md` defines read-only lifecycle event inspection. Event ledger entries are coordination evidence, not Cortex memory. Inspecting a ledger must not append to `TRAIL.md`, create cells, rebuild recall, or promote events into durable knowledge.
 
+## Git Tap Boundary
+
+`docs/architecture/CORTEX-GIT-TAP-CONTRACT.md` defines the Git observation lane. Git Tap records schema `tes-cortex-git-tap@1` events under `.tes/runtime/cortex/git-tap/**`, installs marked Git hook blocks without clobbering existing hooks, queues events under lock contention, and may write local review proposals. It never writes curated Cortex memory into `docs/**`; durable promotion still requires the explicit Cortex apply/write path after curation.
+
 ## Checkpoint Boundary
 
 `docs/mesh/CHECKPOINTS.md` defines TTL resumability state. Checkpoints may help an agent resume work, but they are not Cortex cells, not certification evidence, not Event Ledger records, and not Field Reports. Creating or cleaning a checkpoint must not append to `TRAIL.md`, create cells, rebuild recall, or authorize durable memory writes.

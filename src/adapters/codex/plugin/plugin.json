@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.246",
+  "version": "0.3.247",
   "description": "Portable maturity-aware engineering discipline to reduce ambiguity, regressions, overcomplication, drive-by edits, and false completion in coding agents",
   "author": {
     "name": "forrestchang"

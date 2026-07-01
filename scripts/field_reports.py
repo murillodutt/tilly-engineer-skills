@@ -22,7 +22,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.246"
+VERSION = "0.3.247"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
@@ -44,6 +44,14 @@ CANONICAL_DISCIPLINE_ORACLE = ".agents/skills/tes-engineering-discipline/scripts
 CLAUDE_DISCIPLINE_ORACLE = ".claude/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 BACKUP_HOOK_RE = re.compile(r"^BACKUP_HOOK=(?P<value>.+)$", re.MULTILINE)
 BACKUP_PRECOMMIT_RE = re.compile(r"^BACKUP_PRECOMMIT=(?P<value>.+)$", re.MULTILINE)
+GIT_ENV_BLOCKLIST = {
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_DIR",
+    "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_PREFIX",
+    "GIT_WORK_TREE",
+}
 
 # Deterministic hook-manager selection (ceiling decision, never random).
 # Priority: an existing manager config is respected first (defer); otherwise
@@ -78,6 +86,15 @@ OWNER_SURFACE_BY_CLASS = {
     "multi-surface-operation": "maintainer-triage",
     "version-drift": "release",
 }
+
+
+def isolated_git_env(overrides: dict[str, str] | None = None) -> dict[str, str]:
+    env = {key: value for key, value in os.environ.items() if key not in GIT_ENV_BLOCKLIST}
+    if overrides:
+        env.update(overrides)
+    return env
+
+
 NEXT_ACTION_BY_CLASS = {
     "adapter-drift": "review adapter materialization and trigger parity",
     "cortex-certification": "review Cortex certification batch evidence",
@@ -1069,6 +1086,7 @@ def git_config_get(target: Path, key: str) -> str | None:
         text=True,
         capture_output=True,
         check=False,
+        env=isolated_git_env(),
     )
     if result.returncode != 0:
         return None
@@ -1627,7 +1645,7 @@ def self_test() -> dict[str, object]:
 
     with tempfile.TemporaryDirectory(prefix="tes-field-reports-") as tempdir:
         target = Path(tempdir)
-        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False, env=isolated_git_env())
 
         legacy = legacy_root(target)
         (legacy / "receipts").mkdir(parents=True)
@@ -1660,12 +1678,13 @@ def self_test() -> dict[str, object]:
                 text=True,
                 capture_output=True,
                 check=False,
+                env=isolated_git_env(),
             )
             if pre_commit_run.returncode == 0:
                 failures.append("strict pre-commit must fail closed when no real gate is available")
         installed = target / "installed-helper"
         installed.mkdir()
-        subprocess.run(["git", "init"], cwd=installed, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=installed, text=True, capture_output=True, check=False, env=isolated_git_env())
         installed_helper = installed / BIN_HELPER
         installed_helper.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(Path(__file__).resolve(), installed_helper)
@@ -1676,6 +1695,7 @@ def self_test() -> dict[str, object]:
             text=True,
             capture_output=True,
             check=False,
+            env=isolated_git_env(),
         )
         if installed_result.returncode != 0:
             failures.append("installed field_reports helper install-hook must be idempotent")
@@ -1684,8 +1704,15 @@ def self_test() -> dict[str, object]:
 
         githooks_target = target / "core-hooks-path-githooks"
         githooks_target.mkdir()
-        subprocess.run(["git", "init"], cwd=githooks_target, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=githooks_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=githooks_target, text=True, capture_output=True, check=False, env=isolated_git_env())
+        subprocess.run(
+            ["git", "config", "core.hooksPath", ".githooks"],
+            cwd=githooks_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
         githooks_result = install_hook(githooks_target)
         githooks_hook = githooks_target / ".githooks/pre-push"
         dormant_githook = githooks_target / ".git/hooks/pre-push"
@@ -1696,13 +1723,20 @@ def self_test() -> dict[str, object]:
         if dormant_githook.exists() and HOOK_MARKER in dormant_githook.read_text(encoding="utf-8", errors="replace"):
             failures.append("core.hooksPath=.githooks install must not write an orphan .git/hooks/pre-push")
         write_prepush_quality_oracle(githooks_target)
-        githooks_run = subprocess.run([str(githooks_hook)], cwd=githooks_target, text=True, capture_output=True, check=False)
+        githooks_run = subprocess.run(
+            [str(githooks_hook)],
+            cwd=githooks_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
         if githooks_run.returncode != 0:
             failures.append("core.hooksPath=.githooks pre-push hook must execute when a quality gate resolves")
 
         husky_target = target / "core-hooks-path-husky"
         husky_target.mkdir()
-        subprocess.run(["git", "init"], cwd=husky_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=husky_target, text=True, capture_output=True, check=False, env=isolated_git_env())
         (husky_target / ".husky/_").mkdir(parents=True)
         husky_wrapper = husky_target / ".husky/_/pre-push"
         husky_wrapper.write_text(
@@ -1716,7 +1750,14 @@ exit 0
             encoding="utf-8",
         )
         husky_wrapper.chmod(0o755)
-        subprocess.run(["git", "config", "core.hooksPath", ".husky/_"], cwd=husky_target, text=True, capture_output=True, check=False)
+        subprocess.run(
+            ["git", "config", "core.hooksPath", ".husky/_"],
+            cwd=husky_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
         husky_result = install_hook(husky_target)
         husky_hook = husky_target / ".husky/pre-push"
         if husky_result.get("status") != "PASS" or husky_result.get("hook") != ".husky/pre-push":
@@ -1726,21 +1767,37 @@ exit 0
         if HOOK_MARKER in husky_wrapper.read_text(encoding="utf-8", errors="replace"):
             failures.append("install-hook must not overwrite Husky internal wrapper")
         write_prepush_quality_oracle(husky_target)
-        husky_run = subprocess.run([str(husky_wrapper)], cwd=husky_target, text=True, capture_output=True, check=False)
+        husky_run = subprocess.run(
+            [str(husky_wrapper)],
+            cwd=husky_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
         if husky_run.returncode != 0:
             failures.append("Husky wrapper must execute the Field Reports user hook when a quality gate resolves")
 
         disabled_hooks_target = target / "core-hooks-path-disabled"
         disabled_hooks_target.mkdir()
-        subprocess.run(["git", "init"], cwd=disabled_hooks_target, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "config", "core.hooksPath", "/dev/null"], cwd=disabled_hooks_target, text=True, capture_output=True, check=False)
+        subprocess.run(
+            ["git", "init"], cwd=disabled_hooks_target, text=True, capture_output=True, check=False, env=isolated_git_env()
+        )
+        subprocess.run(
+            ["git", "config", "core.hooksPath", "/dev/null"],
+            cwd=disabled_hooks_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
         disabled_hooks_result = install_hook(disabled_hooks_target)
         if disabled_hooks_result.get("status") != "BLOCKED":
             failures.append("core.hooksPath=/dev/null must block Field Reports hook installation")
 
         chained_target = target / "pre-existing-pre-push"
         chained_target.mkdir()
-        subprocess.run(["git", "init"], cwd=chained_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=chained_target, text=True, capture_output=True, check=False, env=isolated_git_env())
         chained_hook = chained_target / ".git/hooks/pre-push"
         chained_hook.write_text(
             """#!/usr/bin/env sh
@@ -1789,6 +1846,7 @@ printf '%s\\n' "$*" > gate-pre-git.log
             text=True,
             capture_output=True,
             check=False,
+            env=isolated_git_env(),
         )
         gate_log = chained_target / "gate-pre-git.log"
         if chained_hook_run.returncode != 0:
@@ -1819,7 +1877,14 @@ printf '%s\\n' "$*" > gate-pre-git.log
             probe = target / relpath
             probe.parent.mkdir(parents=True, exist_ok=True)
             probe.write_text("probe\n", encoding="utf-8")
-            ignored = subprocess.run(["git", "check-ignore", relpath], cwd=target, text=True, capture_output=True, check=False)
+            ignored = subprocess.run(
+                ["git", "check-ignore", relpath],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+                env=isolated_git_env(),
+            )
             if ignored.returncode != 0:
                 failures.append(f"local git hygiene did not ignore: {relpath}")
         helper_ignored = subprocess.run(
@@ -1828,6 +1893,7 @@ printf '%s\\n' "$*" > gate-pre-git.log
             text=True,
             capture_output=True,
             check=False,
+            env=isolated_git_env(),
         )
         if helper_ignored.returncode == 0:
             failures.append("local git hygiene must not ignore installed helper .tes/bin/field_reports.py")
@@ -1857,7 +1923,7 @@ printf '%s\\n' "$*" > gate-pre-git.log
 
         scope_target = target / "scope-rejection"
         scope_target.mkdir()
-        subprocess.run(["git", "init"], cwd=scope_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=scope_target, text=True, capture_output=True, check=False, env=isolated_git_env())
         install_hook(scope_target)
         unsafe_scope = record_event(
             scope_target,
@@ -1903,7 +1969,7 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
             encoding="utf-8",
         )
         fake_gh.chmod(0o755)
-        env = {**os.environ, "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}", "GH_BODY_CAPTURE": str(body_capture)}
+        env = isolated_git_env({"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}", "GH_BODY_CAPTURE": str(body_capture)})
         hook_run = subprocess.run(
             [str(target / ".git/hooks/pre-push")],
             cwd=target,
@@ -1949,7 +2015,7 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
 
         quiet_target = target / "quiet-heartbeat"
         quiet_target.mkdir()
-        subprocess.run(["git", "init"], cwd=quiet_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "init"], cwd=quiet_target, text=True, capture_output=True, check=False, env=isolated_git_env())
         install_hook(quiet_target)
         record_event(
             quiet_target,
@@ -1965,7 +2031,7 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
                 "update_available": False,
             },
         )
-        quiet_drain = drain(quiet_target, "self-test", env={**os.environ, "PATH": str(quiet_target / "missing-gh")})
+        quiet_drain = drain(quiet_target, "self-test", env=isolated_git_env({"PATH": str(quiet_target / "missing-gh")}))
         if quiet_drain.get("status") != "PASS" or quiet_drain.get("suppressed") is not True:
             failures.append("low-signal update heartbeat must be suppressed instead of opening an issue")
         if outbox_path(quiet_target).read_text(encoding="utf-8").strip():
@@ -1978,7 +2044,7 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
         python_only = target / "python-only-bin"
         python_only.mkdir()
         (python_only / "python3").symlink_to(sys.executable)
-        missing_env = {**os.environ, "PATH": str(python_only)}
+        missing_env = isolated_git_env({"PATH": str(python_only)})
         hook_missing = subprocess.run(
             [str(target / ".git/hooks/pre-push")],
             cwd=target,
