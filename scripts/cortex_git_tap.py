@@ -23,13 +23,16 @@ import tempfile
 import time
 from typing import Any
 
+import tes_codex_policy
 
-VERSION = "0.3.248"
+
+VERSION = "0.3.249"
 SCHEMA = "tes-cortex-git-tap@1"
 RUNTIME_ROOT = Path(".tes/runtime/cortex/git-tap")
 EVENTS_FILE = RUNTIME_ROOT / "events.jsonl"
 PENDING_FILE = RUNTIME_ROOT / "pending.jsonl"
 PROPOSALS_FILE = RUNTIME_ROOT / "proposals.jsonl"
+AUTO_PROMOTIONS_FILE = RUNTIME_ROOT / "auto-promotions.jsonl"
 LOG_FILE = RUNTIME_ROOT / "git-tap.log"
 LOCK_FILE = RUNTIME_ROOT / "git-tap.lock"
 PROPOSAL_SCHEMA = "tes-cortex-git-tap-proposal@1"
@@ -39,6 +42,7 @@ GIT_EXCLUDE_PATTERNS = (
     ".tes/runtime/cortex/git-tap/events.jsonl",
     ".tes/runtime/cortex/git-tap/pending.jsonl",
     ".tes/runtime/cortex/git-tap/proposals.jsonl",
+    ".tes/runtime/cortex/git-tap/auto-promotions.jsonl",
     ".tes/runtime/cortex/git-tap/git-tap.log",
     ".tes/runtime/cortex/git-tap/git-tap.lock",
 )
@@ -55,6 +59,11 @@ DECISION_STATES = {
     "NO_MEMORY_SIGNAL",
     "PROPOSE_MEMORY",
     "NEEDS_CURATION",
+    "AUTO_PROMOTED",
+    "PROPOSED",
+    "REVIEW_REQUIRED",
+    "DENIED_BY_POLICY",
+    "BLOCKED_IN_HOOK",
     "BLOCKED_PRIVACY",
     "CURATED",
 }
@@ -334,6 +343,7 @@ def build_event(
     head = git_value(target, "rev-parse", "HEAD")
     commit = commit_hash or (head if event in {"post-commit", "post-checkout"} else "")
     parents = git_value(target, "show", "-s", "--format=%P", commit).split() if commit else []
+    policy_decision = tes_codex_policy.decision_for_paths(target, paths)
     payload: dict[str, Any] = {
         "schema": SCHEMA,
         "timestamp": utc_stamp(),
@@ -344,6 +354,7 @@ def build_event(
         "head_after": head_after or head,
         "commit_hash": commit,
         "parent_hashes": parents,
+        "changed_paths": paths,
         "changed_path_count": len(paths),
         "changed_path_categories": counted([category_for(path) for path in paths]),
         "changed_file_extensions": counted([extension_for(path) for path in paths]),
@@ -351,9 +362,16 @@ def build_event(
         "staged_digest": staged_digest(target),
         "gate_snapshot": gate_snapshot(target, event),
         "memory_signal": classify_memory_signal(paths),
+        "policy_schema": policy_decision.get("schema"),
+        "policy_digest": policy_decision.get("policy_digest"),
+        "policy_state": policy_decision.get("policy_state"),
+        "policy_decision": policy_decision.get("decision_state"),
+        "policy_path_classes": policy_decision.get("source_classes", {}),
         "privacy_status": "PASS",
         "blockers": [],
     }
+    if policy_decision.get("failures"):
+        payload["blockers"] = [*payload["blockers"], *policy_decision.get("failures", [])]
     failures = privacy_failures(payload)
     if failures:
         payload["privacy_status"] = "NEEDS_PRIVACY_GUARD"
@@ -655,6 +673,14 @@ def proposal_for_event(event: dict[str, Any]) -> dict[str, Any]:
     state = "NO_MEMORY_SIGNAL"
     if event.get("privacy_status") != "PASS":
         state = "BLOCKED_PRIVACY"
+    elif event.get("policy_decision") in {
+        "AUTO_PROMOTED",
+        "REVIEW_REQUIRED",
+        "DENIED_BY_POLICY",
+        "BLOCKED_PRIVACY",
+        "NO_MEMORY_SIGNAL",
+    }:
+        state = str(event.get("policy_decision"))
     elif signal in {"contract_change", "runtime_learning", "oracle_learning", "docs_memory_change"}:
         state = "NEEDS_CURATION"
     elif signal == "candidate":
@@ -676,10 +702,15 @@ def proposal_for_event(event: dict[str, Any]) -> dict[str, Any]:
             "changed_file_extensions": event.get("changed_file_extensions", {}),
             "diff_stat": event.get("diff_stat", {}),
             "privacy_status": event.get("privacy_status"),
+            "policy_state": event.get("policy_state"),
+            "policy_digest": event.get("policy_digest"),
+            "policy_decision": event.get("policy_decision"),
+            "policy_path_classes": event.get("policy_path_classes", {}),
+            "changed_paths": event.get("changed_paths", []),
         },
         "proposal": None if state == "NO_MEMORY_SIGNAL" else {
-            "route": "proposal-only; review before Cortex apply",
-            "claim_needed": "Promote only a durable decision, reusable lesson, contract change, or runtime learning.",
+            "route": "policy auto-promote outside hook" if state == "AUTO_PROMOTED" else "proposal-only; review before Cortex apply",
+            "claim_needed": "Promote only policy-approved agent memory, durable decisions, reusable lessons, contract changes, or runtime learning.",
             "curation_boundary": "Git Tap does not write docs/**; use the approved Cortex apply path after explicit curation.",
         },
     }
@@ -802,6 +833,25 @@ def proposal_plan_item(target: Path, proposal: dict[str, Any]) -> dict[str, Any]
         action = "blocked-privacy-review"
         next_step = "Reject or sanitize the proposal evidence before any Cortex apply command."
         apply_command = None
+    elif decision == "DENIED_BY_POLICY":
+        action = "denied-by-policy"
+        next_step = "Do not promote this event into Cortex memory."
+        apply_command = None
+    elif decision == "REVIEW_REQUIRED":
+        action = "review-required"
+        next_step = "Review the proposal before any Cortex apply command."
+        command = preferred_git_tap_command(target)
+        apply_command = (
+            f"{command} apply-proposal --target . "
+            f"--event-fingerprint {shlex.quote(fingerprint)} "
+            f"--cell {shlex.quote(cell)} "
+            "--claim '<approved durable claim>' --yes"
+        )
+    elif decision == "AUTO_PROMOTED":
+        action = "auto-promote-outside-hook"
+        next_step = "Run auto-promote outside hook execution or let the host canary curation step run it."
+        command = preferred_git_tap_command(target)
+        apply_command = f"{command} auto-promote --target ."
     elif decision == "NO_MEMORY_SIGNAL":
         action = "no-op"
         next_step = "No durable Cortex memory action is recommended."
@@ -920,7 +970,7 @@ def apply_proposal(
     proposal, failures = find_proposal(target, event_fingerprint)
     if failures or proposal is None:
         return {"version": VERSION, "status": "FAIL", "failures": failures, "writes": []}
-    if proposal.get("decision_state") in {"NO_MEMORY_SIGNAL", "BLOCKED_PRIVACY"}:
+    if proposal.get("decision_state") in {"NO_MEMORY_SIGNAL", "BLOCKED_PRIVACY", "DENIED_BY_POLICY"}:
         return {
             "version": VERSION,
             "status": "FAIL",
@@ -971,6 +1021,73 @@ def apply_proposal(
     if result.get("status") == "PASS" and cortex_helper.rel(source_path, target) not in result.get("writes", []):
         result["writes"] = [cortex_helper.rel(source_path, target), *result.get("writes", [])]
     return result
+
+
+def auto_promote(target: Path) -> dict[str, Any]:
+    target = target.expanduser().resolve()
+    if os.environ.get("TES_CORTEX_GIT_TAP_HOOK") == "1":
+        return {
+            "version": VERSION,
+            "status": "BLOCKED_IN_HOOK",
+            "failures": ["hook-triggered execution cannot auto-promote Cortex memory"],
+            "writes": [],
+        }
+    proposals, failures = read_proposals(target / PROPOSALS_FILE)
+    if failures:
+        return {"version": VERSION, "status": "FAIL", "failures": failures, "writes": []}
+    writes: list[str] = []
+    promoted: list[dict[str, Any]] = []
+    skipped = 0
+    promotion_failures: list[str] = []
+    seen_candidates: set[str] = set()
+    for proposal in proposals:
+        if proposal.get("decision_state") != "AUTO_PROMOTED":
+            skipped += 1
+            continue
+        summary = proposal.get("event_summary") if isinstance(proposal.get("event_summary"), dict) else {}
+        paths = [str(path) for path in summary.get("changed_paths", []) if isinstance(path, str)]
+        candidate_key = sha256_text(canonical_json({"paths": sorted(paths), "policy": summary.get("policy_digest")}))[:24]
+        if candidate_key in seen_candidates:
+            skipped += 1
+            continue
+        seen_candidates.add(candidate_key)
+        decision = tes_codex_policy.decision_for_paths(target, paths)
+        if summary.get("policy_digest") and summary.get("policy_digest") != decision.get("policy_digest"):
+            promotion_failures.append(f"{proposal.get('event_fingerprint')}: stale proposal policy digest changed")
+            continue
+        if summary.get("policy_decision") != "AUTO_PROMOTED":
+            promotion_failures.append(f"{proposal.get('event_fingerprint')}: stale proposal missing AUTO_PROMOTED policy decision")
+            continue
+        if summary.get("policy_state") not in {"DEFAULT", "OWNER_EDITED"}:
+            promotion_failures.append(f"{proposal.get('event_fingerprint')}: stale proposal policy state is not valid")
+            continue
+        if decision.get("decision_state") != "AUTO_PROMOTED":
+            promotion_failures.append(
+                f"{proposal.get('event_fingerprint')}: current policy decision is {decision.get('decision_state')}, not AUTO_PROMOTED"
+            )
+            continue
+        result = tes_codex_policy.auto_promote_candidates(
+            target,
+            paths,
+            event_fingerprint=str(proposal.get("event_fingerprint") or ""),
+            policy_decision=decision,
+        )
+        if result.get("status") != "PASS":
+            promotion_failures.extend(str(item) for item in result.get("failures", []))
+            if not result.get("failures"):
+                promotion_failures.append(f"{proposal.get('event_fingerprint')}: auto promotion returned {result.get('status')}")
+            continue
+        writes.extend(str(path) for path in result.get("writes", []))
+        promoted.extend(item for item in result.get("promoted", []) if isinstance(item, dict))
+    status = "PASS" if promoted and not promotion_failures else ("FAIL" if promotion_failures else "SKIP")
+    return {
+        "version": VERSION,
+        "status": status,
+        "promoted": promoted,
+        "skipped": skipped,
+        "writes": sorted(set(writes)),
+        "failures": sorted(set(promotion_failures)),
+    }
 
 
 def audit(target: Path) -> dict[str, Any]:
@@ -1180,6 +1297,13 @@ def docs_snapshot(target: Path) -> dict[str, str]:
     }
 
 
+def copy_installed_git_tap_helpers(target: Path) -> None:
+    bin_dir = target / ".tes/bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    for helper in ("cortex_git_tap.py", "tes_codex_policy.py"):
+        shutil.copy2(Path(__file__).resolve().with_name(helper), bin_dir / helper)
+
+
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory(prefix="tes-cortex-git-tap-") as tempdir:
@@ -1320,9 +1444,7 @@ def self_test() -> dict[str, Any]:
         boundary_target.mkdir()
         init_git(boundary_target)
         install_hooks(boundary_target)
-        installed_helper = boundary_target / ".tes/bin/cortex_git_tap.py"
-        installed_helper.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(Path(__file__).resolve(), installed_helper)
+        copy_installed_git_tap_helpers(boundary_target)
         before = docs_snapshot(boundary_target)
         commit_file(boundary_target, "docs/architecture/CORTEX-GIT-TAP-CONTRACT.md", "# Contract\n", "contract")
         hook_path = boundary_target / ".git/hooks/post-commit"
@@ -1363,9 +1485,7 @@ def self_test() -> dict[str, Any]:
             env=isolated_git_env(),
         )
         install_hooks(curation_target)
-        curation_helper = curation_target / ".tes/bin/cortex_git_tap.py"
-        curation_helper.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(Path(__file__).resolve(), curation_helper)
+        copy_installed_git_tap_helpers(curation_target)
         previous_no_background = os.environ.get("TES_CORTEX_GIT_TAP_NO_BACKGROUND")
         os.environ["TES_CORTEX_GIT_TAP_NO_BACKGROUND"] = "1"
         try:
@@ -1479,6 +1599,72 @@ def self_test() -> dict[str, Any]:
             if "apply" in hook_block(curation_target, "post-commit"):
                 failures.append("Git Tap hook template must remain proposal-only and not call apply")
 
+        policy_target = root / "policy-auto-promote"
+        policy_target.mkdir()
+        init_git(policy_target)
+        policy_cortex = load_cortex_helper()
+        policy_cortex.init(policy_target)
+        tes_codex_policy.materialize_policy(policy_target)
+        subprocess.run(
+            ["git", "add", "docs", ".tes/tes-codex.md"],
+            cwd=policy_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "baseline policy"],
+            cwd=policy_target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
+        install_hooks(policy_target)
+        copy_installed_git_tap_helpers(policy_target)
+        previous_no_background = os.environ.get("TES_CORTEX_GIT_TAP_NO_BACKGROUND")
+        os.environ["TES_CORTEX_GIT_TAP_NO_BACKGROUND"] = "1"
+        try:
+            commit_file(
+                policy_target,
+                "docs/agents/POLICY-RUNTIME.md",
+                "# Policy Runtime Memory\n\nmarker policy-runtime-green-249\n",
+                "policy memory",
+            )
+        finally:
+            if previous_no_background is None:
+                os.environ.pop("TES_CORTEX_GIT_TAP_NO_BACKGROUND", None)
+            else:
+                os.environ["TES_CORTEX_GIT_TAP_NO_BACKGROUND"] = previous_no_background
+        policy_reflect = reflect_proposals(policy_target)
+        policy_proposals, policy_proposal_failures = read_proposals(policy_target / PROPOSALS_FILE)
+        policy_selected = next((proposal for proposal in policy_proposals if proposal.get("decision_state") == "AUTO_PROMOTED"), None)
+        if policy_reflect.get("status") != "PASS" or policy_selected is None:
+            failures.append("policy Git Tap loop must create an AUTO_PROMOTED proposal for docs/agents/**")
+        if policy_proposal_failures:
+            failures.extend(policy_proposal_failures)
+        hook_env_previous = os.environ.get("TES_CORTEX_GIT_TAP_HOOK")
+        os.environ["TES_CORTEX_GIT_TAP_HOOK"] = "1"
+        try:
+            policy_hook_auto = auto_promote(policy_target)
+        finally:
+            if hook_env_previous is None:
+                os.environ.pop("TES_CORTEX_GIT_TAP_HOOK", None)
+            else:
+                os.environ["TES_CORTEX_GIT_TAP_HOOK"] = hook_env_previous
+        if policy_hook_auto.get("status") != "BLOCKED_IN_HOOK":
+            failures.append("policy auto-promote must block inside hook execution")
+        policy_auto = auto_promote(policy_target)
+        policy_recall = policy_cortex.recall(policy_target, "policy-runtime-green-249", 5)
+        if policy_auto.get("status") != "PASS":
+            failures.append("policy auto-promote must pass outside hook execution")
+            failures.extend(str(item) for item in policy_auto.get("failures", []))
+        if len(policy_auto.get("promoted", [])) != 1:
+            failures.append("policy auto-promote must dedupe repeated pre/post commit proposals")
+        if not any("policy-runtime-green-249" in json.dumps(match, ensure_ascii=False) for match in policy_recall.get("matches", [])):
+            failures.append("policy auto-promoted memory must be recallable")
+
         skip_target = root / "skip"
         skip_target.mkdir()
         init_git(skip_target)
@@ -1551,6 +1737,9 @@ def main(argv: list[str] | None = None) -> int:
     curate_parser = subparsers.add_parser("curate-plan")
     curate_parser.add_argument("--target", type=Path, default=Path.cwd())
 
+    auto_promote_parser = subparsers.add_parser("auto-promote")
+    auto_promote_parser.add_argument("--target", type=Path, default=Path.cwd())
+
     apply_parser = subparsers.add_parser("apply-proposal")
     apply_parser.add_argument("--target", type=Path, default=Path.cwd())
     apply_parser.add_argument("--event-fingerprint", required=True)
@@ -1590,6 +1779,8 @@ def main(argv: list[str] | None = None) -> int:
         result = reflect_proposals(args.target)
     elif args.command == "curate-plan":
         result = curate_proposals_plan(args.target)
+    elif args.command == "auto-promote":
+        result = auto_promote(args.target)
     elif args.command == "apply-proposal":
         result = apply_proposal(
             args.target,

@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.248"
+VERSION = "0.3.249"
 
 CODE_SUFFIXES = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".sh", ".ps1"}
 DOC_SUFFIXES = {".md", ".mdc"}

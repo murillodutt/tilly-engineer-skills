@@ -1336,7 +1336,7 @@ def sqlite_recall(target: Path, query: str, limit: int) -> dict[str, object]:
             ).fetchall()
         else:
             rows = conn.execute(
-                "SELECT path, layer, title, snippet(cortex_recall, 3, '[', ']', ' ... ', 16) "
+                "SELECT path, layer, title, snippet(cortex_recall, 3, '', '', ' ... ', 16) "
                 "FROM cortex_recall WHERE cortex_recall MATCH ? LIMIT ?",
                 (fts_query, limit),
             ).fetchall()

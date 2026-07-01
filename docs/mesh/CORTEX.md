@@ -128,6 +128,16 @@ The conveyor has three gates:
 
 ADR 0007 makes Cortex runtime-first the accepted architecture for proactive memory and mesh-drift sensing. TES now delivers a project-scoped runtime helper, `cortex_runtime.py`, that host hooks may call to observe lifecycle context, inject bounded recall, propose capture, and emit `NEEDS_ALIGN` when durable memory evidence diverges from the operational mesh. Host fixtures and installer smokes prove this separately for Claude Code, Codex, and Cursor; no cross-host hook output shape is claimed. Cortex runtime remains advisory: it must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file, and it must not run `/tes-align` automatically. `/tes-align` remains the explicit reconciler that writes and certifies the mesh.
 
+## Agent Memory Policy
+
+Installed targets may carry `.tes/tes-codex.md`, parsed by
+`tes_codex_policy.py`, as the owner-controlled contract for agent memory. The
+human owns which path classes may auto-promote, require review, propose only,
+deny, or ignore. Agents operate inside that contract: Git Tap may propose from
+hook execution, non-hook curation may auto-promote low-risk agent-memory
+material, and runtime hooks may attempt Cortex recall before broad `docs/**`
+scans when the policy requires recall-first behavior.
+
 ## Scope Boundary
 
 Cortex command output carries the runtime scope defined in `docs/mesh/SCOPE-CONTRACT.md`. The scope identifies the local run through an opaque project fingerprint, adapter, agent, run id, source, bounded evidence reference, timestamp, and status or trust level.

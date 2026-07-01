@@ -13,7 +13,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.248"
+VERSION = "0.3.249"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -30,9 +30,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.248/index.json",
-    "docs/dist/0.3.248/tilly-engineer-skills-0.3.248.zip",
-    "docs/dist/0.3.248/tilly-engineer-skills-0.3.248.zip.sha256",
+    "docs/dist/0.3.249/index.json",
+    "docs/dist/0.3.249/tilly-engineer-skills-0.3.249.zip",
+    "docs/dist/0.3.249/tilly-engineer-skills-0.3.249.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -202,6 +202,8 @@ REQUIRED_PATHS = (
     "scripts/context_mesh_run.py",
     "scripts/cortex.py",
     "scripts/cortex_runtime.py",
+    "scripts/cortex_git_tap.py",
+    "scripts/tes_codex_policy.py",
     "scripts/cortex_host_contract_oracle.py",
     "scripts/fixtures/cortex_host_contracts/claude-code.json",
     "scripts/fixtures/cortex_host_contracts/codex.json",

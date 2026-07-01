@@ -127,6 +127,7 @@ The activation path installs local MCP helpers into the target project:
 .tes/bin/install_mcp_hosts/vscode.py
 .tes/bin/cortex.py
 .tes/bin/cortex_runtime.py
+.tes/bin/tes_codex_policy.py
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
 .tes/bin/scope_contract.py

@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -18,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import cortex_git_tap
+import tes_codex_policy
 from pretooluse_kernel import (
     decide_pretooluse,
     hook_event_name as kernel_hook_event_name,
@@ -30,7 +32,8 @@ from pretooluse_kernel import (
 from pretooluse_session import coordinate_pretooluse_context
 
 
-VERSION = "0.3.248"
+VERSION = "0.3.249"
+RUNTIME_MEMORY_MARKER_RE = re.compile(r"\bmarker\s+([A-Za-z0-9][A-Za-z0-9_.:-]{2,160})", re.IGNORECASE)
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -50,7 +53,13 @@ DEFAULT_POSTINSTALL_COMMANDS = (
     ("project_context_oracle.py", ("--target", "{target}")),
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
-HOOK_RUNTIME_HELPERS = ("cortex_runtime.py", "cortex_git_tap.py", "pretooluse_kernel.py", "pretooluse_session.py")
+HOOK_RUNTIME_HELPERS = (
+    "cortex_runtime.py",
+    "cortex_git_tap.py",
+    "tes_codex_policy.py",
+    "pretooluse_kernel.py",
+    "pretooluse_session.py",
+)
 OPERATING_MESH_PRETOOLUSE_HINTS = (
     "docs/agents/PROJECT-STATE.md",
     "docs/agents/PROJECT-ROADMAP.md",
@@ -1128,6 +1137,7 @@ def write_install_lock(
     apply_result: dict[str, Any],
     hook_actions: list[dict[str, str]],
     mcp_result: dict[str, Any],
+    policy_result: dict[str, Any],
     certification_result: dict[str, Any],
     dry_run: bool,
     attached_surfaces: list[str] | None = None,
@@ -1151,6 +1161,7 @@ def write_install_lock(
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
         "mcp": summarize_mcp_result(mcp_result),
+        "tes_codex_policy": summarize_result(policy_result),
         "certification": summarize_certification_result(certification_result),
     }
     return write_json(target / LOCK_PATH, lock, dry_run=dry_run)
@@ -1205,7 +1216,21 @@ def transact_lock_surface(
 
 def summarize_result(result: dict[str, Any]) -> dict[str, Any]:
     summary: dict[str, Any] = {}
-    for key in ("version", "status", "source", "stage_dir", "manifest", "entries", "mode", "backup_id", "installed_manifest"):
+    for key in (
+        "version",
+        "status",
+        "source",
+        "stage_dir",
+        "manifest",
+        "entries",
+        "mode",
+        "backup_id",
+        "installed_manifest",
+        "action",
+        "state",
+        "path",
+        "digest",
+    ):
         if key in result:
             summary[key] = result[key]
     if isinstance(result.get("obsolete_cleanup"), dict):
@@ -2083,6 +2108,11 @@ def install(args: argparse.Namespace) -> int:
         if "field-reports" not in surfaces or args.dry_run
         else __import__("field_reports").install_hook(target)
     )
+    policy_result = (
+        {"version": VERSION, "status": "DRY-RUN", "action": "would-materialize-tes-codex-policy"}
+        if args.dry_run
+        else tes_codex_policy.materialize_policy(target)
+    )
     if mcp_result.get("status") == "FAIL":
         result = {
             "version": VERSION,
@@ -2096,6 +2126,7 @@ def install(args: argparse.Namespace) -> int:
             "apply": summarize_result(apply_result),
             "hooks": hook_actions,
             "mcp": summarize_mcp_result(mcp_result),
+            "tes_codex_policy": summarize_result(policy_result),
             "failures": mcp_result.get("failures", ["MCP bootstrap failed"]),
         }
         print(json.dumps(result, indent=2, sort_keys=True))
@@ -2114,6 +2145,7 @@ def install(args: argparse.Namespace) -> int:
         apply_result,
         hook_actions,
         mcp_result,
+        policy_result,
         pending_certification_result,
         args.dry_run,
         sorted(surfaces),
@@ -2156,6 +2188,7 @@ def install(args: argparse.Namespace) -> int:
         apply_result,
         hook_actions,
         mcp_result,
+        policy_result,
         certification_result,
         args.dry_run,
         sorted(surfaces),
@@ -2191,6 +2224,7 @@ def install(args: argparse.Namespace) -> int:
         "hooks": hook_actions,
         "field_reports": summarize_result(field_reports_result),
         "mcp": summarize_mcp_result(mcp_result),
+        "tes_codex_policy": summarize_result(policy_result),
         "certification": summarize_certification_result(certification_result),
         "postinstall": sentinel_action,
         "lock": lock_action,
@@ -3776,6 +3810,12 @@ def _one_line(value: str, limit: int) -> str:
     return text[: max(0, limit - 1)].rstrip() + "…"
 
 
+def _runtime_memory_markers(match: dict[str, Any]) -> list[str]:
+    """Extract compact memory markers before excerpt truncation hides them."""
+    text = " ".join(str(match.get(key) or "") for key in ("title", "excerpt", "path"))
+    return list(dict.fromkeys(RUNTIME_MEMORY_MARKER_RE.findall(text)))[:3]
+
+
 def _evaluate_cortex_runtime(target: Path, agent: str, hook_input: dict[str, Any]) -> dict[str, Any]:
     try:
         import cortex_runtime  # noqa: PLC0415 - delivered sibling under .tes/bin/
@@ -3813,6 +3853,9 @@ def _cortex_runtime_context(result: dict[str, Any], *, include_capture: bool = T
         parts = [f"path={path}"]
         if title:
             parts.append(f"title={title}")
+        markers = _runtime_memory_markers(match)
+        if markers:
+            parts.append("markers=" + ",".join(markers))
         if excerpt:
             parts.append(f"excerpt={excerpt}")
         recall_lines.append(" ".join(parts))
@@ -3922,10 +3965,10 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     session_context = coordinate_pretooluse_context(target, hook_input, str(decision.get("context") or ""))
     context = session_context.context
     context_suppressed = session_context.context_suppressed
-    cortex_context = _cortex_runtime_context(
-        _evaluate_cortex_runtime(target, args.agent, hook_input),
-        include_capture=False,
-    )
+    cortex_result = _evaluate_cortex_runtime(target, args.agent, hook_input)
+    cortex_context = _cortex_runtime_context(cortex_result, include_capture=False)
+    cortex_policy = cortex_result.get("policy") if isinstance(cortex_result.get("policy"), dict) else {}
+    cortex_recall = cortex_result.get("runtime_recall") if isinstance(cortex_result.get("runtime_recall"), dict) else {}
     visible_cortex_context = (
         f"{_mantra_gate_marker()} {cortex_context}"
         if cortex_context and not context
@@ -3955,6 +3998,19 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             "marker_emitted": bool(context or cortex_context),
             "context_suppressed": context_suppressed,
             "cortex_context_emitted": bool(cortex_context),
+            "policy_loaded": bool(cortex_policy.get("loaded")),
+            "policy_status": cortex_policy.get("state"),
+            "policy_digest": cortex_policy.get("digest"),
+            "recall_attempted": bool(cortex_recall.get("attempted")),
+            "recall_hit": bool(cortex_recall.get("hit")),
+            "broad_scan_after_miss": bool(cortex_recall.get("broad_scan_after_miss")),
+            "review_skipped_by_policy": bool(cortex_recall.get("review_skipped_by_policy")),
+            "memory_source_digest": (
+                hashlib.sha256(
+                    json.dumps(cortex_result.get("advisory_context", {}), sort_keys=True, ensure_ascii=False).encode("utf-8")
+                ).hexdigest()[:16]
+                if cortex_context else None
+            ),
             "surface_context": bool(combined_context),
         },
     )

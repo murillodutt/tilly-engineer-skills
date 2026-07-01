@@ -18,7 +18,7 @@ import tes_install
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.248"
+VERSION = "0.3.249"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -347,6 +347,7 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/install_mcp_hosts/vscode.py",
         ".tes/bin/cortex.py",
         ".tes/bin/cortex_runtime.py",
+        ".tes/bin/tes_codex_policy.py",
         ".tes/bin/cortex_mcp.py",
         ".tes/bin/cortex_embed.mjs",
         ".tes/bin/scope_contract.py",

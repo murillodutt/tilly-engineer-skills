@@ -16,6 +16,7 @@ import git_gate_contract
 import command_trigger_oracle
 import capsule_residue_oracle
 import mantra_gate_adoption_oracle
+import tes_codex_policy
 import tes_bundle
 import tes_install
 
@@ -29,7 +30,7 @@ except ModuleNotFoundError:  # pragma: no cover - degraded environment
     _attach_health = None
 
 
-VERSION = "0.3.248"
+VERSION = "0.3.249"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -57,6 +58,7 @@ REPAIR_ROUTES = {
     "hook_runtime_health": "Repair or intentionally detach TES hooks, then rerun tes_install.py hook-health and installed certification.",
     "git_admission": "Repair Git hooks through tes_install.py/field_reports.py install-hook, then rerun canary admission and installed certification.",
     "pretooluse_contract_reference": "Rerun tes_install.py from the package version that owns the installed target, then recertify.",
+    "tes_codex_policy": "Run tes_codex_policy.py materialize, repair .tes/tes-codex.md if invalid, then rerun installed certification.",
 }
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -391,6 +393,29 @@ def pretooluse_contract_reference(target: Path) -> dict[str, Any]:
     }
 
 
+def tes_codex_policy_status(target: Path) -> dict[str, Any]:
+    has_capsule_signal = any(
+        (target / relpath).exists()
+        for relpath in (".tes/manifest.json", ".tes/bin/tes_install.py", LOCK_PATH, ".tes/tes-codex.md")
+    )
+    if not has_capsule_signal:
+        return {"status": "NOT_APPLIED", "reason": "capsule not installed"}
+    result = tes_codex_policy.load_policy(target)
+    state = str(result.get("state") or "UNKNOWN")
+    if state in {"DEFAULT", "OWNER_EDITED"}:
+        status = "PASS"
+    else:
+        status = "NEEDS_REVIEW"
+    return {
+        "status": status,
+        "state": state,
+        "path": result.get("path"),
+        "digest": result.get("digest"),
+        "policy_loaded": result.get("policy_loaded", False),
+        "failures": result.get("failures", []),
+    }
+
+
 def adoption_status(target: Path) -> dict[str, Any]:
     if not any((target / relpath).exists() for relpath in ("AGENTS.md", "CLAUDE.md", "CURSOR.md")):
         return {"status": "NOT_APPLIED", "reason": "root-context not attached"}
@@ -439,6 +464,7 @@ def evaluate(target: Path) -> dict[str, Any]:
         "hook_runtime_health": hook_runtime_health(target),
         "git_admission": git_admission_status(target),
         "pretooluse_contract_reference": contract_reference,
+        "tes_codex_policy": tes_codex_policy_status(target),
     }
     findings: list[dict[str, Any]] = []
     for name, payload in components.items():
@@ -539,6 +565,7 @@ def evaluate(target: Path) -> dict[str, Any]:
             "stale_codex_hooks_json_absent": not hook_hygiene.get("failures"),
             "git_admission_enforced": components["git_admission"].get("status") in {"PASS", "NOT_APPLIED"},
             "pretooluse_contract_reference_valid": not contract_reference.get("failures"),
+            "tes_codex_policy_loaded": components["tes_codex_policy"].get("status") in {"PASS", "NOT_APPLIED"},
         },
     }
 
@@ -722,10 +749,18 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     }
     (target / ".tes").mkdir(parents=True, exist_ok=True)
     (target / ".tes/manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (target / ".tes/tes-codex.md").write_text(tes_codex_policy.DEFAULT_POLICY_TEXT, encoding="utf-8")
     if healthy:
         bin_dir = target / ".tes/bin"
         bin_dir.mkdir(parents=True, exist_ok=True)
-        for helper in ("pretooluse_kernel.py", "pretooluse_session.py", "cortex_runtime.py", "cortex_git_tap.py", "cortex.py"):
+        for helper in (
+            "pretooluse_kernel.py",
+            "pretooluse_session.py",
+            "cortex_runtime.py",
+            "cortex_git_tap.py",
+            "tes_codex_policy.py",
+            "cortex.py",
+        ):
             source = ROOT / "scripts" / helper
             if source.is_file():
                 (bin_dir / helper).write_text(source.read_text(encoding="utf-8"), encoding="utf-8")

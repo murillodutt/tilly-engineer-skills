@@ -15,6 +15,7 @@ import time
 from typing import Any
 
 import cortex
+import tes_codex_policy
 
 
 MESH_FILES = {
@@ -46,6 +47,20 @@ QUERY_GENERIC_TERMS = {
     "during", "maestro", "manual", "md", "message", "name", "product", "project", "prompt", "read",
     "return", "run", "scan", "script", "section", "spec", "specified", "super", "target", "tes",
     "tool", "tools", "use", "value", "verification", "window",
+}
+MEMORY_INTENT_TERMS = {
+    "cortex",
+    "marker",
+    "memory",
+    "policy",
+    "recall",
+    "runtime",
+}
+MEMORY_RECALL_TERMS = {
+    "marker",
+    "memory",
+    "policy",
+    "runtime",
 }
 WRITE_TOOL_HINTS = {
     "bash",
@@ -101,6 +116,49 @@ def _safe_transcript_path(payload: dict[str, Any], target: Path) -> Path | None:
     return resolved
 
 
+def _claude_project_slug_candidates(target: Path) -> list[str]:
+    resolved = str(target.expanduser().resolve())
+    candidates = [
+        resolved.replace("/", "-"),
+        re.sub(r"[^A-Za-z0-9_-]+", "-", resolved),
+    ]
+    unique: list[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in unique:
+            unique.append(candidate)
+    return unique
+
+
+def _session_id(payload: dict[str, Any]) -> str:
+    for key in ("session_id", "sessionId", "session", "transcript_session_id"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def _projects_root(payload: dict[str, Any]) -> Path:
+    value = payload.get("projects_root") or payload.get("claude_projects_root")
+    if isinstance(value, str) and value.strip():
+        return Path(value).expanduser()
+    env_value = os.environ.get("TES_CLAUDE_PROJECTS_ROOT")
+    if env_value:
+        return Path(env_value).expanduser()
+    return Path.home() / ".claude" / "projects"
+
+
+def _derived_claude_transcript_path(payload: dict[str, Any], target: Path) -> Path | None:
+    session = _session_id(payload)
+    if not session:
+        return None
+    root = _projects_root(payload)
+    for slug in _claude_project_slug_candidates(target):
+        candidate = root / slug / f"{session}.jsonl"
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _tail_text(path: Path, byte_budget: int) -> str:
     try:
         with path.open("rb") as handle:
@@ -114,7 +172,7 @@ def _tail_text(path: Path, byte_budget: int) -> str:
 
 def _latest_transcript_user_prompt(payload: dict[str, Any], target: Path) -> str:
     """Read only the bounded latest human prompt from a host transcript."""
-    transcript = _safe_transcript_path(payload, target)
+    transcript = _safe_transcript_path(payload, target) or _derived_claude_transcript_path(payload, target)
     if transcript is None:
         return ""
     latest = ""
@@ -302,7 +360,16 @@ def _rank_runtime_matches(matches: list[dict[str, Any]], query: str, limit: int)
     ]
     if actionable:
         return actionable[:limit]
-    return ranked[:limit]
+    return []
+
+
+def _has_actionable_runtime_match(result: dict[str, Any]) -> bool:
+    matches = result.get("matches") if isinstance(result.get("matches"), list) else []
+    return any(
+        isinstance(match, dict)
+        and str(match.get("path") or "").startswith(("docs/agents/cortex/cells/", "docs/agents/cortex/sources/"))
+        for match in matches
+    )
 
 
 def _mesh_refs(paths: list[str]) -> list[str]:
@@ -390,6 +457,8 @@ def _bounded_query(payload: dict[str, Any], paths: list[str], target: Path, limi
             seen_in_source.add(normalized)
             entry = scored.setdefault(normalized, {"score": 0, "hits": 0, "first": index, "order": order})
             entry["score"] += weight
+            if normalized in MEMORY_INTENT_TERMS:
+                entry["score"] += 90
             entry["hits"] += 1
             if len(seen_in_source) >= cap:
                 break
@@ -410,21 +479,47 @@ def _runtime_recall(target: Path, query: str, limit: int) -> tuple[str, dict[str
     """Recall runtime memory with deterministic relaxation for noisy host prompts."""
     recall_limit = max(limit * 4, 20)
     result = cortex.recall(target, query, recall_limit)
-    if result.get("matches"):
+    if _has_actionable_runtime_match(result):
         return query, result
     tokens = query.split()
     candidates = []
     for size in (5, 4, 3):
         if len(tokens) >= size:
             candidates.append(" ".join(tokens[:size]))
+    memory_tokens = [token for token in _dedupe(tokens) if token in MEMORY_RECALL_TERMS]
+    if len(memory_tokens) >= 2:
+        preferred = [
+            ("policy", "runtime", "memory", "marker"),
+            ("runtime", "memory", "marker"),
+            ("policy", "memory", "marker"),
+            ("policy", "runtime", "memory"),
+        ]
+        for candidate_terms in preferred:
+            if all(term in memory_tokens for term in candidate_terms):
+                candidates.append(" ".join(candidate_terms))
+        candidates.append(" ".join(memory_tokens[:4]))
     for candidate in _dedupe(candidates):
         if candidate == query:
             continue
         candidate_result = cortex.recall(target, candidate, recall_limit)
-        if candidate_result.get("matches"):
+        if _has_actionable_runtime_match(candidate_result):
             candidate_result["relaxed_from"] = query
             return candidate, candidate_result
     return query, result
+
+
+def _policy_runtime(target: Path) -> dict[str, Any]:
+    result = tes_codex_policy.load_policy(target)
+    policy = result.get("policy") if isinstance(result.get("policy"), dict) else {}
+    return {
+        "schema": tes_codex_policy.SCHEMA,
+        "loaded": result.get("state") in {"DEFAULT", "OWNER_EDITED"},
+        "state": result.get("state"),
+        "digest": result.get("digest"),
+        "runtime_recall_first": bool(policy.get("runtime_recall_first")) if policy else False,
+        "broad_scan_requires_recall_miss": bool(policy.get("broad_scan_requires_recall_miss")) if policy else False,
+        "failures": result.get("failures", []),
+    }
 
 
 def _alignment_signal(mesh_refs: list[str], write_like: bool, explicit_align: bool) -> dict[str, Any]:
@@ -493,6 +588,7 @@ def evaluate_runtime_event(
     paths = _dedupe(_extract_paths(payload, target), limit)
     mesh_refs = _mesh_refs(paths)
     query = _bounded_query(payload, paths, target, limit)
+    policy = _policy_runtime(target)
     query, recall_result = _runtime_recall(target, query, limit)
     recall_matches = _rank_runtime_matches(
         _enrich_runtime_matches(target, recall_result.get("matches", [])),
@@ -500,7 +596,23 @@ def evaluate_runtime_event(
         limit,
     )
     effective_backend = "lexical" if backend != "lexical" else backend
-    review_result = cortex.review(target, query, limit=limit, line_budget=line_budget, backend=effective_backend)
+    recall_hit = bool(recall_matches)
+    review_skipped_by_policy = (
+        bool(policy.get("loaded"))
+        and bool(policy.get("runtime_recall_first"))
+        and bool(policy.get("broad_scan_requires_recall_miss"))
+        and recall_hit
+    )
+    review_result = (
+        {
+            "status": "SKIP",
+            "reason": "policy recall-first hit; broad review requires recall miss",
+            "curation": {},
+            "reflection": {"status": "SKIP", "capture_needed": False},
+        }
+        if review_skipped_by_policy
+        else cortex.review(target, query, limit=limit, line_budget=line_budget, backend=effective_backend)
+    )
     explicit_align = _explicit_align_context(payload) or _active_align_sentinel(target)
     signal = _alignment_signal(mesh_refs, _write_like_event(payload), explicit_align)
 
@@ -511,6 +623,13 @@ def evaluate_runtime_event(
         "hook_event_name": payload.get("hook_event_name") or event.get("event"),
         "tool_name": payload.get("tool_name") or payload.get("toolName"),
         "recall_query": query,
+        "policy": policy,
+        "runtime_recall": {
+            "attempted": True,
+            "hit": recall_hit,
+            "broad_scan_after_miss": bool(policy.get("loaded")) and not recall_hit and not review_skipped_by_policy,
+            "review_skipped_by_policy": review_skipped_by_policy,
+        },
         "advisory_context": {
             "status": recall_result.get("status"),
             "backend": recall_result.get("backend"),
@@ -544,6 +663,7 @@ def _append_unique_line(path: Path, line: str) -> None:
 
 def _build_runtime_fixture(target: Path) -> None:
     cortex.init(target)
+    tes_codex_policy.materialize_policy(target)
     root = cortex.cortex_path(target)
     source = root / "sources" / "runtime-source.md"
     source.write_text(
@@ -646,6 +766,32 @@ def self_test() -> int:
             + "\n",
             encoding="utf-8",
         )
+        derived_projects_root = target / ".tes" / "runtime" / "claude-projects"
+        derived_session = "22222222-3333-4444-5555-666666666666"
+        derived_transcript = derived_projects_root / _claude_project_slug_candidates(target)[0] / f"{derived_session}.jsonl"
+        derived_transcript.parent.mkdir(parents=True, exist_ok=True)
+        derived_transcript.write_text(transcript.read_text(encoding="utf-8"), encoding="utf-8")
+        noisy_session = "33333333-4444-5555-6666-777777777777"
+        noisy_transcript = derived_projects_root / _claude_project_slug_candidates(target)[0] / f"{noisy_session}.jsonl"
+        noisy_transcript.write_text(
+            json.dumps(
+                {
+                    "type": "user",
+                    "message": {
+                        "role": "user",
+                        "content": (
+                            "First run the harmless command pwd to let TES hook/runtime context attach. "
+                            "Then write the exact marker from flappy runtime memory. "
+                            "If no Cortex runtime recall line is available, write MISSING_RUNTIME_CONTEXT."
+                        ),
+                    },
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
         before = _snapshot(target)
 
         non_mesh = evaluate_runtime_event(
@@ -673,6 +819,26 @@ def self_test() -> int:
                         + " const gameState='playing'; requestAnimationFrame(function frame(){});</script>"
                     ),
                 },
+            },
+        )
+        runtime_memory_derived = evaluate_runtime_event(
+            target,
+            {
+                "hook_event_name": "PreToolUse",
+                "session_id": derived_session,
+                "claude_projects_root": str(derived_projects_root),
+                "tool_name": "Write",
+                "tool_input": {"file_path": str(target / "index.html"), "content": "<!doctype html><canvas></canvas>"},
+            },
+        )
+        runtime_memory_noisy = evaluate_runtime_event(
+            target,
+            {
+                "hook_event_name": "PreToolUse",
+                "session_id": noisy_session,
+                "claude_projects_root": str(derived_projects_root),
+                "tool_name": "Bash",
+                "tool_input": {"command": "pwd"},
             },
         )
         mesh = evaluate_runtime_event(
@@ -741,6 +907,8 @@ def self_test() -> int:
         all_results = {
             "non_mesh": non_mesh,
             "runtime_memory": runtime_memory,
+            "runtime_memory_derived": runtime_memory_derived,
+            "runtime_memory_noisy": runtime_memory_noisy,
             "mesh": mesh,
             "explicit_align": explicit_align,
             "active_sentinel": active_sentinel,
@@ -763,6 +931,31 @@ def self_test() -> int:
         runtime_query = str(runtime_memory.get("recall_query") or "")
         if "ctx" in runtime_query or "fillstyle" in runtime_query or "section" in runtime_query:
             failures.append(f"runtime memory query must not be dominated by code tokens: {runtime_query}")
+        runtime_policy = runtime_memory.get("policy") if isinstance(runtime_memory.get("policy"), dict) else {}
+        runtime_recall = runtime_memory.get("runtime_recall") if isinstance(runtime_memory.get("runtime_recall"), dict) else {}
+        derived_recall = (
+            runtime_memory_derived.get("runtime_recall")
+            if isinstance(runtime_memory_derived.get("runtime_recall"), dict)
+            else {}
+        )
+        noisy_recall = (
+            runtime_memory_noisy.get("runtime_recall")
+            if isinstance(runtime_memory_noisy.get("runtime_recall"), dict)
+            else {}
+        )
+        if runtime_policy.get("loaded") is not True:
+            failures.append("runtime memory policy must load from .tes/tes-codex.md")
+        if runtime_recall.get("hit") is not True:
+            failures.append("runtime memory policy proof must record recall_hit=true")
+        if runtime_recall.get("review_skipped_by_policy") is not True:
+            failures.append("runtime memory policy must skip broad review after recall hit")
+        if derived_recall.get("hit") is not True:
+            failures.append("Claude session-id transcript fallback must produce runtime recall")
+        if noisy_recall.get("hit") is not True:
+            failures.append("noisy host prompt must relax to memory-intent runtime recall")
+        noisy_matches = runtime_memory_noisy["advisory_context"].get("matches", [])
+        if "cortex-recall-green-244" not in json.dumps(noisy_matches, ensure_ascii=False):
+            failures.append("noisy host prompt recall must surface the seeded marker")
         if mesh["alignment_signal"]["status"] != "NEEDS_ALIGN":
             failures.append("mesh edit did not raise NEEDS_ALIGN")
         if explicit_align["alignment_signal"]["status"] == "NEEDS_ALIGN":
@@ -791,6 +984,7 @@ def self_test() -> int:
             "cases": {
                 "false_positive_non_mesh": non_mesh["alignment_signal"]["status"],
                 "runtime_memory_matches": len(runtime_matches),
+                "runtime_memory_derived": runtime_memory_derived["status"],
                 "false_negative_mesh": mesh["alignment_signal"]["status"],
                 "explicit_align_context": explicit_align["alignment_signal"]["status"],
                 "active_align_sentinel": active_sentinel["alignment_signal"]["status"],

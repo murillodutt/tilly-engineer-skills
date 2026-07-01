@@ -294,6 +294,7 @@ def first_mutation(
         has_context = (
             "cortex_context_emitted" in payload
             or "runtime_context" in payload
+            or "cortex runtime" in payload.lower()
             or "hook injected" in payload.lower()
         )
         return {

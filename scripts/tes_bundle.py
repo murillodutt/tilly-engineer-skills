@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.248"
+VERSION = "0.3.249"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -78,6 +78,7 @@ HELPER_FILES = (
     "cortex.py",
     "cortex_runtime.py",
     "cortex_git_tap.py",
+    "tes_codex_policy.py",
     "pretooluse_kernel.py",
     "pretooluse_session.py",
     "cortex_mcp.py",

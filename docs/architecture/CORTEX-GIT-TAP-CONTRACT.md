@@ -31,6 +31,7 @@ local runtime state:
 .tes/runtime/cortex/git-tap/events.jsonl
 .tes/runtime/cortex/git-tap/pending.jsonl
 .tes/runtime/cortex/git-tap/proposals.jsonl
+.tes/runtime/cortex/git-tap/auto-promotions.jsonl
 .tes/runtime/cortex/git-tap/git-tap.log
 .tes/runtime/cortex/git-tap/git-tap.lock
 ```
@@ -104,6 +105,14 @@ does not write `docs/**` and does not approve memory. Each eligible plan item
 names the proposal fingerprint, sanitized evidence hash, recommended cell name,
 and an explicit `apply-proposal --yes` command template.
 
+Target projects may declare `.tes/tes-codex.md`, parsed by
+`scripts/tes_codex_policy.py`, to classify changed paths as agent memory,
+documentation, denied material, or unclassified material. When the policy marks
+low-risk agent-memory paths as `auto_promote`, Git Tap still captures and
+proposes only inside hooks; durable promotion is allowed only by a non-hook
+`auto-promote` command that re-evaluates the current policy digest before
+writing Cortex memory and appends an audit row to `auto-promotions.jsonl`.
+
 Durable Cortex memory remains governed by the approved Cortex promotion path.
 `apply-proposal` may write curated memory only when all of these are true:
 
@@ -124,9 +133,9 @@ Runtime recall is proven through the derived Cortex recall index after explicit
 apply. The recall path must surface the curated memory cell without requiring an
 agent to scan all `docs/**` first.
 
-Hook execution cannot invoke the durable write path. The installed hook block
-sets `TES_CORTEX_GIT_TAP_HOOK=1` for capture, and `apply-proposal` blocks when
-that variable is present.
+Hook execution cannot invoke a durable write path. The installed hook block sets
+`TES_CORTEX_GIT_TAP_HOOK=1` for capture, and both `apply-proposal` and
+policy-driven `auto-promote` block when that variable is present.
 
 ## Oracles
 
@@ -136,5 +145,5 @@ preservation, idempotence, `core.hooksPath`, impossible path rejection,
 queue/lock drain, pending dedupe, curation boundary, merge/rebase/cherry-pick
 skip, file-checkout skip, self-generated runtime loop prevention, append-only
 logs, missing-runtime hook diagnostics, proposal curation planning, explicit
-apply authorization, hook apply blocking, sanitized proposal evidence, and
-runtime recall through the derived index.
+apply authorization, hook apply blocking, policy auto-promotion outside hooks,
+sanitized proposal evidence, and runtime recall through the derived index.

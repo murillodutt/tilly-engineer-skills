@@ -1,4 +1,4 @@
-version: 0.3.248
+version: 0.3.249
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -671,6 +671,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Cortex runtime authors, installer authors, hook authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-codex-agent-memory-policy.md
+    id: roadmap.goal_super_spec_tes_codex_agent_memory_policy
+    class: roadmap
+    status: active
+    consumer: maintainers, Cortex runtime authors, Git Tap authors, installer authors, host adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: true
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-host-aware-runtime-contracts.md
