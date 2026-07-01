@@ -21,7 +21,7 @@ from typing import Any
 
 
 SCHEMA = "tes-runtime-signal-audit@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.6"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.7"
 MUTATION_TOOLS = {"Write", "Edit", "MultiEdit", "Agent"}
 DIRECT_LOOKUP_TOOLS = {"Read", "Grep", "Glob", "LS"}
 SHELL_LOOKUP_RE = re.compile(r"\b(cat|rg|grep|find|ls|sed|awk|python|sqlite)\b")

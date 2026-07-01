@@ -18,7 +18,7 @@ from typing import Any
 
 
 SCHEMA = "tes-agent-hooks-certification-matrix@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.5"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.7"
 STATUSES = {"PASS", "FAIL", "NEEDS_EVIDENCE", "NOT_RUN"}
 
 
@@ -116,14 +116,14 @@ SOURCE_CHECKS: tuple[SourceCheck, ...] = (
         "kernel-behavior",
         "Kernel normalizes payloads, extracts patch paths, detects governed surfaces, and records classifier trace.",
         ("scripts/pretooluse_kernel.py",),
-        ("hook_patch_paths", "hook_tool_path_source", "GOVERNED_ARTIFACT_HINTS", "classifier_trace"),
+        ("hook_patch_paths", "hook_tool_path_source", "is_governed_path", "classifier_trace"),
         "scripts/pretooluse_kernel.py",
     ),
     SourceCheck(
         "governed-surfaces",
         "Governed surface hints cover bootloaders, ADR/governance docs, skills, and Cursor rules.",
         ("scripts/pretooluse_kernel.py",),
-        ("AGENTS.md", "CLAUDE.md", "docs/adr/", "docs/governance/", "/SKILL.md", ".cursor/rules/"),
+        ("AGENTS.md", "CLAUDE.md", "docs/adr/", "docs/governance/", "SKILL.md", ".cursor/rules/"),
         "scripts/pretooluse_kernel.py",
     ),
     SourceCheck(
@@ -205,9 +205,13 @@ SOURCE_CHECKS: tuple[SourceCheck, ...] = (
     ),
     SourceCheck(
         "host-real-provenance",
-        "Runtime records written by real hooks carry host-real provenance.",
+        "Runtime records written by real hooks use explicit host-real provenance and transcript correlation.",
         ("scripts/tes_install.py",),
-        ('"provenance": "host-real"',),
+        (
+            'HOOK_PROVENANCE_HOST_REAL = "host-real"',
+            "hook_execution_provenance",
+            "apply_host_transcript_evidence",
+        ),
         "scripts/tes_install.py",
     ),
     SourceCheck(

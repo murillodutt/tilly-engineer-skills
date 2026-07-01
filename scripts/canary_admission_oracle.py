@@ -98,11 +98,15 @@ def host_hook_admission(target: Path) -> dict[str, Any]:
         # events OBSERVED/CONFIGURED/NOT_CONFIGURED from that host's own records.
         payload = tes_install.hook_health_payload(target, current_host=host)
         host_events = payload.get("agents", {}).get(host, {}).get("events", [])
+        ceiling_scope = payload.get("ceiling_evidence_scope") if isinstance(payload.get("ceiling_evidence_scope"), dict) else {}
+        per_host = ceiling_scope.get("per_host") if isinstance(ceiling_scope.get("per_host"), dict) else {}
+        host_ceiling = per_host.get(host) if isinstance(per_host.get(host), dict) else {}
         observed = any(event.get("state") == "OBSERVED" for event in host_events)
         configured = any(event.get("state") in {"OBSERVED", "CONFIGURED"} for event in host_events)
-        if observed:
+        native_ceiling_pass = host_ceiling.get("status") == "PASS_CEILING"
+        if observed and native_ceiling_pass:
             klass = NATIVE_PASS
-        elif configured:
+        elif configured or observed:
             klass = CONFIGURED_NOT_OBSERVED
         else:
             klass = NOT_CONFIGURED
@@ -112,9 +116,12 @@ def host_hook_admission(target: Path) -> dict[str, Any]:
             "configured": configured,
             "floor_status": payload.get("floor_status"),
             "ceiling_status": payload.get("ceiling_status"),
+            "native_evidence": host_ceiling.get("native_evidence"),
+            "host_real_records": host_ceiling.get("host_real_records", 0),
+            "legacy_unknown_records": host_ceiling.get("legacy_unknown_records", 0),
         }
         if klass == CONFIGURED_NOT_OBSERVED:
-            blockers.append(f"{host}: configured but no native runtime evidence (CONFIGURED_NOT_OBSERVED)")
+            blockers.append(f"{host}: configured or observed but no transcript-correlated native hook evidence (CONFIGURED_NOT_OBSERVED)")
     native_pass_hosts = sorted(h for h, info in hosts.items() if info["class"] == NATIVE_PASS)
     return {
         "status": "NEEDS_EVIDENCE" if blockers else "PASS",
@@ -206,7 +213,13 @@ def _write_strict_precommit(target: Path) -> None:
     hook.chmod(0o755)
 
 
-def _write_host_runtime_record(target: Path, host: str) -> None:
+def _write_host_runtime_record(
+    target: Path,
+    host: str,
+    *,
+    provenance: str | None = tes_install.HOOK_PROVENANCE_FIXTURE,
+    transcript_evidence: bool = False,
+) -> None:
     """Write a single host's own SessionStart + PreToolUse runtime records."""
     ledger = target / tes_install.HOOK_SENTINEL_PATH
     ledger.parent.mkdir(parents=True, exist_ok=True)
@@ -228,8 +241,38 @@ def _write_host_runtime_record(target: Path, host: str) -> None:
             "session": f"obs-{host}",
             "ts": "2026-06-30T00:00:00Z",
         }
+        if provenance is not None:
+            rec["provenance"] = provenance
         if mode == "pretooluse":
             rec["schema_version"] = "pretooluse_decision@2"
+            rec.update(
+                {
+                    "invocation": f"obs-{host}-tool",
+                    "reason_codes": ["needs_discoverability_unknown_mutation", "renderer_contract_projected"],
+                    "classifier_trace": {"payload_source": "tool_input", "path_source": "tool_input.file_path"},
+                    "renderer_trace": {"renderer": f"{host}_pretooluse", "output_contract": "stderr_context"},
+                    "command_category": "shell_command",
+                    "command_redacted": True,
+                    "payload_source": "tool_input",
+                    "risk": "needs-discoverability",
+                    "decision": "allow",
+                    "permission_decision": "allow",
+                    "outcome": "needs_discoverability",
+                    "marker_emitted": True,
+                    "context_suppressed": False,
+                    "tool_use_count": 1,
+                    "governed_surface": True,
+                    "redaction_count": 1,
+                }
+            )
+            if transcript_evidence:
+                rec.update(
+                    {
+                        "transcript_sha256": "a" * 64,
+                        "command_fingerprint": "b" * 64,
+                        "same_command_replay": True,
+                    }
+                )
         records.append(rec)
     with ledger.open("a", encoding="utf-8") as handle:
         for rec in records:
@@ -456,7 +499,12 @@ def self_test() -> dict[str, Any]:
         _init_git(hosts_target)
         for host in AGENTS:
             _configure_host_hooks(hosts_target, host)
-        _write_host_runtime_record(hosts_target, "claude")  # only Claude observed
+        _write_host_runtime_record(
+            hosts_target,
+            "claude",
+            provenance=tes_install.HOOK_PROVENANCE_HOST_REAL,
+            transcript_evidence=True,
+        )  # only Claude observed with ceiling-grade provenance
         hooks = host_hook_admission(hosts_target.resolve())
         if hooks["hosts"]["claude"]["class"] != NATIVE_PASS:
             failures.append("Claude with its own runtime records must be NATIVE_PASS")
@@ -470,6 +518,29 @@ def self_test() -> dict[str, Any]:
             failures.append("hook admission with configured-but-unobserved hosts must be NEEDS_EVIDENCE")
         if hooks["native_pass_hosts"] != ["claude"]:
             failures.append(f"only Claude may be a native_pass host, got {hooks['native_pass_hosts']}")
+
+        for provenance, label, transcript_evidence in (
+            (tes_install.HOOK_PROVENANCE_FIXTURE, "fixture", True),
+            (tes_install.HOOK_PROVENANCE_MANUAL, "manual", True),
+            (tes_install.HOOK_PROVENANCE_UNATTESTED, "unattested", True),
+            (None, "legacy-unknown", True),
+            (tes_install.HOOK_PROVENANCE_HOST_REAL, "host-real-without-transcript", False),
+        ):
+            target = root / f"provenance-{label}"
+            target.mkdir()
+            _init_git(target)
+            _configure_host_hooks(target, "claude")
+            _write_host_runtime_record(
+                target,
+                "claude",
+                provenance=provenance,
+                transcript_evidence=transcript_evidence,
+            )
+            result = host_hook_admission(target.resolve())
+            if result["hosts"]["claude"]["class"] == NATIVE_PASS or "claude" in result.get("native_pass_hosts", []):
+                failures.append(f"{label} hook runtime row must not become NATIVE_PASS")
+            if result["status"] != "NEEDS_EVIDENCE":
+                failures.append(f"{label} hook runtime row must keep canary admission at NEEDS_EVIDENCE")
 
     return {
         "schema": SCHEMA,

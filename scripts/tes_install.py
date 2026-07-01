@@ -75,11 +75,24 @@ PRETOOLUSE_LEDGER_SCHEMA_VERSION = "pretooluse_decision@2"
 PRETOOLUSE_CEILING_AGGREGATION_POLICY = "per_host_no_cross_fill"
 PRETOOLUSE_CEILING_HOST_ORDER = ("claude", "codex", "cursor")
 PRETOOLUSE_LEGACY_POLICY = "historical_context_only"
+HOOK_PROVENANCE_HOST_REAL = "host-real"
+HOOK_PROVENANCE_FIXTURE = "fixture"
+HOOK_PROVENANCE_MANUAL = "manual"
+HOOK_PROVENANCE_UNATTESTED = "unattested"
+HOOK_PROVENANCE_LEGACY_UNKNOWN = "legacy-unknown"
+HOOK_PROVENANCE_STATES = {
+    HOOK_PROVENANCE_HOST_REAL,
+    HOOK_PROVENANCE_FIXTURE,
+    HOOK_PROVENANCE_MANUAL,
+    HOOK_PROVENANCE_UNATTESTED,
+    HOOK_PROVENANCE_LEGACY_UNKNOWN,
+}
 HOOK_DEDUPE_CONTRACT_SCHEMA = "tes-hook-dedupe@1"
 HOOK_HEALTH_SCHEMA_VERSION = "tes-hook-health@2"
 HOOK_HEALTH_LEGACY_SCHEMA_VERSION = "tes-hook-health@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
+HEX64_RE = re.compile(r"^[a-fA-F0-9]{64}$")
 
 
 def python_executable() -> str:
@@ -2759,6 +2772,92 @@ def hook_reason_codes(*values: Any) -> list[str]:
     return reason_codes
 
 
+def is_hex64(value: Any) -> bool:
+    return isinstance(value, str) and bool(HEX64_RE.match(value))
+
+
+def boolish(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "pass"}
+    return False
+
+
+def hook_has_correlatable_host_payload(agent: str, hook_input: dict[str, Any]) -> bool:
+    """Require host payload basics before any runtime row can mint host-real."""
+    if agent not in AGENTS:
+        return False
+    if not hook_event_name(hook_input, ""):
+        return False
+    return bool(hook_input.get("session_id") or hook_input.get("sessionId"))
+
+
+def hook_requested_provenance(hook_input: dict[str, Any], provenance: str | None) -> str:
+    raw = provenance or hook_input.get("provenance") or hook_input.get("tes_provenance")
+    value = str(raw or "").strip()
+    return value if value in HOOK_PROVENANCE_STATES else ""
+
+
+def hook_execution_provenance(agent: str, hook_input: dict[str, Any], provenance: str | None) -> str:
+    """Derive conservative ledger provenance from an explicit narrow context."""
+    requested = hook_requested_provenance(hook_input, provenance)
+    if requested == HOOK_PROVENANCE_HOST_REAL:
+        if hook_has_correlatable_host_payload(agent, hook_input):
+            return HOOK_PROVENANCE_HOST_REAL
+        return HOOK_PROVENANCE_UNATTESTED
+    if requested in {HOOK_PROVENANCE_FIXTURE, HOOK_PROVENANCE_MANUAL, HOOK_PROVENANCE_UNATTESTED}:
+        return requested
+    source = str(hook_input.get("source") or "").strip().lower()
+    if source == "manual":
+        return HOOK_PROVENANCE_MANUAL
+    return HOOK_PROVENANCE_UNATTESTED
+
+
+def _evidence_sources(hook_input: dict[str, Any], evidence: dict[str, Any] | None) -> list[dict[str, Any]]:
+    sources: list[dict[str, Any]] = []
+    for value in (evidence, hook_input.get("host_transcript_canary"), hook_input.get("transcript_evidence")):
+        if isinstance(value, dict):
+            sources.append(value)
+    sources.append(hook_input)
+    return sources
+
+
+def _first_evidence_value(sources: list[dict[str, Any]], *keys: str) -> Any:
+    for source in sources:
+        for key in keys:
+            value = source.get(key)
+            if value not in (None, ""):
+                return value
+    return None
+
+
+def apply_host_transcript_evidence(
+    record: dict[str, Any],
+    hook_input: dict[str, Any],
+    evidence: dict[str, Any] | None,
+) -> None:
+    """Copy only sanitized host-transcript correlation into runtime ledger rows."""
+    sources = _evidence_sources(hook_input, evidence)
+    transcript_sha = _first_evidence_value(sources, "transcript_sha256", "host_transcript_sha256", "sha256")
+    command_fingerprint = _first_evidence_value(sources, "command_fingerprint")
+    tool_use_count = _first_evidence_value(sources, "tool_use_count")
+    if is_hex64(transcript_sha):
+        record["transcript_sha256"] = str(transcript_sha)
+    if is_hex64(command_fingerprint):
+        record["command_fingerprint"] = str(command_fingerprint)
+    try:
+        parsed_tool_count = int(tool_use_count)
+    except (TypeError, ValueError):
+        parsed_tool_count = 0
+    if parsed_tool_count > 0:
+        record["tool_use_count"] = parsed_tool_count
+    if boolish(_first_evidence_value(sources, "same_command_replay")):
+        record["same_command_replay"] = True
+    if boolish(_first_evidence_value(sources, "justified_replay_change")):
+        record["justified_replay_change"] = True
+
+
 def pretooluse_renderer_trace(agent: str, *, block: bool, context: str = "", cortex_context: str = "") -> dict[str, str]:
     """Name the host renderer contract without duplicating rendered output."""
     if block:
@@ -2918,18 +3017,23 @@ def record_hook_execution(
     *,
     mode: str,
     pretooluse_decision: dict[str, Any] | None = None,
+    provenance: str | None = None,
+    host_transcript_evidence: dict[str, Any] | None = None,
 ) -> None:
     """ADR 0004 SPEC-005: prove the hook actually fired.
 
     Append a capsule-scoped sentinel record on every real hook invocation. The
     attach-health oracle reads this to certify a hook fired (vs config-written
-    only) and to detect duplicate handlers per (agent, event, session). Best
-    effort: a sentinel write must never break the hook itself.
+    only) and to detect duplicate handlers per (agent, event, session). The
+    provenance field distinguishes host payload evidence from fixture/manual
+    ledger rows so source fixtures cannot forge ceiling-grade host evidence.
+    Best effort: a sentinel write must never break the hook itself.
     """
     try:
         event = hook_event_name(hook_input)
         event_canonical = canonical_hook_event(event)
         session = str(hook_input.get("session_id") or hook_input.get("sessionId") or os.getpid())
+        record_provenance = hook_execution_provenance(agent, hook_input, provenance)
         ensure_hook_runtime_excluded(target)
         sentinel = target / HOOK_SENTINEL_PATH
         sentinel.parent.mkdir(parents=True, exist_ok=True)
@@ -2940,12 +3044,9 @@ def record_hook_execution(
             "mode": mode,
             "session": session,
             "ts": utc_stamp(),
-            # Ceiling F18: a record written by a real in-host hook invocation is
-            # tagged host-real provenance. Only host-real evidence may authorize a
-            # native PASS_CEILING claim; fixture/seeded rows (which carry no such
-            # tag, or an explicit "fixture") can never read as native execution.
-            "provenance": "host-real",
+            "provenance": record_provenance,
         }
+        apply_host_transcript_evidence(record, hook_input, host_transcript_evidence)
         if event_canonical == "PreToolUse":
             tool_input = hook_tool_input(hook_input)
             tool = hook_tool_name(hook_input)
@@ -3041,6 +3142,12 @@ HOOK_RECORD_DEDUPE_FIELDS = (
     "event_canonical",
     "mode",
     "session",
+    "provenance",
+    "transcript_sha256",
+    "command_fingerprint",
+    "same_command_replay",
+    "justified_replay_change",
+    "tool_use_count",
     "tool",
     "path",
     "path_class",
@@ -3395,6 +3502,38 @@ def pretooluse_considered_timestamps(records: list[dict[str, Any]]) -> tuple[str
     return values[0], values[-1]
 
 
+def hook_record_provenance(record: dict[str, Any]) -> str:
+    raw = str(record.get("provenance") or "").strip()
+    if raw in HOOK_PROVENANCE_STATES and raw != HOOK_PROVENANCE_LEGACY_UNKNOWN:
+        return raw
+    return HOOK_PROVENANCE_LEGACY_UNKNOWN
+
+
+def pretooluse_host_correlation_gaps(record: dict[str, Any]) -> list[str]:
+    gaps: list[str] = []
+    if not record.get("session"):
+        gaps.append("missing_host_session")
+    if not record.get("agent"):
+        gaps.append("missing_host_agent")
+    if canonical_hook_event(str(record.get("event_canonical") or record.get("event") or "")) != "PreToolUse":
+        gaps.append("missing_canonical_pretooluse_event")
+    if not record.get("invocation"):
+        gaps.append("missing_tool_invocation")
+    if not is_hex64(record.get("transcript_sha256")):
+        gaps.append("missing_host_transcript_sha256")
+    if not is_hex64(record.get("command_fingerprint")):
+        gaps.append("missing_host_command_fingerprint")
+    if not boolish(record.get("same_command_replay")) and not boolish(record.get("justified_replay_change")):
+        gaps.append("missing_host_replay_status")
+    try:
+        tool_use_count = int(record.get("tool_use_count") or 0)
+    except (TypeError, ValueError):
+        tool_use_count = 0
+    if tool_use_count <= 0:
+        gaps.append("missing_host_tool_use_evidence")
+    return gaps
+
+
 def pretooluse_host_ceiling_gaps(
     records: list[dict[str, Any]],
     *,
@@ -3434,6 +3573,7 @@ def pretooluse_host_ceiling_gaps(
             gaps.append("missing_payload_source")
         if not record.get("decision") or not record.get("permission_decision"):
             gaps.append("missing_decision_projection")
+        gaps.extend(pretooluse_host_correlation_gaps(record))
         if record.get("outcome") == "needs_discoverability" and "needs_discoverability_unknown_mutation" in reason_codes:
             has_discoverability = True
         if record.get("command_redacted") is True and record.get("command_category") not in {"", "no_command", None}:
@@ -3472,28 +3612,42 @@ def pretooluse_ceiling_evidence(
             if record.get("schema_version") == PRETOOLUSE_LEDGER_SCHEMA_VERSION
         ]
         ignored_legacy_records = len(host_records) - len(considered_records)
-        # Ceiling F18: partition considered records by provenance. A row is
-        # fixture ONLY when it is explicitly tagged provenance="fixture"; an
-        # untagged row is treated as host-real for back-compat (records on already
-        # installed targets predate the tag and are genuine host executions). A
-        # test that wants to prove the fixture-vs-host-real distinction seeds an
-        # explicit provenance="fixture" row, which can never read as native.
-        fixture_records = [r for r in considered_records if str(r.get("provenance") or "") == "fixture"]
-        host_real_records = [r for r in considered_records if str(r.get("provenance") or "") != "fixture"]
-        gaps = pretooluse_host_ceiling_gaps(
-            considered_records,
-            ignored_legacy_records=ignored_legacy_records,
-        )
+        fixture_records = [r for r in considered_records if hook_record_provenance(r) == HOOK_PROVENANCE_FIXTURE]
+        manual_records = [r for r in considered_records if hook_record_provenance(r) == HOOK_PROVENANCE_MANUAL]
+        unattested_records = [r for r in considered_records if hook_record_provenance(r) == HOOK_PROVENANCE_UNATTESTED]
+        legacy_unknown_records = [
+            r for r in considered_records if hook_record_provenance(r) == HOOK_PROVENANCE_LEGACY_UNKNOWN
+        ]
+        host_real_records = [r for r in considered_records if hook_record_provenance(r) == HOOK_PROVENANCE_HOST_REAL]
+        if host_real_records or not considered_records:
+            gaps = pretooluse_host_ceiling_gaps(
+                host_real_records,
+                ignored_legacy_records=ignored_legacy_records,
+            )
+        else:
+            gaps = []
+        if considered_records and not host_real_records:
+            gaps.append("non_host_real_provenance")
+        if fixture_records:
+            gaps.append("fixture_provenance")
+        if manual_records:
+            gaps.append("manual_provenance")
+        if unattested_records:
+            gaps.append("unattested_provenance")
+        if legacy_unknown_records:
+            gaps.append("legacy_unknown_provenance")
+        gaps = sorted(set(gaps))
         scoped_gaps.extend(gaps)
         oldest_ts, newest_ts = pretooluse_considered_timestamps(considered_records)
         if not considered_records:
             status = "NEEDS_EVIDENCE"
             native_evidence = "not_available"
         elif not host_real_records:
-            # Records exist but none are host-real: the harness ran, the host did
-            # not. This is configured-but-unobserved, never a native pass.
+            # Records exist but none are host-real: source fixtures, manual
+            # invocations, unattested rows, and legacy unknown rows remain
+            # readable but never authorize a native ceiling claim.
             status = "NEEDS_EVIDENCE"
-            native_evidence = "fixture_only"
+            native_evidence = "not_host_real"
         elif gaps:
             status = "PASS_BASIC_WITH_CEILING_GAPS"
             native_evidence = "host_real"
@@ -3506,6 +3660,9 @@ def pretooluse_ceiling_evidence(
             "considered_records": len(considered_records),
             "host_real_records": len(host_real_records),
             "fixture_records": len(fixture_records),
+            "manual_records": len(manual_records),
+            "unattested_records": len(unattested_records),
+            "legacy_unknown_records": len(legacy_unknown_records),
             "ignored_legacy_records": ignored_legacy_records,
             "oldest_considered_ts": oldest_ts,
             "newest_considered_ts": newest_ts,
@@ -4011,6 +4168,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
             args.agent,
             hook_input,
             mode="pretooluse",
+            provenance=HOOK_PROVENANCE_HOST_REAL,
             pretooluse_decision={
                 **decision,
                 "reason_codes": reason_codes,
@@ -4052,6 +4210,7 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
         args.agent,
         hook_input,
         mode="pretooluse",
+        provenance=HOOK_PROVENANCE_HOST_REAL,
         pretooluse_decision={
             **decision,
             "reason_codes": reason_codes,
@@ -4143,7 +4302,7 @@ def hook(args: argparse.Namespace) -> int:
         mode = "announce_start"
     elif args.rewake_on_complete:
         mode = "rewake_on_complete"
-    record_hook_execution(target, args.agent, hook_input, mode=mode)
+    record_hook_execution(target, args.agent, hook_input, mode=mode, provenance=HOOK_PROVENANCE_HOST_REAL)
     cortex_context = _cortex_runtime_context(_evaluate_cortex_runtime(target, args.agent, hook_input))
     if args.agent == "claude" and args.announce_start:
         event_name = hook_event_name(hook_input)
@@ -4296,8 +4455,10 @@ def self_test() -> int:
         invocation: str | None = None,
         marker_emitted: bool = True,
         context_suppressed: bool = False,
+        provenance: str | None = HOOK_PROVENANCE_HOST_REAL,
+        transcript_evidence: bool = True,
     ) -> dict[str, Any]:
-        return {
+        record = {
             "schema_version": PRETOOLUSE_LEDGER_SCHEMA_VERSION,
             "agent": agent,
             "event_canonical": "PreToolUse",
@@ -4332,6 +4493,18 @@ def self_test() -> int:
             "marker_emitted": marker_emitted,
             "context_suppressed": context_suppressed,
         }
+        if provenance is not None:
+            record["provenance"] = provenance
+        if transcript_evidence:
+            record.update(
+                {
+                    "transcript_sha256": "a" * 64,
+                    "command_fingerprint": "b" * 64,
+                    "same_command_replay": True,
+                    "tool_use_count": 1,
+                }
+            )
+        return record
 
     complete_codex = ceiling_record("codex", "complete-v2")
     legacy_codex = {
@@ -4401,6 +4574,45 @@ def self_test() -> int:
     partial_gaps = pretooluse_ceiling_gaps([partial_v2], required_hosts=["codex"])
     if "missing_classifier_trace" not in partial_gaps:
         failures.append("PreToolUse ceiling scope must still fail current v2 rows with missing required fields")
+
+    fixture_v2 = {**complete_codex, "session": "fixture-v2", "provenance": HOOK_PROVENANCE_FIXTURE}
+    fixture_scope, fixture_gaps = pretooluse_ceiling_evidence([fixture_v2], required_hosts=["codex"])
+    fixture_codex = fixture_scope.get("per_host", {}).get("codex", {})
+    if fixture_codex.get("status") == "PASS_CEILING" or "fixture_provenance" not in fixture_gaps:
+        failures.append("fixture PreToolUse ledger rows must not authorize PASS_CEILING")
+
+    manual_v2 = {**complete_codex, "session": "manual-v2", "provenance": "manual"}
+    manual_scope, manual_gaps = pretooluse_ceiling_evidence([manual_v2], required_hosts=["codex"])
+    manual_codex = manual_scope.get("per_host", {}).get("codex", {})
+    if manual_codex.get("status") == "PASS_CEILING" or "non_host_real_provenance" not in manual_gaps:
+        failures.append("manual PreToolUse ledger rows must not authorize PASS_CEILING")
+
+    unattested_v2 = {**complete_codex, "session": "unattested-v2", "provenance": HOOK_PROVENANCE_UNATTESTED}
+    unattested_scope, unattested_gaps = pretooluse_ceiling_evidence([unattested_v2], required_hosts=["codex"])
+    unattested_codex = unattested_scope.get("per_host", {}).get("codex", {})
+    if unattested_codex.get("status") == "PASS_CEILING" or "unattested_provenance" not in unattested_gaps:
+        failures.append("unattested PreToolUse ledger rows must not authorize PASS_CEILING")
+
+    legacy_unknown_v2 = {key: value for key, value in complete_codex.items() if key != "provenance"}
+    legacy_unknown_v2["session"] = "legacy-unknown-v2"
+    legacy_unknown_scope, legacy_unknown_gaps = pretooluse_ceiling_evidence([legacy_unknown_v2], required_hosts=["codex"])
+    legacy_unknown_codex = legacy_unknown_scope.get("per_host", {}).get("codex", {})
+    if (
+        legacy_unknown_codex.get("status") == "PASS_CEILING"
+        or legacy_unknown_codex.get("legacy_unknown_records") != 1
+        or "legacy_unknown_provenance" not in legacy_unknown_gaps
+    ):
+        failures.append("legacy-unknown PreToolUse ledger rows must be reported separately below PASS_CEILING")
+
+    uncorrelated_host_real = ceiling_record("codex", "host-real-without-transcript", transcript_evidence=False)
+    uncorrelated_scope, uncorrelated_gaps = pretooluse_ceiling_evidence([uncorrelated_host_real], required_hosts=["codex"])
+    uncorrelated_codex = uncorrelated_scope.get("per_host", {}).get("codex", {})
+    if (
+        uncorrelated_codex.get("status") != "PASS_BASIC_WITH_CEILING_GAPS"
+        or "missing_host_transcript_sha256" not in uncorrelated_gaps
+        or "missing_host_replay_status" not in uncorrelated_gaps
+    ):
+        failures.append("host-real PreToolUse rows without transcript/replay evidence must stay below PASS_CEILING")
 
     complete_claude = ceiling_record("claude", "complete-v2-claude")
     contradictory_codex = {**complete_codex, "decision": "block", "permission_decision": "deny"}
@@ -5285,8 +5497,22 @@ def self_test() -> int:
             "cortex_context_emitted": False,
             "surface_context": False,
         }
-        record_hook_execution(target, "cursor", dedupe_input, mode="pretooluse", pretooluse_decision=dedupe_decision)
-        record_hook_execution(target, "cursor", dedupe_input, mode="pretooluse", pretooluse_decision=dedupe_decision)
+        record_hook_execution(
+            target,
+            "cursor",
+            dedupe_input,
+            mode="pretooluse",
+            provenance=HOOK_PROVENANCE_FIXTURE,
+            pretooluse_decision=dedupe_decision,
+        )
+        record_hook_execution(
+            target,
+            "cursor",
+            dedupe_input,
+            mode="pretooluse",
+            provenance=HOOK_PROVENANCE_FIXTURE,
+            pretooluse_decision=dedupe_decision,
+        )
         dedupe_records = [
             record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
             if record.get("agent") == "cursor" and record.get("session") == "dedupe-routine"
@@ -5305,6 +5531,7 @@ def self_test() -> int:
             "codex",
             synthetic_invocation_input,
             mode="pretooluse",
+            provenance=HOOK_PROVENANCE_FIXTURE,
             pretooluse_decision=dedupe_decision,
         )
         synthetic_invocation_records = [
@@ -5334,8 +5561,22 @@ def self_test() -> int:
             "surface_context": True,
             "reason_codes": ["anti_crywolf_repeated_context"],
         }
-        record_hook_execution(target, "cursor", anti_input, mode="pretooluse", pretooluse_decision=first_anti)
-        record_hook_execution(target, "cursor", anti_input, mode="pretooluse", pretooluse_decision=second_anti)
+        record_hook_execution(
+            target,
+            "cursor",
+            anti_input,
+            mode="pretooluse",
+            provenance=HOOK_PROVENANCE_FIXTURE,
+            pretooluse_decision=first_anti,
+        )
+        record_hook_execution(
+            target,
+            "cursor",
+            anti_input,
+            mode="pretooluse",
+            provenance=HOOK_PROVENANCE_FIXTURE,
+            pretooluse_decision=second_anti,
+        )
         anti_records = [
             record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
             if record.get("agent") == "cursor" and record.get("session") == "dedupe-anti-cry-wolf"
@@ -5359,7 +5600,14 @@ def self_test() -> int:
             "marker_emitted": True,
             "surface_context": True,
         }
-        record_hook_execution(target, "codex", redaction_input, mode="pretooluse", pretooluse_decision=redaction_decision)
+        record_hook_execution(
+            target,
+            "codex",
+            redaction_input,
+            mode="pretooluse",
+            provenance=HOOK_PROVENANCE_FIXTURE,
+            pretooluse_decision=redaction_decision,
+        )
         redaction_records = [
             record for record in read_hook_execution_records(target, HOOK_SENTINEL_PATH)
             if record.get("agent") == "codex" and record.get("session") == "ledger-redaction"
