@@ -17,7 +17,7 @@ from typing import Any
 
 
 SCHEMA = "tes-host-transcript-post-execution-gate@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.7"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.8"
 PASS_CLAIM_RE = re.compile(r"^(PASS|CERTIFIED|GO)(?:_|$)")
 HEX64_RE = re.compile(r"^[a-fA-F0-9]{64}$")
 REQUIRED_POST_EXECUTION = (

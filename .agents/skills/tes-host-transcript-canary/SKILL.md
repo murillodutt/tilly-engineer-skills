@@ -5,7 +5,7 @@ description: Local-only Tilly development workflow for persistent host-backed ca
 
 # TES Host Transcript Canary
 
-Operational contract: `tes.host_transcript_canary@0.1.7`.
+Operational contract: `tes.host_transcript_canary@0.1.8`.
 
 Central rule:
 
@@ -57,13 +57,15 @@ Load only the reference needed by the current loop:
 | Transcript sanitization, required signals, subagents, stale evidence, failure classes | `references/transcript-evidence.md` |
 | Final canary decision, related gates, certification closeout, ledger discipline | `references/canary-convergence.md` |
 | Ceiling posture, floor-green rejection, strongest local proof, breakthrough loop | `references/ceiling-breakthrough.md` |
-| Agent hook feature matrix, source/target/host evidence lanes, fix ownership, certification states | `references/agent-hooks-certification.md` |
+| Agent hook feature and finding matrices, source/target/host evidence lanes, fix ownership, certification states | `references/agent-hooks-certification.md` |
+| Agent hook finding manifest used by `agent_hook_finding_matrix.py` | `references/agent-hook-findings.json` |
 | Host-real canary scope, mode evidence, and cost brake | `references/canary-modes.md` |
 | CORTEX runtime memory canary recipe and runtime signal proof shape | `references/memory-runtime-canary.md` |
 | Forbidden manual memory lookup versus benign injected marker reuse | `references/transcript-contamination.md` |
 | Mandatory TES construction closeout, post-execution questions, limited-claim downgrades | `references/post-execution-gate.md` |
 | A retained or chat-emitted sanitized evidence report | `templates/host-canary-report.template.md` |
 | A retained agent hook certification report | `templates/agent-hooks-certification-report.template.md` |
+| A retained agent hook finding certification report | `templates/agent-hook-finding-matrix-report.template.md` |
 | A retained runtime signal certification report | `templates/runtime-signal-report.template.md` |
 
 If a claim depends on one of these behaviors, load the owning reference before
@@ -233,6 +235,7 @@ diff -qr --exclude=.DS_Store .agents/skills/tes-host-transcript-canary .claude/s
 python3 .agents/skills/tes-host-transcript-canary/scripts/host_canary_loop.py --self-test --repo .
 python3 .agents/skills/tes-host-transcript-canary/scripts/runtime_signal_audit.py --self-test --repo .
 python3 .agents/skills/tes-host-transcript-canary/scripts/agent_hooks_certification_matrix.py --self-test --repo .
+python3 .agents/skills/tes-host-transcript-canary/scripts/agent_hook_finding_matrix.py --self-test --repo .
 python3 .agents/skills/tes-host-transcript-canary/scripts/post_execution_gate.py --self-test
 python3 scripts/canary_transcript_oracle.py --self-test
 ```

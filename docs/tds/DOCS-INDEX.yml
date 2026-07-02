@@ -1,4 +1,4 @@
-version: 0.3.255
+version: 0.3.256
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -532,7 +532,7 @@ documents:
     status: active
     consumer: maintainers, hook authors, oracle authors, and canary operators
     source_of_truth: false
-    evidence_level: L2
+    evidence_level: L4
   - path: docs/roadmap/product/RC1-READINESS-ROADMAP.md
     id: roadmap.rc1_readiness
     class: roadmap

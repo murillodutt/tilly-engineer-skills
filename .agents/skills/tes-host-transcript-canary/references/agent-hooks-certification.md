@@ -43,6 +43,38 @@ The helper checks every listed hook characteristic against the owning evidence
 lane. It reports `PASS`, `FAIL`, `NEEDS_EVIDENCE`, or `NOT_RUN` per row and
 returns an overall status.
 
+## Finding Matrix Helper
+
+Use the finding matrix helper when the claim is not only "the hook contract is
+green", but "each retained audit finding has its own certification state":
+
+```bash
+python3 .agents/skills/tes-host-transcript-canary/scripts/agent_hook_finding_matrix.py \
+  --repo . \
+  --target <target> \
+  --current-host claude \
+  --host-loop-json <sanitized-host-loop.json> \
+  --run-finding-gates \
+  --require-target \
+  --require-host-transcript \
+  --json-only
+```
+
+The helper reads `references/agent-hook-findings.json`, binds each finding to
+aggregate matrix rows and focused gates, and emits one state per finding:
+`SOURCE_CERTIFIED`, `TARGET_CERTIFIED`, `HOST_CERTIFIED`, `HOST_NOT_APPLICABLE`,
+`REFUTED`, `NEEDS_EVIDENCE`, `FAIL`, or `BLOCKED`.
+
+Rules:
+
+- A host-required finding is not certified by source gates alone.
+- A host-not-applicable finding can certify through source or target gates.
+- A refuted finding stays `REFUTED`; do not convert it into a green behavior
+  claim.
+- A finding gate that was not run is `NEEDS_EVIDENCE`, not implicit pass.
+- Raw transcripts, prompts, tool inputs, and tool outputs remain outside the
+  retained report.
+
 ## Feature Groups
 
 The certification matrix is grouped by behavior:

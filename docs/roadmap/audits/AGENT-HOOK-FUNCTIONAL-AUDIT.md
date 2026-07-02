@@ -4,42 +4,41 @@ tds_class: roadmap
 status: active
 consumer: maintainers, hook authors, oracle authors, and canary operators
 source_of_truth: false
-evidence_level: L2
+evidence_level: L4
 ---
 
 # Agent Hook — Auditoria Funcional (working doc)
 
-> **STATUS: WORKING DOC — NÃO É DOCUMENTAÇÃO DE PROJETO.**
-> Esteira de desenvolvimento / auditoria / fix. Este arquivo descreve o estado
-> *atual e verificado* da superfície de agent hooks do TES, incluindo bugs, gaps
-> e tech-debt em aberto. **Não promover para documentação canônica** (`docs/architecture/`,
-> `docs/agents/`, user manual) enquanto houver qualquer item em `## Findings acionáveis`.
-> Quando a seção de findings zerar, esta matriz pode ser destilada em doc de projeto.
+> **STATUS: CERTIFICATION CLOSEOUT — DEVELOPMENT AUDIT SURFACE.**
+> The source findings below are retained as provenance for the repair wave. The
+> current certified claim is the 2026-07-02 source + installed-target +
+> current-host Claude canary closeout; it does not cross-fill Codex or Cursor
+> runtime evidence.
 
 ## 0. Sumário executivo
 
-**36/36 afirmações auditadas** contra a fonte atual (34 ✅ · 2 imprecisas/incorretas que escondiam bug). **16 findings** sobreviveram à refutação adversarial; 11 refutados.
+**Final decision (2026-07-02): `HOST_CEILING_CERTIFIED` for current-host Claude.**
+The closure used the `tes-host-transcript-canary` harness against a clean
+installed target and kept raw host transcripts out of tracked content.
 
-| Sev | Findings | Tema |
-|---|---|---|
-| **HIGH** | ~~H-01~~ ✅, ~~H-02~~ ✅ | **Perda de config do usuário** na superfície instalada (uninstall Codex engolia bloco adjacente; `read_json` clobberava settings malformado). **Ambos RESOLVIDOS 2026-07-01.** (BUG-07, feature-flag TOML cross-tabela, segue aberto — finding distinto.) |
-| **HIGH** | H-03 | **Bypass de governança via shell**: `echo/tee/sed/rm/cat` em superfície governada → `allow` silencioso (reproduzido). |
-| **HIGH** | H-04 | **Evidência host-real forjável**: `provenance="host-real"` incondicional; qualquer chamador satisfaz ceiling. |
-| MEDIUM | BUG-01…07, PREC-01 | fail-open de import, perda silenciosa de ledger, vazamento de segredo em reason/path, ramos de supervisão mortos p/ shell, corrupção de TOML alheio. |
-| LOW | BUG-08, PREC-02/03, DEBT-01 | `SKILL.md` raiz não-governado, dedupe de janela, sentinel fail-open parcial, helper órfão. |
+| Lane | Result | Evidence |
+|---|---:|---|
+| Source contract | 35/35 PASS | `agent_hooks_certification_matrix.py --run-related-gates` |
+| Installed target | 10/10 PASS | Codex, Claude, Cursor configs and helpers materialized |
+| Host-real Claude | 5/5 PASS | fresh transcript + runtime ledger + governed shell supervision |
+| Git gate | PASS | `precommit_enforced=true`, `prepush_enforced=true`, `field_reports_prepush_drain=true` |
 
-**Causa-raiz dominante:** o kernel supervisiona bem o caminho **estruturado** (`Edit`/`apply_patch` com `file_path`), mas é cego a **comando shell** (path nunca extraído) e o instalador confia demais em config do usuário bem-formado. Um único fix (extração de path shell) fecha H-03 + BUG-04/05/08.
+Host evidence was transcript-correlated without raw transcript publication:
+session `c73dc686-d594-4b4e-b155-342b7d35ac95`, transcript SHA-256
+`153dc492c20a52458b0c1fae2aa48a66031596ae27b34cfe28d046f621fae4fb`,
+command fingerprint
+`76dcfb3e327f55029c8b80b13f50175b91ec01a867083fc22e4433e546e73644`.
+The runtime row proves `shell_redirect_write`, `governed_surface=true`,
+`outcome=supervise`, `path_class=skill`, `provenance=host-real`.
 
-**Caminho de fix (§7):** cada finding mapeia numa das 6 classes de solução madura, triangulada por mem0 + graphify + pesquisa web (6/6 classes `grounded`). Tese única: *mova a confiança da fronteira para o núcleo — parse defensivo · prove-don't-trust · degrade-loud · reconcile por manifesto.*
-
-| Classe | Findings | Padrão maduro | Adotar (mira laser) |
-|---|---|---|---|
-| C1 command-intent | H-03, BUG-04/05/08 | parse-then-evaluate, fail-closed no ambíguo | parsear Bash espelhando o Claude Code; extrair path de redirect/flag; ambíguo→supervise |
-| C2 config-preserve | H-01, H-02, BUG-07, PREC-01 | owned-region + refuse-on-unparseable | `read_json` para de coagir a `{}`; END-marker explícito; backup já existe |
-| C3 provenance | H-04, LEDGER-02 | trust-boundary (SLSA "forge provenance") | relocar carimbo `host-real` p/ entrypoint do host + hash-chain |
-| C4 fail-observable | BUG-01/02, PREC-03 | risk-typed + degrade-loud (dead-man's-switch) | breadcrumb `SUPERVISION_DEGRADED`; evidência não some silenciosa |
-| C5 redaction | BUG-03, BUG-06 | redact-at-boundary, sink fail-closed | scrub simétrico command+path+reason numa função única |
-| C6 reconcile | DEBT-01, F1 | inventory-anchored, nunca scan-and-guess | `.tes/materialized.json` (path+sha256); prune por set-difference |
+Residual boundary: this closeout does **not** claim Codex or Cursor native
+runtime evidence. They remain install/config targets unless separately replayed
+through their own host-real canaries.
 
 ---
 

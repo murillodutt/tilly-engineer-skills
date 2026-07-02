@@ -18,7 +18,7 @@ from typing import Any
 
 
 SCHEMA = "tes-agent-hooks-certification-matrix@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.7"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.8"
 STATUSES = {"PASS", "FAIL", "NEEDS_EVIDENCE", "NOT_RUN"}
 
 

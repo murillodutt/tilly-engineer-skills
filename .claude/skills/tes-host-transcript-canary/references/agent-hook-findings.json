@@ -1,0 +1,245 @@
+{
+  "schema": "tes-agent-hook-findings@1",
+  "notes": [
+    "This manifest maps the historical agent-hook audit findings to the evidence lanes required to certify or refute each one.",
+    "It is local development evidence only; raw host transcripts must stay outside tracked content."
+  ],
+  "findings": [
+    {
+      "id": "H-01",
+      "severity": "HIGH",
+      "title": "Codex uninstall/refresh must not swallow adjacent user hook blocks.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["host-config-paths"],
+      "gates": ["install-smoke-audit"]
+    },
+    {
+      "id": "H-02",
+      "severity": "HIGH",
+      "title": "User JSON config parse failures must not clobber settings.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["host-config-paths"],
+      "gates": ["install-smoke-audit"]
+    },
+    {
+      "id": "H-03",
+      "severity": "HIGH",
+      "title": "Governed shell writes must not silently bypass PreToolUse supervision.",
+      "disposition": "active",
+      "minimum_lane": "host",
+      "host_applicability": "required",
+      "source_rows": ["kernel-behavior", "governed-supervision", "redaction-boundary"],
+      "target_rows": ["target-runtime-ledger"],
+      "host_rows": ["host-runtime-governed-supervision", "host-runtime-shell-redaction"],
+      "gates": ["pretooluse-kernel", "pretooluse-contract"]
+    },
+    {
+      "id": "H-04",
+      "severity": "HIGH",
+      "title": "Host-real provenance must not be forgeable by non-host callers.",
+      "disposition": "active",
+      "minimum_lane": "host",
+      "host_applicability": "required",
+      "source_rows": ["host-real-provenance", "no-cross-fill"],
+      "target_rows": ["target-runtime-ledger"],
+      "host_rows": ["host-runtime-session-correlated"],
+      "gates": ["tes-install-self-test", "canary-admission-self-test"]
+    },
+    {
+      "id": "BUG-01",
+      "severity": "MEDIUM",
+      "title": "Missing PreToolUse helpers must degrade observably, not crash silently.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["runtime-helpers", "health-statuses"],
+      "gates": ["tes-install-self-test"]
+    },
+    {
+      "id": "BUG-02",
+      "severity": "MEDIUM",
+      "title": "Ledger write failures must be observable.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["runtime-ledger", "health-statuses"],
+      "gates": ["tes-install-self-test"]
+    },
+    {
+      "id": "BUG-03",
+      "severity": "MEDIUM",
+      "title": "Forbidden-action reasons must not echo raw secret-bearing commands.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["redaction-boundary", "forbidden-block"],
+      "gates": ["tes-install-self-test", "pretooluse-kernel"]
+    },
+    {
+      "id": "BUG-04",
+      "severity": "MEDIUM",
+      "title": "Unknown mutating-looking governed shell tools must reach discoverability.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["discoverability", "kernel-behavior"],
+      "gates": ["pretooluse-kernel", "pretooluse-contract"]
+    },
+    {
+      "id": "BUG-05",
+      "severity": "MEDIUM",
+      "title": "Shell governed mutations must reach material-risk supervision.",
+      "disposition": "active",
+      "minimum_lane": "host",
+      "host_applicability": "required",
+      "source_rows": ["governed-supervision", "kernel-behavior"],
+      "target_rows": ["target-runtime-ledger"],
+      "host_rows": ["host-runtime-governed-supervision"],
+      "gates": ["pretooluse-kernel"]
+    },
+    {
+      "id": "BUG-06",
+      "severity": "MEDIUM",
+      "title": "Runtime ledger must redact secret-bearing paths as well as commands.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["redaction-boundary", "pretooluse-ledger-fields"],
+      "gates": ["tes-install-self-test"]
+    },
+    {
+      "id": "BUG-07",
+      "severity": "MEDIUM",
+      "title": "Codex feature flag cleanup must stay scoped to the features table.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["host-config-paths"],
+      "gates": ["install-smoke-audit"]
+    },
+    {
+      "id": "BUG-08",
+      "severity": "LOW",
+      "title": "Root SKILL.md must be treated as a governed surface.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["governed-surfaces", "kernel-behavior"],
+      "gates": ["pretooluse-kernel"]
+    },
+    {
+      "id": "PREC-01",
+      "severity": "MEDIUM",
+      "title": "Codex TOML feature insertion must not capture root keys.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["host-config-paths"],
+      "gates": ["install-smoke-audit"]
+    },
+    {
+      "id": "PREC-02",
+      "severity": "LOW",
+      "title": "Dedupe recency semantics must be explicit and guarded.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["dedupe-contract"],
+      "gates": ["tes-install-self-test"]
+    },
+    {
+      "id": "PREC-03",
+      "severity": "LOW",
+      "title": "Anti-cry-wolf sentinel failures and repeated context state must be deterministic.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["anti-cry-wolf"],
+      "gates": ["pretooluse-session"]
+    },
+    {
+      "id": "DEBT-01",
+      "severity": "LOW",
+      "title": "Retired TES-owned hook helpers must be pruned by inventory.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["runtime-helpers"],
+      "gates": ["tes-install-self-test"]
+    },
+    {
+      "id": "F1",
+      "severity": "NOTE",
+      "title": "PreToolUse helper drift is tracked by helper inventory instead of broad scan guessing.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["runtime-helpers"],
+      "gates": ["tes-update-self-test"]
+    },
+    {
+      "id": "LEDGER-02",
+      "severity": "NOTE",
+      "title": "Ledger append without locking remains a non-blocking warning unless current contradictions appear.",
+      "disposition": "refuted",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["dedupe-contract", "runtime-ledger"],
+      "gates": []
+    },
+    {
+      "id": "MATCHER-03",
+      "severity": "NOTE",
+      "title": "Lowercase bash is a hypothetical matcher gap, not an observed host contract.",
+      "disposition": "refuted",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["pretooluse-matcher", "forbidden-block"],
+      "gates": []
+    },
+    {
+      "id": "DOC-01",
+      "severity": "DOC",
+      "title": "Matcher prose must use the real PreToolUse matcher.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["pretooluse-matcher"],
+      "gates": ["pretooluse-contract"]
+    },
+    {
+      "id": "DOC-02",
+      "severity": "DOC",
+      "title": "Pipeline prose must keep session coordination distinct from rendering.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["pipeline-boundary"],
+      "gates": ["pretooluse-contract"]
+    },
+    {
+      "id": "DOC-03",
+      "severity": "DOC",
+      "title": "Hook-health schema prose must name tes-hook-health@2.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["hook-health-schema"],
+      "gates": ["pretooluse-contract"]
+    },
+    {
+      "id": "DOC-04",
+      "severity": "DOC",
+      "title": "Configured-not-observed terminology must stay scoped to the admission layer.",
+      "disposition": "active",
+      "minimum_lane": "source",
+      "host_applicability": "not_applicable",
+      "source_rows": ["no-cross-fill"],
+      "gates": ["pretooluse-contract"]
+    }
+  ]
+}

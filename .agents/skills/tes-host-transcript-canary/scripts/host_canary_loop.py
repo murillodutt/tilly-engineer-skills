@@ -20,7 +20,7 @@ from typing import Any
 
 
 SCHEMA = "tes-host-canary-loop@1"
-SKILL_CONTRACT = "tes.host_transcript_canary@0.1.7"
+SKILL_CONTRACT = "tes.host_transcript_canary@0.1.8"
 CANARY_MODES = ("smoke-host-real", "product-host-real", "ceiling-replay")
 MODE_RANK = {mode: index for index, mode in enumerate(CANARY_MODES)}
 FAILURE_CLASSES = {
