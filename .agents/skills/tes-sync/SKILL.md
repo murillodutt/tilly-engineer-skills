@@ -178,6 +178,9 @@ git status -sb
 ```
 
 Status must show `## main...origin/main` without `[ahead]`.
+For bundle scope, this is not enough to close the sync. The branch push only
+publishes `main`; final closeout remains blocked until tag, `release:check`,
+GitHub Pages, and `sync:closeout` pass.
 
 ### 10. Tag (bundle scope only)
 
@@ -218,7 +221,20 @@ python3 scripts/public_pages_oracle.py --version <new> --retries 12 --interval 1
 
 Required result: `status: PASS`. If Pages reports stale HTML, missing `dist/<new>/index.json`, or a bundle sha mismatch, report `NEEDS_REVIEW: public pages not deployed` and do not tell users to install from the public site yet.
 
-### 13. Closeout
+### 13. Machine closeout guard (bundle scope only)
+
+Run the final aggregated guard after tag, `release:check`, and Pages:
+
+```bash
+npm run sync:closeout -- --version <new>
+```
+
+Required result: `status: PASS`. This command re-checks pushed `main`, local
+and remote tag, `release:check` classification/resolved commit, and live Pages.
+If it returns `BLOCKED`, the sync is not complete even if `git push origin main`
+already succeeded.
+
+### 14. Closeout
 
 Report in one block:
 
@@ -241,6 +257,7 @@ On `pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`, `volta um n
 - Do not keep more than one `docs/dist/<version>/` in the repository. `tes_bundle.py publish` enforces single-current-dist; reverting that state requires explicit policy reversal.
 - Do not move a public tag without quoting the conflict to the user and waiting for authorization. Stale tags from orphan commits are the trap; treat them with care.
 - Do not push or tag without `npm run commit:check` PASS.
+- Do not call a bundle-scope push complete without `npm run sync:closeout` PASS after tag, `release:check`, and Pages.
 - Do not present this skill as a user-facing TES product slash command. It is local development guidance.
 - Do not change `/tes-sync` scope rules without updating `docs/governance/SYNC-AUDIT-CHECKLIST.md` and the local skill references in the same change.
 

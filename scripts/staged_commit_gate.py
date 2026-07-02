@@ -359,6 +359,20 @@ def gate_plan() -> list[Gate]:
             ),
         ),
         Gate(
+            "sync-closeout",
+            ["python3", "scripts/sync_closeout_oracle.py", "--self-test"],
+            matcher=lambda paths: any_match(
+                paths,
+                (
+                    "scripts/sync_closeout_oracle.py",
+                    "package.json",
+                    "docs/governance/SYNC-AUDIT-CHECKLIST.md",
+                    ".agents/skills/tes-sync/**",
+                    ".claude/skills/tes-sync/**",
+                ),
+            ),
+        ),
+        Gate(
             "hook-audit-prompt",
             ["python3", "scripts/hook_audit_prompt_oracle.py", "--self-test"],
             matcher=lambda paths: any_match(

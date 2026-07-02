@@ -30,6 +30,8 @@
     "tes:npx:runtime-matrix": "python3 scripts/tes_npx_oracle.py --runtime-matrix",
     "tes:npx:github-self-test": "python3 scripts/tes_npx_oracle.py --github-self-test",
     "release:check": "python3 scripts/tes_npx_oracle.py --release-check",
+    "sync:closeout": "python3 scripts/sync_closeout_oracle.py",
+    "sync:closeout:self-test": "python3 scripts/sync_closeout_oracle.py --self-test",
     "project-context:self-test": "python3 scripts/project_context_oracle.py --self-test",
     "project-alignment:self-test": "python3 scripts/project_alignment_oracle.py --self-test",
     "documentation-inventory:self-test": "python3 scripts/verify_documentation_inventory.py --self-test",
