@@ -22,7 +22,7 @@ import field_reports
 
 
 SCHEMA = "tes-git-gate-contract@1"
-VERSION = "0.3.256"
+VERSION = "0.3.257"
 GIT_ENV_BLOCKLIST = {
     "GIT_ALTERNATE_OBJECT_DIRECTORIES",
     "GIT_DIR",

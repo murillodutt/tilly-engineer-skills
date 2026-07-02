@@ -26,7 +26,7 @@ import tes_codex_policy
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.256"
+VERSION = "0.3.257"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")

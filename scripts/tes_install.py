@@ -23,7 +23,7 @@ import cortex_git_tap
 import tes_codex_policy
 
 
-VERSION = "0.3.256"
+VERSION = "0.3.257"
 RUNTIME_MEMORY_MARKER_RE = re.compile(r"\bmarker\s+([A-Za-z0-9][A-Za-z0-9_.:-]{2,160})", re.IGNORECASE)
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
